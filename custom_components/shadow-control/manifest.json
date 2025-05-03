@@ -1,0 +1,12 @@
+{
+  "domain": "shadow-control",
+  "name": "Integration blueprint",
+  "codeowners": [
+    "@starwarsfan"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/starwarsfan/shadow-control",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/starwarsfan/shadow-control/issues",
+  "version": "0.1.0"
+}
