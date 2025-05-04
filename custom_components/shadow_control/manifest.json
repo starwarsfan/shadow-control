@@ -1,12 +1,20 @@
 {
-  "domain": "shadow-control",
+  "domain": "shadow_control",
   "name": "Shadow Control",
   "codeowners": [
     "@starwarsfan"
   ],
+  "dependencies": [
+    "sun",
+    "device_tracker",
+    "zone",
+    "climate",
+    "sensor",
+    "weather"
+  ],
   "config_flow": true,
   "documentation": "https://github.com/starwarsfan/shadow-control",
-  "iot_class": "cloud_polling",
+  "iot_class": "calculated",
   "issue_tracker": "https://github.com/starwarsfan/shadow-control/issues",
   "version": "0.1.0"
 }
