@@ -633,9 +633,7 @@ class ShadowControl(CoverEntity):
             message += f"IN SUN (from {sun_entry_angle}° to {sun_exit_angle}°)"
             self._sun_illuminates_facade = True
             await self._send_by_change("sun_at_facade_azimut", True)
-            effective_elevation = await self._calculate_effective_elevation(
-                current_elevation, azimut
-            )
+            effective_elevation = await self._calculate_effective_elevation()
         else:
             message += f"NOT IN SUN (shadow side, at sun from {sun_entry_angle}° to {sun_exit_angle}°)"
             self._sun_illuminates_facade = False
