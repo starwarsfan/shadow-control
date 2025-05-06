@@ -24,6 +24,7 @@ from .const import (
     CONF_AZIMUT_ENTITY,
     CONF_BRIGHTNESS_DAWN_ENTITY,
     CONF_BRIGHTNESS_ENTITY,
+    CONF_COVER_ENTITY,
     CONF_DAWN_CLOSE_DELAY,
     CONF_DAWN_HANDLING_ACTIVATION_ENTITY,
     CONF_DAWN_OPEN_SHUTTER_DELAY,
@@ -180,7 +181,7 @@ class ShadowControl(CoverEntity):
         self._debug_enabled = config.get(
             CONF_DEBUG_ENABLED, False
         )  # Standardwert False, falls nicht konfiguriert
-
+        self._controlled_cover_entity_id = config.get(CONF_COVER_ENTITY)
         self._current_shutter_state = self.STATE_NEUTRAL  # Initialer Zustand
         self._target_position = None
         self._target_tilt = None
@@ -232,27 +233,74 @@ class ShadowControl(CoverEntity):
         return CoverEntityFeature.SET_POSITION | CoverEntityFeature.SET_TILT_POSITION
 
     async def async_setup(self):
-        """Set up the Shadow Control."""
-        # Hier implementieren Sie die Initialisierungslogik Ihrer Integration.
-        # Dies könnte das Abrufen von initialen Zuständen von Entitäten,
-        # das Einrichten von Listeners für Zustandsänderungen oder das Starten
-        # von periodischen Tasks umfassen.
+        """Set up the Shadow Control by listening to sensor states."""
+        async def sensor_state_listener(entity_id, old_state, new_state):
+            """Handle state changes of the tracked sensors."""
+            if new_state is None:
+                return
+            self._perform_computation = True
+            await self.async_update_ha_state(True)  # Force an immediate update
 
-        # Beispiel: Lauschen auf Zustandsänderungen der konfigurierten Cover-Entität
-        async def cover_entity_listener(event):
-            """Handle state changes of the cover entity."""
-            if event.data["new_state"]:
-                self._current_cover_position = event.data["new_state"].attributes.get(
-                    "current_cover_position", 50
-                )
-                self.async_schedule_update_ha_state()
+        # Listen for state changes of the elevation entity
+        async_track_state_change(
+            self.hass, self._elevation_entity_id, sensor_state_listener
+        )
 
-#        if self._cover_entity_id:
-#            self.hass.bus.async_listen(
-#                f"state_changed.{self._cover_entity_id}", cover_entity_listener
-#            )
+        # Listen for state changes of the azimuth entity
+        async_track_state_change(
+            self.hass, self._azimut_entity_id, sensor_state_listener
+        )
 
-        # ... Fügen Sie hier weitere Initialisierungslogik hinzu ...
+        # Listen for state changes of the brightness entity
+        async_track_state_change(
+            self.hass, self._brightness_entity_id, sensor_state_listener
+        )
+
+        # Listen for state changes of the dawn brightness entity (if configured)
+        if self._brightness_dawn_entity_id:
+            async_track_state_change(
+                self.hass, self._brightness_dawn_entity_id, sensor_state_listener
+            )
+
+        # Listen for state changes of the shadow handling activation entity
+        async_track_state_change(
+            self.hass, self._shadow_handling_activation_entity_id, sensor_state_listener
+        )
+
+        # Listen for state changes of the dawn handling activation entity
+        async_track_state_change(
+            self.hass, self._dawn_handling_activation_entity_id, sensor_state_listener
+        )
+
+        # Listen for state changes of the cover entity (to track its current position)
+        if self._controlled_cover_entity_id:
+            async def cover_state_listener(entity_id, old_state, new_state):
+                """Handle state changes of the controlled cover entity."""
+                if new_state and "current_cover_position" in new_state.attributes:
+                    self._target_position = new_state.attributes["current_cover_position"]
+                    self._is_closed = (self._target_position == 0)
+                    self.async_schedule_update_ha_state()
+
+            async_track_state_change(
+                self.hass, self._controlled_cover_entity_id, cover_state_listener
+            )
+
+        # Optionally listen for lock entity state changes
+        if self._lock_entity_id:
+            async def lock_state_listener(entity_id, old_state, new_state):
+                """Handle state changes of the lock entity."""
+                if new_state and new_state.state in ("locked", "unlocked"):
+                    self._is_locked = (new_state.state == "locked")
+                    self.async_schedule_update_ha_state()
+
+            async_track_state_change(
+                self.hass, self._lock_entity_id, lock_state_listener
+            )
+
+        # Optionally listen for lock with forced position entity state changes
+        # (Implement similar logic as for _lock_entity_id if needed)
+
+        # No direct control here, the ShadowControlledCover handles commands
         pass
 
     async def async_set_cover_position(self, **kwargs: any) -> None:
