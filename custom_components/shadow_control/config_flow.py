@@ -9,6 +9,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_NAME
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers.selector import selector
 
 from .const import (
     CONF_ANGLE_AFTER_DAWN,
@@ -19,6 +20,7 @@ from .const import (
     CONF_AZIMUT_ENTITY,
     CONF_BRIGHTNESS_DAWN_ENTITY,
     CONF_BRIGHTNESS_ENTITY,
+    CONF_COVER_ENTITY,
     CONF_DAWN_CLOSE_DELAY,
     CONF_DAWN_HANDLING_ACTIVATION_ENTITY,
     CONF_DAWN_OPEN_SHUTTER_DELAY,
@@ -67,6 +69,7 @@ _LOGGER = logging.getLogger(__name__)
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): str,
+        vol.Optional(CONF_COVER_ENTITY): selector({"entity": {"domain": "cover"}}),
         vol.Required(CONF_ELEVATION_ENTITY): str,
         vol.Required(CONF_AZIMUT_ENTITY): str,
         vol.Required(CONF_BRIGHTNESS_ENTITY): str,
@@ -100,9 +103,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_MODIFICATION_RANGE_HEIGHT, default=10): vol.Coerce(int),
         vol.Required(CONF_MODIFICATION_RANGE_ANGLE, default=10): vol.Coerce(int),
         vol.Required(CONF_SHADOW_MAX_HEIGHT, default=80): vol.Coerce(int),
-        vol.Required(CONF_SHUTTER_TYPE, default=0): vol.In(
-            [0, 1]
-        ),  # 0 für 90°, 1 für 180°
+        vol.Required(CONF_SHUTTER_TYPE, default=0): vol.In([0, 1]), # 0 für 90°, 1 für 180°
         vol.Required(CONF_SHUTTER_ANGLE_STEPPING, default=5): vol.Coerce(int),
         vol.Required(CONF_SHUTTER_HEIGHT_STEPPING, default=10): vol.Coerce(int),
         vol.Required(CONF_ELEVATION_MIN, default=10): vol.Coerce(int),
@@ -126,21 +127,22 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
     }
 )
 
-
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for Shadow Control."""
 
     VERSION = 1
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle the initial step."""
+        _LOGGER.debug(f"async_step_user aufgerufen mit user_input: {user_input}")
         errors: dict[str, str] = {}
         if user_input is not None:
-            # Hier könnten wir die Eingaben validieren, falls notwendig
+            _LOGGER.debug(f"Benutzereingabe erhalten: {user_input}")
             return self.async_create_entry(title=user_input[CONF_NAME], data=user_input)
 
+        _LOGGER.debug("Zeige Benutzerformular an")
         return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+            step_id="user",
+            data_schema=STEP_USER_DATA_SCHEMA,
+            errors=errors,
         )

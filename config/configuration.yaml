@@ -9,4 +9,4 @@ homeassistant:
 logger:
   default: info
   logs:
-    custom_components.shadow-control: debug
+    custom_components.shadow_control: debug
