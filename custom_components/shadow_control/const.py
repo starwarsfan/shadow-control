@@ -2,6 +2,7 @@
 
 DOMAIN = "shadow_control"
 
+CONF_NAME = "name"
 CONF_ELEVATION_ENTITY = "elevation_entity"
 CONF_AZIMUT_ENTITY = "azimut_entity"
 CONF_BRIGHTNESS_ENTITY = "brightness_entity"

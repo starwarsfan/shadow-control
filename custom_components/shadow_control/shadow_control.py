@@ -231,6 +231,30 @@ class ShadowControl(CoverEntity):
         """Flag supported features."""
         return CoverEntityFeature.SET_POSITION | CoverEntityFeature.SET_TILT_POSITION
 
+    async def async_setup(self):
+        """Set up the Shadow Control."""
+        # Hier implementieren Sie die Initialisierungslogik Ihrer Integration.
+        # Dies könnte das Abrufen von initialen Zuständen von Entitäten,
+        # das Einrichten von Listeners für Zustandsänderungen oder das Starten
+        # von periodischen Tasks umfassen.
+
+        # Beispiel: Lauschen auf Zustandsänderungen der konfigurierten Cover-Entität
+        async def cover_entity_listener(event):
+            """Handle state changes of the cover entity."""
+            if event.data["new_state"]:
+                self._current_cover_position = event.data["new_state"].attributes.get(
+                    "current_cover_position", 50
+                )
+                self.async_schedule_update_ha_state()
+
+#        if self._cover_entity_id:
+#            self.hass.bus.async_listen(
+#                f"state_changed.{self._cover_entity_id}", cover_entity_listener
+#            )
+
+        # ... Fügen Sie hier weitere Initialisierungslogik hinzu ...
+        pass
+
     async def async_set_cover_position(self, **kwargs: any) -> None:
         """Set the position of the cover."""
         if (position := kwargs.get("position")) is not None:
