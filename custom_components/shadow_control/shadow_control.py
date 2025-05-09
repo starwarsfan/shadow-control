@@ -10,7 +10,7 @@ import voluptuous as vol
 from homeassistant.components.cover import CoverEntity, CoverEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant, callback, State
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change
@@ -339,20 +339,30 @@ class ShadowControl(CoverEntity):
 
     async def async_update(self) -> None:
         """Fetch new state data for the cover."""
-        elevation = self.hass.states.get(self._elevation_entity_id)
-        azimut = self.hass.states.get(self._azimut_entity_id)
-        brightness = self.hass.states.get(self._brightness_entity_id)
-        brightness_dawn = self.hass.states.get(self._brightness_dawn_entity_id)
-        lock_state = self.hass.states.get(self._lock_entity_id)
-        lock_forced_state = self.hass.states.get(self._lock_forced_entity_id)
-        height = self.hass.states.get(self._height_entity_id)
-        angle = self.hass.states.get(self._angle_entity_id)
-        shadow_handling_active = self.hass.states.get(
-            self._shadow_handling_activation_entity_id
-        )
-        dawn_handling_active = self.hass.states.get(
-            self._dawn_handling_activation_entity_id
-        )
+        elevation = self.hass.states.async_get(self._elevation_entity_id)
+        azimut = self.hass.states.async_get(self._azimut_entity_id)
+        brightness = self.hass.states.async_get(self._brightness_entity_id)
+        brightness_dawn = self.hass.states.async_get(self._brightness_dawn_entity_id)
+        lock_state = self.hass.states.async_get(self._lock_entity_id)
+        lock_forced_state = self.hass.states.async_get(self._lock_forced_entity_id)
+        height = self.hass.states.async_get(self._height_entity_id)
+        angle = self.hass.states.async_get(self._angle_entity_id)
+
+        shadow_handling_active_state = self.hass.states.async_get(self._shadow_handling_activation_entity_id)
+        shadow_handling_active = shadow_handling_active_state and shadow_handling_active_state.state == "on"
+        dawn_handling_active_state = self.hass.states.async_get(self._dawn_handling_activation_entity_id)
+        dawn_handling_active = dawn_handling_active_state and dawn_handling_active_state.state == "on"
+
+        controlled_cover_state: State | None = await self.hass.states.async_get(self._controlled_cover_entity_id)
+        current_height = controlled_cover_state.attributes.get('current_cover_position') if controlled_cover_state else None
+        current_angle = controlled_cover_state.attributes.get('current_cover_tilt_position') if controlled_cover_state else None
+
+
+        if self._debug_enabled:
+            self.hass.logger.debug(
+                f"{self._name}: ... Shadow handling: {shadow_handling_active}, Dawn handling: {dawn_handling_active} ..."
+            )
+
 
         try:
             self._current_elevation = float(elevation.state) if elevation else None
@@ -472,22 +482,22 @@ class ShadowControl(CoverEntity):
 
     async def _is_shadow_handling_activated(self) -> bool:
         """Check if shadow handling is activated."""
-        state = self.hass.states.get(self._shadow_handling_activation_entity_id)
+        state = self.hass.states.async_get(self._shadow_handling_activation_entity_id)
         return state.state.lower() == "on" if state else False
 
     async def _is_dawn_handling_activated(self) -> bool:
         """Check if dawn handling is activated."""
-        state = self.hass.states.get(self._dawn_handling_activation_entity_id)
+        state = self.hass.states.async_get(self._dawn_handling_activation_entity_id)
         return state.state.lower() == "on" if state else False
 
     async def _is_lbs_locked(self) -> bool:
         """Check if the cover is locked."""
-        state = self.hass.states.get(self._lock_entity_id)
+        state = self.hass.states.async_get(self._lock_entity_id)
         return state.state.lower() == "locked" if state else False
 
     async def _is_lbs_forced_locked(self) -> bool:
         """Check if the cover is forced locked."""
-        state = self.hass.states.get(self._lock_forced_entity_id)
+        state = self.hass.states.async_get(self._lock_forced_entity_id)
         return state.state.lower() == "locked" if state else False
 
     async def _is_lbs_locked_in_either_way(self) -> bool:
@@ -500,7 +510,7 @@ class ShadowControl(CoverEntity):
             entity_id_key = f"_{config_key}"
             if hasattr(self, entity_id_key):
                 entity_id = getattr(self, entity_id_key)
-                state = self.hass.states.get(entity_id)
+                state = self.hass.states.async_get(entity_id)
                 return (
                     float(state.state)
                     if state and state.state not in ["unavailable", "unknown"]
@@ -2246,7 +2256,7 @@ class ShadowControl(CoverEntity):
     ):
         """Hilfsmethode zum Setzen des Zustands einer Home Assistant Entität."""
         if self.hass:
-            current_state = self.hass.states.get(entity_id)
+            current_state = self.hass.states.async_get(entity_id)
             if (
                 current_state is None
                 or current_state.state != state
