@@ -1,5 +1,12 @@
 {
   "customizations": {
+    "jetbrains": {
+      "settings": {
+        "com.intellij:app:EditorSettings.soft_wrap_file_masks": "*.md; *.txt; *.rst; *.adoc; *.product",
+        "com.intellij:app:BuiltInServerOptions.builtInServerPort": 53864,
+        "com.intellij:app:HttpConfigurable.use_proxy_pac": true
+      }
+    },
     "vscode": {
       "extensions": [
         "charliermarsh.ruff",
