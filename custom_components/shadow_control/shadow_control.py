@@ -13,7 +13,7 @@ from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant, callback, State
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.event import async_track_state_change
+from homeassistant.helpers.event import async_track_state_change_event
 
 from .const import (
     CONF_ANGLE_AFTER_DAWN,
@@ -242,33 +242,33 @@ class ShadowControl(CoverEntity):
             await self.async_update_ha_state(True)  # Force an immediate update
 
         # Listen for state changes of the elevation entity
-        async_track_state_change(
+        async_track_state_change_event(
             self.hass, self._elevation_entity_id, sensor_state_listener
         )
 
         # Listen for state changes of the azimuth entity
-        async_track_state_change(
+        async_track_state_change_event(
             self.hass, self._azimut_entity_id, sensor_state_listener
         )
 
         # Listen for state changes of the brightness entity
-        async_track_state_change(
+        async_track_state_change_event(
             self.hass, self._brightness_entity_id, sensor_state_listener
         )
 
         # Listen for state changes of the dawn brightness entity (if configured)
         if self._brightness_dawn_entity_id:
-            async_track_state_change(
+            async_track_state_change_event(
                 self.hass, self._brightness_dawn_entity_id, sensor_state_listener
             )
 
         # Listen for state changes of the shadow handling activation entity
-        async_track_state_change(
+        async_track_state_change_event(
             self.hass, self._shadow_handling_activation_entity_id, sensor_state_listener
         )
 
         # Listen for state changes of the dawn handling activation entity
-        async_track_state_change(
+        async_track_state_change_event(
             self.hass, self._dawn_handling_activation_entity_id, sensor_state_listener
         )
 
@@ -281,7 +281,7 @@ class ShadowControl(CoverEntity):
                     self._is_closed = (self._target_position == 0)
                     self.async_schedule_update_ha_state()
 
-            async_track_state_change(
+            async_track_state_change_event(
                 self.hass, self._controlled_cover_entity_id, cover_state_listener
             )
 
@@ -293,7 +293,7 @@ class ShadowControl(CoverEntity):
                     self._is_locked = (new_state.state == "locked")
                     self.async_schedule_update_ha_state()
 
-            async_track_state_change(
+            async_track_state_change_event(
                 self.hass, self._lock_entity_id, lock_state_listener
             )
 
@@ -384,7 +384,7 @@ class ShadowControl(CoverEntity):
     async def async_added_to_hass(self) -> None:
         """Subscribe to sensor events."""
         await super().async_added_to_hass()
-        async_track_state_change(
+        async_track_state_change_event(
             self.hass,
             [
                 self._elevation_entity_id,
