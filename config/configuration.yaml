@@ -328,6 +328,81 @@ input_number:
     initial: 0
   # Shadow settings end
   # =========================================================================
+  # Dawn settings
+  sd02_dawn_brightness_level:
+    #[e#41 important =Daemmerungsschwelle (schliessen, Lux)  #init=50000  ]
+    name: "SD02: Dawn brightness level"
+    min: 0
+    max: 100000
+    step: 100
+    mode: slider
+    initial: 50000
+  sd03_dawn_after_seconds:
+    #[e#42           =Daemmerungsposition nach x Sekunden             #init=150    ]
+    name: "SD03: Dawn after n seconds"
+    min: 0
+    max: 3600
+    step: 15
+    mode: slider
+    initial: 150
+  sd04_dawn_max_height:
+    #[e#43           =Max. Hoehe bei Daemmerung (%)          #init=100    ]
+    name: "SD04: Dawn max height (%)"
+    min: 0
+    max: 100
+    step: 1
+    mode: slider
+    initial: 0
+  sd05_dawn_max_angle:
+    #[e#44           =Max. Winkel bei Daemmerung (%)         #init=100    ]
+    name: "SD05: Dawn max angle (%)"
+    min: 0
+    max: 100
+    step: 1
+    mode: slider
+    initial: 0
+  sd06_dawn_look_through_seconds:
+    #[e#45           =Durchsicht nach y Sekunden              #init=900    ]
+    name: "SD03: Look through after n seconds"
+    min: 0
+    max: 7200
+    step: 15
+    mode: slider
+    initial: 900
+  sd07_dawn_open_seconds:
+    #[e#46           =Oeffnen nach z Sekunden                 #init=3600   ]
+    name: "SD07: Open after n seconds"
+    min: 0
+    max: 7200
+    step: 15
+    mode: slider
+    initial: 3600
+  sd08_dawn_look_through_angle:
+    #[e#47           =Winkel Durchsicht (%)                   #init=0      ]
+    name: "SD08: Dawn look through angle (%)"
+    min: 0
+    max: 100
+    step: 1
+    mode: slider
+    initial: 0
+  sd09_after_dawn_height:
+    #[e#48           =Hoehe nach Daemmerung (%)              #init=0      ]
+    name: "SD09: Height after dawn (%)"
+    min: 0
+    max: 100
+    step: 1
+    mode: slider
+    initial: 0
+  sd10_after_dawn_angle:
+    #[e#49           =Winkel nach Daemmerung (%)             #init=0      ]
+    name: "SD10: Angle after dawn (%)"
+    min: 0
+    max: 100
+    step: 1
+    mode: slider
+    initial: 0
+  # Dawn settings end
+  # =========================================================================
 
 input_select:
   # =========================================================================
@@ -393,9 +468,9 @@ input_select:
   # Shadow settings end
   # =========================================================================
   # Dawn settings
-  da01_dawn_control_enabled:
+  sd01_dawn_control_enabled:
     #[e#60 trigger   =Daemmerungssteuerung aktiv (0/1)        #init=1      ]
-    name: "Da01: Dawn control"
+    name: "SD01: Dawn control"
     options:
       - "enabled"
       - "disabled"
