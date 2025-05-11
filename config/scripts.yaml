@@ -1,21 +1,20 @@
-script:
-  test_cover_open:
-    sequence:
-      - service: notify.persistent_notification
-        data:
-          message: "Test Cover Open wurde aufgerufen"
-  test_cover_close:
-    sequence:
-      - service: notify.persistent_notification
-        data:
-          message: "Test Cover Close wurde aufgerufen"
-  test_cover_stop:
-    sequence:
-      - service: notify.persistent_notification
-        data:
-          message: "Test Cover Stop wurde aufgerufen"
-  test_cover_set_position:
-    sequence:
-      - service: notify.persistent_notification
-        data:
-          message: "Test Cover Set Position auf {{ position }} wurde aufgerufen"
+test_cover_open:
+  sequence:
+    - service: notify.persistent_notification
+      data:
+        message: "Test Cover Open wurde aufgerufen"
+test_cover_close:
+  sequence:
+    - service: notify.persistent_notification
+      data:
+        message: "Test Cover Close wurde aufgerufen"
+test_cover_stop:
+  sequence:
+    - service: notify.persistent_notification
+      data:
+        message: "Test Cover Stop wurde aufgerufen"
+test_cover_set_position:
+  sequence:
+    - service: notify.persistent_notification
+      data:
+        message: "Test Cover Set Position auf {{ position }} wurde aufgerufen"

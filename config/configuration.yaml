@@ -11,6 +11,8 @@ logger:
   logs:
     custom_components.shadow_control: debug
 
+script: !include scripts.yaml
+
 template:
   - sensor:
       - name: test_brightness
