@@ -253,6 +253,81 @@ input_number:
     initial: 0
   # General settings end
   # =========================================================================
+  # Shadow settings
+  s02_shadow_brightness_level:
+    #[e#41 important =Beschattungsschwelle (schliessen, Lux)  #init=50000  ]
+    name: "S02: Shadow brightness level"
+    min: 0
+    max: 100000
+    step: 100
+    mode: slider
+    initial: 50000
+  s03_shadow_after_seconds:
+    #[e#42           =Beschattung nach x Sekunden             #init=150    ]
+    name: "S03: Shadow after n seconds"
+    min: 0
+    max: 3600
+    step: 15
+    mode: slider
+    initial: 150
+  s04_shadow_max_height:
+    #[e#43           =Max. Hoehe bei Beschattung (%)          #init=100    ]
+    name: "S04: Shadow max height (%)"
+    min: 0
+    max: 100
+    step: 1
+    mode: slider
+    initial: 0
+  s05_shadow_max_angle:
+    #[e#44           =Max. Winkel bei Beschattung (%)         #init=100    ]
+    name: "S05: Shadow max angle (%)"
+    min: 0
+    max: 100
+    step: 1
+    mode: slider
+    initial: 0
+  s06_shadow_look_through_seconds:
+    #[e#45           =Durchsicht nach y Sekunden              #init=900    ]
+    name: "S03: Look through after n seconds"
+    min: 0
+    max: 7200
+    step: 15
+    mode: slider
+    initial: 900
+  s07_shadow_open_seconds:
+    #[e#46           =Oeffnen nach z Sekunden                 #init=3600   ]
+    name: "S07: Open after n seconds"
+    min: 0
+    max: 7200
+    step: 15
+    mode: slider
+    initial: 3600
+  s08_shadow_look_through_angle:
+    #[e#47           =Winkel Durchsicht (%)                   #init=0      ]
+    name: "S08: Shadow look through angle (%)"
+    min: 0
+    max: 100
+    step: 1
+    mode: slider
+    initial: 0
+  s09_after_shadow_height:
+    #[e#48           =Hoehe nach Beschattung (%)              #init=0      ]
+    name: "S09: Height after shadow (%)"
+    min: 0
+    max: 100
+    step: 1
+    mode: slider
+    initial: 0
+  s10_after_shadow_angle:
+    #[e#49           =Winkel nach Beschattung (%)             #init=0      ]
+    name: "S10: Angle after shadow (%)"
+    min: 0
+    max: 100
+    step: 1
+    mode: slider
+    initial: 0
+  # Shadow settings end
+  # =========================================================================
 
 input_select:
   # =========================================================================
@@ -306,4 +381,24 @@ input_select:
       - 2
     initial: 0
   # General settings end
+  # =========================================================================
+  # Shadow settings
+  s01_shadow_control_enabled:
+    #[e#40 trigger   =Beschattungssteuerung aktiv (0/1)       #init=1      ]
+    name: "S01: Shadow control"
+    options:
+      - "enabled"
+      - "disabled"
+    initial: "enabled"
+  # Shadow settings end
+  # =========================================================================
+  # Dawn settings
+  da01_dawn_control_enabled:
+    #[e#60 trigger   =Daemmerungssteuerung aktiv (0/1)        #init=1      ]
+    name: "Da01: Dawn control"
+    options:
+      - "enabled"
+      - "disabled"
+    initial: "enabled"
+  # Dawn settings end
   # =========================================================================
