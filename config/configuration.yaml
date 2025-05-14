@@ -89,26 +89,6 @@ template:
       - name: shadow_handling_activation
         state: "on"
 
-cover:
-  - platform: template
-    covers:
-      test_cover:
-        unique_id: "testcover1"
-        friendly_name: "Test Cover 1"
-        device_class: blind
-        open_cover:
-          service: script.test_cover_open
-        close_cover:
-          service: script.test_cover_close
-        stop_cover:
-          service: script.test_cover_stop
-        set_cover_position:
-          service: script.test_cover_set_position
-          data:
-            position: "{{ position }}"
-        position_template: "{{ state_attr('input_number.test_cover_position', 'value') | int }}"
-        tilt_template: "{{ state_attr('input_number.test_cover_tilt_position', 'value') | int if is_state('input_number.test_cover_tilt_position', 'unavailable') == false else None }}"
-
 input_number:
   # =========================================================================
   # Dynamic inputs
@@ -468,6 +448,19 @@ input_number:
   # Dawn settings end
   # =========================================================================
 
+  test_cover_position:
+    name: Test Cover Position
+    min: 0
+    max: 100
+    step: 1
+    initial: 0
+  test_cover_tilt_position:
+    name: Test Cover Tilt Position
+    min: 0
+    max: 100
+    step: 1
+    initial: 0
+
 input_select:
   # =========================================================================
   # Dynamic inputs
@@ -541,3 +534,27 @@ input_select:
     initial: "enabled"
   # Dawn settings end
   # =========================================================================
+
+cover:
+  - platform: template
+    covers:
+      test_cover:
+        unique_id: "testcover1"
+        friendly_name: "Test Cover 1"
+        device_class: blind
+        open_cover:
+          service: script.test_cover_open
+        close_cover:
+          service: script.test_cover_close
+        stop_cover:
+          service: script.test_cover_stop
+        set_cover_position:
+          service: script.test_cover_set_position
+          data:
+            position: "{{ position }}"
+        position_template: >
+          {% set position_value = state_attr('input_number.test_cover_position', 'value') %}
+          {{ position_value | float | int if position_value is not none else 0 }}
+        tilt_template: >
+          {% set tilt_value = state_attr('input_number.test_cover_tilt_position', 'value') %}
+          {{ tilt_value | float | int if tilt_value is not none else 0 }}
