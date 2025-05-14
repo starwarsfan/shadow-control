@@ -14,43 +14,44 @@ from homeassistant.core import HomeAssistant, callback, State
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change_event
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 from .const import (
     CONF_ANGLE_AFTER_DAWN,
     CONF_ANGLE_AFTER_SHADOW,
-    CONF_ANGLE_ENTITY,
+    CONF_ANGLE,
     CONF_ANGLE_NEUTRAL,
     CONF_ANGLE_OFFSET,
-    CONF_AZIMUT_ENTITY,
-    CONF_BRIGHTNESS_DAWN_ENTITY,
-    CONF_BRIGHTNESS_ENTITY,
-    CONF_COVER_ENTITY,
+    CONF_SUN_AZIMUT,
+    CONF_BRIGHTNESS_DAWN,
+    CONF_BRIGHTNESS,
+    CONF_COVER,
     CONF_DAWN_CLOSE_DELAY,
-    CONF_DAWN_HANDLING_ACTIVATION_ENTITY,
+    CONF_DAWN_HANDLING_ACTIVATION,
     CONF_DAWN_OPEN_SHUTTER_DELAY,
     CONF_DAWN_OPEN_SLAT_DELAY,
     CONF_DAWN_THRESHOLD_CLOSE,
     CONF_DEBUG_ENABLED,
-    CONF_ELEVATION_ENTITY,
+    CONF_SUN_ELEVATION,
     CONF_ELEVATION_MAX,
     CONF_ELEVATION_MIN,
-    CONF_FACADE_ANGLE,
+    CONF_FACADE_AZIMUTH,
     CONF_FACADE_OFFSET_END,
     CONF_FACADE_OFFSET_START,
     CONF_FIX_MOVEMENT_DIRECTION_ANGLE,
     CONF_FIX_MOVEMENT_DIRECTION_HEIGHT,
     CONF_HEIGHT_AFTER_DAWN,
     CONF_HEIGHT_AFTER_SHADOW,
-    CONF_HEIGHT_ENTITY,
+    CONF_HEIGHT,
     CONF_HEIGHT_NEUTRAL,
-    CONF_LOCK_ENTITY,
-    CONF_LOCK_WITH_FORCED_POSITION_ENTITY,
+    CONF_LOCK,
+    CONF_LOCK_WITH_FORCED_POSITION,
     CONF_MIN_SHUTTER_ANGLE,
     CONF_MODIFICATION_RANGE_ANGLE,
     CONF_MODIFICATION_RANGE_HEIGHT,
     CONF_NON_SHADOW_RANGE,
     CONF_SHADOW_CLOSE_DELAY,
-    CONF_SHADOW_HANDLING_ACTIVATION_ENTITY,
+    CONF_SHADOW_HANDLING_ACTIVATION,
     CONF_SHADOW_MAX_ANGLE,
     CONF_SHADOW_MAX_HEIGHT,
     CONF_SHADOW_OPEN_SHUTTER_DELAY,
@@ -66,6 +67,8 @@ from .const import (
     DOMAIN,
 )
 
+DEFAULT_NAME = "Shadow Control"
+
 _LOGGER = logging.getLogger(__name__)
 
 # Schema für die Konfiguration in der configuration.yaml (wird jetzt ignoriert)
@@ -74,9 +77,9 @@ CONFIG_SCHEMA = vol.Schema(
         DOMAIN: vol.Schema(
             {
                 vol.Required(CONF_NAME): cv.string,
-                vol.Required(CONF_ELEVATION_ENTITY): cv.entity_id,
-                vol.Required(CONF_AZIMUT_ENTITY): cv.entity_id,
-                vol.Required(CONF_BRIGHTNESS_ENTITY): cv.entity_id,
+                vol.Required(CONF_SUN_ELEVATION): cv.entity_id,
+                vol.Required(CONF_SUN_AZIMUT): cv.entity_id,
+                vol.Required(CONF_BRIGHTNESS): cv.entity_id,
                 # ... (alle anderen Parameter) ...
             }
         )
@@ -84,18 +87,189 @@ CONFIG_SCHEMA = vol.Schema(
     extra=vol.ALLOW_EXTRA,
 )
 
+"""Configuration via Config-Flow"""
+async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Set up this integration using UI."""
+    config = hass.config.get_component("shadow_control") # Versuchen Sie, die YAML-Konfiguration zu lesen
+    if config:
+        # Da 'shadow_control' in der configuration.yaml eine Liste sein kann
+        for entry_config in config:
+            if entry_config.get("name") == config_entry.title: # Verwenden Sie den Titel des Config Entry als Schlüssel
+                shadow_control = ShadowControl(
+                    hass,
+                    entry_config.get("cover"),
+                    entry_config.get("brightness"),
+                    entry_config.get("brightness_dawn"),
+                    entry_config.get("sun_elevation"),
+                    entry_config.get("sun_azimuth"),
+                    entry_config.get("azimuth_facade"),
+                    entry_config.get("offset_sun_in"),
+                    entry_config.get("offset_sun_out"),
+                    entry_config.get("elevation_sun_min"),
+                    entry_config.get("elevation_sun_max"),
+                    entry_config.get("slat_width"),
+                    entry_config.get("slat_distance"),
+                    entry_config.get("angle_offset"),
+                    entry_config.get("min_slat_angle"),
+                    entry_config.get("stepping_height"),
+                    entry_config.get("stepping_angle"),
+                    entry_config.get("shutter_type"),
+                    entry_config.get("light_bar_width"),
+                    entry_config.get("shutter_height"),
+                    entry_config.get("neutral_pos_height"),
+                    entry_config.get("neutral_pos_angle"),
+                    entry_config.get("movement_restriction_height"),
+                    entry_config.get("movement_restriction_angle"),
+                    entry_config.get("update_lock_output"),
+                    entry_config.get("shadow_control_enabled"),
+                    entry_config.get("shadow_brightness_level"),
+                    entry_config.get("shadow_after_seconds"),
+                    entry_config.get("shadow_max_height"),
+                    entry_config.get("shadow_max_angle"),
+                    entry_config.get("shadow_look_through_seconds"),
+                    entry_config.get("shadow_open_seconds"),
+                    entry_config.get("shadow_look_through_angle"),
+                    entry_config.get("after_shadow_height"),
+                    entry_config.get("after_shadow_angle"),
+                    entry_config.get("dawn_control_enabled"),
+                    entry_config.get("dawn_brightness_level"),
+                    entry_config.get("dawn_after_seconds"),
+                    entry_config.get("dawn_max_height"),
+                    entry_config.get("dawn_max_angle"),
+                    entry_config.get("dawn_look_through_seconds"),
+                    entry_config.get("dawn_open_seconds"),
+                    entry_config.get("dawn_look_through_angle"),
+                    entry_config.get("after_dawn_height"),
+                    entry_config.get("after_dawn_angle"),
+                    entry_config.get("lock_integration"),
+                    entry_config.get("lock_integration_with_position"),
+                    entry_config.get("lock_height"),
+                    entry_config.get("lock_angle"),
+                    entry_config.get("modification_tolerance_height"),
+                    entry_config.get("modification_tolerance_angle"),
+                )
+                hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = shadow_control
+                # Hier müssten Sie wahrscheinlich noch eine Plattform hinzufügen (z.B. eine Cover-Plattform)
+                # async_add_entities([shadow_control]) # So funktioniert das hier nicht direkt
+                return True
+    return False
 
-async def async_setup_entry(
-    hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
-) -> bool:
-    """Set up the Shadow Control platform from a config entry."""
-    config = config_entry.data
-    shadow_control = ShadowControl(hass, config)
-    async_add_entities([shadow_control])
-    return True
+"""Configuration via configuration.yaml"""
+async def async_setup_platform(
+        hass: HomeAssistant,
+        config: ConfigType,
+        async_add_entities: AddEntitiesCallback,
+        discovery_info: DiscoveryInfoType | None = None,
+) -> None:
+    """Set up the Shadow Control platform."""
+    name = config.get(CONF_NAME, DEFAULT_NAME)
+    cover_entity_id = config.get("cover")  # Korrigiert: 'cover' statt 'cover_entity'
+    brightness_entity_id = config.get("brightness")
+    brightness_dawn_entity_id = config.get("brightness_dawn")
+    sun_elevation_entity_id = config.get("sun_elevation")
+    sun_azimuth_entity_id = config.get("sun_azimuth")
+    azimuth_facade = config.get("azimuth_facade")
+    offset_sun_in = config.get("offset_sun_in")
+    offset_sun_out = config.get("offset_sun_out")
+    elevation_sun_min = config.get("elevation_sun_min")
+    elevation_sun_max = config.get("elevation_sun_max")
+    slat_width = config.get("slat_width")
+    slat_distance = config.get("slat_distance")
+    angle_offset = config.get("angle_offset")
+    min_slat_angle = config.get("min_slat_angle")
+    stepping_height = config.get("stepping_height")
+    stepping_angle = config.get("stepping_angle")
+    shutter_type = config.get("shutter_type")
+    light_bar_width = config.get("light_bar_width")
+    shutter_height = config.get("shutter_height")
+    neutral_pos_height = config.get("neutral_pos_height")
+    neutral_pos_angle = config.get("neutral_pos_angle")
+    movement_restriction_height = config.get("movement_restriction_height")
+    movement_restriction_angle = config.get("movement_restriction_angle")
+    update_lock_output = config.get("update_lock_output")
+    shadow_control_enabled = config.get("shadow_control_enabled")
+    shadow_brightness_level = config.get("shadow_brightness_level")
+    shadow_after_seconds = config.get("shadow_after_seconds")
+    shadow_max_height = config.get("shadow_max_height")
+    shadow_max_angle = config.get("shadow_max_angle")
+    shadow_look_through_seconds = config.get("shadow_look_through_seconds")
+    shadow_open_seconds = config.get("shadow_open_seconds")
+    shadow_look_through_angle = config.get("shadow_look_through_angle")
+    after_shadow_height = config.get("after_shadow_height")
+    after_shadow_angle = config.get("after_shadow_angle")
+    dawn_control_enabled = config.get("dawn_control_enabled")
+    dawn_brightness_level = config.get("dawn_brightness_level")
+    dawn_after_seconds = config.get("dawn_after_seconds")
+    dawn_max_height = config.get("dawn_max_height")
+    dawn_max_angle = config.get("dawn_max_angle")
+    dawn_look_through_seconds = config.get("dawn_look_through_seconds")
+    dawn_open_seconds = config.get("dawn_open_seconds")
+    dawn_look_through_angle = config.get("dawn_look_through_angle")
+    after_dawn_height = config.get("after_dawn_height")
+    after_dawn_angle = config.get("after_dawn_angle")
+    lock_integration = config.get("lock_integration")
+    lock_integration_with_position = config.get("lock_integration_with_position")
+    lock_height = config.get("lock_height")
+    lock_angle = config.get("lock_angle")
+    modification_tolerance_height = config.get("modification_tolerance_height")
+    modification_tolerance_angle = config.get("modification_tolerance_angle")
 
+    async_add_entities([
+        ShadowControl(
+            hass,
+            name,
+            cover_entity_id,
+            brightness_entity_id,
+            brightness_dawn_entity_id,
+            sun_elevation_entity_id,
+            sun_azimuth_entity_id,
+            azimuth_facade,
+            offset_sun_in,
+            offset_sun_out,
+            elevation_sun_min,
+            elevation_sun_max,
+            slat_width,
+            slat_distance,
+            angle_offset,
+            min_slat_angle,
+            stepping_height,
+            stepping_angle,
+            shutter_type,
+            light_bar_width,
+            shutter_height,
+            neutral_pos_height,
+            neutral_pos_angle,
+            movement_restriction_height,
+            movement_restriction_angle,
+            update_lock_output,
+            shadow_control_enabled,
+            shadow_brightness_level,
+            shadow_after_seconds,
+            shadow_max_height,
+            shadow_max_angle,
+            shadow_look_through_seconds,
+            shadow_open_seconds,
+            shadow_look_through_angle,
+            after_shadow_height,
+            after_shadow_angle,
+            dawn_control_enabled,
+            dawn_brightness_level,
+            dawn_after_seconds,
+            dawn_max_height,
+            dawn_max_angle,
+            dawn_look_through_seconds,
+            dawn_open_seconds,
+            dawn_look_through_angle,
+            after_dawn_height,
+            after_dawn_angle,
+            lock_integration,
+            lock_integration_with_position,
+            lock_height,
+            lock_angle,
+            modification_tolerance_height,
+            modification_tolerance_angle,
+        )
+    ])
 
 class ShadowControl(CoverEntity):
     """Representation of the Shadow Control."""
@@ -125,80 +299,114 @@ class ShadowControl(CoverEntity):
         "DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING"
     )
 
-    def __init__(self, hass: HomeAssistant, config: dict) -> None:
-        """Initialize the Shadow Control."""
-        self.hass = hass
-        self._name = config[CONF_NAME]
-        self._elevation_entity_id = config[CONF_ELEVATION_ENTITY]
-        self._azimut_entity_id = config[CONF_AZIMUT_ENTITY]
-        self._brightness_entity_id = config[CONF_BRIGHTNESS_ENTITY]
-        self._brightness_dawn_entity_id = config.get(CONF_BRIGHTNESS_DAWN_ENTITY)
-        self._lock_entity_id = config.get(CONF_LOCK_ENTITY)
-        self._lock_forced_entity_id = config.get(CONF_LOCK_WITH_FORCED_POSITION_ENTITY)
-        self._height_entity_id = config.get(CONF_HEIGHT_ENTITY)
-        self._angle_entity_id = config.get(CONF_ANGLE_ENTITY)
-        self._height_neutral = config[CONF_HEIGHT_NEUTRAL]
-        self._angle_neutral = config[CONF_ANGLE_NEUTRAL]
-        self._height_after_shadow = config[CONF_HEIGHT_AFTER_SHADOW]
-        self._angle_after_shadow = config[CONF_ANGLE_AFTER_SHADOW]
-        self._height_after_dawn = config[CONF_HEIGHT_AFTER_DAWN]
-        self._angle_after_dawn = config[CONF_ANGLE_AFTER_DAWN]
-        self._facade_angle = config[CONF_FACADE_ANGLE]
-        self._facade_offset_start = config[CONF_FACADE_OFFSET_START]
-        self._facade_offset_end = config[CONF_FACADE_OFFSET_END]
-        self._non_shadow_range = config[CONF_NON_SHADOW_RANGE]
-        self._shutter_overall_height = config[CONF_SHUTTER_OVERALL_HEIGHT]
-        self._shutter_slat_width = config[CONF_SHUTTER_SLAT_WIDTH]
-        self._shutter_slat_distance = config[CONF_SHUTTER_SLAT_DISTANCE]
-        self._angle_offset = config[CONF_ANGLE_OFFSET]
-        self._min_shutter_angle = config[CONF_MIN_SHUTTER_ANGLE]
-        self._shadow_max_angle = config[CONF_SHADOW_MAX_ANGLE]
-        self._fix_movement_direction_height = config[CONF_FIX_MOVEMENT_DIRECTION_HEIGHT]
-        self._fix_movement_direction_angle = config[CONF_FIX_MOVEMENT_DIRECTION_ANGLE]
-        self._modification_range_height = config[CONF_MODIFICATION_RANGE_HEIGHT]
-        self._modification_range_angle = config[CONF_MODIFICATION_RANGE_ANGLE]
-        self._shadow_max_height = config[CONF_SHADOW_MAX_HEIGHT]
-        self._shutter_type = config[CONF_SHUTTER_TYPE]
-        self._shutter_angle_stepping = config[CONF_SHUTTER_ANGLE_STEPPING]
-        self._shutter_height_stepping = config[CONF_SHUTTER_HEIGHT_STEPPING]
-        self._elevation_min = config[CONF_ELEVATION_MIN]
-        self._elevation_max = config[CONF_ELEVATION_MAX]
-        self._shadow_handling_activation_entity_id = config[
-            CONF_SHADOW_HANDLING_ACTIVATION_ENTITY
-        ]
-        self._dawn_handling_activation_entity_id = config[
-            CONF_DAWN_HANDLING_ACTIVATION_ENTITY
-        ]
-        self._shadow_threshold_close = config[CONF_SHADOW_THRESHOLD_CLOSE]
-        self._dawn_threshold_close = config[CONF_DAWN_THRESHOLD_CLOSE]
-        self._shadow_close_delay = config[CONF_SHADOW_CLOSE_DELAY]
-        self._shadow_open_slat_delay = config[CONF_SHADOW_OPEN_SLAT_DELAY]
-        self._shadow_open_shutter_delay = config[CONF_SHADOW_OPEN_SHUTTER_DELAY]
-        self._dawn_close_delay = config[CONF_DAWN_CLOSE_DELAY]
-        self._dawn_open_slat_delay = config[CONF_DAWN_OPEN_SLAT_DELAY]
-        self._dawn_open_shutter_delay = config[CONF_DAWN_OPEN_SHUTTER_DELAY]
-        self._update_lockstate_output = config[CONF_UPDATE_LOCKSTATE_OUTPUT]
-        self._debug_enabled = config.get(
-            CONF_DEBUG_ENABLED, False
-        )  # Standardwert False, falls nicht konfiguriert
-        self._controlled_cover_entity_id = config.get(CONF_COVER_ENTITY)
-        self._current_shutter_state = self.STATE_NEUTRAL  # Initialer Zustand
-        self._target_position = None
-        self._target_tilt = None
-        self._is_closed = None
-        self._is_tilt_closed = None
-        self._is_locked = False
-        self._timer_finish_time = 0
-        self._initial_lbs_run_finished = False
-        self._update_always = False
-        self._perform_computation = False
-        self._is_between_min_max_elevation = False
-        self._effective_elevation = "n/a"
-        self._sun_illuminates_facade = False
-        self._current_elevation = None
-        self._current_azimut = None
-        self._current_brightness = None
-        self._current_brightness_dawn = None
+    def __init__(
+            self,
+            hass: HomeAssistant,
+            name: str, # Hier wird 'name' entgegengenommen
+            cover_entity_id: str | None,
+            brightness_entity_id: str | None,
+            brightness_dawn_entity_id: str | None,
+            elevation_entity_id: str | None,
+            azimuth_entity_id: str | None,
+            azimuth_facade: float | None,
+            offset_sun_in: float | None,
+            offset_sun_out: float | None,
+            elevation_sun_min: float | None,
+            elevation_sun_max: float | None,
+            slat_width: int | None,
+            slat_distance: int | None,
+            angle_offset: int | None,
+            min_slat_angle: int | None,
+            stepping_height: int | None,
+            stepping_angle: int | None,
+            shutter_type: str | None,
+            light_bar_width: int | None,
+            shutter_height: int | None,
+            neutral_pos_height: int | None,
+            neutral_pos_angle: int | None,
+            movement_restriction_height: str | None,
+            movement_restriction_angle: str | None,
+            update_lock_output: int | None,
+            shadow_control_enabled: str | None,
+            shadow_brightness_level: int | None,
+            shadow_after_seconds: int | None,
+            shadow_max_height: int | None,
+            shadow_max_angle: int | None,
+            shadow_look_through_seconds: int | None,
+            shadow_open_seconds: int | None,
+            shadow_look_through_angle: int | None,
+            after_shadow_height: int | None,
+            after_shadow_angle: int | None,
+            dawn_control_enabled: str | None,
+            dawn_brightness_level: int | None,
+            dawn_after_seconds: int | None,
+            dawn_max_height: int | None,
+            dawn_max_angle: int | None,
+            dawn_look_through_seconds: int | None,
+            dawn_open_seconds: int | None,
+            dawn_look_through_angle: int | None,
+            after_dawn_height: int | None,
+            after_dawn_angle: int | None,
+            lock_integration: str | None,
+            lock_integration_with_position: str | None,
+            lock_height: int | None,
+            lock_angle: int | None,
+            modification_tolerance_height: int | None,
+            modification_tolerance_angle: int | None,
+    ) -> None:
+        """Initialize the Shadow Control cover."""
+        # super().__init__(coordinator) # Entfernen Sie dies, da coordinator hier nicht direkt verwendet wird
+        self._name = name
+        self._cover_entity_id = cover_entity_id
+        self._brightness_entity_id = brightness_entity_id
+        self._brightness_dawn_entity_id = brightness_dawn_entity_id
+        self._elevation_entity_id = elevation_entity_id
+        self._azimuth_entity_id = azimuth_entity_id
+        self._azimuth_facade = azimuth_facade
+        self._offset_sun_in = offset_sun_in
+        self._offset_sun_out = offset_sun_out
+        self._elevation_sun_min = elevation_sun_min
+        self._elevation_sun_max = elevation_sun_max
+        self._slat_width = slat_width
+        self._slat_distance = slat_distance
+        self._angle_offset = angle_offset
+        self._min_slat_angle = min_slat_angle
+        self._stepping_height = stepping_height
+        self._stepping_angle = stepping_angle
+        self._shutter_type = shutter_type
+        self._light_bar_width = light_bar_width
+        self._shutter_height = shutter_height
+        self._neutral_pos_height = neutral_pos_height
+        self._neutral_pos_angle = neutral_pos_angle
+        self._movement_restriction_height = movement_restriction_height
+        self._movement_restriction_angle = movement_restriction_angle
+        self._update_lock_output = update_lock_output
+        self._shadow_control_enabled = shadow_control_enabled
+        self._shadow_brightness_level = shadow_brightness_level
+        self._shadow_after_seconds = shadow_after_seconds
+        self._shadow_max_height = shadow_max_height
+        self._shadow_max_angle = shadow_max_angle
+        self._shadow_look_through_seconds = shadow_look_through_seconds
+        self._shadow_open_seconds = shadow_open_seconds
+        self._shadow_look_through_angle = shadow_look_through_angle
+        self._after_shadow_height = after_shadow_height
+        self._after_shadow_angle = after_shadow_angle
+        self._dawn_control_enabled = dawn_control_enabled
+        self._dawn_brightness_level = dawn_brightness_level
+        self._dawn_after_seconds = dawn_after_seconds
+        self._dawn_max_height = dawn_max_height
+        self._dawn_max_angle = dawn_max_angle
+        self._dawn_look_through_seconds = dawn_look_through_seconds
+        self._dawn_open_seconds = dawn_open_seconds
+        self._dawn_look_through_angle = dawn_look_through_angle
+        self._after_dawn_height = after_dawn_height
+        self._after_dawn_angle = after_dawn_angle
+        self._lock_integration = lock_integration
+        self._lock_integration_with_position = lock_integration_with_position
+        self._lock_height = lock_height
+        self._lock_angle = lock_angle
+        self._modification_tolerance_height = modification_tolerance_height
+        self._modification_tolerance_angle = modification_tolerance_angle
 
     @property
     def name(self) -> str:

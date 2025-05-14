@@ -14,40 +14,40 @@ from homeassistant.helpers.selector import selector
 from .const import (
     CONF_ANGLE_AFTER_DAWN,
     CONF_ANGLE_AFTER_SHADOW,
-    CONF_ANGLE_ENTITY,
+    CONF_ANGLE,
     CONF_ANGLE_NEUTRAL,
     CONF_ANGLE_OFFSET,
-    CONF_AZIMUT_ENTITY,
-    CONF_BRIGHTNESS_DAWN_ENTITY,
-    CONF_BRIGHTNESS_ENTITY,
-    CONF_COVER_ENTITY,
+    CONF_SUN_AZIMUT,
+    CONF_BRIGHTNESS_DAWN,
+    CONF_BRIGHTNESS,
+    CONF_COVER,
     CONF_DAWN_CLOSE_DELAY,
-    CONF_DAWN_HANDLING_ACTIVATION_ENTITY,
+    CONF_DAWN_HANDLING_ACTIVATION,
     CONF_DAWN_OPEN_SHUTTER_DELAY,
     CONF_DAWN_OPEN_SLAT_DELAY,
     CONF_DAWN_THRESHOLD_CLOSE,
     CONF_DAWN_THRESHOLD_OPEN,
     CONF_DEBUG_ENABLED,
-    CONF_ELEVATION_ENTITY,
+    CONF_SUN_ELEVATION,
     CONF_ELEVATION_MAX,
     CONF_ELEVATION_MIN,
-    CONF_FACADE_ANGLE,
+    CONF_FACADE_AZIMUTH,
     CONF_FACADE_OFFSET_END,
     CONF_FACADE_OFFSET_START,
     CONF_FIX_MOVEMENT_DIRECTION_ANGLE,
     CONF_FIX_MOVEMENT_DIRECTION_HEIGHT,
     CONF_HEIGHT_AFTER_DAWN,
     CONF_HEIGHT_AFTER_SHADOW,
-    CONF_HEIGHT_ENTITY,
+    CONF_HEIGHT,
     CONF_HEIGHT_NEUTRAL,
-    CONF_LOCK_ENTITY,
-    CONF_LOCK_WITH_FORCED_POSITION_ENTITY,
+    CONF_LOCK,
+    CONF_LOCK_WITH_FORCED_POSITION,
     CONF_MIN_SHUTTER_ANGLE,
     CONF_MODIFICATION_RANGE_ANGLE,
     CONF_MODIFICATION_RANGE_HEIGHT,
     CONF_NON_SHADOW_RANGE,
     CONF_SHADOW_CLOSE_DELAY,
-    CONF_SHADOW_HANDLING_ACTIVATION_ENTITY,
+    CONF_SHADOW_HANDLING_ACTIVATION,
     CONF_SHADOW_MAX_ANGLE,
     CONF_SHADOW_MAX_HEIGHT,
     CONF_SHADOW_OPEN_SHUTTER_DELAY,
@@ -69,18 +69,18 @@ _LOGGER = logging.getLogger(__name__)
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): str,  # Name der Beschattungssteuerung
-        vol.Optional(CONF_COVER_ENTITY): selector(
+        vol.Optional(CONF_COVER): selector(
             {"entity": {"domain": "cover"}}
         ),  # Auswahl der Cover-Entität
-        vol.Required(CONF_BRIGHTNESS_ENTITY): str,  # Helligkeit (Lux)
-        vol.Optional(CONF_BRIGHTNESS_DAWN_ENTITY): str,  # Helligkeit Dämmerung (Lux)
-        vol.Required(CONF_ELEVATION_ENTITY, default="sun.sun"): str,  # Elevation (°)
-        vol.Required(CONF_AZIMUT_ENTITY, default="sun.sun"): str,  # Azimut (°)
-        vol.Optional(CONF_HEIGHT_ENTITY): str,  # Höhe Ist-Wert (%)
-        vol.Optional(CONF_ANGLE_ENTITY): str,  # Winkel Ist-Wert (%)
-        vol.Optional(CONF_LOCK_ENTITY, default=False): bool,  # Bausteinsperre (0/1)
+        vol.Required(CONF_BRIGHTNESS): str,  # Helligkeit (Lux)
+        vol.Optional(CONF_BRIGHTNESS_DAWN): str,  # Helligkeit Dämmerung (Lux)
+        vol.Required(CONF_SUN_ELEVATION, default="sun.sun"): str,  # Elevation (°)
+        vol.Required(CONF_SUN_AZIMUT, default="sun.sun"): str,  # Azimut (°)
+        vol.Optional(CONF_HEIGHT): str,  # Höhe Ist-Wert (%)
+        vol.Optional(CONF_ANGLE): str,  # Winkel Ist-Wert (%)
+        vol.Optional(CONF_LOCK, default=False): bool,  # Bausteinsperre (0/1)
         vol.Optional(
-            CONF_LOCK_WITH_FORCED_POSITION_ENTITY, default=False
+            CONF_LOCK_WITH_FORCED_POSITION, default=False
         ): bool,  # Bausteinsperre mit Zwangsposition (0/1)
         vol.Optional(CONF_MODIFICATION_RANGE_HEIGHT, default=10): vol.Coerce(
             int
@@ -94,7 +94,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 
 STEP_CONFIG_SCHEMA_GENERAL_SETTINGS = vol.Schema(
     {
-        vol.Required(CONF_FACADE_ANGLE, default=180): vol.Coerce(
+        vol.Required(CONF_FACADE_AZIMUTH, default=180): vol.Coerce(
             int
         ),  # Fassadenwinkel (°)
         vol.Required(CONF_FACADE_OFFSET_START, default=-90): vol.Coerce(
@@ -165,7 +165,7 @@ STEP_CONFIG_SHADOW_SETTINGS = vol.Schema(
         vol.Required(CONF_SHADOW_OPEN_SHUTTER_DELAY, default=10): vol.Coerce(int),
         vol.Required(CONF_SHADOW_MAX_HEIGHT, default=80): vol.Coerce(int),
         vol.Required(CONF_SHADOW_MAX_ANGLE, default=90): vol.Coerce(int),
-        vol.Required(CONF_SHADOW_HANDLING_ACTIVATION_ENTITY): str,
+        vol.Required(CONF_SHADOW_HANDLING_ACTIVATION): str,
         vol.Required(CONF_HEIGHT_AFTER_SHADOW, default=0): vol.Coerce(int),
         vol.Required(CONF_ANGLE_AFTER_SHADOW, default=50): vol.Coerce(int),
     }
@@ -179,7 +179,7 @@ STEP_CONFIG_DAWN_SETTINGS = vol.Schema(
         vol.Required(CONF_DAWN_CLOSE_DELAY, default=10): vol.Coerce(int),
         vol.Required(CONF_DAWN_OPEN_SLAT_DELAY, default=3): vol.Coerce(int),
         vol.Required(CONF_DAWN_OPEN_SHUTTER_DELAY, default=15): vol.Coerce(int),
-        vol.Required(CONF_DAWN_HANDLING_ACTIVATION_ENTITY): str,
+        vol.Required(CONF_DAWN_HANDLING_ACTIVATION): str,
         vol.Required(CONF_HEIGHT_AFTER_DAWN, default=0): vol.Coerce(int),
         vol.Required(CONF_ANGLE_AFTER_DAWN, default=50): vol.Coerce(int),
     }
