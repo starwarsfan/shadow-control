@@ -12,7 +12,7 @@
     "sensor",
     "weather"
   ],
-  "config_flow": true,
+  "config_flow": false,
   "documentation": "https://github.com/starwarsfan/shadow-control",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/starwarsfan/shadow-control/issues",

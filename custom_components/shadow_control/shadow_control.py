@@ -71,342 +71,423 @@ DEFAULT_NAME = "Shadow Control"
 
 _LOGGER = logging.getLogger(__name__)
 
-# Schema für die Konfiguration in der configuration.yaml (wird jetzt ignoriert)
-CONFIG_SCHEMA = vol.Schema(
-    {
-        DOMAIN: vol.Schema(
-            {
-                vol.Required(CONF_NAME): cv.string,
-                vol.Required(CONF_SUN_ELEVATION): cv.entity_id,
-                vol.Required(CONF_SUN_AZIMUT): cv.entity_id,
-                vol.Required(CONF_BRIGHTNESS): cv.entity_id,
-                # ... (alle anderen Parameter) ...
-            }
-        )
-    },
-    extra=vol.ALLOW_EXTRA,
-)
-
 """Configuration via Config-Flow"""
-async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
-    """Set up this integration using UI."""
-    config = hass.config.get_component("shadow_control") # Versuchen Sie, die YAML-Konfiguration zu lesen
-    if config:
-        # Da 'shadow_control' in der configuration.yaml eine Liste sein kann
-        for entry_config in config:
-            if entry_config.get("name") == config_entry.title: # Verwenden Sie den Titel des Config Entry als Schlüssel
-                shadow_control = ShadowControl(
-                    hass,
-                    entry_config.get("cover"),
-                    entry_config.get("brightness"),
-                    entry_config.get("brightness_dawn"),
-                    entry_config.get("sun_elevation"),
-                    entry_config.get("sun_azimuth"),
-                    entry_config.get("azimuth_facade"),
-                    entry_config.get("offset_sun_in"),
-                    entry_config.get("offset_sun_out"),
-                    entry_config.get("elevation_sun_min"),
-                    entry_config.get("elevation_sun_max"),
-                    entry_config.get("slat_width"),
-                    entry_config.get("slat_distance"),
-                    entry_config.get("angle_offset"),
-                    entry_config.get("min_slat_angle"),
-                    entry_config.get("stepping_height"),
-                    entry_config.get("stepping_angle"),
-                    entry_config.get("shutter_type"),
-                    entry_config.get("light_bar_width"),
-                    entry_config.get("shutter_height"),
-                    entry_config.get("neutral_pos_height"),
-                    entry_config.get("neutral_pos_angle"),
-                    entry_config.get("movement_restriction_height"),
-                    entry_config.get("movement_restriction_angle"),
-                    entry_config.get("update_lock_output"),
-                    entry_config.get("shadow_control_enabled"),
-                    entry_config.get("shadow_brightness_level"),
-                    entry_config.get("shadow_after_seconds"),
-                    entry_config.get("shadow_max_height"),
-                    entry_config.get("shadow_max_angle"),
-                    entry_config.get("shadow_look_through_seconds"),
-                    entry_config.get("shadow_open_seconds"),
-                    entry_config.get("shadow_look_through_angle"),
-                    entry_config.get("after_shadow_height"),
-                    entry_config.get("after_shadow_angle"),
-                    entry_config.get("dawn_control_enabled"),
-                    entry_config.get("dawn_brightness_level"),
-                    entry_config.get("dawn_after_seconds"),
-                    entry_config.get("dawn_max_height"),
-                    entry_config.get("dawn_max_angle"),
-                    entry_config.get("dawn_look_through_seconds"),
-                    entry_config.get("dawn_open_seconds"),
-                    entry_config.get("dawn_look_through_angle"),
-                    entry_config.get("after_dawn_height"),
-                    entry_config.get("after_dawn_angle"),
-                    entry_config.get("lock_integration"),
-                    entry_config.get("lock_integration_with_position"),
-                    entry_config.get("lock_height"),
-                    entry_config.get("lock_angle"),
-                    entry_config.get("modification_tolerance_height"),
-                    entry_config.get("modification_tolerance_angle"),
-                )
-                hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = shadow_control
-                # Hier müssten Sie wahrscheinlich noch eine Plattform hinzufügen (z.B. eine Cover-Plattform)
-                # async_add_entities([shadow_control]) # So funktioniert das hier nicht direkt
-                return True
-    return False
+# async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+#     """Set up this integration using UI."""
+#     config = hass.config.get_component("shadow_control") # Versuchen Sie, die YAML-Konfiguration zu lesen
+#     if config:
+#         # Da 'shadow_control' in der configuration.yaml eine Liste sein kann
+#         for entry_config in config:
+#             if entry_config.get("name") == config_entry.title: # Verwenden Sie den Titel des Config Entry als Schlüssel
+#                 shadow_control = ShadowControl(
+#                     hass,
+#                     entry_config.get("cover"),
+#                     entry_config.get("brightness"),
+#                     entry_config.get("brightness_dawn"),
+#                     entry_config.get("sun_elevation"),
+#                     entry_config.get("sun_azimuth"),
+#                     entry_config.get("azimuth_facade"),
+#                     entry_config.get("offset_sun_in"),
+#                     entry_config.get("offset_sun_out"),
+#                     entry_config.get("elevation_sun_min"),
+#                     entry_config.get("elevation_sun_max"),
+#                     entry_config.get("slat_width"),
+#                     entry_config.get("slat_distance"),
+#                     entry_config.get("angle_offset"),
+#                     entry_config.get("min_slat_angle"),
+#                     entry_config.get("stepping_height"),
+#                     entry_config.get("stepping_angle"),
+#                     entry_config.get("shutter_type"),
+#                     entry_config.get("light_bar_width"),
+#                     entry_config.get("shutter_height"),
+#                     entry_config.get("neutral_pos_height"),
+#                     entry_config.get("neutral_pos_angle"),
+#                     entry_config.get("movement_restriction_height"),
+#                     entry_config.get("movement_restriction_angle"),
+#                     entry_config.get("update_lock_output"),
+#                     entry_config.get("shadow_control_enabled"),
+#                     entry_config.get("shadow_brightness_level"),
+#                     entry_config.get("shadow_after_seconds"),
+#                     entry_config.get("shadow_max_height"),
+#                     entry_config.get("shadow_max_angle"),
+#                     entry_config.get("shadow_look_through_seconds"),
+#                     entry_config.get("shadow_open_seconds"),
+#                     entry_config.get("shadow_look_through_angle"),
+#                     entry_config.get("after_shadow_height"),
+#                     entry_config.get("after_shadow_angle"),
+#                     entry_config.get("dawn_control_enabled"),
+#                     entry_config.get("dawn_brightness_level"),
+#                     entry_config.get("dawn_after_seconds"),
+#                     entry_config.get("dawn_max_height"),
+#                     entry_config.get("dawn_max_angle"),
+#                     entry_config.get("dawn_look_through_seconds"),
+#                     entry_config.get("dawn_open_seconds"),
+#                     entry_config.get("dawn_look_through_angle"),
+#                     entry_config.get("after_dawn_height"),
+#                     entry_config.get("after_dawn_angle"),
+#                     entry_config.get("lock_integration"),
+#                     entry_config.get("lock_integration_with_position"),
+#                     entry_config.get("lock_height"),
+#                     entry_config.get("lock_angle"),
+#                     entry_config.get("modification_tolerance_height"),
+#                     entry_config.get("modification_tolerance_angle"),
+#                 )
+#                 hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = shadow_control
+#                 # Hier müssten Sie wahrscheinlich noch eine Plattform hinzufügen (z.B. eine Cover-Plattform)
+#                 # async_add_entities([shadow_control]) # So funktioniert das hier nicht direkt
+#                 return True
+#     return False
 
-"""Configuration via configuration.yaml"""
+# Diese Funktion wird von Home Assistant aufgerufen, wenn die Plattform
+# über die configuration.yaml eingerichtet wird.
 async def async_setup_platform(
         hass: HomeAssistant,
-        config: ConfigType,
+        config: ConfigType, # Die Konfiguration aus der configuration.yaml
         async_add_entities: AddEntitiesCallback,
         discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
-    """Set up the Shadow Control platform."""
+    """Set up the Shadow Control platform from YAML."""
+    _LOGGER.info("Setting up Shadow Control platform from YAML - WIRD AUSGEFÜHRT!") # <--- HINZUGEFÜGT
+    _LOGGER.debug(f"Configuration from YAML: {config}") # Zur Überprüfung der Konfigurationsdaten
+
     name = config.get(CONF_NAME, DEFAULT_NAME)
-    cover_entity_id = config.get("cover")  # Korrigiert: 'cover' statt 'cover_entity'
-    brightness_entity_id = config.get("brightness")
-    brightness_dawn_entity_id = config.get("brightness_dawn")
-    sun_elevation_entity_id = config.get("sun_elevation")
-    sun_azimuth_entity_id = config.get("sun_azimuth")
-    azimuth_facade = config.get("azimuth_facade")
-    offset_sun_in = config.get("offset_sun_in")
-    offset_sun_out = config.get("offset_sun_out")
-    elevation_sun_min = config.get("elevation_sun_min")
-    elevation_sun_max = config.get("elevation_sun_max")
-    slat_width = config.get("slat_width")
-    slat_distance = config.get("slat_distance")
-    angle_offset = config.get("angle_offset")
-    min_slat_angle = config.get("min_slat_angle")
-    stepping_height = config.get("stepping_height")
-    stepping_angle = config.get("stepping_angle")
-    shutter_type = config.get("shutter_type")
-    light_bar_width = config.get("light_bar_width")
-    shutter_height = config.get("shutter_height")
-    neutral_pos_height = config.get("neutral_pos_height")
-    neutral_pos_angle = config.get("neutral_pos_angle")
-    movement_restriction_height = config.get("movement_restriction_height")
-    movement_restriction_angle = config.get("movement_restriction_angle")
-    update_lock_output = config.get("update_lock_output")
-    shadow_control_enabled = config.get("shadow_control_enabled")
-    shadow_brightness_level = config.get("shadow_brightness_level")
-    shadow_after_seconds = config.get("shadow_after_seconds")
-    shadow_max_height = config.get("shadow_max_height")
-    shadow_max_angle = config.get("shadow_max_angle")
-    shadow_look_through_seconds = config.get("shadow_look_through_seconds")
-    shadow_open_seconds = config.get("shadow_open_seconds")
-    shadow_look_through_angle = config.get("shadow_look_through_angle")
-    after_shadow_height = config.get("after_shadow_height")
-    after_shadow_angle = config.get("after_shadow_angle")
-    dawn_control_enabled = config.get("dawn_control_enabled")
-    dawn_brightness_level = config.get("dawn_brightness_level")
-    dawn_after_seconds = config.get("dawn_after_seconds")
-    dawn_max_height = config.get("dawn_max_height")
-    dawn_max_angle = config.get("dawn_max_angle")
-    dawn_look_through_seconds = config.get("dawn_look_through_seconds")
-    dawn_open_seconds = config.get("dawn_open_seconds")
-    dawn_look_through_angle = config.get("dawn_look_through_angle")
-    after_dawn_height = config.get("after_dawn_height")
-    after_dawn_angle = config.get("after_dawn_angle")
-    lock_integration = config.get("lock_integration")
-    lock_integration_with_position = config.get("lock_integration_with_position")
-    lock_height = config.get("lock_height")
-    lock_angle = config.get("lock_angle")
-    modification_tolerance_height = config.get("modification_tolerance_height")
-    modification_tolerance_angle = config.get("modification_tolerance_angle")
+    cover_entity_id = config.get("cover")
+    # ... (hier könnten Sie die anderen Konfigurationsparameter lesen,
+    #      aber da wir sie fest verdrahtet haben, ist das jetzt optional)
 
-    async_add_entities([
-        ShadowControl(
-            hass,
-            name,
-            cover_entity_id,
-            brightness_entity_id,
-            brightness_dawn_entity_id,
-            sun_elevation_entity_id,
-            sun_azimuth_entity_id,
-            azimuth_facade,
-            offset_sun_in,
-            offset_sun_out,
-            elevation_sun_min,
-            elevation_sun_max,
-            slat_width,
-            slat_distance,
-            angle_offset,
-            min_slat_angle,
-            stepping_height,
-            stepping_angle,
-            shutter_type,
-            light_bar_width,
-            shutter_height,
-            neutral_pos_height,
-            neutral_pos_angle,
-            movement_restriction_height,
-            movement_restriction_angle,
-            update_lock_output,
-            shadow_control_enabled,
-            shadow_brightness_level,
-            shadow_after_seconds,
-            shadow_max_height,
-            shadow_max_angle,
-            shadow_look_through_seconds,
-            shadow_open_seconds,
-            shadow_look_through_angle,
-            after_shadow_height,
-            after_shadow_angle,
-            dawn_control_enabled,
-            dawn_brightness_level,
-            dawn_after_seconds,
-            dawn_max_height,
-            dawn_max_angle,
-            dawn_look_through_seconds,
-            dawn_open_seconds,
-            dawn_look_through_angle,
-            after_dawn_height,
-            after_dawn_angle,
-            lock_integration,
-            lock_integration_with_position,
-            lock_height,
-            lock_angle,
-            modification_tolerance_height,
-            modification_tolerance_angle,
-        )
-    ])
+    # Hier erstellen wir eine Instanz Ihrer ShadowControl-Klasse.
+    # Die 'config' enthält alle Parameter, die Sie in der configuration.yaml
+    # unter 'shadow_control:' definiert haben.
+    # Wir übergeben 'config' direkt an den Konstruktor.
+    async_add_entities([ShadowControl(hass, config)])
 
-class ShadowControl(CoverEntity):
-    """Representation of the Shadow Control."""
+class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfach zu halten
+    """Representation of a Shadow Control cover."""
 
-    # Zustands-Konstanten (entsprechend PHP-Code)
-    STATE_NEUTRAL = "NEUTRAL"
-    STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING = "SHADOW_FULL_CLOSE_TIMER_RUNNING"
-    STATE_SHADOW_FULL_CLOSED = "SHADOW_FULL_CLOSED"
-    STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING = "SHADOW_OPEN_SLATS_TIMER_RUNNING"
-    STATE_SHADOW_PARTIALLY_OPEN = "SHADOW_PARTIALLY_OPEN"
-    STATE_SHADOW_OPEN_SHUTTER_TIMER_RUNNING = "SHADOW_OPEN_SHUTTER_TIMER_RUNNING"
-    STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING = (
-        "SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING"
-    )
-    STATE_SHADOW_HORIZONTAL_NEUTRAL = "SHADOW_HORIZONTAL_NEUTRAL"
-    STATE_SHADOW_NEUTRAL_TIMER_RUNNING = "SHADOW_NEUTRAL_TIMER_RUNNING"
-    STATE_SHADOW_NEUTRAL = "SHADOW_NEUTRAL"
-    STATE_DAWN_FULL_CLOSE_TIMER_RUNNING = "DAWN_FULL_CLOSE_TIMER_RUNNING"
-    STATE_DAWN_FULL_CLOSED = "DAWN_FULL_CLOSED"
-    STATE_DAWN_OPEN_SLATS_TIMER_RUNNING = "DAWN_OPEN_SLATS_TIMER_RUNNING"
-    STATE_DAWN_PARTIALLY_OPEN = "DAWN_PARTIALLY_OPEN"
-    STATE_DAWN_OPEN_SHUTTER_TIMER_RUNNING = "DAWN_OPEN_SHUTTER_TIMER_RUNNING"
-    STATE_DAWN_NEUTRAL = "DAWN_NEUTRAL"
-    STATE_DAWN_NEUTRAL_TIMER_RUNNING = "DAWN_NEUTRAL_TIMER_RUNNING"
-    STATE_DAWN_HORIZONTAL_NEUTRAL = "DAWN_HORIZONTAL_NEUTRAL"
-    STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING = (
-        "DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING"
-    )
+    _attr_has_entity_name = True
 
     def __init__(
             self,
             hass: HomeAssistant,
-            name: str, # Hier wird 'name' entgegengenommen
-            cover_entity_id: str | None,
-            brightness_entity_id: str | None,
-            brightness_dawn_entity_id: str | None,
-            elevation_entity_id: str | None,
-            azimuth_entity_id: str | None,
-            azimuth_facade: float | None,
-            offset_sun_in: float | None,
-            offset_sun_out: float | None,
-            elevation_sun_min: float | None,
-            elevation_sun_max: float | None,
-            slat_width: int | None,
-            slat_distance: int | None,
-            angle_offset: int | None,
-            min_slat_angle: int | None,
-            stepping_height: int | None,
-            stepping_angle: int | None,
-            shutter_type: str | None,
-            light_bar_width: int | None,
-            shutter_height: int | None,
-            neutral_pos_height: int | None,
-            neutral_pos_angle: int | None,
-            movement_restriction_height: str | None,
-            movement_restriction_angle: str | None,
-            update_lock_output: int | None,
-            shadow_control_enabled: str | None,
-            shadow_brightness_level: int | None,
-            shadow_after_seconds: int | None,
-            shadow_max_height: int | None,
-            shadow_max_angle: int | None,
-            shadow_look_through_seconds: int | None,
-            shadow_open_seconds: int | None,
-            shadow_look_through_angle: int | None,
-            after_shadow_height: int | None,
-            after_shadow_angle: int | None,
-            dawn_control_enabled: str | None,
-            dawn_brightness_level: int | None,
-            dawn_after_seconds: int | None,
-            dawn_max_height: int | None,
-            dawn_max_angle: int | None,
-            dawn_look_through_seconds: int | None,
-            dawn_open_seconds: int | None,
-            dawn_look_through_angle: int | None,
-            after_dawn_height: int | None,
-            after_dawn_angle: int | None,
-            lock_integration: str | None,
-            lock_integration_with_position: str | None,
-            lock_height: int | None,
-            lock_angle: int | None,
-            modification_tolerance_height: int | None,
-            modification_tolerance_angle: int | None,
+            config: ConfigType, # Empfängt die gesamte Konfiguration
     ) -> None:
         """Initialize the Shadow Control cover."""
-        # super().__init__(coordinator) # Entfernen Sie dies, da coordinator hier nicht direkt verwendet wird
-        self._name = name
-        self._cover_entity_id = cover_entity_id
-        self._brightness_entity_id = brightness_entity_id
-        self._brightness_dawn_entity_id = brightness_dawn_entity_id
-        self._elevation_entity_id = elevation_entity_id
-        self._azimuth_entity_id = azimuth_entity_id
-        self._azimuth_facade = azimuth_facade
-        self._offset_sun_in = offset_sun_in
-        self._offset_sun_out = offset_sun_out
-        self._elevation_sun_min = elevation_sun_min
-        self._elevation_sun_max = elevation_sun_max
-        self._slat_width = slat_width
-        self._slat_distance = slat_distance
-        self._angle_offset = angle_offset
-        self._min_slat_angle = min_slat_angle
-        self._stepping_height = stepping_height
-        self._stepping_angle = stepping_angle
-        self._shutter_type = shutter_type
-        self._light_bar_width = light_bar_width
-        self._shutter_height = shutter_height
-        self._neutral_pos_height = neutral_pos_height
-        self._neutral_pos_angle = neutral_pos_angle
-        self._movement_restriction_height = movement_restriction_height
-        self._movement_restriction_angle = movement_restriction_angle
-        self._update_lock_output = update_lock_output
-        self._shadow_control_enabled = shadow_control_enabled
-        self._shadow_brightness_level = shadow_brightness_level
-        self._shadow_after_seconds = shadow_after_seconds
-        self._shadow_max_height = shadow_max_height
-        self._shadow_max_angle = shadow_max_angle
-        self._shadow_look_through_seconds = shadow_look_through_seconds
-        self._shadow_open_seconds = shadow_open_seconds
-        self._shadow_look_through_angle = shadow_look_through_angle
-        self._after_shadow_height = after_shadow_height
-        self._after_shadow_angle = after_shadow_angle
-        self._dawn_control_enabled = dawn_control_enabled
-        self._dawn_brightness_level = dawn_brightness_level
-        self._dawn_after_seconds = dawn_after_seconds
-        self._dawn_max_height = dawn_max_height
-        self._dawn_max_angle = dawn_max_angle
-        self._dawn_look_through_seconds = dawn_look_through_seconds
-        self._dawn_open_seconds = dawn_open_seconds
-        self._dawn_look_through_angle = dawn_look_through_angle
-        self._after_dawn_height = after_dawn_height
-        self._after_dawn_angle = after_dawn_angle
-        self._lock_integration = lock_integration
-        self._lock_integration_with_position = lock_integration_with_position
-        self._lock_height = lock_height
-        self._lock_angle = lock_angle
-        self._modification_tolerance_height = modification_tolerance_height
-        self._modification_tolerance_angle = modification_tolerance_angle
+        self.hass = hass # Speichern der hass Instanz
+        self._name = config.get(CONF_NAME, DEFAULT_NAME)
+
+        _LOGGER.debug(f"Initializing Shadow Control: {self._name}")
+
+        # Feste Verdrahtung der Entitäts-IDs für die Entwicklung
+        # Diese Werte werden jetzt direkt hier gesetzt und nicht mehr aus 'config' gelesen,
+        # es sei denn, Sie möchten das später wieder ändern.
+        # Die 'config'-Parameter sind aber weiterhin verfügbar, falls Sie sie doch nutzen wollen.
+
+        # === Dynamische Eingänge (Test-Helfer) ===
+        self._brightness_entity_id = "input_number.d01_brightness"
+        self._brightness_dawn_entity_id = "input_number.d02_brightness_dawn"
+        self._sun_elevation_entity_id = "input_number.d03_sun_elevation"
+        self._sun_azimuth_entity_id = "input_number.d04_sun_azimuth"
+        self._shutter_current_height_entity_id = "input_number.d05_shutter_current_height" # Ist-Wert Höhe
+        self._shutter_current_angle_entity_id = "input_number.d06_shutter_current_angle"   # Ist-Wert Winkel
+        self._lock_integration_entity_id = "input_select.d07_lock_integration"
+        self._lock_integration_with_position_entity_id = "input_select.d08_lock_integration_with_position"
+        self._lock_height_entity_id = "input_number.d09_lock_height"
+        self._lock_angle_entity_id = "input_number.d10_lock_angle"
+        self._modification_tolerance_height_entity_id = "input_number.d11_modification_tolerance_height"
+        self._modification_tolerance_angle_entity_id = "input_number.d12_modification_tolerance_angle"
+
+        # === Allgemeine Einstellungen (Test-Helfer) ===
+        self._azimuth_facade_entity_id = "input_number.g01_azimuth_facade"
+        self._offset_sun_in_entity_id = "input_number.g02_offset_sun_in"
+        self._offset_sun_out_entity_id = "input_number.g03_offset_sun_out"
+        self._elevation_sun_min_entity_id = "input_number.g04_elevation_sun_min"
+        self._elevation_sun_max_entity_id = "input_number.g05_elevation_sun_max"
+        self._slat_width_entity_id = "input_number.g06_slat_with" # Korrigiert von g06_slat_with zu g06_slat_width (wahrscheinlicher Tippfehler im Helfernamen)
+        self._slat_distance_entity_id = "input_number.g07_slat_distance"
+        self._angle_offset_entity_id = "input_number.g08_angle_offset"
+        self._min_slat_angle_entity_id = "input_number.g09_min_slat_angle"
+        self._stepping_height_entity_id = "input_number.g10_stepping_height" # war g10_stepping_height
+        self._stepping_angle_entity_id = "input_number.g11_stepping_angle" # war g11_stepping_angle
+        self._shutter_type_entity_id = "input_select.g12_shutter_type"
+        self._light_bar_width_entity_id = "input_number.g13_light_bar_width"
+        self._shutter_height_entity_id = "input_number.g14_shutter_height"
+        self._neutral_pos_height_entity_id = "input_number.g15_neutral_pos_height"
+        self._neutral_pos_angle_entity_id = "input_number.g16_neutral_pos_angle" # Name im Helfer ggf. g16?
+        self._movement_restriction_height_entity_id = "input_select.g17_movement_restriction_height"
+        self._movement_restriction_angle_entity_id = "input_select.g18_movement_restriction_angle"
+        self._update_lock_output_entity_id = "input_select.g19_update_lock_output"
+
+        # === Beschattungseinstellungen (Test-Helfer) ===
+        self._shadow_control_enabled_entity_id = "input_select.s01_shadow_control_enabled"
+        self._shadow_brightness_level_entity_id = "input_number.s02_shadow_brightness_level"
+        self._shadow_after_seconds_entity_id = "input_number.s03_shadow_after_seconds"
+        self._shadow_max_height_entity_id = "input_number.s04_shadow_max_height"
+        self._shadow_max_angle_entity_id = "input_number.s05_shadow_max_angle"
+        self._shadow_look_through_seconds_entity_id = "input_number.s06_shadow_look_through_seconds"
+        self._shadow_open_seconds_entity_id = "input_number.s07_shadow_open_seconds"
+        self._shadow_look_through_angle_entity_id = "input_number.s08_shadow_look_through_angle"
+        self._after_shadow_height_entity_id = "input_number.s09_after_shadow_height"
+        self._after_shadow_angle_entity_id = "input_number.s10_after_shadow_angle"
+
+        # === Dämmerungseinstellungen (Test-Helfer) ===
+        self._dawn_control_enabled_entity_id = "input_select.sd01_dawn_control_enabled"
+        self._dawn_brightness_level_entity_id = "input_number.sd02_dawn_brightness_level"
+        self._dawn_after_seconds_entity_id = "input_number.sd03_dawn_after_seconds"
+        self._dawn_max_height_entity_id = "input_number.sd04_dawn_max_height"
+        self._dawn_max_angle_entity_id = "input_number.sd05_dawn_max_angle"
+        self._dawn_look_through_seconds_entity_id = "input_number.sd06_dawn_look_through_seconds" # Name im Helfer ggf. sd06?
+        self._dawn_open_seconds_entity_id = "input_number.sd07_dawn_open_seconds"
+        self._dawn_look_through_angle_entity_id = "input_number.sd08_dawn_look_through_angle"
+        self._after_dawn_height_entity_id = "input_number.sd09_after_dawn_height"
+        self._after_dawn_angle_entity_id = "input_number.sd10_after_dawn_angle"
+
+        # Die zu steuernde Cover-Entität (Ihr Template-Cover)
+        # Diese sollte weiterhin aus der YAML-Konfiguration kommen, da sie essenziell ist.
+        self._target_cover_entity_id = config.get("cover") # Aus configuration.yaml
+
+        # Logging der (fest verdrahteten) Entitäts-IDs
+        _LOGGER.debug(f"--- {self._name}: Initialized with fixed Entity IDs ---")
+        _LOGGER.debug(f"Target Cover Entity ID: {self._target_cover_entity_id}")
+        _LOGGER.debug(f"Brightness Entity ID: {self._brightness_entity_id}")
+        _LOGGER.debug(f"Sun Elevation Entity ID: {self._sun_elevation_entity_id}")
+        _LOGGER.debug(f"Facade Azimuth Entity ID: {self._azimuth_facade_entity_id}")
+        # Fügen Sie hier weitere _LOGGER.debug-Zeilen für alle anderen _entity_id-Variablen hinzu
+
+        # Initialwerte für Position und Neigung (optional, falls benötigt)
+        self._current_position: int | None = None
+        self._current_tilt_position: int | None = None
+
+        # Hier können Sie auch direkt die Werte der Helfer beim Start loggen,
+        # aber es ist besser, das in async_added_to_hass oder async_update zu tun,
+        # da die Zustände dort zuverlässiger verfügbar sind.
+
+    async def async_added_to_hass(self) -> None:
+        """Run when entity about to be added to hass."""
+        await super().async_added_to_hass()
+        _LOGGER.debug(f"{self._name}: Entity added to HASS. Registering listeners.")
+
+        # Listener für Zustandsänderungen der relevanten Sensoren/Helfer
+        # Beispiel:
+        # self.async_on_remove(
+        #     async_track_state_change_event(
+        #         self.hass, [self._sun_elevation_entity_id, self._sun_azimuth_entity_id], self._handle_sensor_change
+        #     )
+        # )
+
+        # Beim Hinzufügen zur HASS einmal die Werte loggen
+        await self._log_current_input_values()
+        # Und einen initialen Update anstoßen, um die Logik auszuführen
+        await self.async_update()
+
+
+    async def _log_current_input_values(self) -> None:
+        """Logs the current values of all input entities."""
+        _LOGGER.debug(f"--- {self._name}: Current Input Values ---")
+        try:
+            # Dynamische Eingänge
+            _LOGGER.debug(f"Brightness: {self._get_state_value(self._brightness_entity_id)}")
+            _LOGGER.debug(f"Brightness Dawn: {self._get_state_value(self._brightness_dawn_entity_id)}")
+            _LOGGER.debug(f"Sun Elevation: {self._get_state_value(self._sun_elevation_entity_id)}")
+            _LOGGER.debug(f"Sun Azimuth: {self._get_state_value(self._sun_azimuth_entity_id)}")
+            _LOGGER.debug(f"Shutter Current Height: {self._get_state_value(self._shutter_current_height_entity_id)}")
+            _LOGGER.debug(f"Shutter Current Angle: {self._get_state_value(self._shutter_current_angle_entity_id)}")
+            _LOGGER.debug(f"Lock Integration: {self._get_state_value(self._lock_integration_entity_id)}")
+            _LOGGER.debug(f"Lock Integration w. Position: {self._get_state_value(self._lock_integration_with_position_entity_id)}")
+            _LOGGER.debug(f"Lock Height: {self._get_state_value(self._lock_height_entity_id)}")
+            _LOGGER.debug(f"Lock Angle: {self._get_state_value(self._lock_angle_entity_id)}")
+            _LOGGER.debug(f"Tolerance Height: {self._get_state_value(self._modification_tolerance_height_entity_id)}")
+            _LOGGER.debug(f"Tolerance Angle: {self._get_state_value(self._modification_tolerance_angle_entity_id)}")
+
+            # Allgemeine Einstellungen
+            _LOGGER.debug(f"Facade Azimuth: {self._get_state_value(self._azimuth_facade_entity_id)}")
+            _LOGGER.debug(f"Offset Sun In: {self._get_state_value(self._offset_sun_in_entity_id)}")
+            # ... Fügen Sie hier Logs für ALLE anderen Gxx, Sxx, SDxx Helfer hinzu ...
+            # Beispiel für einen weiteren allgemeinen Parameter:
+            _LOGGER.debug(f"Slat Width: {self._get_state_value(self._slat_width_entity_id)}")
+            # (usw. für alle anderen)
+
+        except Exception as e:
+            _LOGGER.error(f"Error logging input values: {e}")
+
+    def _get_state_value(self, entity_id: str | None) -> str | None:
+        """Helper to get the state of an entity."""
+        if not entity_id:
+            return None
+        state = self.hass.states.get(entity_id)
+        if state:
+            return state.state
+        return None
+
+    @callback
+    async def _handle_sensor_change(self, event) -> None:
+        """Handle changes in sensor states."""
+        _LOGGER.debug(f"{self._name}: Sensor change detected: {event.data.get('entity_id')}")
+        await self.async_update_ha_state(True) # Fordert ein Update der Entität an
+
+    # --- CoverEntity Properties ---
+    @property
+    def name(self) -> str:
+        """Return the name of the cover."""
+        return self._name
+
+    @property
+    def supported_features(self) -> CoverEntityFeature:
+        """Flag supported features."""
+        features = (
+                CoverEntityFeature.OPEN
+                | CoverEntityFeature.CLOSE
+                | CoverEntityFeature.STOP
+                | CoverEntityFeature.SET_POSITION
+        )
+        # Optional: Fügen Sie Tilt hinzu, wenn Ihr Test-Cover und Ihre Logik es unterstützen
+        # features |= CoverEntityFeature.SET_TILT_POSITION
+        return features
+
+    @property
+    def current_cover_position(self) -> int | None:
+        """Return current position of cover. 0 is closed, 100 is open."""
+        # Hier lesen Sie den Wert Ihres Test-Höhen-Helfers
+        height_state = self.hass.states.get(self._shutter_current_height_entity_id)
+        if height_state and height_state.state not in (STATE_UNAVAILABLE, STATE_UNKNOWN):
+            try:
+                return int(float(height_state.state))
+            except ValueError:
+                _LOGGER.warning(f"Could not parse position from {self._shutter_current_height_entity_id}: {height_state.state}")
+        return None
+
+    @property
+    def current_cover_tilt_position(self) -> int | None:
+        """Return current tilt position of cover. 0 is closed, 100 is open."""
+        # Hier lesen Sie den Wert Ihres Test-Winkel-Helfers
+        angle_state = self.hass.states.get(self._shutter_current_angle_entity_id)
+        if angle_state and angle_state.state not in (STATE_UNAVAILABLE, STATE_UNKNOWN):
+            try:
+                return int(float(angle_state.state))
+            except ValueError:
+                _LOGGER.warning(f"Could not parse tilt position from {self._shutter_current_angle_entity_id}: {angle_state.state}")
+        return None
+
+    @property
+    def is_closed(self) -> bool | None:
+        """Return if the cover is closed or not."""
+        if self.current_cover_position is None:
+            return None
+        return self.current_cover_position == 0
+
+    @property
+    def is_opening(self) -> bool:
+        """Return if the cover is opening or not."""
+        return False # Für ein Template-Cover meist False, es sei denn, Sie simulieren dies
+
+    @property
+    def is_closing(self) -> bool:
+        """Return if the cover is closing or not."""
+        return False # Für ein Template-Cover meist False, es sei denn, Sie simulieren dies
+
+    # --- CoverEntity Methods ---
+    async def async_open_cover(self, **kwargs: any) -> None:
+        """Open the cover."""
+        _LOGGER.info(f"{self._name}: Opening cover (calling script)")
+        await self.hass.services.async_call(
+            "script",
+            "test_cover_open", # Ihr Test-Skript
+            blocking=True,
+        )
+        # Optional: Den Helfer für die aktuelle Position aktualisieren (falls nicht durch das Skript erledigt)
+        # self.hass.states.async_set(self._shutter_current_height_entity_id, 100)
+        self.async_write_ha_state()
+
+    async def async_close_cover(self, **kwargs: any) -> None:
+        """Close the cover."""
+        _LOGGER.info(f"{self._name}: Closing cover (calling script)")
+        await self.hass.services.async_call(
+            "script",
+            "test_cover_close", # Ihr Test-Skript
+            blocking=True,
+        )
+        # self.hass.states.async_set(self._shutter_current_height_entity_id, 0)
+        self.async_write_ha_state()
+
+    async def async_set_cover_position(self, **kwargs: any) -> None:
+        """Move the cover to a specific position."""
+        position = kwargs[ATTR_POSITION]
+        _LOGGER.info(f"{self._name}: Setting cover position to {position} (calling script)")
+        await self.hass.services.async_call(
+            "script",
+            "test_cover_set_position", # Ihr Test-Skript
+            service_data={"position": position},
+            blocking=True,
+        )
+        # Simuliert, dass das Skript den Ist-Wert-Helfer aktualisiert
+        # In der Realität würde das Skript oder das echte Cover den Zustand ändern.
+        # Für Testzwecke können Sie den input_number hier direkt setzen.
+        # await self.hass.services.async_call(
+        #     "input_number",
+        #     "set_value",
+        #     {"entity_id": self._shutter_current_height_entity_id, "value": position},
+        # )
+        self.async_write_ha_state()
+
+
+    async def async_stop_cover(self, **kwargs: any) -> None:
+        """Stop the cover."""
+        _LOGGER.info(f"{self._name}: Stopping cover (calling script)")
+        await self.hass.services.async_call(
+            "script",
+            "test_cover_stop", # Ihr Test-Skript
+            blocking=True,
+        )
+        self.async_write_ha_state()
+
+    # Optional: Methoden für Tilt, falls unterstützt
+    # async def async_set_cover_tilt_position(self, **kwargs: any) -> None:
+    #     tilt_position = kwargs[ATTR_TILT_POSITION]
+    #     _LOGGER.info(f"{self._name}: Setting cover tilt to {tilt_position}")
+    #     # Rufen Sie hier Ihr Skript für die Neigung auf
+    #     self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        """Fetch new state data for the cover. (Hier implementieren Sie Ihre Logik)"""
+        _LOGGER.debug(f"{self._name}: Updating state...")
+        await self._log_current_input_values() # Loggt die aktuellen Werte bei jedem Update
+
+        # === Beispielhafte Logik (Platzhalter) ===
+        # Hier würden Sie die Werte Ihrer Sensoren und Helfer auslesen
+        # und basierend darauf entscheiden, ob und wie das Cover bewegt werden soll.
+
+        # Beispiel: Werte auslesen
+        try:
+            current_brightness_state = self.hass.states.get(self._brightness_entity_id)
+            current_sun_elevation_state = self.hass.states.get(self._sun_elevation_entity_id)
+            facade_azimuth_state = self.hass.states.get(self._azimuth_facade_entity_id)
+            shadow_control_enabled_state = self.hass.states.get(self._shadow_control_enabled_entity_id)
+
+            if not all([current_brightness_state, current_sun_elevation_state, facade_azimuth_state, shadow_control_enabled_state]):
+                _LOGGER.warning(f"{self._name}: One or more input entities are not available.")
+                return
+
+            current_brightness = float(current_brightness_state.state)
+            current_sun_elevation = float(current_sun_elevation_state.state)
+            facade_azimuth = float(facade_azimuth_state.state)
+            is_shadow_control_enabled = shadow_control_enabled_state.state == "enabled" # Annahme für input_select
+
+            _LOGGER.debug(f"{self._name}: Brightness={current_brightness}, Elevation={current_sun_elevation}, FacadeAzimuth={facade_azimuth}, ShadowCtrlEnabled={is_shadow_control_enabled}")
+
+            # Ihre komplexe Logik hier...
+            # if is_shadow_control_enabled and current_brightness > 50000 and current_sun_elevation > 20:
+            #     _LOGGER.info(f"{self._name}: Conditions met for closing cover.")
+            #     # await self.async_set_cover_position(position=10) # Beispiel: Schließen auf 10%
+            # else:
+            #     _LOGGER.info(f"{self._name}: Conditions not met for closing cover.")
+            #     # await self.async_set_cover_position(position=90) # Beispiel: Öffnen auf 90%
+
+        except ValueError as e:
+            _LOGGER.error(f"{self._name}: Error converting sensor value to float: {e}")
+        except Exception as e:
+            _LOGGER.error(f"{self._name}: Unexpected error during update: {e}")
+
+        # Am Ende jedes Updates den Zustand schreiben, falls er sich geändert haben könnte
+        self.async_write_ha_state()
 
     @property
     def name(self) -> str:

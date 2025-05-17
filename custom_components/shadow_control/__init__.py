@@ -1,28 +1,22 @@
 """Integration for Shadow Control."""
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform
+import logging
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.typing import ConfigType
 
-from shadow_control.const import DOMAIN
+_LOGGER = logging.getLogger(__name__)
 
-from .shadow_control import ShadowControl
-
-PLATFORMS: list[Platform] = [Platform.COVER]
-
-async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
-    """Set up Shadow Control from a config entry."""
-    config = config_entry.data
-    shadow_control = ShadowControl(hass, config)
-    hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = shadow_control
-    await shadow_control.async_setup()
-    await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Set up the Shadow Control component."""
+    _LOGGER.info("Setting up Shadow Control component.")
+    # Die eigentliche Plattform-Einrichtung erfolgt in shadow_control.py (async_setup_platform)
     return True
 
-async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
-    """Unload a config entry."""
-    if unload_ok := await hass.config_entries.async_unload_platforms(
-        config_entry, PLATFORMS
-    ):
-        hass.data[DOMAIN].pop(config_entry.entry_id)
-    return unload_ok
+async def async_setup_entry(hass: HomeAssistant, config_entry) -> bool:
+    """Dieses Setup ist für Config Entries gedacht und wird hier nicht verwendet."""
+    _LOGGER.warning("Shadow Control wurde als YAML-Plattform konfiguriert, aber async_setup_entry wurde aufgerufen.")
+    return False
+
+async def async_unload_entry(hass: HomeAssistant, config_entry) -> bool:
+    """Dieses Unload ist für Config Entries gedacht und wird hier nicht verwendet."""
+    return True
