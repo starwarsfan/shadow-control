@@ -38,7 +38,7 @@ shadow_control:
     offset_sun_out: input_number.g03_offset_sun_out
     elevation_sun_min: input_number.g04_elevation_sun_min
     elevation_sun_max: input_number.g05_elevation_sun_max
-    slat_width: input_number.g06_slat_with
+    slat_width: input_number.g06_slat_width
     slat_distance: input_number.g07_slat_distance
     angle_offset: input_number.g08_angle_offset
     min_slat_angle: input_number.g09_min_slat_angle
@@ -215,7 +215,7 @@ input_number:
     step: 1
     mode: slider
     initial: 90
-  g06_slat_with:
+  g06_slat_width:
     #[e#25 important =Lamellenbreite (mm)                     #init=80     ]
     name: "G06: Shutter slat width (mm)"
     min: 0
