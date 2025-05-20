@@ -194,25 +194,6 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         # aber es ist besser, das in async_added_to_hass oder async_update zu tun,
         # da die Zustände dort zuverlässiger verfügbar sind.
 
-    async def async_added_to_hass(self) -> None:
-        """Run when entity about to be added to hass."""
-        await super().async_added_to_hass()
-        _LOGGER.debug(f"{self._name}: Entity added to HASS. Registering listeners.")
-
-        # Listener für Zustandsänderungen der relevanten Sensoren/Helfer
-        # Beispiel:
-        # self.async_on_remove(
-        #     async_track_state_change_event(
-        #         self.hass, [self._sun_elevation_entity_id, self._sun_azimuth_entity_id], self._handle_sensor_change
-        #     )
-        # )
-
-        # Beim Hinzufügen zur HASS einmal die Werte loggen
-        await self._log_current_input_values()
-        # Und einen initialen Update anstoßen, um die Logik auszuführen
-        await self.async_update()
-
-
     async def _log_current_input_values(self) -> None:
         """Logs the current values of all input entities."""
         _LOGGER.debug(f"--- {self._name}: Current Input Values ---")
@@ -423,36 +404,15 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         self.async_write_ha_state()
 
     @property
-    def name(self) -> str:
-        """Return the name of the cover."""
-        return self._name
-
-    @property
     def unique_id(self) -> str | None:
         """Return the unique ID of the cover."""
         return f"shadow_control_{self._name.lower().replace(' ', '_')}"
-
-    @property
-    def current_cover_position(self) -> int | None:
-        """Return the current position of the cover."""
-        # Hier die aktuelle Position abrufen oder aus dem Zustand ableiten
-        return None  # Placeholder
 
     @property
     def current_cover_tilt(self) -> int | None:
         """Return the current tilt of the cover."""
         # Hier den aktuellen Neigungswinkel abrufen oder aus dem Zustand ableiten
         return None  # Placeholder
-
-    @property
-    def is_closed(self) -> bool | None:
-        """Return if the cover is closed."""
-        return self._is_closed
-
-    @property
-    def supported_features(self) -> int:
-        """Flag supported features."""
-        return CoverEntityFeature.SET_POSITION | CoverEntityFeature.SET_TILT_POSITION
 
     async def async_setup(self):
         """Set up the Shadow Control by listening to sensor states."""
@@ -508,7 +468,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             )
 
         # Optionally listen for lock entity state changes
-        if self._lock_entity_id:
+        if self._lock_angle_entity_id:
             async def lock_state_listener(entity_id, old_state, new_state):
                 """Handle state changes of the lock entity."""
                 if new_state and new_state.state in ("locked", "unlocked"):
@@ -516,21 +476,14 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
                     self.async_schedule_update_ha_state()
 
             async_track_state_change_event(
-                self.hass, self._lock_entity_id, lock_state_listener
+                self.hass, self._lock_angle_entity_id, lock_state_listener
             )
 
         # Optionally listen for lock with forced position entity state changes
-        # (Implement similar logic as for _lock_entity_id if needed)
+        # (Implement similar logic as for _lock_angle_entity_id if needed)
 
         # No direct control here, the ShadowControlledCover handles commands
         pass
-
-    async def async_set_cover_position(self, **kwargs: any) -> None:
-        """Set the position of the cover."""
-        if (position := kwargs.get("position")) is not None:
-            _LOGGER.debug(f"Set cover position to {position}")
-            self._target_position = position
-            await self._perform_state_handling()
 
     async def async_set_cover_tilt(self, **kwargs: any) -> None:
         """Set the tilt of the cover."""
@@ -538,70 +491,6 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             _LOGGER.debug(f"Set cover tilt to {tilt}")
             self._target_tilt = tilt
             await self._perform_state_handling()
-
-    async def async_close_cover(self, **kwargs: any) -> None:
-        """Close the cover."""
-        _LOGGER.debug("Close cover")
-        self._target_position = 0
-        await self._perform_state_handling()
-
-    async def async_open_cover(self, **kwargs: any) -> None:
-        """Open the cover."""
-        _LOGGER.debug("Open cover")
-        self._target_position = 100
-        await self._perform_state_handling()
-
-    async def async_stop_cover(self, **kwargs: any) -> None:
-        """Stop the cover."""
-        _LOGGER.debug("Stop cover")
-        self._target_position = None
-        self._target_tilt = None
-        # Hier ggf. in einen neutralen Zustand übergehen
-        await self._perform_state_handling()
-
-    async def async_update(self) -> None:
-        """Fetch new state data for the cover."""
-        elevation = self.hass.states.get(self._sun_elevation_entity_id)
-        azimuth = self.hass.states.get(self._sun_azimuth_entity_id)
-        brightness = self.hass.states.get(self._brightness_entity_id)
-        brightness_dawn = self.hass.states.get(self._brightness_dawn_entity_id)
-        lock_state = self.hass.states.get(self._lock_entity_id)
-        lock_forced_state = self.hass.states.get(self._lock_forced_entity_id)
-        height = self.hass.states.get(self._height_entity_id)
-        angle = self.hass.states.get(self._angle_entity_id)
-
-        shadow_handling_active_state = self.hass.states.get(self._shadow_handling_activation_entity_id)
-        shadow_handling_active = shadow_handling_active_state and shadow_handling_active_state.state == "on"
-        dawn_handling_active_state = self.hass.states.get(self._dawn_handling_activation_entity_id)
-        dawn_handling_active = dawn_handling_active_state and dawn_handling_active_state.state == "on"
-
-        controlled_cover_state: State | None = await self.hass.states.get(self._controlled_cover_entity_id)
-        current_height = controlled_cover_state.attributes.get('current_cover_position') if controlled_cover_state else None
-        current_angle = controlled_cover_state.attributes.get('current_cover_tilt_position') if controlled_cover_state else None
-
-
-        if self._debug_enabled:
-            self.hass.logger.debug(
-                f"{self._name}: ... Shadow handling: {shadow_handling_active}, Dawn handling: {dawn_handling_active} ..."
-            )
-
-
-        try:
-            self._current_elevation = float(elevation.state) if elevation else None
-            self._current_azimuth = float(azimuth.state) if azimuth else None
-            self._current_brightness = float(brightness.state) if brightness else None
-            self._current_brightness_dawn = (
-                float(brightness_dawn.state) if brightness_dawn else None
-            )
-            self._is_locked = (
-                (lock_state.state.lower() == "locked") if lock_state else False
-            )
-            # ... (Abrufen anderer Zustände) ...
-        except (ValueError, AttributeError):
-            _LOGGER.warning("Could not parse sensor states.")
-            return
-
-        await self._check_if_facade_is_in_sun()  # Wichtig: Regelmäßig prüfen
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to sensor events."""
@@ -613,7 +502,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
                 self._sun_azimuth_entity_id,
                 self._brightness_entity_id,
                 self._brightness_dawn_entity_id,
-                self._lock_entity_id,
+                self._lock_angle_entity_id,
                 self._lock_forced_entity_id,
                 self._height_entity_id,
                 self._angle_entity_id,
@@ -714,7 +603,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
 
     async def _is_lbs_locked(self) -> bool:
         """Check if the cover is locked."""
-        state = self.hass.states.get(self._lock_entity_id)
+        state = self.hass.states.get(self._lock_angle_entity_id)
         return state.state.lower() == "locked" if state else False
 
     async def _is_lbs_forced_locked(self) -> bool:
@@ -932,7 +821,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             azimuth_calc += 360
 
         is_azimuth_in_range = 0 <= azimuth_calc <= sun_exit_angle_calc
-        message = f"=== Finished facade check, real azimuth {azimut}° and facade at {facade_angle}° -> "
+        message = f"=== Finished facade check, real azimuth {azimuth}° and facade at {facade_angle}° -> "
         if is_azimuth_in_range:
             message += f"IN SUN (from {sun_entry_angle}° to {sun_exit_angle}°)"
             self._sun_illuminates_facade = True
