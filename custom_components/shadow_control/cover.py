@@ -465,12 +465,12 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
 
         # Listen for state changes of the elevation entity
         async_track_state_change_event(
-            self.hass, self._elevation_entity_id, sensor_state_listener
+            self.hass, self._sun_elevation_entity_id, sensor_state_listener
         )
 
         # Listen for state changes of the azimuth entity
         async_track_state_change_event(
-            self.hass, self._azimut_entity_id, sensor_state_listener
+            self.hass, self._sun_azimuth_entity_id, sensor_state_listener
         )
 
         # Listen for state changes of the brightness entity
@@ -561,21 +561,21 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
 
     async def async_update(self) -> None:
         """Fetch new state data for the cover."""
-        elevation = self.hass.states.async_get(self._elevation_entity_id)
-        azimut = self.hass.states.async_get(self._azimut_entity_id)
-        brightness = self.hass.states.async_get(self._brightness_entity_id)
-        brightness_dawn = self.hass.states.async_get(self._brightness_dawn_entity_id)
-        lock_state = self.hass.states.async_get(self._lock_entity_id)
-        lock_forced_state = self.hass.states.async_get(self._lock_forced_entity_id)
-        height = self.hass.states.async_get(self._height_entity_id)
-        angle = self.hass.states.async_get(self._angle_entity_id)
+        elevation = self.hass.states.get(self._sun_elevation_entity_id)
+        azimuth = self.hass.states.get(self._sun_azimuth_entity_id)
+        brightness = self.hass.states.get(self._brightness_entity_id)
+        brightness_dawn = self.hass.states.get(self._brightness_dawn_entity_id)
+        lock_state = self.hass.states.get(self._lock_entity_id)
+        lock_forced_state = self.hass.states.get(self._lock_forced_entity_id)
+        height = self.hass.states.get(self._height_entity_id)
+        angle = self.hass.states.get(self._angle_entity_id)
 
-        shadow_handling_active_state = self.hass.states.async_get(self._shadow_handling_activation_entity_id)
+        shadow_handling_active_state = self.hass.states.get(self._shadow_handling_activation_entity_id)
         shadow_handling_active = shadow_handling_active_state and shadow_handling_active_state.state == "on"
-        dawn_handling_active_state = self.hass.states.async_get(self._dawn_handling_activation_entity_id)
+        dawn_handling_active_state = self.hass.states.get(self._dawn_handling_activation_entity_id)
         dawn_handling_active = dawn_handling_active_state and dawn_handling_active_state.state == "on"
 
-        controlled_cover_state: State | None = await self.hass.states.async_get(self._controlled_cover_entity_id)
+        controlled_cover_state: State | None = await self.hass.states.get(self._controlled_cover_entity_id)
         current_height = controlled_cover_state.attributes.get('current_cover_position') if controlled_cover_state else None
         current_angle = controlled_cover_state.attributes.get('current_cover_tilt_position') if controlled_cover_state else None
 
@@ -588,7 +588,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
 
         try:
             self._current_elevation = float(elevation.state) if elevation else None
-            self._current_azimut = float(azimut.state) if azimut else None
+            self._current_azimuth = float(azimuth.state) if azimuth else None
             self._current_brightness = float(brightness.state) if brightness else None
             self._current_brightness_dawn = (
                 float(brightness_dawn.state) if brightness_dawn else None
@@ -609,8 +609,8 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         async_track_state_change_event(
             self.hass,
             [
-                self._elevation_entity_id,
-                self._azimut_entity_id,
+                self._sun_elevation_entity_id,
+                self._sun_azimuth_entity_id,
                 self._brightness_entity_id,
                 self._brightness_dawn_entity_id,
                 self._lock_entity_id,
@@ -704,22 +704,22 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
 
     async def _is_shadow_handling_activated(self) -> bool:
         """Check if shadow handling is activated."""
-        state = self.hass.states.async_get(self._shadow_handling_activation_entity_id)
+        state = self.hass.states.get(self._shadow_handling_activation_entity_id)
         return state.state.lower() == "on" if state else False
 
     async def _is_dawn_handling_activated(self) -> bool:
         """Check if dawn handling is activated."""
-        state = self.hass.states.async_get(self._dawn_handling_activation_entity_id)
+        state = self.hass.states.get(self._dawn_handling_activation_entity_id)
         return state.state.lower() == "on" if state else False
 
     async def _is_lbs_locked(self) -> bool:
         """Check if the cover is locked."""
-        state = self.hass.states.async_get(self._lock_entity_id)
+        state = self.hass.states.get(self._lock_entity_id)
         return state.state.lower() == "locked" if state else False
 
     async def _is_lbs_forced_locked(self) -> bool:
         """Check if the cover is forced locked."""
-        state = self.hass.states.async_get(self._lock_forced_entity_id)
+        state = self.hass.states.get(self._lock_forced_entity_id)
         return state.state.lower() == "locked" if state else False
 
     async def _is_lbs_locked_in_either_way(self) -> bool:
@@ -732,7 +732,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             entity_id_key = f"_{config_key}"
             if hasattr(self, entity_id_key):
                 entity_id = getattr(self, entity_id_key)
-                state = self.hass.states.async_get(entity_id)
+                state = self.hass.states.get(entity_id)
                 return (
                     float(state.state)
                     if state and state.state not in ["unavailable", "unknown"]
@@ -788,7 +788,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
 
     async def _calculate_shutter_angle(self) -> float | None:
         """Calculate the target shutter angle based on current conditions."""
-        azimut = await self._get_input_value("azimut")
+        azimuth = await self._get_input_value("azimuth")
         facade_angle = await self._get_input_value("facade_angle")
         facade_offset_start = await self._get_input_value("facade_offset_start")
         facade_offset_end = await self._get_input_value("facade_offset_end")
@@ -797,7 +797,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         shadow_max_angle = await self._get_input_value("shadow_max_angle")
 
         if (
-            azimut is None
+            azimuth is None
             or facade_angle is None
             or facade_offset_start is None
             or facade_offset_end is None
@@ -807,10 +807,10 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         ):
             return None
 
-        relative_azimut = (azimut - facade_angle + 360) % 360
-        if facade_offset_start <= relative_azimut <= (360 + facade_offset_end) % 360:
+        relative_azimuth = (azimuth - facade_angle + 360) % 360
+        if facade_offset_start <= relative_azimuth <= (360 + facade_offset_end) % 360:
             angle_percent = min_shutter_angle + (
-                (relative_azimut - facade_offset_start)
+                (relative_azimuth - facade_offset_start)
                 / (
                     facade_offset_end - facade_offset_start + 360
                     if facade_offset_end < facade_offset_start
@@ -894,7 +894,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         """Calculate if the given facade is illuminated by the sun."""
         self._debug(True, "=== Checking if facade is in sun... ===")
 
-        azimut = await self._get_input_value("azimut")
+        azimuth = await self._get_input_value("azimuth")
         facade_angle = await self._get_input_value("facade_angle")
         facade_offset_start = await self._get_input_value("facade_offset_start")
         facade_offset_end = await self._get_input_value("facade_offset_end")
@@ -903,7 +903,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         current_elevation = await self._get_input_value("elevation")
 
         if (
-            azimut is None
+            azimuth is None
             or facade_angle is None
             or facade_offset_start is None
             or facade_offset_end is None
@@ -927,21 +927,21 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         sun_exit_angle_calc = sun_exit_angle - sun_entry_angle
         if sun_exit_angle_calc < 0:
             sun_exit_angle_calc += 360
-        azimut_calc = azimut - sun_entry_angle
-        if azimut_calc < 0:
-            azimut_calc += 360
+        azimuth_calc = azimuth - sun_entry_angle
+        if azimuth_calc < 0:
+            azimuth_calc += 360
 
-        is_azimut_in_range = 0 <= azimut_calc <= sun_exit_angle_calc
-        message = f"=== Finished facade check, real azimut {azimut}° and facade at {facade_angle}° -> "
-        if is_azimut_in_range:
+        is_azimuth_in_range = 0 <= azimuth_calc <= sun_exit_angle_calc
+        message = f"=== Finished facade check, real azimuth {azimut}° and facade at {facade_angle}° -> "
+        if is_azimuth_in_range:
             message += f"IN SUN (from {sun_entry_angle}° to {sun_exit_angle}°)"
             self._sun_illuminates_facade = True
-            await self._send_by_change("sun_at_facade_azimut", True)
+            await self._send_by_change("sun_at_facade_azimuth", True)
             effective_elevation = await self._calculate_effective_elevation()
         else:
             message += f"NOT IN SUN (shadow side, at sun from {sun_entry_angle}° to {sun_exit_angle}°)"
             self._sun_illuminates_facade = False
-            await self._send_by_change("sun_at_facade_azimut", False)
+            await self._send_by_change("sun_at_facade_azimuth", False)
             effective_elevation = None
 
         await self._send_by_change("effective_elevation", effective_elevation)
@@ -979,10 +979,10 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
     async def _calculate_effective_elevation(self) -> float | None:
         """Berechnet die effektive Elevation der Sonne relativ zur Fassade."""
         elevation = await self._get_input_value("elevation")
-        azimut = await self._get_input_value("azimut")
+        azimuth = await self._get_input_value("azimuth")
         facade_angle = await self._get_input_value("facade_angle")
 
-        if elevation is None or azimut is None or facade_angle is None:
+        if elevation is None or azimuth is None or facade_angle is None:
             self._debug(
                 False,
                 "Kann effektive Elevation nicht berechnen: Nicht alle erforderlichen Eingabewerte sind verfügbar.",
@@ -991,10 +991,10 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
 
         try:
             elevation = float(elevation)
-            azimut = float(azimut)
+            azimuth = float(azimuth)
             facade_angle = float(facade_angle)
 
-            virtual_depth = math.cos(math.radians(abs(azimut - facade_angle)))
+            virtual_depth = math.cos(math.radians(abs(azimuth - facade_angle)))
             virtual_height = math.tan(math.radians(elevation))
 
             # Vermeide Division durch Null, falls virtual_depth sehr klein ist
@@ -2339,7 +2339,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         """Berechnet, ob die Fassade von der Sonne beleuchtet wird und ob die Elevation im gültigen Bereich liegt."""
         self._debug(True, "=== Überprüfe, ob Fassade in der Sonne ist... ===")
 
-        azimut = await self._get_input_value("azimut")
+        azimuth = await self._get_input_value("azimuth")
         facade_angle = await self._get_input_value("facade_angle")
         facade_offset_start = await self._get_input_value("facade_offset_start")
         facade_offset_end = await self._get_input_value("facade_offset_end")
@@ -2348,7 +2348,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         elevation = await self._get_input_value("elevation")
 
         if (
-            azimut is None
+            azimuth is None
             or facade_angle is None
             or facade_offset_start is None
             or facade_offset_end is None
@@ -2362,7 +2362,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             )
             return
 
-        azimut = float(azimut)
+        azimuth = float(azimuth)
         facade_angle = float(facade_angle)
         facade_offset_start = float(facade_offset_start)
         facade_offset_end = float(facade_offset_end)
@@ -2385,18 +2385,18 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         sun_exit_angle_calc = sun_exit_angle - sun_entry_angle
         if sun_exit_angle_calc < 0:
             sun_exit_angle_calc += 360
-        azimut_calc = azimut - sun_entry_angle
-        if azimut_calc < 0:
-            azimut_calc += 360
+        azimuth_calc = azimuth - sun_entry_angle
+        if azimuth_calc < 0:
+            azimuth_calc += 360
 
-        message = f"=== Fassadenprüfung beendet, realer Azimut {azimut}° und Fassade bei {facade_angle}° -> "
+        message = f"=== Fassadenprüfung beendet, realer Azimut {azimuth}° und Fassade bei {facade_angle}° -> "
         is_in_sun = False
         effective_elevation = "n/a"
 
-        if 0 <= azimut_calc <= sun_exit_angle_calc:
+        if 0 <= azimuth_calc <= sun_exit_angle_calc:
             message += f"IN DER SONNE (von {sun_entry_angle}° bis {sun_exit_angle}°)"
             is_in_sun = True
-            await self._set_sun_at_facade_azimut(1)
+            await self._set_sun_at_facade_azimuth(1)
             effective_elevation_result = (
                 await self._calculate_effective_elevation()
             )  # Implementierung folgt
@@ -2405,7 +2405,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         else:
             message += f"NICHT IN DER SONNE (Schattenseite, Sonne von {sun_entry_angle}° bis {sun_exit_angle}°)"
             is_in_sun = False
-            await self._set_sun_at_facade_azimut(0)
+            await self._set_sun_at_facade_azimuth(0)
 
         await self._set_effective_elevation(effective_elevation)
 
@@ -2450,11 +2450,11 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         elif not enabled:
             print(f"DEBUG (ShadowControl) (forced): {message}")
 
-    async def _set_sun_at_facade_azimut(self, value: int):
-        entity_id = await self._get_home_assistant_entity_id("sun_at_facade_azimut")
+    async def _set_sun_at_facade_azimuth(self, value: int):
+        entity_id = await self._get_home_assistant_entity_id("sun_at_facade_azimuth")
         if entity_id:
             await self._set_ha_state(
-                entity_id, str(value), {"output_name": "sun_at_facade_azimut"}
+                entity_id, str(value), {"output_name": "sun_at_facade_azimuth"}
             )
 
     async def _set_sun_at_facade_elevation(self, value: bool):
@@ -2478,7 +2478,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
     ):
         """Hilfsmethode zum Setzen des Zustands einer Home Assistant Entität."""
         if self.hass:
-            current_state = self.hass.states.async_get(entity_id)
+            current_state = self.hass.states.get(entity_id)
             if (
                 current_state is None
                 or current_state.state != state
@@ -2506,7 +2506,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
     async def _load_home_assistant_mapping(self) -> dict[str, str]:
         # ... Ihre Implementierung zum Laden der Zuordnung
         return {
-            "sun_at_facade_azimut": "sensor.shadow_control_sun_azimut",
+            "sun_at_facade_azimuth": "sensor.shadow_control_sun_azimuth",
             "effective_elevation": "sensor.shadow_control_effective_elevation",
             "sun_at_facade_elevation": "binary_sensor.shadow_control_sun_elevation",
             # ... weitere Zuordnungen
