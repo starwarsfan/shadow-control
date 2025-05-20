@@ -385,7 +385,13 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             facade_azimuth = float(facade_azimuth_state.state)
             is_shadow_control_enabled = shadow_control_enabled_state.state == "enabled" # Annahme für input_select
 
-            _LOGGER.debug(f"{self._name}: Brightness={current_brightness}, Elevation={current_sun_elevation}, FacadeAzimuth={facade_azimuth}, ShadowCtrlEnabled={is_shadow_control_enabled}")
+            _LOGGER.debug(
+                f"{self._name}: "
+                f"Brightness={current_brightness}, "
+                f"Elevation={current_sun_elevation}, "
+                f"FacadeAzimuth={facade_azimuth}, "
+                f"ShadowCtrlEnabled={is_shadow_control_enabled}"
+            )
 
             # Ihre komplexe Logik hier...
             # if is_shadow_control_enabled and current_brightness > 50000 and current_sun_elevation > 20:
