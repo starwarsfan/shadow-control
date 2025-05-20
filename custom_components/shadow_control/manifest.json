@@ -4,15 +4,8 @@
   "codeowners": [
     "@starwarsfan"
   ],
-  "dependencies": [
-    "sun",
-    "device_tracker",
-    "zone",
-    "climate",
-    "sensor",
-    "weather"
-  ],
   "config_flow": false,
+  "platform": ["cover"],
   "documentation": "https://github.com/starwarsfan/shadow-control",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/starwarsfan/shadow-control/issues",
