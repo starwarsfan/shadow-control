@@ -401,23 +401,34 @@ input_number:
     step: 1
     initial: 0
 
-input_select:
+input_boolean:
   # =========================================================================
   # Dynamic inputs
   d07_lock_integration:
     #[e#12 trigger   =Bausteinsperre (0/1)                    #init=0      ]
     name: "D07: Locked"
-    options:
-      - "unlocked"
-      - "locked"
-    initial: "unlocked"
   d08_lock_integration_with_position:
     #[e#13 trigger   =Sperre mit Zwangsposition (0/1)         #init=0      ]
     name: "D08: Locked with position constraint"
-    options:
-      - "unlocked"
-      - "locked"
-    initial: "unlocked"
+  # Dynamic inputs end
+  # =========================================================================
+  # Shadow settings
+  s01_shadow_control_enabled:
+    #[e#40 trigger   =Beschattungssteuerung aktiv (0/1)       #init=1      ]
+    name: "S01: Shadow control"
+  # Shadow settings end
+  # =========================================================================
+  # Dawn settings
+  sd01_dawn_control_enabled:
+    #[e#60 trigger   =Daemmerungssteuerung aktiv (0/1)        #init=1      ]
+    name: "SD01: Dawn control"
+  # Dawn settings end
+  # =========================================================================
+
+input_select:
+  # =========================================================================
+  # Dynamic inputs
+  # ...
   # Dynamic inputs end
   # =========================================================================
   # General settings
@@ -455,23 +466,11 @@ input_select:
   # General settings end
   # =========================================================================
   # Shadow settings
-  s01_shadow_control_enabled:
-    #[e#40 trigger   =Beschattungssteuerung aktiv (0/1)       #init=1      ]
-    name: "S01: Shadow control"
-    options:
-      - "enabled"
-      - "disabled"
-    initial: "enabled"
+  # ...
   # Shadow settings end
   # =========================================================================
   # Dawn settings
-  sd01_dawn_control_enabled:
-    #[e#60 trigger   =Daemmerungssteuerung aktiv (0/1)        #init=1      ]
-    name: "SD01: Dawn control"
-    options:
-      - "enabled"
-      - "disabled"
-    initial: "enabled"
+  # ...
   # Dawn settings end
   # =========================================================================
 
@@ -487,8 +486,8 @@ cover:
     sun_azimuth_entity_id: input_number.d04_sun_azimuth
     shutter_current_height_entity_id: input_number.d05_shutter_current_height
     shutter_current_angle_entity_id: input_number.d06_shutter_current_angle
-    lock_integration_entity_id: input_select.d07_lock_integration
-    lock_integration_with_position_entity_id: input_select.d08_lock_integration_with_position
+    lock_integration_entity_id: input_boolean.d07_lock_integration
+    lock_integration_with_position_entity_id: input_boolean.d08_lock_integration_with_position
     lock_height_entity_id: input_number.d09_lock_height
     lock_angle_entity_id: input_number.d10_lock_angle
     modification_tolerance_height_entity_id: input_number.d11_modification_tolerance_height
@@ -516,7 +515,7 @@ cover:
     update_lock_output_entity_id: input_select.g19_update_lock_output
 
     # === Beschattungseinstellungen (Test-Helfer) ===
-    shadow_control_enabled_entity_id: input_select.s01_shadow_control_enabled
+    shadow_control_enabled_entity_id: input_boolean.s01_shadow_control_enabled
     shadow_brightness_level_entity_id: input_number.s02_shadow_brightness_level
     shadow_after_seconds_entity_id: input_number.s03_shadow_after_seconds
     shadow_max_height_entity_id: input_number.s04_shadow_max_height
@@ -528,7 +527,7 @@ cover:
     after_shadow_angle_entity_id: input_number.s10_after_shadow_angle
 
     # === Dämmerungseinstellungen (Test-Helfer) ===
-    dawn_control_enabled_entity_id: input_select.sd01_dawn_control_enabled
+    dawn_control_enabled_entity_id: input_boolean.sd01_dawn_control_enabled
     dawn_brightness_level_entity_id: input_number.sd02_dawn_brightness_level
     dawn_after_seconds_entity_id: input_number.sd03_dawn_after_seconds
     dawn_max_height_entity_id: input_number.sd04_dawn_max_height

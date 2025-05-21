@@ -9,7 +9,7 @@ from typing import Optional
 import voluptuous as vol
 from homeassistant.components.cover import CoverEntity, CoverEntityFeature
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_NAME, STATE_UNAVAILABLE, STATE_UNKNOWN 
+from homeassistant.const import CONF_NAME, STATE_ON, STATE_OFF, STATE_UNAVAILABLE, STATE_UNKNOWN 
 from homeassistant.core import HomeAssistant, callback, State
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -122,8 +122,8 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         self._sun_azimuth_entity_id = "input_number.d04_sun_azimuth"
         self._shutter_current_height_entity_id = "input_number.d05_shutter_current_height" # Ist-Wert Höhe
         self._shutter_current_angle_entity_id = "input_number.d06_shutter_current_angle"   # Ist-Wert Winkel
-        self._lock_integration_entity_id = "input_select.d07_lock_integration"
-        self._lock_integration_with_position_entity_id = "input_select.d08_lock_integration_with_position"
+        self._lock_integration_entity_id = "input_boolean.d07_lock_integration"
+        self._lock_integration_with_position_entity_id = "input_boolean.d08_lock_integration_with_position"
         self._lock_height_entity_id = "input_number.d09_lock_height"
         self._lock_angle_entity_id = "input_number.d10_lock_angle"
         self._modification_tolerance_height_entity_id = "input_number.d11_modification_tolerance_height"
@@ -151,7 +151,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         self._update_lock_output_entity_id = "input_select.g19_update_lock_output"
 
         # === Beschattungseinstellungen (Test-Helfer) ===
-        self._shadow_control_enabled_entity_id = "input_select.s01_shadow_control_enabled"
+        self._shadow_control_enabled_entity_id = "input_boolean.s01_shadow_control_enabled"
         self._shadow_brightness_level_entity_id = "input_number.s02_shadow_brightness_level"
         self._shadow_after_seconds_entity_id = "input_number.s03_shadow_after_seconds"
         self._shadow_max_height_entity_id = "input_number.s04_shadow_max_height"
@@ -163,7 +163,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         self._after_shadow_angle_entity_id = "input_number.s10_after_shadow_angle"
 
         # === Dämmerungseinstellungen (Test-Helfer) ===
-        self._dawn_control_enabled_entity_id = "input_select.sd01_dawn_control_enabled"
+        self._dawn_control_enabled_entity_id = "input_boolean.sd01_dawn_control_enabled"
         self._dawn_brightness_level_entity_id = "input_number.sd02_dawn_brightness_level"
         self._dawn_after_seconds_entity_id = "input_number.sd03_dawn_after_seconds"
         self._dawn_max_height_entity_id = "input_number.sd04_dawn_max_height"
@@ -486,14 +486,36 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         return state.state.lower() == "on" if state else False
 
     async def _is_lbs_locked(self) -> bool:
-        """Check if the cover is locked."""
-        state = self.hass.states.get(self._lock_integration_entity_id)
-        return state.state.lower() == "locked" if state else False
+        """Check if integration is locked."""
+        lock_state_obj = self.hass.states.get(self._lock_integration_entity_id)
+        if lock_state_obj: # Prüfen, ob das State-Objekt existiert
+            if lock_state_obj.state == STATE_ON: # Vergleichen mit der Konstante STATE_ON
+                is_locked = True
+            elif lock_state_obj.state == STATE_OFF: # Vergleichen mit der Konstante STATE_OFF
+                is_locked = False
+            else: # Fallback für den Fall, dass der Zustand weder 'on' noch 'off' ist (z.B. 'unavailable', 'unknown')
+                _LOGGER.warning(f"Unexpected state for {self._lock_integration_entity_id}: {lock_state_obj.state}. Assuming unlocked.")
+                is_locked = False
+        else: # Fallback, wenn das State-Objekt nicht gefunden wird
+            _LOGGER.warning(f"Entity {self._lock_integration_entity_id} not found. Assuming unlocked.")
+            is_locked = False
+        return is_locked
 
     async def _is_lbs_forced_locked(self) -> bool:
-        """Check if the cover is forced locked."""
-        state = self.hass.states.get(self._lock_integration_with_position_entity_id)
-        return state.state.lower() == "locked" if state else False
+        """Check if integration locked with forced position."""
+        lock_state_obj = self.hass.states.get(self._lock_integration_with_position_entity_id)
+        if lock_state_obj: # Prüfen, ob das State-Objekt existiert
+            if lock_state_obj.state == STATE_ON: # Vergleichen mit der Konstante STATE_ON
+                is_locked = True
+            elif lock_state_obj.state == STATE_OFF: # Vergleichen mit der Konstante STATE_OFF
+                is_locked = False
+            else: # Fallback für den Fall, dass der Zustand weder 'on' noch 'off' ist (z.B. 'unavailable', 'unknown')
+                _LOGGER.warning(f"Unexpected state for {self._lock_integration_entity_id}: {lock_state_obj.state}. Assuming unlocked.")
+                is_locked = False
+        else: # Fallback, wenn das State-Objekt nicht gefunden wird
+            _LOGGER.warning(f"Entity {self._lock_integration_entity_id} not found. Assuming unlocked.")
+            is_locked = False
+        return is_locked
 
     async def _is_lbs_locked_in_either_way(self) -> bool:
         """Check if the cover is locked in any way."""
