@@ -552,30 +552,6 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             self._target_tilt = tilt
             await self._perform_state_handling()
 
-    async def async_added_to_hass(self) -> None:
-        """Subscribe to sensor events."""
-        await super().async_added_to_hass()
-        async_track_state_change_event(
-            self.hass,
-            [
-                self._sun_elevation_entity_id,
-                self._sun_azimuth_entity_id,
-                self._brightness_entity_id,
-                self._brightness_dawn_entity_id,
-                self._lock_angle_entity_id,
-                self._lock_forced_entity_id,
-                self._height_entity_id,
-                self._angle_entity_id,
-                self._shadow_handling_activation_entity_id,
-                self._dawn_handling_activation_entity_id,
-            ],
-            self._async_sensor_changed,
-        )
-        # Initial run finished
-        self._initial_lbs_run_finished = True
-        self._debug(True, "Initial LBS run finished")
-        await self._perform_state_handling()
-
     @callback
     async def _async_sensor_changed(self, entity_id, old_state, new_state):
         """Handle sensor state changes."""
