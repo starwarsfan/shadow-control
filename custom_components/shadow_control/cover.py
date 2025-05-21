@@ -308,8 +308,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # 2. Beschattungslogik ausführen
         _LOGGER.debug(f"{self._name}: Brightness={current_brightness}, Elevation={current_sun_elevation}, etc. - Performing calculation.")
 
-        self._check_if_position_changed_externally(self, current_height, current_angle)
-        self._handle_lock_state(self)
+        self._check_if_position_changed_externally(current_height, current_angle)
+        await self._handle_lock_state()
 
         # 3. Jalousie steuern (async_set_cover_position, async_set_cover_tilt_position)
         # await self.async_set_cover_position(new_position)
@@ -326,12 +326,12 @@ class ShadowControl(CoverEntity, RestoreEntity):
         _LOGGER.debug(f"{self._name}: TBD...")
         pass
 
-    def _handle_lock_state(self):
-        if self._is_locked():
+    async def _handle_lock_state(self):
+        if await self._is_locked():
             _LOGGER.debug(f"{self._name} is locked. Do not change the position.")
-        elif self._is_forced_locked():
+        elif await self._is_forced_locked():
             _LOGGER.debug(f"{self._name} is forced locked. Do not change the position.")
-        # elif self._is_modified_externally():
+        # elif await self._is_modified_externally():
         #     _LOGGER.debug(f"{self._name} is modified externally. Do not change the position.")
         else:
             _LOGGER.debug(f"{self._name} is not locked. Change the position.")
