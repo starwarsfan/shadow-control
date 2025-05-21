@@ -639,12 +639,12 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
 
     async def _is_lbs_locked(self) -> bool:
         """Check if the cover is locked."""
-        state = self.hass.states.get(self._lock_angle_entity_id)
+        state = self.hass.states.get(self._lock_integration_entity_id)
         return state.state.lower() == "locked" if state else False
 
     async def _is_lbs_forced_locked(self) -> bool:
         """Check if the cover is forced locked."""
-        state = self.hass.states.get(self._lock_forced_entity_id)
+        state = self.hass.states.get(self._lock_integration_with_position_entity_id)
         return state.state.lower() == "locked" if state else False
 
     async def _is_lbs_locked_in_either_way(self) -> bool:
