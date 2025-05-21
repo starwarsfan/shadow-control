@@ -187,6 +187,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
 
         self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
 
+    # =======================================================================
     # Listener registrieren, welche die Integration triggern
     async def async_added_to_hass(self) -> None:
         """Run when this Entity has been added to Home Assistant."""
@@ -216,6 +217,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         # Optional: Initialberechnung beim Start, falls Sie async_update entfernen
         await self._async_trigger_recalculation(None, None, None) # rufen Sie die Logik einmalig auf
 
+    # =======================================================================
     # Registrierte Listener entfernen
     async def async_will_remove_from_hass(self) -> None:
         """Run when this Entity will be removed from Home Assistant."""
@@ -225,6 +227,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             remove_listener()
         self._listeners = []
 
+    # =======================================================================
     # Beschattung neu berechnen
     async def _async_trigger_recalculation(self, entity_id: str | None, old_state: State | None, new_state: State | None) -> None:
         """Callback for state changes of trigger entities."""
@@ -248,35 +251,8 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         # await self.async_set_cover_tilt_position(new_tilt_position)
         # ...
 
-    async def _log_current_input_values(self) -> None:
-        """Logs the current values of all input entities."""
-        _LOGGER.debug(f"--- {self._name}: Current Input Values ---")
-        try:
-            # Dynamische Eingänge
-            _LOGGER.debug(f"Brightness: {self._get_state_value(self._brightness_entity_id)}")
-            _LOGGER.debug(f"Brightness Dawn: {self._get_state_value(self._brightness_dawn_entity_id)}")
-            _LOGGER.debug(f"Sun Elevation: {self._get_state_value(self._sun_elevation_entity_id)}")
-            _LOGGER.debug(f"Sun Azimuth: {self._get_state_value(self._sun_azimuth_entity_id)}")
-            _LOGGER.debug(f"Shutter Current Height: {self._get_state_value(self._shutter_current_height_entity_id)}")
-            _LOGGER.debug(f"Shutter Current Angle: {self._get_state_value(self._shutter_current_angle_entity_id)}")
-            _LOGGER.debug(f"Lock Integration: {self._get_state_value(self._lock_integration_entity_id)}")
-            _LOGGER.debug(f"Lock Integration w. Position: {self._get_state_value(self._lock_integration_with_position_entity_id)}")
-            _LOGGER.debug(f"Lock Height: {self._get_state_value(self._lock_height_entity_id)}")
-            _LOGGER.debug(f"Lock Angle: {self._get_state_value(self._lock_angle_entity_id)}")
-            _LOGGER.debug(f"Tolerance Height: {self._get_state_value(self._modification_tolerance_height_entity_id)}")
-            _LOGGER.debug(f"Tolerance Angle: {self._get_state_value(self._modification_tolerance_angle_entity_id)}")
-
-            # Allgemeine Einstellungen
-            _LOGGER.debug(f"Facade Azimuth: {self._get_state_value(self._azimuth_facade_entity_id)}")
-            _LOGGER.debug(f"Offset Sun In: {self._get_state_value(self._offset_sun_in_entity_id)}")
-            # ... Fügen Sie hier Logs für ALLE anderen Gxx, Sxx, SDxx Helfer hinzu ...
-            # Beispiel für einen weiteren allgemeinen Parameter:
-            _LOGGER.debug(f"Slat Width: {self._get_state_value(self._slat_width_entity_id)}")
-            # (usw. für alle anderen)
-
-        except Exception as e:
-            _LOGGER.error(f"Error logging input values: {e}")
-
+    # =======================================================================
+    # Helper to get and handle entity states
     def _get_state_value(self, entity_id: str | None) -> str | None:
         """Helper to get the state of an entity."""
         if not entity_id:
@@ -414,55 +390,6 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
     #     # Rufen Sie hier Ihr Skript für die Neigung auf
     #     self.async_write_ha_state()
 
-    # async def async_update(self) -> None:
-    #     """Fetch new state data for the cover. (Hier implementieren Sie Ihre Logik)"""
-    #     _LOGGER.debug(f"{self._name}: Updating state...")
-    #     await self._log_current_input_values() # Loggt die aktuellen Werte bei jedem Update
-    #
-    #     # === Beispielhafte Logik (Platzhalter) ===
-    #     # Hier würden Sie die Werte Ihrer Sensoren und Helfer auslesen
-    #     # und basierend darauf entscheiden, ob und wie das Cover bewegt werden soll.
-    #
-    #     # Beispiel: Werte auslesen
-    #     try:
-    #         current_brightness_state = self.hass.states.get(self._brightness_entity_id)
-    #         current_sun_elevation_state = self.hass.states.get(self._sun_elevation_entity_id)
-    #         facade_azimuth_state = self.hass.states.get(self._azimuth_facade_entity_id)
-    #         shadow_control_enabled_state = self.hass.states.get(self._shadow_control_enabled_entity_id)
-    #
-    #         if not all([current_brightness_state, current_sun_elevation_state, facade_azimuth_state, shadow_control_enabled_state]):
-    #             _LOGGER.warning(f"{self._name}: One or more input entities are not available.")
-    #             return
-    #
-    #         current_brightness = float(current_brightness_state.state)
-    #         current_sun_elevation = float(current_sun_elevation_state.state)
-    #         facade_azimuth = float(facade_azimuth_state.state)
-    #         is_shadow_control_enabled = shadow_control_enabled_state.state == "enabled" # Annahme für input_select
-    #
-    #         _LOGGER.debug(
-    #             f"{self._name}: "
-    #             f"Brightness={current_brightness}, "
-    #             f"Elevation={current_sun_elevation}, "
-    #             f"FacadeAzimuth={facade_azimuth}, "
-    #             f"ShadowCtrlEnabled={is_shadow_control_enabled}"
-    #         )
-    #
-    #         # Ihre komplexe Logik hier...
-    #         # if is_shadow_control_enabled and current_brightness > 50000 and current_sun_elevation > 20:
-    #         #     _LOGGER.info(f"{self._name}: Conditions met for closing cover.")
-    #         #     # await self.async_set_cover_position(position=10) # Beispiel: Schließen auf 10%
-    #         # else:
-    #         #     _LOGGER.info(f"{self._name}: Conditions not met for closing cover.")
-    #         #     # await self.async_set_cover_position(position=90) # Beispiel: Öffnen auf 90%
-    #
-    #     except ValueError as e:
-    #         _LOGGER.error(f"{self._name}: Error converting sensor value to float: {e}")
-    #     except Exception as e:
-    #         _LOGGER.error(f"{self._name}: Unexpected error during update: {e}")
-    #
-    #     # Am Ende jedes Updates den Zustand schreiben, falls er sich geändert haben könnte
-    #     self.async_write_ha_state()
-
     @property
     def unique_id(self) -> str | None:
         """Return the unique ID of the cover."""
@@ -474,91 +401,12 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         # Hier den aktuellen Neigungswinkel abrufen oder aus dem Zustand ableiten
         return None  # Placeholder
 
-    async def async_setup(self):
-        """Set up the Shadow Control by listening to sensor states."""
-        async def sensor_state_listener(entity_id, old_state, new_state):
-            """Handle state changes of the tracked sensors."""
-            if new_state is None:
-                return
-            self._perform_computation = True
-            await self.async_update_ha_state(True)  # Force an immediate update
-
-        # Listen for state changes of the elevation entity
-        async_track_state_change_event(
-            self.hass, self._sun_elevation_entity_id, sensor_state_listener
-        )
-
-        # Listen for state changes of the azimuth entity
-        async_track_state_change_event(
-            self.hass, self._sun_azimuth_entity_id, sensor_state_listener
-        )
-
-        # Listen for state changes of the brightness entity
-        async_track_state_change_event(
-            self.hass, self._brightness_entity_id, sensor_state_listener
-        )
-
-        # Listen for state changes of the dawn brightness entity (if configured)
-        if self._brightness_dawn_entity_id:
-            async_track_state_change_event(
-                self.hass, self._brightness_dawn_entity_id, sensor_state_listener
-            )
-
-        # Listen for state changes of the shadow handling activation entity
-        async_track_state_change_event(
-            self.hass, self._shadow_handling_activation_entity_id, sensor_state_listener
-        )
-
-        # Listen for state changes of the dawn handling activation entity
-        async_track_state_change_event(
-            self.hass, self._dawn_handling_activation_entity_id, sensor_state_listener
-        )
-
-        # Listen for state changes of the cover entity (to track its current position)
-        if self._controlled_cover_entity_id:
-            async def cover_state_listener(entity_id, old_state, new_state):
-                """Handle state changes of the controlled cover entity."""
-                if new_state and "current_cover_position" in new_state.attributes:
-                    self._target_position = new_state.attributes["current_cover_position"]
-                    self._is_closed = (self._target_position == 0)
-                    self.async_schedule_update_ha_state()
-
-            async_track_state_change_event(
-                self.hass, self._controlled_cover_entity_id, cover_state_listener
-            )
-
-        # Optionally listen for lock entity state changes
-        if self._lock_angle_entity_id:
-            async def lock_state_listener(entity_id, old_state, new_state):
-                """Handle state changes of the lock entity."""
-                if new_state and new_state.state in ("locked", "unlocked"):
-                    self._is_locked = (new_state.state == "locked")
-                    self.async_schedule_update_ha_state()
-
-            async_track_state_change_event(
-                self.hass, self._lock_angle_entity_id, lock_state_listener
-            )
-
-        # Optionally listen for lock with forced position entity state changes
-        # (Implement similar logic as for _lock_angle_entity_id if needed)
-
-        # No direct control here, the ShadowControlledCover handles commands
-        pass
-
     async def async_set_cover_tilt(self, **kwargs: any) -> None:
         """Set the tilt of the cover."""
         if (tilt := kwargs.get("tilt")) is not None:
             _LOGGER.debug(f"Set cover tilt to {tilt}")
             self._target_tilt = tilt
             await self._perform_state_handling()
-
-    @callback
-    async def _async_sensor_changed(self, entity_id, old_state, new_state):
-        """Handle sensor state changes."""
-        if new_state is None:
-            return
-        self._debug(True, f"Sensor {entity_id} changed to {new_state.state}")
-        await self._perform_state_handling()
 
     async def _perform_state_handling(self):
         """Handle the state machine and trigger actions."""
@@ -947,68 +795,12 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             )
             return None
 
-    async def _handle_state_neutral(self) -> str:
-        """Implementierung der Logik für den Zustand NEUTRAL."""
-        if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True, f"Zustand {self.STATE_NEUTRAL}: LBS ist gesperrt, keine Aktion."
-            )
-            return self.STATE_NEUTRAL
-
-        if await self._is_in_sun() and await self._is_shadow_handling_activated():
-            current_brightness = await self._get_input_value("brightness")
-            shadow_threshold_close = await self._get_input_value(
-                "shadow_threshold_close"
-            )
-            shadow_close_delay = await self._get_input_value("shadow_close_delay")
-            if (
-                current_brightness is not None
-                and shadow_threshold_close is not None
-                and current_brightness > shadow_threshold_close
-                and shadow_close_delay is not None
-            ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_NEUTRAL}: Helligkeit ({current_brightness}) über Schatten-Schwellwert ({shadow_threshold_close}), starte Timer für {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)",
-                )
-                await self._start_timer(shadow_close_delay)
-                return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
-
-        if await self._is_dawn_handling_activated():
-            dawn_brightness = await self._get_input_value("brightness_dawn")
-            dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
-            dawn_close_delay = await self._get_input_value("dawn_close_delay")
-            if (
-                dawn_brightness is not None
-                and dawn_threshold_close is not None
-                and dawn_brightness < dawn_threshold_close
-                and dawn_close_delay is not None
-            ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_NEUTRAL}: Dämmerungsbehandlung aktiv und Helligkeit ({dawn_brightness}) unter Dämmerungs-Schwellwert ({dawn_threshold_close}), starte Timer für {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)",
-                )
-                await self._start_timer(dawn_close_delay)
-                return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
-
-        neutral_height = await self._get_input_value("height_neutral")
-        neutral_angle = await self._get_input_value("angle_neutral")
-        if neutral_height is not None and neutral_angle is not None:
-            await self._position_shutter(
-                float(neutral_height),
-                float(neutral_angle),
-                0,  # Richtung: Neutral
-                force=True,
-                stop_timer=False,
-            )
-            self._debug(
-                True,
-                f"Zustand {self.STATE_NEUTRAL}: Bewege Behang in Neutralposition ({neutral_height}%, {neutral_angle}%).",
-            )
-        return self.STATE_NEUTRAL
-
+    # #######################################################################
+    # State handling starting here
+    # 
+    # =======================================================================
+    # State SHADOW_FULL_CLOSE_TIMER_RUNNING
     async def _handle_state_shadow_full_close_timer_running(self) -> str:
-        """Implementierung der Logik für den Zustand SHADOW_FULL_CLOSE_TIMER_RUNNING."""
         if await self._is_lbs_locked_in_either_way():
             self._debug(
                 True,
@@ -1022,9 +814,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
                 "shadow_threshold_close"
             )
             if (
-                current_brightness is not None
-                and shadow_threshold_close is not None
-                and current_brightness > shadow_threshold_close
+                    current_brightness is not None
+                    and shadow_threshold_close is not None
+                    and current_brightness > shadow_threshold_close
             ):
                 if await self._is_timer_finished():
                     target_height = await self._calculate_shutter_height()
@@ -1091,8 +883,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         )
         return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
 
+    # =======================================================================
+    # State SHADOW_FULL_CLOSED
     async def _handle_state_shadow_full_closed(self) -> str:
-        """Implementierung der Logik für den Zustand SHADOW_FULL_CLOSED."""
         if await self._is_lbs_locked_in_either_way():
             self._debug(
                 True,
@@ -1109,10 +902,10 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
                 "shadow_open_slat_delay"
             )
             if (
-                current_brightness is not None
-                and shadow_threshold_close is not None
-                and shadow_open_slat_delay is not None
-                and current_brightness < shadow_threshold_close
+                    current_brightness is not None
+                    and shadow_threshold_close is not None
+                    and shadow_open_slat_delay is not None
+                    and current_brightness < shadow_threshold_close
             ):
                 self._debug(
                     True,
@@ -1166,386 +959,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         )
         return self.STATE_SHADOW_FULL_CLOSED
 
-    async def _handle_state_shadow_open_shutter_timer_running(self) -> str:
-        """Implementierung der Logik für den Zustand SHADOW_OPEN_SHUTTER_TIMER_RUNNING."""
-        if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_OPEN_SHUTTER_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
-            )
-            return self.STATE_SHADOW_OPEN_SHUTTER_TIMER_RUNNING
-
-        if await self._is_timer_finished():
-            shadow_open_height = await self._get_input_value("height_after_shadow")
-            shadow_open_angle = await self._get_input_value("angle_after_shadow")
-            if shadow_open_height is not None and shadow_open_angle is not None:
-                await self._position_shutter(
-                    float(shadow_open_height),
-                    float(shadow_open_angle),
-                    1,  # Richtung: Öffnen/Aufwärts
-                    force=False,
-                    stop_timer=True,
-                )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_OPEN_SHUTTER_TIMER_RUNNING}: Timer abgelaufen, fahre in Schatten-Offen Position ({shadow_open_height}%, {shadow_open_angle}%) und gehe zu {self.STATE_SHADOW_PARTIALLY_OPEN}",
-                )
-                return self.STATE_SHADOW_PARTIALLY_OPEN
-            else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_SHADOW_OPEN_SHUTTER_TIMER_RUNNING}: Höhe oder Winkel für Schatten-Offen nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
-                return self.STATE_NEUTRAL
-        else:
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_OPEN_SHUTTER_TIMER_RUNNING}: Warte auf Timer...",
-            )
-            return self.STATE_SHADOW_OPEN_SHUTTER_TIMER_RUNNING
-
-    async def _handle_state_shadow_partially_open(self) -> str:
-        """Implementierung der Logik für den Zustand SHADOW_PARTIALLY_OPEN."""
-        if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_PARTIALLY_OPEN}: LBS ist gesperrt, keine Aktion.",
-            )
-            return self.STATE_SHADOW_PARTIALLY_OPEN
-
-        if await self._is_in_sun() and await self._is_shadow_handling_activated():
-            shadow_open_slat_delay = await self._get_input_value(
-                "shadow_open_slat_delay"
-            )
-            await self._start_timer(shadow_open_slat_delay)
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_PARTIALLY_OPEN}: Sonne scheint immer noch, starte Timer ({shadow_open_slat_delay}s) zum Öffnen der Lamellen und gehe zu {self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING}",
-            )
-            return self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING
-        elif (
-            not await self._is_in_sun()
-            or not await self._is_shadow_handling_activated()
-        ):
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_PARTIALLY_OPEN}: Sonne weg oder Schattenmodus deaktiviert, gehe zu {self.STATE_NEUTRAL}",
-            )
-            return self.STATE_NEUTRAL
-        else:
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_PARTIALLY_OPEN}: Warte weiterhin auf Sonneneinstrahlung...",
-            )
-            return self.STATE_SHADOW_PARTIALLY_OPEN
-
-    async def _handle_state_shadow_open_slats_timer_running(self) -> str:
-        """Implementierung der Logik für den Zustand SHADOW_OPEN_SLATS_TIMER_RUNNING (mit Sperrzustandsprüfung)."""
-        if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
-            )
-            return self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING
-
-        if await self._is_timer_finished():
-            neutral_angle = await self._get_input_value("angle_neutral")
-            if neutral_angle is not None:
-                await self._position_shutter(
-                    None,  # Höhe beibehalten
-                    float(neutral_angle),
-                    1,  # Richtung: Öffnen/Aufwärts
-                    force=False,
-                    stop_timer=True,
-                )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING}: Timer abgelaufen, öffne Lamellen auf Neutralwinkel und gehe zu {self.STATE_SHADOW_PARTIALLY_OPEN}",
-                )
-                return self.STATE_SHADOW_PARTIALLY_OPEN
-            else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING}: Neutraler Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
-                return self.STATE_NEUTRAL
-        else:
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING}: Warte auf Timer...",
-            )
-            return self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING
-
-    async def _handle_state_dawn_full_close_timer_running(self) -> str:
-        """Implementierung der Logik für den Zustand DAWN_FULL_CLOSE_TIMER_RUNNING."""
-        if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
-            )
-            return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
-
-        if await self._is_dawn_handling_activated():
-            dawn_brightness = await self._get_input_value("brightness_dawn")
-            dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
-            dawn_height = await self._get_input_value("dawn_height")
-            dawn_angle = await self._get_input_value("dawn_angle")
-
-            if (
-                dawn_brightness is not None
-                and dawn_threshold_close is not None
-                and dawn_brightness < dawn_threshold_close
-            ):
-                if await self._is_timer_finished():
-                    if dawn_height is not None and dawn_angle is not None:
-                        await self._position_shutter(
-                            float(dawn_height),
-                            float(dawn_angle),
-                            0,  # Richtung: Neutral
-                            force=True,
-                            stop_timer=True,
-                        )
-                        self._debug(
-                            True,
-                            f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Timer abgelaufen, fahre in volle Dämmerungsposition ({dawn_height}%, {dawn_angle}%) und gehe zu {self.STATE_DAWN_FULL_CLOSED}",
-                        )
-                        return self.STATE_DAWN_FULL_CLOSED
-                    else:
-                        self._debug(
-                            False,
-                            f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Dämmerungshöhe oder -winkel nicht konfiguriert, bleibe in {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}",
-                        )
-                        return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
-                else:
-                    self._debug(
-                        True,
-                        f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Warte auf Timer (Helligkeit niedrig genug)...",
-                    )
-                    return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
-            else:
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Helligkeit ({dawn_brightness}) nicht unter Schwellwert ({dawn_threshold_close}), gehe zu {self.STATE_DAWN_NEUTRAL} und stoppe Timer.",
-                )
-                await self._stop_timer()
-                return self.STATE_DAWN_NEUTRAL
-        else:
-            neutral_height = await self._get_input_value("height_neutral")
-            neutral_angle = await self._get_input_value("angle_neutral")
-            if neutral_height is not None and neutral_angle is not None:
-                await self._position_shutter(
-                    float(neutral_height),
-                    float(neutral_angle),
-                    0,  # Richtung: Neutral
-                    force=True,
-                    stop_timer=True,  # Stop Timer
-                )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
-                )
-                return self.STATE_NEUTRAL
-            else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
-                return self.STATE_NEUTRAL
-
-        # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        self._debug(
-            True,
-            f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Beibehalte vorherige Position.",
-        )
-        return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
-
-    async def _handle_state_dawn_full_closed(self) -> str:
-        """Implementierung der Logik für den Zustand DAWN_FULL_CLOSED."""
-        if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_FULL_CLOSED}: LBS ist gesperrt, keine Aktion.",
-            )
-            return self.STATE_DAWN_FULL_CLOSED
-
-        if await self._is_dawn_handling_activated():
-            dawn_brightness = await self._get_input_value("brightness_dawn")
-            dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
-            dawn_open_slat_delay = await self._get_input_value("dawn_open_slat_delay")
-            dawn_height = await self._get_input_value("dawn_height")
-            dawn_angle = await self._get_input_value("dawn_angle")
-
-            if (
-                dawn_brightness is not None
-                and dawn_threshold_close is not None
-                and dawn_brightness > dawn_threshold_close
-                and dawn_open_slat_delay is not None
-            ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungshelligkeit ({dawn_brightness}) über Schwellwert ({dawn_threshold_close}), starte Timer für {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({dawn_open_slat_delay}s)",
-                )
-                await self._start_timer(dawn_open_slat_delay)
-                return self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
-            elif dawn_height is not None and dawn_angle is not None:
-                await self._position_shutter(
-                    float(dawn_height),
-                    float(dawn_angle),
-                    0,  # Richtung: Neutral
-                    force=True,
-                    stop_timer=False,
-                )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungshelligkeit nicht über Schwellwert, fahre in Dämmerungsposition ({dawn_height}%, {dawn_angle}%).",
-                )
-                return self.STATE_DAWN_FULL_CLOSED
-            else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungshöhe oder -winkel nicht konfiguriert, bleibe in {self.STATE_DAWN_FULL_CLOSED}",
-                )
-                return self.STATE_DAWN_FULL_CLOSED
-        else:
-            neutral_height = await self._get_input_value("height_neutral")
-            neutral_angle = await self._get_input_value("angle_neutral")
-            if neutral_height is not None and neutral_angle is not None:
-                await self._position_shutter(
-                    float(neutral_height),
-                    float(neutral_angle),
-                    0,  # Richtung: Neutral
-                    force=True,
-                    stop_timer=True,  # Stop Timer
-                )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
-                )
-                return self.STATE_NEUTRAL
-            else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
-                return self.STATE_NEUTRAL
-
-        # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        self._debug(
-            True,
-            f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Beibehalte vorherige Position.",
-        )
-        return self.STATE_DAWN_FULL_CLOSED
-
-    async def _handle_state_dawn_open_shutter_timer_running(self) -> str:
-        """Implementierung der Logik für den Zustand DAWN_OPEN_SHUTTER_TIMER_RUNNING."""
-        if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_OPEN_SHUTTER_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
-            )
-            return self.STATE_DAWN_OPEN_SHUTTER_TIMER_RUNNING
-
-        if await self._is_timer_finished():
-            dawn_open_height = await self._get_input_value("height_after_dawn")
-            dawn_open_angle = await self._get_input_value("angle_after_dawn")
-            if dawn_open_height is not None and dawn_open_angle is not None:
-                await self._position_shutter(
-                    float(dawn_open_height),
-                    float(dawn_open_angle),
-                    1,  # Richtung: Öffnen/Aufwärts
-                    force=False,
-                    stop_timer=True,
-                )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_OPEN_SHUTTER_TIMER_RUNNING}: Timer abgelaufen, fahre in Dämmerungs-Offen Position ({dawn_open_height}%, {dawn_open_angle}%) und gehe zu {self.STATE_DAWN_PARTIALLY_OPEN}",
-                )
-                return self.STATE_DAWN_PARTIALLY_OPEN
-            else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_DAWN_OPEN_SHUTTER_TIMER_RUNNING}: Höhe oder Winkel für Dämmerungs-Offen nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
-                return self.STATE_NEUTRAL
-        else:
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_OPEN_SHUTTER_TIMER_RUNNING}: Warte auf Timer...",
-            )
-            return self.STATE_DAWN_OPEN_SHUTTER_TIMER_RUNNING
-
-    async def _handle_state_dawn_partially_open(self) -> str:
-        """Implementierung der Logik für den Zustand DAWN_PARTIALLY_OPEN."""
-        if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_PARTIALLY_OPEN}: LBS ist gesperrt, keine Aktion.",
-            )
-            return self.STATE_DAWN_PARTIALLY_OPEN
-
-        if await self._is_dawn_handling_activated() and await self._is_dawn_active():
-            dawn_open_slat_delay = await self._get_input_value("dawn_open_slat_delay")
-            await self._start_timer(dawn_open_slat_delay)
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_PARTIALLY_OPEN}: Dämmerung aktiv, starte Timer ({dawn_open_slat_delay}s) zum Öffnen der Lamellen und gehe zu {self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING}",
-            )
-            return self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING
-        elif (
-            not await self._is_dawn_handling_activated()
-            or not await self._is_dawn_active()
-        ):
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_PARTIALLY_OPEN}: Dämmerungsmodus deaktiviert oder Dämmerung vorbei, gehe zu {self.STATE_NEUTRAL}",
-            )
-            return self.STATE_NEUTRAL
-        else:
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_PARTIALLY_OPEN}: Warte weiterhin auf Ende der Dämmerung...",
-            )
-            return self.STATE_DAWN_PARTIALLY_OPEN
-
-    async def _handle_state_dawn_open_slats_timer_running(self) -> str:
-        """Implementierung der Logik für den Zustand DAWN_OPEN_SLATS_TIMER_RUNNING."""
-        if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
-            )
-            return self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING
-
-        if await self._is_timer_finished():
-            neutral_angle = await self._get_input_value("angle_neutral")
-            if neutral_angle is not None:
-                await self._position_shutter(
-                    None,  # Höhe beibehalten
-                    float(neutral_angle),
-                    1,  # Richtung: Öffnen/Aufwärts
-                    force=False,
-                    stop_timer=True,
-                )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING}: Timer abgelaufen, öffne Lamellen auf Neutralwinkel und gehe zu {self.STATE_DAWN_PARTIALLY_OPEN}",
-                )
-                return self.STATE_DAWN_PARTIALLY_OPEN
-            else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING}: Neutraler Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
-                return self.STATE_NEUTRAL
-        else:
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING}: Warte auf Timer...",
-            )
-            return self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING
-
+    # =======================================================================
+    # State SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
     async def _handle_state_shadow_horizontal_neutral_timer_running(self) -> str:
-        """Implementierung der Logik für den Zustand SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING."""
         if await self._is_lbs_locked_in_either_way():
             self._debug(
                 True,
@@ -1562,9 +978,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
                 "shadow_open_slat_angle"
             )
             if (
-                current_brightness is not None
-                and shadow_threshold_close is not None
-                and current_brightness > shadow_threshold_close
+                    current_brightness is not None
+                    and shadow_threshold_close is not None
+                    and current_brightness > shadow_threshold_close
             ):
                 self._debug(
                     True,
@@ -1630,8 +1046,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         )
         return self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
+    # =======================================================================
+    # State SHADOW_HORIZONTAL_NEUTRAL
     async def _handle_state_shadow_horizontal_neutral(self) -> str:
-        """Implementierung der Logik für den Zustand SHADOW_HORIZONTAL_NEUTRAL."""
         if await self._is_lbs_locked_in_either_way():
             self._debug(
                 True,
@@ -1648,9 +1065,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
                 "shadow_open_shutter_delay"
             )
             if (
-                current_brightness is not None
-                and shadow_threshold_close is not None
-                and current_brightness > shadow_threshold_close
+                    current_brightness is not None
+                    and shadow_threshold_close is not None
+                    and current_brightness > shadow_threshold_close
             ):
                 target_height = await self._calculate_shutter_height()
                 target_angle = await self._calculate_shutter_angle()
@@ -1716,8 +1133,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         )
         return self.STATE_SHADOW_HORIZONTAL_NEUTRAL
 
+    # =======================================================================
+    # State SHADOW_NEUTRAL_TIMER_RUNNING
     async def _handle_state_shadow_neutral_timer_running(self) -> str:
-        """Implementierung der Logik für den Zustand SHADOW_NEUTRAL_TIMER_RUNNING."""
         if await self._is_lbs_locked_in_either_way():
             self._debug(
                 True,
@@ -1733,9 +1151,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             height_after_shadow = await self._get_input_value("height_after_shadow")
             angle_after_shadow = await self._get_input_value("angle_after_shadow")
             if (
-                current_brightness is not None
-                and shadow_threshold_close is not None
-                and current_brightness > shadow_threshold_close
+                    current_brightness is not None
+                    and shadow_threshold_close is not None
+                    and current_brightness > shadow_threshold_close
             ):
                 self._debug(
                     True,
@@ -1746,8 +1164,8 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             else:
                 if await self._is_timer_finished():
                     if (
-                        height_after_shadow is not None
-                        and angle_after_shadow is not None
+                            height_after_shadow is not None
+                            and angle_after_shadow is not None
                     ):
                         await self._position_shutter(
                             float(height_after_shadow),
@@ -1803,8 +1221,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         )
         return self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING
 
+    # =======================================================================
+    # State SHADOW_NEUTRAL
     async def _handle_state_shadow_neutral(self) -> str:
-        """Implementierung der Logik für den Zustand SHADOW_NEUTRAL."""
         if await self._is_lbs_locked_in_either_way():
             self._debug(
                 True,
@@ -1826,10 +1245,10 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             angle_after_shadow = await self._get_input_value("angle_after_shadow")
 
             if (
-                current_brightness is not None
-                and shadow_threshold_close is not None
-                and current_brightness > shadow_threshold_close
-                and shadow_close_delay is not None
+                    current_brightness is not None
+                    and shadow_threshold_close is not None
+                    and current_brightness > shadow_threshold_close
+                    and shadow_close_delay is not None
             ):
                 self._debug(
                     True,
@@ -1838,11 +1257,11 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
                 await self._start_timer(shadow_close_delay)
                 return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
             elif (
-                dawn_handling_active
-                and dawn_brightness is not None
-                and dawn_threshold_close is not None
-                and dawn_brightness < dawn_threshold_close
-                and dawn_close_delay is not None
+                    dawn_handling_active
+                    and dawn_brightness is not None
+                    and dawn_threshold_close is not None
+                    and dawn_brightness < dawn_threshold_close
+                    and dawn_close_delay is not None
             ):
                 self._debug(
                     True,
@@ -1875,10 +1294,10 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
             dawn_close_delay = await self._get_input_value("dawn_close_delay")
             if (
-                dawn_brightness is not None
-                and dawn_threshold_close is not None
-                and dawn_brightness < dawn_threshold_close
-                and dawn_close_delay is not None
+                    dawn_brightness is not None
+                    and dawn_threshold_close is not None
+                    and dawn_brightness < dawn_threshold_close
+                    and dawn_close_delay is not None
             ):
                 self._debug(
                     True,
@@ -1909,8 +1328,70 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             )
             return self.STATE_NEUTRAL
 
+    # =======================================================================
+    # State NEUTRAL
+    async def _handle_state_neutral(self) -> str:
+        if await self._is_lbs_locked_in_either_way():
+            self._debug(
+                True, f"Zustand {self.STATE_NEUTRAL}: LBS ist gesperrt, keine Aktion."
+            )
+            return self.STATE_NEUTRAL
+
+        if await self._is_in_sun() and await self._is_shadow_handling_activated():
+            current_brightness = await self._get_input_value("brightness")
+            shadow_threshold_close = await self._get_input_value(
+                "shadow_threshold_close"
+            )
+            shadow_close_delay = await self._get_input_value("shadow_close_delay")
+            if (
+                current_brightness is not None
+                and shadow_threshold_close is not None
+                and current_brightness > shadow_threshold_close
+                and shadow_close_delay is not None
+            ):
+                self._debug(
+                    True,
+                    f"Zustand {self.STATE_NEUTRAL}: Helligkeit ({current_brightness}) über Schatten-Schwellwert ({shadow_threshold_close}), starte Timer für {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)",
+                )
+                await self._start_timer(shadow_close_delay)
+                return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
+
+        if await self._is_dawn_handling_activated():
+            dawn_brightness = await self._get_input_value("brightness_dawn")
+            dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
+            dawn_close_delay = await self._get_input_value("dawn_close_delay")
+            if (
+                dawn_brightness is not None
+                and dawn_threshold_close is not None
+                and dawn_brightness < dawn_threshold_close
+                and dawn_close_delay is not None
+            ):
+                self._debug(
+                    True,
+                    f"Zustand {self.STATE_NEUTRAL}: Dämmerungsbehandlung aktiv und Helligkeit ({dawn_brightness}) unter Dämmerungs-Schwellwert ({dawn_threshold_close}), starte Timer für {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)",
+                )
+                await self._start_timer(dawn_close_delay)
+                return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
+
+        neutral_height = await self._get_input_value("height_neutral")
+        neutral_angle = await self._get_input_value("angle_neutral")
+        if neutral_height is not None and neutral_angle is not None:
+            await self._position_shutter(
+                float(neutral_height),
+                float(neutral_angle),
+                0,  # Richtung: Neutral
+                force=True,
+                stop_timer=False,
+            )
+            self._debug(
+                True,
+                f"Zustand {self.STATE_NEUTRAL}: Bewege Behang in Neutralposition ({neutral_height}%, {neutral_angle}%).",
+            )
+        return self.STATE_NEUTRAL
+
+    # =======================================================================
+    # State DAWN_NEUTRAL
     async def _handle_state_dawn_neutral(self) -> str:
-        """Implementierung der Logik für den Zustand DAWN_NEUTRAL."""
         if await self._is_lbs_locked_in_either_way():
             self._debug(
                 True,
@@ -1934,10 +1415,10 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
 
         if dawn_handling_active:
             if (
-                dawn_brightness is not None
-                and dawn_threshold_close is not None
-                and dawn_brightness < dawn_threshold_close
-                and dawn_close_delay is not None
+                    dawn_brightness is not None
+                    and dawn_threshold_close is not None
+                    and dawn_brightness < dawn_threshold_close
+                    and dawn_close_delay is not None
             ):
                 self._debug(
                     True,
@@ -1946,12 +1427,12 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
                 await self._start_timer(dawn_close_delay)
                 return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
             elif (
-                is_in_sun
-                and shadow_handling_active
-                and current_brightness is not None
-                and shadow_threshold_close is not None
-                and current_brightness > shadow_threshold_close
-                and shadow_close_delay is not None
+                    is_in_sun
+                    and shadow_handling_active
+                    and current_brightness is not None
+                    and shadow_threshold_close is not None
+                    and current_brightness > shadow_threshold_close
+                    and shadow_close_delay is not None
             ):
                 self._debug(
                     True,
@@ -1980,12 +1461,12 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
                 return self.STATE_DAWN_NEUTRAL
 
         if (
-            is_in_sun
-            and shadow_handling_active
-            and current_brightness is not None
-            and shadow_threshold_close is not None
-            and current_brightness > shadow_threshold_close
-            and shadow_close_delay is not None
+                is_in_sun
+                and shadow_handling_active
+                and current_brightness is not None
+                and shadow_threshold_close is not None
+                and current_brightness > shadow_threshold_close
+                and shadow_close_delay is not None
         ):
             self._debug(
                 True,
@@ -2014,8 +1495,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             )
             return self.STATE_NEUTRAL
 
+    # =======================================================================
+    # State DAWN_NEUTRAL_TIMER_RUNNING
     async def _handle_state_dawn_neutral_timer_running(self) -> str:
-        """Implementierung der Logik für den Zustand DAWN_NEUTRAL_TIMER_RUNNING."""
         if await self._is_lbs_locked_in_either_way():
             self._debug(
                 True,
@@ -2030,9 +1512,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             dawn_open_slat_angle = await self._get_input_value("dawn_open_slat_angle")
 
             if (
-                dawn_brightness is not None
-                and dawn_threshold_close is not None
-                and dawn_brightness < dawn_threshold_close
+                    dawn_brightness is not None
+                    and dawn_threshold_close is not None
+                    and dawn_brightness < dawn_threshold_close
             ):
                 self._debug(
                     True,
@@ -2097,8 +1579,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         )
         return self.STATE_DAWN_NEUTRAL_TIMER_RUNNING
 
+    # =======================================================================
+    # State DAWN_HORIZONTAL_NEUTRAL
     async def _handle_state_dawn_horizontal_neutral(self) -> str:
-        """Implementierung der Logik für den Zustand DAWN_HORIZONTAL_NEUTRAL."""
         if await self._is_lbs_locked_in_either_way():
             self._debug(
                 True,
@@ -2116,11 +1599,11 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             )
 
             if (
-                dawn_brightness is not None
-                and dawn_threshold_close is not None
-                and dawn_brightness < dawn_threshold_close
-                and dawn_height is not None
-                and dawn_open_slat_angle is not None
+                    dawn_brightness is not None
+                    and dawn_threshold_close is not None
+                    and dawn_brightness < dawn_threshold_close
+                    and dawn_height is not None
+                    and dawn_open_slat_angle is not None
             ):
                 await self._position_shutter(
                     float(dawn_height),
@@ -2177,8 +1660,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         )
         return self.STATE_DAWN_HORIZONTAL_NEUTRAL
 
+    # =======================================================================
+    # State DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
     async def _handle_state_dawn_horizontal_neutral_timer_running(self) -> str:
-        """Implementierung der Logik für den Zustand DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING."""
         if await self._is_lbs_locked_in_either_way():
             self._debug(
                 True,
@@ -2193,9 +1677,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             dawn_open_slat_angle = await self._get_input_value("dawn_open_slat_angle")
 
             if (
-                dawn_brightness is not None
-                and dawn_threshold_close is not None
-                and dawn_brightness < dawn_threshold_close
+                    dawn_brightness is not None
+                    and dawn_threshold_close is not None
+                    and dawn_brightness < dawn_threshold_close
             ):
                 self._debug(
                     True,
@@ -2259,6 +1743,423 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.",
         )
         return self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
+
+    # =======================================================================
+    # State DAWN_FULL_CLOSED
+    async def _handle_state_dawn_full_closed(self) -> str:
+        if await self._is_lbs_locked_in_either_way():
+            self._debug(
+                True,
+                f"Zustand {self.STATE_DAWN_FULL_CLOSED}: LBS ist gesperrt, keine Aktion.",
+            )
+            return self.STATE_DAWN_FULL_CLOSED
+
+        if await self._is_dawn_handling_activated():
+            dawn_brightness = await self._get_input_value("brightness_dawn")
+            dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
+            dawn_open_slat_delay = await self._get_input_value("dawn_open_slat_delay")
+            dawn_height = await self._get_input_value("dawn_height")
+            dawn_angle = await self._get_input_value("dawn_angle")
+
+            if (
+                    dawn_brightness is not None
+                    and dawn_threshold_close is not None
+                    and dawn_brightness > dawn_threshold_close
+                    and dawn_open_slat_delay is not None
+            ):
+                self._debug(
+                    True,
+                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungshelligkeit ({dawn_brightness}) über Schwellwert ({dawn_threshold_close}), starte Timer für {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({dawn_open_slat_delay}s)",
+                )
+                await self._start_timer(dawn_open_slat_delay)
+                return self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
+            elif dawn_height is not None and dawn_angle is not None:
+                await self._position_shutter(
+                    float(dawn_height),
+                    float(dawn_angle),
+                    0,  # Richtung: Neutral
+                    force=True,
+                    stop_timer=False,
+                )
+                self._debug(
+                    True,
+                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungshelligkeit nicht über Schwellwert, fahre in Dämmerungsposition ({dawn_height}%, {dawn_angle}%).",
+                )
+                return self.STATE_DAWN_FULL_CLOSED
+            else:
+                self._debug(
+                    False,
+                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungshöhe oder -winkel nicht konfiguriert, bleibe in {self.STATE_DAWN_FULL_CLOSED}",
+                )
+                return self.STATE_DAWN_FULL_CLOSED
+        else:
+            neutral_height = await self._get_input_value("height_neutral")
+            neutral_angle = await self._get_input_value("angle_neutral")
+            if neutral_height is not None and neutral_angle is not None:
+                await self._position_shutter(
+                    float(neutral_height),
+                    float(neutral_angle),
+                    0,  # Richtung: Neutral
+                    force=True,
+                    stop_timer=True,  # Stop Timer
+                )
+                self._debug(
+                    True,
+                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
+                )
+                return self.STATE_NEUTRAL
+            else:
+                self._debug(
+                    False,
+                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
+                )
+                return self.STATE_NEUTRAL
+
+        # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
+        self._debug(
+            True,
+            f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Beibehalte vorherige Position.",
+        )
+        return self.STATE_DAWN_FULL_CLOSED
+
+    # =======================================================================
+    # State DAWN_FULL_CLOSE_TIMER_RUNNING
+    async def _handle_state_dawn_full_close_timer_running(self) -> str:
+        if await self._is_lbs_locked_in_either_way():
+            self._debug(
+                True,
+                f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
+            )
+            return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
+
+        if await self._is_dawn_handling_activated():
+            dawn_brightness = await self._get_input_value("brightness_dawn")
+            dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
+            dawn_height = await self._get_input_value("dawn_height")
+            dawn_angle = await self._get_input_value("dawn_angle")
+
+            if (
+                    dawn_brightness is not None
+                    and dawn_threshold_close is not None
+                    and dawn_brightness < dawn_threshold_close
+            ):
+                if await self._is_timer_finished():
+                    if dawn_height is not None and dawn_angle is not None:
+                        await self._position_shutter(
+                            float(dawn_height),
+                            float(dawn_angle),
+                            0,  # Richtung: Neutral
+                            force=True,
+                            stop_timer=True,
+                        )
+                        self._debug(
+                            True,
+                            f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Timer abgelaufen, fahre in volle Dämmerungsposition ({dawn_height}%, {dawn_angle}%) und gehe zu {self.STATE_DAWN_FULL_CLOSED}",
+                        )
+                        return self.STATE_DAWN_FULL_CLOSED
+                    else:
+                        self._debug(
+                            False,
+                            f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Dämmerungshöhe oder -winkel nicht konfiguriert, bleibe in {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}",
+                        )
+                        return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
+                else:
+                    self._debug(
+                        True,
+                        f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Warte auf Timer (Helligkeit niedrig genug)...",
+                    )
+                    return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
+            else:
+                self._debug(
+                    True,
+                    f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Helligkeit ({dawn_brightness}) nicht unter Schwellwert ({dawn_threshold_close}), gehe zu {self.STATE_DAWN_NEUTRAL} und stoppe Timer.",
+                )
+                await self._stop_timer()
+                return self.STATE_DAWN_NEUTRAL
+        else:
+            neutral_height = await self._get_input_value("height_neutral")
+            neutral_angle = await self._get_input_value("angle_neutral")
+            if neutral_height is not None and neutral_angle is not None:
+                await self._position_shutter(
+                    float(neutral_height),
+                    float(neutral_angle),
+                    0,  # Richtung: Neutral
+                    force=True,
+                    stop_timer=True,  # Stop Timer
+                )
+                self._debug(
+                    True,
+                    f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
+                )
+                return self.STATE_NEUTRAL
+            else:
+                self._debug(
+                    False,
+                    f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
+                )
+                return self.STATE_NEUTRAL
+
+        # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
+        self._debug(
+            True,
+            f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Beibehalte vorherige Position.",
+        )
+        return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # =======================================================================
+    # State 
+    async def _handle_state_shadow_open_shutter_timer_running(self) -> str:
+        """Implementierung der Logik für den Zustand SHADOW_OPEN_SHUTTER_TIMER_RUNNING."""
+        if await self._is_lbs_locked_in_either_way():
+            self._debug(
+                True,
+                f"Zustand {self.STATE_SHADOW_OPEN_SHUTTER_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
+            )
+            return self.STATE_SHADOW_OPEN_SHUTTER_TIMER_RUNNING
+
+        if await self._is_timer_finished():
+            shadow_open_height = await self._get_input_value("height_after_shadow")
+            shadow_open_angle = await self._get_input_value("angle_after_shadow")
+            if shadow_open_height is not None and shadow_open_angle is not None:
+                await self._position_shutter(
+                    float(shadow_open_height),
+                    float(shadow_open_angle),
+                    1,  # Richtung: Öffnen/Aufwärts
+                    force=False,
+                    stop_timer=True,
+                )
+                self._debug(
+                    True,
+                    f"Zustand {self.STATE_SHADOW_OPEN_SHUTTER_TIMER_RUNNING}: Timer abgelaufen, fahre in Schatten-Offen Position ({shadow_open_height}%, {shadow_open_angle}%) und gehe zu {self.STATE_SHADOW_PARTIALLY_OPEN}",
+                )
+                return self.STATE_SHADOW_PARTIALLY_OPEN
+            else:
+                self._debug(
+                    False,
+                    f"Zustand {self.STATE_SHADOW_OPEN_SHUTTER_TIMER_RUNNING}: Höhe oder Winkel für Schatten-Offen nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
+                )
+                return self.STATE_NEUTRAL
+        else:
+            self._debug(
+                True,
+                f"Zustand {self.STATE_SHADOW_OPEN_SHUTTER_TIMER_RUNNING}: Warte auf Timer...",
+            )
+            return self.STATE_SHADOW_OPEN_SHUTTER_TIMER_RUNNING
+
+    # =======================================================================
+    # State 
+    async def _handle_state_shadow_partially_open(self) -> str:
+        """Implementierung der Logik für den Zustand SHADOW_PARTIALLY_OPEN."""
+        if await self._is_lbs_locked_in_either_way():
+            self._debug(
+                True,
+                f"Zustand {self.STATE_SHADOW_PARTIALLY_OPEN}: LBS ist gesperrt, keine Aktion.",
+            )
+            return self.STATE_SHADOW_PARTIALLY_OPEN
+
+        if await self._is_in_sun() and await self._is_shadow_handling_activated():
+            shadow_open_slat_delay = await self._get_input_value(
+                "shadow_open_slat_delay"
+            )
+            await self._start_timer(shadow_open_slat_delay)
+            self._debug(
+                True,
+                f"Zustand {self.STATE_SHADOW_PARTIALLY_OPEN}: Sonne scheint immer noch, starte Timer ({shadow_open_slat_delay}s) zum Öffnen der Lamellen und gehe zu {self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING}",
+            )
+            return self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING
+        elif (
+            not await self._is_in_sun()
+            or not await self._is_shadow_handling_activated()
+        ):
+            self._debug(
+                True,
+                f"Zustand {self.STATE_SHADOW_PARTIALLY_OPEN}: Sonne weg oder Schattenmodus deaktiviert, gehe zu {self.STATE_NEUTRAL}",
+            )
+            return self.STATE_NEUTRAL
+        else:
+            self._debug(
+                True,
+                f"Zustand {self.STATE_SHADOW_PARTIALLY_OPEN}: Warte weiterhin auf Sonneneinstrahlung...",
+            )
+            return self.STATE_SHADOW_PARTIALLY_OPEN
+
+    # =======================================================================
+    # State 
+    async def _handle_state_shadow_open_slats_timer_running(self) -> str:
+        """Implementierung der Logik für den Zustand SHADOW_OPEN_SLATS_TIMER_RUNNING (mit Sperrzustandsprüfung)."""
+        if await self._is_lbs_locked_in_either_way():
+            self._debug(
+                True,
+                f"Zustand {self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
+            )
+            return self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING
+
+        if await self._is_timer_finished():
+            neutral_angle = await self._get_input_value("angle_neutral")
+            if neutral_angle is not None:
+                await self._position_shutter(
+                    None,  # Höhe beibehalten
+                    float(neutral_angle),
+                    1,  # Richtung: Öffnen/Aufwärts
+                    force=False,
+                    stop_timer=True,
+                )
+                self._debug(
+                    True,
+                    f"Zustand {self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING}: Timer abgelaufen, öffne Lamellen auf Neutralwinkel und gehe zu {self.STATE_SHADOW_PARTIALLY_OPEN}",
+                )
+                return self.STATE_SHADOW_PARTIALLY_OPEN
+            else:
+                self._debug(
+                    False,
+                    f"Zustand {self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING}: Neutraler Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
+                )
+                return self.STATE_NEUTRAL
+        else:
+            self._debug(
+                True,
+                f"Zustand {self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING}: Warte auf Timer...",
+            )
+            return self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING
+
+    # =======================================================================
+    # State 
+    async def _handle_state_dawn_open_shutter_timer_running(self) -> str:
+        """Implementierung der Logik für den Zustand DAWN_OPEN_SHUTTER_TIMER_RUNNING."""
+        if await self._is_lbs_locked_in_either_way():
+            self._debug(
+                True,
+                f"Zustand {self.STATE_DAWN_OPEN_SHUTTER_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
+            )
+            return self.STATE_DAWN_OPEN_SHUTTER_TIMER_RUNNING
+
+        if await self._is_timer_finished():
+            dawn_open_height = await self._get_input_value("height_after_dawn")
+            dawn_open_angle = await self._get_input_value("angle_after_dawn")
+            if dawn_open_height is not None and dawn_open_angle is not None:
+                await self._position_shutter(
+                    float(dawn_open_height),
+                    float(dawn_open_angle),
+                    1,  # Richtung: Öffnen/Aufwärts
+                    force=False,
+                    stop_timer=True,
+                )
+                self._debug(
+                    True,
+                    f"Zustand {self.STATE_DAWN_OPEN_SHUTTER_TIMER_RUNNING}: Timer abgelaufen, fahre in Dämmerungs-Offen Position ({dawn_open_height}%, {dawn_open_angle}%) und gehe zu {self.STATE_DAWN_PARTIALLY_OPEN}",
+                )
+                return self.STATE_DAWN_PARTIALLY_OPEN
+            else:
+                self._debug(
+                    False,
+                    f"Zustand {self.STATE_DAWN_OPEN_SHUTTER_TIMER_RUNNING}: Höhe oder Winkel für Dämmerungs-Offen nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
+                )
+                return self.STATE_NEUTRAL
+        else:
+            self._debug(
+                True,
+                f"Zustand {self.STATE_DAWN_OPEN_SHUTTER_TIMER_RUNNING}: Warte auf Timer...",
+            )
+            return self.STATE_DAWN_OPEN_SHUTTER_TIMER_RUNNING
+
+    # =======================================================================
+    # State 
+    async def _handle_state_dawn_partially_open(self) -> str:
+        """Implementierung der Logik für den Zustand DAWN_PARTIALLY_OPEN."""
+        if await self._is_lbs_locked_in_either_way():
+            self._debug(
+                True,
+                f"Zustand {self.STATE_DAWN_PARTIALLY_OPEN}: LBS ist gesperrt, keine Aktion.",
+            )
+            return self.STATE_DAWN_PARTIALLY_OPEN
+
+        if await self._is_dawn_handling_activated() and await self._is_dawn_active():
+            dawn_open_slat_delay = await self._get_input_value("dawn_open_slat_delay")
+            await self._start_timer(dawn_open_slat_delay)
+            self._debug(
+                True,
+                f"Zustand {self.STATE_DAWN_PARTIALLY_OPEN}: Dämmerung aktiv, starte Timer ({dawn_open_slat_delay}s) zum Öffnen der Lamellen und gehe zu {self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING}",
+            )
+            return self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING
+        elif (
+            not await self._is_dawn_handling_activated()
+            or not await self._is_dawn_active()
+        ):
+            self._debug(
+                True,
+                f"Zustand {self.STATE_DAWN_PARTIALLY_OPEN}: Dämmerungsmodus deaktiviert oder Dämmerung vorbei, gehe zu {self.STATE_NEUTRAL}",
+            )
+            return self.STATE_NEUTRAL
+        else:
+            self._debug(
+                True,
+                f"Zustand {self.STATE_DAWN_PARTIALLY_OPEN}: Warte weiterhin auf Ende der Dämmerung...",
+            )
+            return self.STATE_DAWN_PARTIALLY_OPEN
+
+    # =======================================================================
+    # State 
+    async def _handle_state_dawn_open_slats_timer_running(self) -> str:
+        """Implementierung der Logik für den Zustand DAWN_OPEN_SLATS_TIMER_RUNNING."""
+        if await self._is_lbs_locked_in_either_way():
+            self._debug(
+                True,
+                f"Zustand {self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
+            )
+            return self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING
+
+        if await self._is_timer_finished():
+            neutral_angle = await self._get_input_value("angle_neutral")
+            if neutral_angle is not None:
+                await self._position_shutter(
+                    None,  # Höhe beibehalten
+                    float(neutral_angle),
+                    1,  # Richtung: Öffnen/Aufwärts
+                    force=False,
+                    stop_timer=True,
+                )
+                self._debug(
+                    True,
+                    f"Zustand {self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING}: Timer abgelaufen, öffne Lamellen auf Neutralwinkel und gehe zu {self.STATE_DAWN_PARTIALLY_OPEN}",
+                )
+                return self.STATE_DAWN_PARTIALLY_OPEN
+            else:
+                self._debug(
+                    False,
+                    f"Zustand {self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING}: Neutraler Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
+                )
+                return self.STATE_NEUTRAL
+        else:
+            self._debug(
+                True,
+                f"Zustand {self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING}: Warte auf Timer...",
+            )
+            return self.STATE_DAWN_OPEN_SLATS_TIMER_RUNNING
+
+
+    # End of state machine
+    # #######################################################################
 
     async def _update_sun_state(self):
         """Berechnet, ob die Fassade von der Sonne beleuchtet wird und ob die Elevation im gültigen Bereich liegt."""
