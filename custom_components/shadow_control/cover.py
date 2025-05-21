@@ -564,7 +564,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         state = self.hass.states.get(self._dawn_handling_activation_entity_id)
         return state.state.lower() == "on" if state else False
 
-    async def _is_lbs_locked(self) -> bool:
+    async def _is_locked(self) -> bool:
         """Check if integration is locked."""
         lock_state_obj = self.hass.states.get(self._lock_integration_entity_id)
         if lock_state_obj: # Prüfen, ob das State-Objekt existiert
@@ -580,7 +580,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             is_locked = False
         return is_locked
 
-    async def _is_lbs_forced_locked(self) -> bool:
+    async def _is_forced_locked(self) -> bool:
         """Check if integration locked with forced position."""
         lock_state_obj = self.hass.states.get(self._lock_integration_with_position_entity_id)
         if lock_state_obj: # Prüfen, ob das State-Objekt existiert
@@ -598,7 +598,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
     async def _is_lbs_locked_in_either_way(self) -> bool:
         """Check if the cover is locked in any way."""
-        return await self._is_lbs_locked() or await self._is_lbs_forced_locked()
+        return await self._is_locked() or await self._is_forced_locked()
 
     async def _get_input_value(self, config_key: str) -> any:
         """Get the value of a configured input entity or setting."""
