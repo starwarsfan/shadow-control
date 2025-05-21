@@ -190,9 +190,63 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         self._current_position: int | None = None
         self._current_tilt_position: int | None = None
 
-        # Hier können Sie auch direkt die Werte der Helfer beim Start loggen,
-        # aber es ist besser, das in async_added_to_hass oder async_update zu tun,
-        # da die Zustände dort zuverlässiger verfügbar sind.
+        self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
+
+    # Listener registrieren, welche die Integration triggern
+    async def async_added_to_hass(self) -> None:
+        """Run when this Entity has been added to Home Assistant."""
+        await super().async_added_to_hass()
+        _LOGGER.debug(f"{self._name}: async_added_to_hass called. Registering listeners.")
+
+        # Registrieren Sie Listener für Ihre Trigger-Entitäten
+        # Beispiel: Sonnenstand und Helligkeit
+        self._listeners.append(
+            async_track_state_change(
+                self.hass,
+                [
+                    self._sun_elevation_entity_id, 
+                    self._sun_azimuth_entity_id, 
+                    self._brightness_entity_id
+                ],
+                self._async_trigger_recalculation, # Ihre Callback-Funktion
+            )
+        )
+        # Fügen Sie hier weitere Trigger-Entitäten hinzu, für die Sie sofort reagieren wollen
+
+        # Optional: Initialberechnung beim Start, falls Sie async_update entfernen
+        await self._async_trigger_recalculation(None, None, None) # rufen Sie die Logik einmalig auf
+
+    # Registrierte Listener entfernen
+    async def async_will_remove_from_hass(self) -> None:
+        """Run when this Entity will be removed from Home Assistant."""
+        await super().async_will_remove_from_hass()
+        _LOGGER.debug(f"{self._name}: async_will_remove_from_hass called. Removing listeners.")
+        for remove_listener in self._listeners:
+            remove_listener()
+        self._listeners = []
+
+    # Beschattung neu berechnen
+    async def _async_trigger_recalculation(self, entity_id: str | None, old_state: State | None, new_state: State | None) -> None:
+        """Callback for state changes of trigger entities."""
+        _LOGGER.debug(f"{self._name}: Recalculation triggered by {entity_id}. Old State: {old_state.state if old_state else 'None'}, New State: {new_state.state if new_state else 'None'}")
+
+        # === Hier beginnt Ihre gesamte Beschattungslogik ===
+        # 1. Alle benötigten Werte abrufen (auch die Nicht-Trigger-Werte, die den letzten Stand behalten)
+        current_brightness_state = self.hass.states.get(self._brightness_entity_id)
+        current_brightness = float(current_brightness_state.state) if current_brightness_state and current_brightness_state.state != STATE_UNKNOWN else None
+
+        current_sun_elevation_state = self.hass.states.get(self._sun_elevation_entity_id)
+        current_sun_elevation = float(current_sun_elevation_state.state) if current_sun_elevation_state and current_sun_elevation_state.state != STATE_UNKNOWN else None
+
+        # ... und so weiter für alle anderen relevanten Entitäten ...
+
+        # 2. Beschattungslogik ausführen
+        _LOGGER.debug(f"{self._name}: Brightness={current_brightness}, Elevation={current_sun_elevation}, etc. - Performing calculation.")
+
+        # 3. Jalousie steuern (async_set_cover_position, async_set_cover_tilt_position)
+        # await self.async_set_cover_position(new_position)
+        # await self.async_set_cover_tilt_position(new_tilt_position)
+        # ...
 
     async def _log_current_input_values(self) -> None:
         """Logs the current values of all input entities."""
