@@ -295,10 +295,14 @@ class ShadowControl(CoverEntity, RestoreEntity):
         current_sun_elevation_state = self.hass.states.get(self._sun_elevation_entity_id)
         current_sun_elevation = float(current_sun_elevation_state.state) if current_sun_elevation_state and current_sun_elevation_state.state != STATE_UNKNOWN else None
 
-        # ... und so weiter für alle anderen relevanten Entitäten ...
+        current_height = self.hass.states.get(self._shutter_current_height_entity_id)
+        current_angle = self.hass.states.get(self._shutter_current_angle_entity_id)
 
         # 2. Beschattungslogik ausführen
         _LOGGER.debug(f"{self._name}: Brightness={current_brightness}, Elevation={current_sun_elevation}, etc. - Performing calculation.")
+
+        self._check_if_position_changed_externally(self, current_height, current_angle)
+        self._handle_lock_state(self)
 
         # 3. Jalousie steuern (async_set_cover_position, async_set_cover_tilt_position)
         # await self.async_set_cover_position(new_position)
@@ -309,6 +313,22 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._update_extra_state_attributes()
         # 5. Tell Home Assistant to save the updated state (and attributes)
         self.async_write_ha_state()
+
+    def _check_if_position_changed_externally(self, current_height, current_angle):
+        _LOGGER.debug(f"{self._name}: Checking if position changed externally. Current height: {current_height}, Current angle: {current_angle}")
+        _LOGGER.debug(f"{self._name}: TBD...")
+        pass
+
+    def _handle_lock_state(self):
+        if self._is_locked():
+            _LOGGER.debug(f"{self._name} is locked. Do not change the position.")
+        elif self._is_forced_locked():
+            _LOGGER.debug(f"{self._name} is forced locked. Do not change the position.")
+        # elif self._is_modified_externally():
+        #     _LOGGER.debug(f"{self._name} is modified externally. Do not change the position.")
+        else:
+            _LOGGER.debug(f"{self._name} is not locked. Change the position.")
+        pass
 
     # =======================================================================
     # Helper to get and handle entity states
