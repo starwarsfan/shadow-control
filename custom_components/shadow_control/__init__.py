@@ -7,6 +7,8 @@ from logging.handlers import RotatingFileHandler # Importieren Sie den Handler-T
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 
+from .const import DOMAIN
+
 _LOGGER = logging.getLogger(__name__) # Dies ist der Logger für __init__.py: 'custom_components.shadow_control'
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
