@@ -199,9 +199,14 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             async_track_state_change(
                 self.hass,
                 [
-                    self._sun_elevation_entity_id, 
-                    self._sun_azimuth_entity_id, 
-                    self._brightness_entity_id
+                    self._brightness_entity_id,
+                    self._brightness_dawn_entity_id,
+                    self._sun_elevation_entity_id,
+                    self._sun_azimuth_entity_id,
+                    self._lock_integration_entity_id,
+                    self._lock_integration_with_position_entity_id,
+                    self._shadow_control_enabled_entity_id,
+                    self._dawn_control_enabled_entity_id
                 ],
                 self._async_trigger_recalculation, # Ihre Callback-Funktion
             )
