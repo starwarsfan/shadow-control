@@ -227,13 +227,13 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     self._current_shutter_state = int(initial_state_value)
                 except (ValueError, TypeError):
                     _LOGGER.warning(f"{self._name}: Could not convert last state '{initial_state_value}' to int. Using STATE_NEUTRAL.")
-                    self._current_shutter_state = STATE_NEUTRAL # <--- HIER OHNE self.
+                    self._current_shutter_state = ShutterState.STATE_NEUTRAL # <--- HIER OHNE self.
             else:
-                self._current_shutter_state = STATE_NEUTRAL # <--- HIER OHNE self.
+                self._current_shutter_state = ShutterState.STATE_NEUTRAL # <--- HIER OHNE self.
             
             _LOGGER.debug(f"{self._name}: Restored _current_shutter_state to {self._current_shutter_state}")
         else:
-            self._current_shutter_state = STATE_NEUTRAL # <--- HIER OHNE self.
+            self._current_shutter_state = ShutterState.STATE_NEUTRAL # <--- HIER OHNE self.
             _LOGGER.debug(f"{self._name}: No last state found. Initializing _current_shutter_state to {self._current_shutter_state}")
         
         self._update_extra_state_attributes()
