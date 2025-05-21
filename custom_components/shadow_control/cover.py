@@ -10,10 +10,10 @@ import voluptuous as vol
 from homeassistant.components.cover import CoverEntity, CoverEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME, STATE_ON, STATE_OFF, STATE_UNAVAILABLE, STATE_UNKNOWN 
-from homeassistant.core import HomeAssistant, callback, State
+from homeassistant.core import Event, HomeAssistant, callback, State
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.event import async_track_state_change, async_track_state_change_event
+from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.restore_state import RestoreEntity
 
@@ -240,9 +240,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self.async_write_ha_state()
 
         # Registrieren Sie Listener für Ihre Trigger-Entitäten
-        # Beispiel: Sonnenstand und Helligkeit
         self._listeners.append(
-            async_track_state_change(
+            async_track_state_change_event(
                 self.hass,
                 [
                     self._brightness_entity_id,
@@ -254,13 +253,13 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     self._shadow_control_enabled_entity_id,
                     self._dawn_control_enabled_entity_id
                 ],
-                self._async_trigger_recalculation, # Ihre Callback-Funktion
+                self._async_trigger_recalculation,  # Ihre Callback-Funktion
             )
         )
-        # Fügen Sie hier weitere Trigger-Entitäten hinzu, für die Sie sofort reagieren wollen
+        _LOGGER.debug(f"{self._name}: Registered listeners for input changes.")        # Fügen Sie hier weitere Trigger-Entitäten hinzu, für die Sie sofort reagieren wollen
 
         # Optional: Initialberechnung beim Start, falls Sie async_update entfernen
-        await self._async_trigger_recalculation(None, None, None) # rufen Sie die Logik einmalig auf
+        await self._async_trigger_recalculation(None)
 
     # =======================================================================
     # Registrierte Listener entfernen
@@ -283,9 +282,17 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
     # =======================================================================
     # Beschattung neu berechnen
-    async def _async_trigger_recalculation(self, entity_id: str | None, old_state: State | None, new_state: State | None) -> None:
+    async def _async_trigger_recalculation(
+            self, event: Event | None
+    ) -> None:
         """Callback for state changes of trigger entities."""
-        _LOGGER.debug(f"{self._name}: Recalculation triggered by {entity_id}. Old State: {old_state.state if old_state else 'None'}, New State: {new_state.state if new_state else 'None'}, current state of integration: {self._current_shutter_state}")
+        if event:
+            entity_id = event.data.get("entity_id")
+            old_state = event.data.get("old_state")
+            new_state = event.data.get("new_state")
+            _LOGGER.debug(f"{self._name}: Trigger entity {entity_id} state changed from {old_state} to {new_state}. Recalculating...")
+        else:
+            _LOGGER.debug(f"{self._name}: Initial trigger recalculation (no event).")
 
         # === Hier beginnt Ihre gesamte Beschattungslogik ===
         # 1. Alle benötigten Werte abrufen (auch die Nicht-Trigger-Werte, die den letzten Stand behalten)
