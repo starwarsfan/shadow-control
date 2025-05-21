@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import logging
-import math  # Stellen Sie sicher, dass math importiert ist
-from typing import Optional
+import math
+from typing import Any, Callable, Optional
 
 import voluptuous as vol
 from homeassistant.components.cover import CoverEntity, CoverEntityFeature
@@ -15,6 +15,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change, async_track_state_change_event
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import (
     CONF_ANGLE_AFTER_DAWN,
@@ -108,10 +109,14 @@ async def async_setup_platform(
     # Wir übergeben 'config' direkt an den Konstruktor.
     async_add_entities([ShadowControl(hass, config)])
 
-class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfach zu halten
+class ShadowControl(CoverEntity, RestoreEntity):
     """Representation of a Shadow Control cover."""
 
     _attr_has_entity_name = True
+
+    # Initialisiere _attr_extra_state_attributes hier, damit es immer ein Dictionary ist
+    # und Home Assistant es als persistierbares Attribut erkennt.
+    _attr_extra_state_attributes: dict[str, Any] = {}
 
     def __init__(
             self,
@@ -119,10 +124,16 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
             config: ConfigType, # Empfängt die gesamte Konfiguration
     ) -> None:
         """Initialize the Shadow Control cover."""
+        super().__init__() # Call base class constructor
+
         self.hass = hass # Speichern der hass Instanz
         self._name = config.get(CONF_NAME, DEFAULT_NAME)
 
         _LOGGER.debug(f"Initializing Shadow Control: {self._name}")
+
+        # Die Entity ID, unter der diese Entität in HA erscheinen wird
+        self._attr_unique_id = f"shadow_control_{self._name.lower().replace(' ', '_')}"
+        self.entity_id = f"cover.{self._attr_unique_id}" # Wichtig, um die Entität eindeutig zu machen
 
         # Feste Verdrahtung der Entitäts-IDs für die Entwicklung
         # Diese Werte werden jetzt direkt hier gesetzt und nicht mehr aus 'config' gelesen,
@@ -195,9 +206,9 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         # Logging der (fest verdrahteten) Entitäts-IDs
         _LOGGER.debug(f"--- Integration '{self._name}' initialized with fixed Entity IDs ---")
 
-        # Initialwerte für Position und Neigung (optional, falls benötigt)
-        self._current_position: int | None = None
-        self._current_tilt_position: int | None = None
+        # Interne persistente Variablen
+        # Werden beim Start aus den persistenten Attributen gelesen.
+        self._current_shutter_state: float | None = None
 
         self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
 
@@ -206,7 +217,39 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
     async def async_added_to_hass(self) -> None:
         """Run when this Entity has been added to Home Assistant."""
         await super().async_added_to_hass()
+
         _LOGGER.debug(f"{self._name}: async_added_to_hass called. Registering listeners.")
+
+        # === 1. Lade den zuletzt gespeicherten Status der Entität ===
+        _LOGGER.debug(f"{self._name}: Attempting to retrieve last state...")
+        last_state = None
+        try:
+            last_state = await self.async_get_last_state()
+            _LOGGER.debug(f"{self._name}: Successfully retrieved last state.")
+        except Exception as e:
+            _LOGGER.error(f"{self._name}: Error retrieving last state: {e}", exc_info=True)
+
+        if last_state:
+            # last_state.attributes.get gibt None zurück, wenn das Attribut nicht existiert
+            # Wir müssen sicherstellen, dass wir einen Integer-Wert erhalten.
+            # Konvertieren Sie den Wert zu int, falls er als String gespeichert wurde (was HA manchmal tut).
+            initial_state_value = last_state.attributes.get("current_shutter_state")
+            if initial_state_value is not None:
+                try:
+                    self._current_shutter_state = int(initial_state_value)
+                except (ValueError, TypeError):
+                    _LOGGER.warning(f"{self._name}: Could not convert last state '{initial_state_value}' to int. Using STATE_NEUTRAL.")
+                    self._current_shutter_state = STATE_NEUTRAL # <--- HIER OHNE self.
+            else:
+                self._current_shutter_state = STATE_NEUTRAL # <--- HIER OHNE self.
+            
+            _LOGGER.debug(f"{self._name}: Restored _current_shutter_state to {self._current_shutter_state}")
+        else:
+            self._current_shutter_state = STATE_NEUTRAL # <--- HIER OHNE self.
+            _LOGGER.debug(f"{self._name}: No last state found. Initializing _current_shutter_state to {self._current_shutter_state}")
+        
+        self._update_extra_state_attributes()
+        self.async_write_ha_state()
 
         # Registrieren Sie Listener für Ihre Trigger-Entitäten
         # Beispiel: Sonnenstand und Helligkeit
@@ -242,10 +285,19 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         self._listeners = []
 
     # =======================================================================
+    # Persistente Werte
+    def _update_extra_state_attributes(self) -> None:
+        """Helper to update the extra_state_attributes dictionary."""
+        self._attr_extra_state_attributes = {
+            "current_shutter_state": self._current_shutter_state,
+            # Fügen Sie hier alle internen Statusvariablen hinzu, die persistent sein sollen
+        }
+
+    # =======================================================================
     # Beschattung neu berechnen
     async def _async_trigger_recalculation(self, entity_id: str | None, old_state: State | None, new_state: State | None) -> None:
         """Callback for state changes of trigger entities."""
-        _LOGGER.debug(f"{self._name}: Recalculation triggered by {entity_id}. Old State: {old_state.state if old_state else 'None'}, New State: {new_state.state if new_state else 'None'}")
+        _LOGGER.debug(f"{self._name}: Recalculation triggered by {entity_id}. Old State: {old_state.state if old_state else 'None'}, New State: {new_state.state if new_state else 'None'}, current state of integration: {self._current_shutter_state}")
 
         # === Hier beginnt Ihre gesamte Beschattungslogik ===
         # 1. Alle benötigten Werte abrufen (auch die Nicht-Trigger-Werte, die den letzten Stand behalten)
@@ -264,6 +316,11 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         # await self.async_set_cover_position(new_position)
         # await self.async_set_cover_tilt_position(new_tilt_position)
         # ...
+
+        # 4. Update the dictionary holding the attributes
+        self._update_extra_state_attributes()
+        # 5. Tell Home Assistant to save the updated state (and attributes)
+        self.async_write_ha_state()
 
     # =======================================================================
     # Helper to get and handle entity states
