@@ -1,5 +1,7 @@
 """Constants for the Shadow Control integration."""
 
+from enum import IntEnum
+
 DOMAIN = "shadow_control"
 
 CONF_NAME = "name"
@@ -54,17 +56,41 @@ CONF_UPDATE_LOCKSTATE_OUTPUT = "update_lockstate_output"
 CONF_DEBUG_ENABLED = "debug_enabled"  # Für den Debug-Schalter
 
 # --- Status Konstanten für die Behangsteuerung -----------------------------
-STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING = 6
-STATE_SHADOW_FULL_CLOSED = 5
-STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING = 4
-STATE_SHADOW_HORIZONTAL_NEUTRAL = 3
-STATE_SHADOW_NEUTRAL_TIMER_RUNNING = 2
-STATE_SHADOW_NEUTRAL = 1
-STATE_NEUTRAL = 0
-STATE_DAWN_NEUTRAL = -1
-STATE_DAWN_NEUTRAL_TIMER_RUNNING = -2
-STATE_DAWN_HORIZONTAL_NEUTRAL = -3
-STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING = -4
-STATE_DAWN_FULL_CLOSED = -5
-STATE_DAWN_FULL_CLOSE_TIMER_RUNNING = -6
-# ---------------------------------------------------------------------------
+class ShutterState(IntEnum):
+    """Enum for the possible states of the shutter."""
+    STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING = 6
+    STATE_SHADOW_FULL_CLOSED = 5
+    STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING = 4
+    STATE_SHADOW_HORIZONTAL_NEUTRAL = 3
+    STATE_SHADOW_NEUTRAL_TIMER_RUNNING = 2
+    STATE_SHADOW_NEUTRAL = 1
+    STATE_NEUTRAL = 0
+    STATE_DAWN_NEUTRAL = -1
+    STATE_DAWN_NEUTRAL_TIMER_RUNNING = -2
+    STATE_DAWN_HORIZONTAL_NEUTRAL = -3
+    STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING = -4
+    STATE_DAWN_FULL_CLOSED = -5
+    STATE_DAWN_FULL_CLOSE_TIMER_RUNNING = -6
+
+# --- Definition of all known internal lock states --------------------------
+class LockState(IntEnum):
+    """Enum for the possible states of the lock."""
+    LOCKSTATE__UNLOCKED = 0
+    LOCKSTATE__LOCKED_MANUALLY = 1
+    LOCKSTATE__LOCKED_MANUALLY_WITH_FORCED_POSITION = 2
+    LOCKSTATE__LOCKED_BY_EXTERNAL_MODIFICATION = 3
+
+# --- Definition of configuration values, how to update lockstate output ----
+class UpdateLockStateOutput(IntEnum):
+    """Enum for the possible states of the lock."""
+    UPDATE_LOCKSTATE_OUTPUT__NEVER = -1
+    UPDATE_LOCKSTATE_OUTPUT__ALWAYS = 0
+    UPDATE_LOCKSTATE_OUTPUT__ONLY_ON_EXTERNAL_MODIFICATION = 1
+    UPDATE_LOCKSTATE_OUTPUT__ONLY_ON_MANUAL_LOCK = 2
+
+# --- Definition of configuration values, how to update position outputs ----
+class MovementRestricted(IntEnum):
+    """Enum for the possible states of the lock."""
+    MOVEMENT_RESTRICTED__NO_RESTRICTION = 0
+    MOVEMENT_RESTRICTED__ONLY_DOWN = 1
+    MOVEMENT_RESTRICTED__ONLY_UP = 2
