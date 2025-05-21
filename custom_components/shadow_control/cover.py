@@ -179,12 +179,7 @@ class ShadowControl(CoverEntity): # Vorerst ohne CoordinatorEntity, um es einfac
         self._target_cover_entity_id = config.get("cover") # Aus configuration.yaml
 
         # Logging der (fest verdrahteten) Entitäts-IDs
-        _LOGGER.debug(f"--- {self._name}: Initialized with fixed Entity IDs ---")
-        _LOGGER.debug(f"Target Cover Entity ID: {self._target_cover_entity_id}")
-        _LOGGER.debug(f"Brightness Entity ID: {self._brightness_entity_id}")
-        _LOGGER.debug(f"Sun Elevation Entity ID: {self._sun_elevation_entity_id}")
-        _LOGGER.debug(f"Facade Azimuth Entity ID: {self._azimuth_facade_entity_id}")
-        # Fügen Sie hier weitere _LOGGER.debug-Zeilen für alle anderen _entity_id-Variablen hinzu
+        _LOGGER.debug(f"--- Integration '{self._name}' initialized with fixed Entity IDs ---")
 
         # Initialwerte für Position und Neigung (optional, falls benötigt)
         self._current_position: int | None = None
