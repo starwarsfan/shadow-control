@@ -830,29 +830,25 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
     async def _calculate_effective_elevation(self) -> float | None:
         """Berechnet die effektive Elevation der Sonne relativ zur Fassade."""
-        elevation = await self._get_input_value("elevation")
-        azimuth = await self._get_input_value("azimuth")
-        facade_angle = await self._get_input_value("facade_angle")
+        sun_current_azimuth = self._get_entity_numeric_state(self._sun_azimuth_entity_id, int)
+        sun_current_elevation = self._get_entity_numeric_state(self._sun_elevation_entity_id, int)
+        facade_azimuth = self._get_entity_numeric_state(self._azimuth_facade_entity_id, int)
 
-        if elevation is None or azimuth is None or facade_angle is None:
+        if sun_current_azimuth is None or sun_current_elevation is None or facade_azimuth is None:
             _LOGGER.debug(f"Kann effektive Elevation nicht berechnen: Nicht alle erforderlichen Eingabewerte sind verfügbar.")
             return None
 
-        try:
-            elevation = float(elevation)
-            azimuth = float(azimuth)
-            facade_angle = float(facade_angle)
+        _LOGGER.debug(f"Current sun position (a:e): {sun_current_azimuth}°:{sun_current_elevation}°, facade: {facade_azimuth}°")
 
-            virtual_depth = math.cos(math.radians(abs(azimuth - facade_angle)))
-            virtual_height = math.tan(math.radians(elevation))
+        try:
+            virtual_depth = math.cos(math.radians(abs(sun_current_azimuth - facade_azimuth)))
+            virtual_height = math.tan(math.radians(sun_current_elevation))
 
             # Vermeide Division durch Null, falls virtual_depth sehr klein ist
             if abs(virtual_depth) < 1e-9:
                 effective_elevation = 90.0 if virtual_height > 0 else -90.0
             else:
-                effective_elevation = math.degrees(
-                    math.atan(virtual_height / virtual_depth)
-                )
+                effective_elevation = math.degrees(math.atan(virtual_height / virtual_depth))
 
             _LOGGER.debug(f"Virtuelle Tiefe und Höhe der Sonnenposition in 90° zur Fassade: {virtual_depth}, {virtual_height}, effektive Elevation: {effective_elevation}")
             return effective_elevation
