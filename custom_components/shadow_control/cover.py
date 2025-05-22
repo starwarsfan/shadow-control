@@ -490,28 +490,24 @@ class ShadowControl(CoverEntity, RestoreEntity):
         """Handle the state machine and trigger actions."""
         new_state = await self._calculate_state()
         if new_state != self._current_shutter_state:
-            self._debug(
-                True, f"State changed from {self._current_shutter_state} to {new_state}"
-            )
+            _LOGGER.debug(f"State changed from {self._current_shutter_state} to {new_state}")
             self._current_shutter_state = new_state
             # Potentially trigger another state calculation if needed
             await self._perform_state_handling()
         else:
-            self._debug(True, f"Current state: {self._current_shutter_state}")
+            _LOGGER.debug(f"Current state: {self._current_shutter_state}")
             # Perform actions based on the current state
             method_name = f"_handle_state_{self._current_shutter_state.lower()}"
             if hasattr(self, method_name):
                 next_state = await getattr(self, method_name)()
                 if next_state and next_state != self._current_shutter_state:
-                    self._debug(
-                        True, f"State handling requested transition to {next_state}"
-                    )
+                    _LOGGER.debug(f"State handling requested transition to {next_state}")
                     self._current_shutter_state = next_state
                     await self._perform_state_handling()
 
     async def _calculate_state(self) -> str:
         """Determine the current state based on sensor values and conditions."""
-        self._debug(True, "=== Calculating shutter state... ===")
+        _LOGGER.debug(f"=== Calculating shutter state... ===")
         current_state = self._current_shutter_state
         new_state = self.STATE_NEUTRAL
 
@@ -531,9 +527,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         else:
             new_state = self.STATE_NEUTRAL
 
-        self._debug(
-            True, f"=== Calculated new state: {new_state} (was: {current_state}) ==="
-        )
+        _LOGGER.debug(f"=== Calculated new state: {new_state} (was: {current_state}) ===")
         return new_state
 
     async def _get_appropriate_closed_state(self, current_state: str) -> str:
@@ -621,10 +615,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     async def _start_timer(self, delay: float) -> None:
         """Start a timer that finishes after the given delay in seconds."""
         self._timer_finish_time = self.hass.loop.time() + delay
-        self._debug(
-            True,
-            f"Timer started for {delay} seconds. Finish time: {self._timer_finish_time}",
-        )
+        _LOGGER.debug(f"Timer started for {delay} seconds. Finish time: {self._timer_finish_time}")
 
     async def _is_timer_finished(self) -> bool:
         """Check if the current time is after the timer finish time."""
@@ -633,7 +624,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     async def _stop_timer(self) -> None:
         """Stop the active timer."""
         self._timer_finish_time = 0
-        self._debug(True, "Timer stopped.")
+        _LOGGER.debug("Timer stopped.")
 
     async def _calculate_shutter_height(self) -> float | None:
         """Calculate the target shutter height based on current conditions."""
@@ -702,10 +693,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         stop_timer: bool = False,
     ) -> None:
         """Write computed values to the outputs and update member variables."""
-        self._debug(
-            True,
-            f"positionShutter(...), Werte für Höhe/Winkel: {height_percent}%/{angle_percent}%, Richtung: {direction}, Force: {force}, Stop Timer: {stop_timer}",
-        )
+        _LOGGER.debug(f"positionShutter(...), Werte für Höhe/Winkel: {height_percent}%/{angle_percent}%, Richtung: {direction}, Force: {force}, Stop Timer: {stop_timer}")
         if (
             self._initial_lbs_run_finished
             and not await self._is_lbs_locked_in_either_way()
@@ -740,10 +728,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         """Send the value only if it has changed."""
         current_value = getattr(self, f"_current_{attribute}", None)
         if current_value != value:
-            self._debug(
-                True,
-                f"Attribute '{attribute}' changed from '{current_value}' to '{value}', updating...",
-            )
+            _LOGGER.debug(f"Attribute '{attribute}' changed from '{current_value}' to '{value}', updating...")
             setattr(self, f"_current_{attribute}", value)
             self.async_write_ha_state()
 
@@ -757,15 +742,12 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return False
 
         is_elevation_in_range = elevation_min <= elevation <= elevation_max
-        self._debug(
-            True,
-            f"Prüfe Sonneneinfall: Azimut im Bereich: {self._sun_illuminates_facade}, Elevation im Bereich: {is_elevation_in_range}",
-        )
+        _LOGGER.debug(f"Prüfe Sonneneinfall: Azimut im Bereich: {self._sun_illuminates_facade}, Elevation im Bereich: {is_elevation_in_range}")
         return self._sun_illuminates_facade and is_elevation_in_range
 
     async def _check_if_facade_is_in_sun(self) -> None:
-        """Calculate if the given facade is illuminated by the sun."""
-        self._debug(True, "=== Checking if facade is in sun... ===")
+        """Calculate if the sun illuminates the given facade."""
+        _LOGGER.debug(f"=== Checking if facade is in sun... ===")
 
         azimuth = await self._get_input_value("azimuth")
         facade_angle = await self._get_input_value("facade_angle")
@@ -784,10 +766,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             or max_elevation is None
             or current_elevation is None
         ):
-            self._debug(
-                False,
-                "Nicht alle erforderlichen Sonnen- oder Fassadendaten verfügbar für die Prüfung des Sonneneinfalls.",
-            )
+            _LOGGER.debug(f"Nicht alle erforderlichen Sonnen- oder Fassadendaten verfügbar für die Prüfung des Sonneneinfalls.")
             return
 
         sun_entry_angle = facade_angle - abs(facade_offset_start)
@@ -834,7 +813,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             message += f"° -> NOT in min-max-range ({await self._get_input_value('elevation_min')}-{await self._get_input_value('elevation_max')})"
             self._is_between_min_max_elevation = False
             await self._send_by_change("sun_at_facade_elevation", False)
-        self._debug(True, message + " ===")
+        _LOGGER.debug(f"{message} ===")
 
         # Setze _is_in_sun basierend auf beiden Bedingungen
         # self._is_in_sun = is_azimuth_in_range and is_elevation_in_range # Wird nun in _calculate_state gemacht
@@ -856,10 +835,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         facade_angle = await self._get_input_value("facade_angle")
 
         if elevation is None or azimuth is None or facade_angle is None:
-            self._debug(
-                False,
-                "Kann effektive Elevation nicht berechnen: Nicht alle erforderlichen Eingabewerte sind verfügbar.",
-            )
+            _LOGGER.debug(f"Kann effektive Elevation nicht berechnen: Nicht alle erforderlichen Eingabewerte sind verfügbar.")
             return None
 
         try:
@@ -878,21 +854,13 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     math.atan(virtual_height / virtual_depth)
                 )
 
-            self._debug(
-                True,
-                f"Virtuelle Tiefe und Höhe der Sonnenposition in 90° zur Fassade: {virtual_depth}, {virtual_height}, effektive Elevation: {effective_elevation}",
-            )
+            _LOGGER.debug(f"Virtuelle Tiefe und Höhe der Sonnenposition in 90° zur Fassade: {virtual_depth}, {virtual_height}, effektive Elevation: {effective_elevation}")
             return effective_elevation
         except ValueError:
-            self._debug(
-                False,
-                "Kann effektive Elevation nicht berechnen: Ungültige numerische Eingabewerte.",
-            )
+            _LOGGER.debug(f"Kann effektive Elevation nicht berechnen: Ungültige numerische Eingabewerte.")
             return None
         except ZeroDivisionError:
-            self._debug(
-                False, "Kann effektive Elevation nicht berechnen: Division durch Null."
-            )
+            _LOGGER.debug(f"Kann effektive Elevation nicht berechnen: Division durch Null.")
             return None
 
     # #######################################################################
@@ -902,10 +870,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # State SHADOW_FULL_CLOSE_TIMER_RUNNING
     async def _handle_state_shadow_full_close_timer_running(self) -> str:
         if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
 
         if await self._is_in_sun() and await self._is_shadow_handling_activated():
@@ -929,28 +894,16 @@ class ShadowControl(CoverEntity, RestoreEntity):
                             force=False,
                             stop_timer=True,
                         )
-                        self._debug(
-                            True,
-                            f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Timer abgelaufen, Helligkeit hoch genug, fahre in Vollschatten ({target_height}%, {target_angle}%) und gehe zu {self.STATE_SHADOW_FULL_CLOSED}",
-                        )
+                        _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Timer abgelaufen, Helligkeit hoch genug, fahre in Vollschatten ({target_height}%, {target_angle}%) und gehe zu {self.STATE_SHADOW_FULL_CLOSED}")
                         return self.STATE_SHADOW_FULL_CLOSED
                     else:
-                        self._debug(
-                            False,
-                            f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Fehler beim Berechnen der Schattenhöhe oder des Winkels, bleibe in {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}",
-                        )
+                        _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Fehler beim Berechnen der Schattenhöhe oder des Winkels, bleibe in {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}")
                         return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
                 else:
-                    self._debug(
-                        True,
-                        f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Warte auf Timer (Helligkeit hoch genug)...",
-                    )
+                    _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Warte auf Timer (Helligkeit hoch genug)...")
                     return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
             else:
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Helligkeit ({current_brightness}) nicht höher als Schwellwert ({shadow_threshold_close}), gehe zu {self.STATE_SHADOW_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Helligkeit ({current_brightness}) nicht höher als Schwellwert ({shadow_threshold_close}), gehe zu {self.STATE_SHADOW_NEUTRAL}")
                 await self._stop_timer()
                 return self.STATE_SHADOW_NEUTRAL
         else:
@@ -964,33 +917,21 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     force=True,  # Force
                     stop_timer=True,  # Stop Timer
                 )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        self._debug(
-            True,
-            f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Beibehalte vorherige Position.",
-        )
+        _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Beibehalte vorherige Position.")
         return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
 
     # =======================================================================
     # State SHADOW_FULL_CLOSED
     async def _handle_state_shadow_full_closed(self) -> str:
         if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_FULL_CLOSED}: LBS ist gesperrt, keine Aktion.",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSED}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_SHADOW_FULL_CLOSED
 
         if await self._is_in_sun() and await self._is_shadow_handling_activated():
@@ -1007,17 +948,11 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and shadow_open_slat_delay is not None
                     and current_brightness < shadow_threshold_close
             ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_FULL_CLOSED}: Helligkeit ({current_brightness}) unter Schwellwert ({shadow_threshold_close}), starte Timer für {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({shadow_open_slat_delay}s)",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSED}: Helligkeit ({current_brightness}) unter Schwellwert ({shadow_threshold_close}), starte Timer für {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({shadow_open_slat_delay}s)")
                 await self._start_timer(shadow_open_slat_delay)
                 return self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
             else:
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_FULL_CLOSED}: Helligkeit nicht unter Schwellwert, Neuberechnung der Schattenposition.",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSED}: Helligkeit nicht unter Schwellwert, Neuberechnung der Schattenposition.")
                 target_height = await self._calculate_shutter_height()
                 target_angle = await self._calculate_shutter_angle()
                 if target_height is not None and target_angle is not None:
@@ -1040,33 +975,21 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     force=True,
                     stop_timer=True,  # Stop Timer
                 )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_FULL_CLOSED}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSED}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_SHADOW_FULL_CLOSED}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSED}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        self._debug(
-            True,
-            f"Zustand {self.STATE_SHADOW_FULL_CLOSED}: Beibehalte vorherige Position.",
-        )
+        _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSED}: Beibehalte vorherige Position.")
         return self.STATE_SHADOW_FULL_CLOSED
 
     # =======================================================================
     # State SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
     async def _handle_state_shadow_horizontal_neutral_timer_running(self) -> str:
         if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
         if await self._is_in_sun() and await self._is_shadow_handling_activated():
@@ -1082,10 +1005,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and shadow_threshold_close is not None
                     and current_brightness > shadow_threshold_close
             ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Helligkeit ({current_brightness}) wieder über Schwellwert ({shadow_threshold_close}), gehe zu {self.STATE_SHADOW_FULL_CLOSED} und stoppe Timer.",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Helligkeit ({current_brightness}) wieder über Schwellwert ({shadow_threshold_close}), gehe zu {self.STATE_SHADOW_FULL_CLOSED} und stoppe Timer.")
                 await self._stop_timer()
                 return self.STATE_SHADOW_FULL_CLOSED
             else:
@@ -1099,22 +1019,13 @@ class ShadowControl(CoverEntity, RestoreEntity):
                             force=True,
                             stop_timer=True,
                         )
-                        self._debug(
-                            True,
-                            f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Timer abgelaufen, fahre auf Höhe {target_height}% mit neutralen Lamellen ({shadow_open_slat_angle}°) und gehe zu {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}",
-                        )
+                        _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Timer abgelaufen, fahre auf Höhe {target_height}% mit neutralen Lamellen ({shadow_open_slat_angle}°) und gehe zu {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}")
                         return self.STATE_SHADOW_HORIZONTAL_NEUTRAL
                     else:
-                        self._debug(
-                            False,
-                            f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Fehler beim Berechnen der Höhe oder Winkel für offene Lamellen nicht konfiguriert, bleibe in {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}",
-                        )
+                        _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Fehler beim Berechnen der Höhe oder Winkel für offene Lamellen nicht konfiguriert, bleibe in {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}")
                         return self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
                 else:
-                    self._debug(
-                        True,
-                        f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Warte auf Timer (Helligkeit nicht hoch genug)...",
-                    )
+                    _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Warte auf Timer (Helligkeit nicht hoch genug)...")
                     return self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
         else:
             neutral_height = await self._get_input_value("height_neutral")
@@ -1127,33 +1038,21 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     force=True,
                     stop_timer=True,  # Stop Timer
                 )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        self._debug(
-            True,
-            f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.",
-        )
+        _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.")
         return self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
     # =======================================================================
     # State SHADOW_HORIZONTAL_NEUTRAL
     async def _handle_state_shadow_horizontal_neutral(self) -> str:
         if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: LBS ist gesperrt, keine Aktion.",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_SHADOW_HORIZONTAL_NEUTRAL
 
         if await self._is_in_sun() and await self._is_shadow_handling_activated():
@@ -1179,29 +1078,17 @@ class ShadowControl(CoverEntity, RestoreEntity):
                         force=True,
                         stop_timer=False,
                     )
-                    self._debug(
-                        True,
-                        f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Helligkeit ({current_brightness}) über Schwellwert ({shadow_threshold_close}), fahre in Vollschatten ({target_height}%, {target_angle}%) und gehe zu {self.STATE_SHADOW_FULL_CLOSED}",
-                    )
+                    _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Helligkeit ({current_brightness}) über Schwellwert ({shadow_threshold_close}), fahre in Vollschatten ({target_height}%, {target_angle}%) und gehe zu {self.STATE_SHADOW_FULL_CLOSED}")
                     return self.STATE_SHADOW_FULL_CLOSED
                 else:
-                    self._debug(
-                        False,
-                        f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Fehler beim Berechnen der Schattenhöhe oder des Winkels, bleibe in {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}",
-                    )
+                    _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Fehler beim Berechnen der Schattenhöhe oder des Winkels, bleibe in {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}")
                     return self.STATE_SHADOW_HORIZONTAL_NEUTRAL
             elif shadow_open_shutter_delay is not None:
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Helligkeit nicht über Schwellwert, starte Timer für {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING} ({shadow_open_shutter_delay}s)",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Helligkeit nicht über Schwellwert, starte Timer für {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING} ({shadow_open_shutter_delay}s)")
                 await self._start_timer(shadow_open_shutter_delay)
                 return self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Helligkeit nicht über Schwellwert und 'shadow_open_shutter_delay' nicht konfiguriert, bleibe in {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Helligkeit nicht über Schwellwert und 'shadow_open_shutter_delay' nicht konfiguriert, bleibe in {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}")
                 return self.STATE_SHADOW_HORIZONTAL_NEUTRAL
         else:
             neutral_height = await self._get_input_value("height_neutral")
@@ -1214,33 +1101,21 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     force=True,
                     stop_timer=True,  # Stop Timer (falls ein Timer aktiv war)
                 )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        self._debug(
-            True,
-            f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Beibehalte vorherige Position.",
-        )
+        _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Beibehalte vorherige Position.")
         return self.STATE_SHADOW_HORIZONTAL_NEUTRAL
 
     # =======================================================================
     # State SHADOW_NEUTRAL_TIMER_RUNNING
     async def _handle_state_shadow_neutral_timer_running(self) -> str:
         if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING
 
         if await self._is_in_sun() and await self._is_shadow_handling_activated():
@@ -1255,10 +1130,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and shadow_threshold_close is not None
                     and current_brightness > shadow_threshold_close
             ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Helligkeit ({current_brightness}) wieder über Schwellwert ({shadow_threshold_close}), gehe zu {self.STATE_SHADOW_FULL_CLOSED} und stoppe Timer.",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Helligkeit ({current_brightness}) wieder über Schwellwert ({shadow_threshold_close}), gehe zu {self.STATE_SHADOW_FULL_CLOSED} und stoppe Timer.")
                 await self._stop_timer()
                 return self.STATE_SHADOW_FULL_CLOSED
             else:
@@ -1274,22 +1146,13 @@ class ShadowControl(CoverEntity, RestoreEntity):
                             force=True,
                             stop_timer=True,
                         )
-                        self._debug(
-                            True,
-                            f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Timer abgelaufen, fahre in Position nach Schatten ({height_after_shadow}%, {angle_after_shadow}°) und gehe zu {self.STATE_SHADOW_NEUTRAL}",
-                        )
+                        _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Timer abgelaufen, fahre in Position nach Schatten ({height_after_shadow}%, {angle_after_shadow}°) und gehe zu {self.STATE_SHADOW_NEUTRAL}")
                         return self.STATE_SHADOW_NEUTRAL
                     else:
-                        self._debug(
-                            False,
-                            f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Höhe oder Winkel nach Schatten nicht konfiguriert, bleibe in {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}",
-                        )
+                        _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Höhe oder Winkel nach Schatten nicht konfiguriert, bleibe in {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}")
                         return self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING
                 else:
-                    self._debug(
-                        True,
-                        f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Warte auf Timer (Helligkeit nicht hoch genug)...",
-                    )
+                    _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Warte auf Timer (Helligkeit nicht hoch genug)...")
                     return self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING
         else:
             neutral_height = await self._get_input_value("height_neutral")
@@ -1302,33 +1165,21 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     force=True,
                     stop_timer=True,  # Stop Timer
                 )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        self._debug(
-            True,
-            f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.",
-        )
+        _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.")
         return self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING
 
     # =======================================================================
     # State SHADOW_NEUTRAL
     async def _handle_state_shadow_neutral(self) -> str:
         if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_NEUTRAL}: LBS ist gesperrt, keine Aktion.",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_SHADOW_NEUTRAL
 
         if await self._is_in_sun() and await self._is_shadow_handling_activated():
@@ -1350,10 +1201,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and current_brightness > shadow_threshold_close
                     and shadow_close_delay is not None
             ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_NEUTRAL}: Helligkeit ({current_brightness}) über Schatten-Schwellwert ({shadow_threshold_close}), starte Timer für {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL}: Helligkeit ({current_brightness}) über Schatten-Schwellwert ({shadow_threshold_close}), starte Timer für {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)")
                 await self._start_timer(shadow_close_delay)
                 return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
             elif (
@@ -1363,10 +1211,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and dawn_brightness < dawn_threshold_close
                     and dawn_close_delay is not None
             ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_NEUTRAL}: Dämmerungsbehandlung aktiv und Helligkeit ({dawn_brightness}) unter Dämmerungs-Schwellwert ({dawn_threshold_close}), starte Timer für {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL}: Dämmerungsbehandlung aktiv und Helligkeit ({dawn_brightness}) unter Dämmerungs-Schwellwert ({dawn_threshold_close}), starte Timer für {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)")
                 await self._start_timer(dawn_close_delay)
                 return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
             elif height_after_shadow is not None and angle_after_shadow is not None:
@@ -1377,16 +1222,10 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     force=True,
                     stop_timer=False,
                 )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_NEUTRAL}: Bewege Behang in Position nach Schatten ({height_after_shadow}%, {angle_after_shadow}%).",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL}: Bewege Behang in Position nach Schatten ({height_after_shadow}%, {angle_after_shadow}%).")
                 return self.STATE_SHADOW_NEUTRAL
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_SHADOW_NEUTRAL}: Höhe oder Winkel nach Schatten nicht konfiguriert, bleibe in {self.STATE_SHADOW_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL}: Höhe oder Winkel nach Schatten nicht konfiguriert, bleibe in {self.STATE_SHADOW_NEUTRAL}")
                 return self.STATE_SHADOW_NEUTRAL
 
         if await self._is_dawn_handling_activated():
@@ -1399,10 +1238,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and dawn_brightness < dawn_threshold_close
                     and dawn_close_delay is not None
             ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_SHADOW_NEUTRAL}: Dämmerungsbehandlung aktiv und Helligkeit ({dawn_brightness}) unter Dämmerungs-Schwellwert ({dawn_threshold_close}), starte Timer für {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL}: Dämmerungsbehandlung aktiv und Helligkeit ({dawn_brightness}) unter Dämmerungs-Schwellwert ({dawn_threshold_close}), starte Timer für {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)")
                 await self._start_timer(dawn_close_delay)
                 return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
 
@@ -1416,24 +1252,17 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 force=True,
                 stop_timer=True,  # Stop Timer (falls ein Timer aktiv war)
             )
-            self._debug(
-                True,
-                f"Zustand {self.STATE_SHADOW_NEUTRAL}: Nicht in Sonne oder Schattenmodus deaktiviert und Dämmerung nicht aktiv, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL}: Nicht in Sonne oder Schattenmodus deaktiviert und Dämmerung nicht aktiv, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
             return self.STATE_NEUTRAL
         else:
-            self._debug(
-                False,
-                f"Zustand {self.STATE_SHADOW_NEUTRAL}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}")
             return self.STATE_NEUTRAL
 
     # =======================================================================
     # State NEUTRAL
     async def _handle_state_neutral(self) -> str:
         if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True, f"Zustand {self.STATE_NEUTRAL}: LBS ist gesperrt, keine Aktion."
+            _LOGGER.debug(f"Zustand {self.STATE_NEUTRAL}: LBS ist gesperrt, keine Aktion."
             )
             return self.STATE_NEUTRAL
 
@@ -1449,10 +1278,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 and current_brightness > shadow_threshold_close
                 and shadow_close_delay is not None
             ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_NEUTRAL}: Helligkeit ({current_brightness}) über Schatten-Schwellwert ({shadow_threshold_close}), starte Timer für {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_NEUTRAL}: Helligkeit ({current_brightness}) über Schatten-Schwellwert ({shadow_threshold_close}), starte Timer für {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)")
                 await self._start_timer(shadow_close_delay)
                 return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
 
@@ -1466,10 +1292,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 and dawn_brightness < dawn_threshold_close
                 and dawn_close_delay is not None
             ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_NEUTRAL}: Dämmerungsbehandlung aktiv und Helligkeit ({dawn_brightness}) unter Dämmerungs-Schwellwert ({dawn_threshold_close}), starte Timer für {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_NEUTRAL}: Dämmerungsbehandlung aktiv und Helligkeit ({dawn_brightness}) unter Dämmerungs-Schwellwert ({dawn_threshold_close}), starte Timer für {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)")
                 await self._start_timer(dawn_close_delay)
                 return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
 
@@ -1483,20 +1306,14 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 force=True,
                 stop_timer=False,
             )
-            self._debug(
-                True,
-                f"Zustand {self.STATE_NEUTRAL}: Bewege Behang in Neutralposition ({neutral_height}%, {neutral_angle}%).",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_NEUTRAL}: Bewege Behang in Neutralposition ({neutral_height}%, {neutral_angle}%).")
         return self.STATE_NEUTRAL
 
     # =======================================================================
     # State DAWN_NEUTRAL
     async def _handle_state_dawn_neutral(self) -> str:
         if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_NEUTRAL}: LBS ist gesperrt, keine Aktion.",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_DAWN_NEUTRAL
 
         dawn_handling_active = await self._is_dawn_handling_activated()
@@ -1520,10 +1337,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and dawn_brightness < dawn_threshold_close
                     and dawn_close_delay is not None
             ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_NEUTRAL}: Dämmerungsbehandlung aktiv und Helligkeit ({dawn_brightness}) unter Dämmerungs-Schwellwert ({dawn_threshold_close}), starte Timer für {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL}: Dämmerungsbehandlung aktiv und Helligkeit ({dawn_brightness}) unter Dämmerungs-Schwellwert ({dawn_threshold_close}), starte Timer für {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)")
                 await self._start_timer(dawn_close_delay)
                 return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
             elif (
@@ -1534,10 +1348,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and current_brightness > shadow_threshold_close
                     and shadow_close_delay is not None
             ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_NEUTRAL}: Sonne scheint, Schattenbehandlung aktiv und Helligkeit ({current_brightness}) über Schatten-Schwellwert ({shadow_threshold_close}), starte Timer für {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL}: Sonne scheint, Schattenbehandlung aktiv und Helligkeit ({current_brightness}) über Schatten-Schwellwert ({shadow_threshold_close}), starte Timer für {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)")
                 await self._start_timer(shadow_close_delay)
                 return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
             elif height_after_dawn is not None and angle_after_dawn is not None:
@@ -1548,16 +1359,10 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     force=True,
                     stop_timer=False,
                 )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_NEUTRAL}: Bewege Behang in Position nach Dämmerung ({height_after_dawn}%, {angle_after_dawn}%).",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL}: Bewege Behang in Position nach Dämmerung ({height_after_dawn}%, {angle_after_dawn}%).")
                 return self.STATE_DAWN_NEUTRAL
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_DAWN_NEUTRAL}: Höhe oder Winkel nach Dämmerung nicht konfiguriert, bleibe in {self.STATE_DAWN_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL}: Höhe oder Winkel nach Dämmerung nicht konfiguriert, bleibe in {self.STATE_DAWN_NEUTRAL}")
                 return self.STATE_DAWN_NEUTRAL
 
         if (
@@ -1568,10 +1373,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 and current_brightness > shadow_threshold_close
                 and shadow_close_delay is not None
         ):
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_NEUTRAL}: Sonne scheint, Schattenbehandlung aktiv und Helligkeit ({current_brightness}) über Schatten-Schwellwert ({shadow_threshold_close}), starte Timer für {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL}: Sonne scheint, Schattenbehandlung aktiv und Helligkeit ({current_brightness}) über Schatten-Schwellwert ({shadow_threshold_close}), starte Timer für {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)")
             await self._start_timer(shadow_close_delay)
             return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
 
@@ -1583,26 +1385,17 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 force=True,
                 stop_timer=True,  # Stop Timer (falls ein Timer aktiv war)
             )
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_NEUTRAL}: Dämmerungsbehandlung deaktiviert oder nicht die Bedingungen für Schatten, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%).",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL}: Dämmerungsbehandlung deaktiviert oder nicht die Bedingungen für Schatten, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%).")
             return self.STATE_NEUTRAL
         else:
-            self._debug(
-                False,
-                f"Zustand {self.STATE_DAWN_NEUTRAL}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}")
             return self.STATE_NEUTRAL
 
     # =======================================================================
     # State DAWN_NEUTRAL_TIMER_RUNNING
     async def _handle_state_dawn_neutral_timer_running(self) -> str:
         if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_DAWN_NEUTRAL_TIMER_RUNNING
 
         if await self._is_dawn_handling_activated():
@@ -1616,10 +1409,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and dawn_threshold_close is not None
                     and dawn_brightness < dawn_threshold_close
             ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Dämmerungshelligkeit ({dawn_brightness}) wieder unter Schwellwert ({dawn_threshold_close}), gehe zu {self.STATE_DAWN_FULL_CLOSED} und stoppe Timer.",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Dämmerungshelligkeit ({dawn_brightness}) wieder unter Schwellwert ({dawn_threshold_close}), gehe zu {self.STATE_DAWN_FULL_CLOSED} und stoppe Timer.")
                 await self._stop_timer()
                 return self.STATE_DAWN_FULL_CLOSED
             else:
@@ -1632,22 +1422,13 @@ class ShadowControl(CoverEntity, RestoreEntity):
                             force=True,
                             stop_timer=True,
                         )
-                        self._debug(
-                            True,
-                            f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Timer abgelaufen, fahre auf Dämmerungshöhe ({dawn_height}%) mit geöffneten Lamellen ({dawn_open_slat_angle}°) und gehe zu {self.STATE_DAWN_NEUTRAL}",
-                        )
+                        _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Timer abgelaufen, fahre auf Dämmerungshöhe ({dawn_height}%) mit geöffneten Lamellen ({dawn_open_slat_angle}°) und gehe zu {self.STATE_DAWN_NEUTRAL}")
                         return self.STATE_DAWN_NEUTRAL
                     else:
-                        self._debug(
-                            False,
-                            f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Dämmerungshöhe oder Winkel für offene Lamellen nicht konfiguriert, bleibe in {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}",
-                        )
+                        _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Dämmerungshöhe oder Winkel für offene Lamellen nicht konfiguriert, bleibe in {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}")
                         return self.STATE_DAWN_NEUTRAL_TIMER_RUNNING
                 else:
-                    self._debug(
-                        True,
-                        f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Warte auf Timer (Helligkeit nicht niedrig genug)...",
-                    )
+                    _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Warte auf Timer (Helligkeit nicht niedrig genug)...")
                     return self.STATE_DAWN_NEUTRAL_TIMER_RUNNING
         else:
             neutral_height = await self._get_input_value("height_neutral")
@@ -1660,33 +1441,21 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     force=True,
                     stop_timer=True,  # Stop Timer
                 )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        self._debug(
-            True,
-            f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.",
-        )
+        _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.")
         return self.STATE_DAWN_NEUTRAL_TIMER_RUNNING
 
     # =======================================================================
     # State DAWN_HORIZONTAL_NEUTRAL
     async def _handle_state_dawn_horizontal_neutral(self) -> str:
         if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: LBS ist gesperrt, keine Aktion.",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_DAWN_HORIZONTAL_NEUTRAL
 
         if await self._is_dawn_handling_activated():
@@ -1712,23 +1481,14 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     force=False,
                     stop_timer=False,
                 )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: Dämmerungshelligkeit ({dawn_brightness}) unter Schwellwert ({dawn_threshold_close}), fahre auf Dämmerungshöhe ({dawn_height}%) mit geöffneten Lamellen ({dawn_open_slat_angle}°) und gehe zu {self.STATE_DAWN_FULL_CLOSED}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: Dämmerungshelligkeit ({dawn_brightness}) unter Schwellwert ({dawn_threshold_close}), fahre auf Dämmerungshöhe ({dawn_height}%) mit geöffneten Lamellen ({dawn_open_slat_angle}°) und gehe zu {self.STATE_DAWN_FULL_CLOSED}")
                 return self.STATE_DAWN_FULL_CLOSED
             elif dawn_open_shutter_delay is not None:
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: Dämmerungshelligkeit nicht unter Schwellwert, starte Timer für {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING} ({dawn_open_shutter_delay}s)",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: Dämmerungshelligkeit nicht unter Schwellwert, starte Timer für {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING} ({dawn_open_shutter_delay}s)")
                 await self._start_timer(dawn_open_shutter_delay)
                 return self.STATE_DAWN_NEUTRAL_TIMER_RUNNING
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: Dämmerungshelligkeit nicht unter Schwellwert und 'dawn_open_shutter_delay' nicht konfiguriert, bleibe in {self.STATE_DAWN_HORIZONTAL_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: Dämmerungshelligkeit nicht unter Schwellwert und 'dawn_open_shutter_delay' nicht konfiguriert, bleibe in {self.STATE_DAWN_HORIZONTAL_NEUTRAL}")
                 return self.STATE_DAWN_HORIZONTAL_NEUTRAL
         else:
             neutral_height = await self._get_input_value("height_neutral")
@@ -1741,33 +1501,21 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     force=True,
                     stop_timer=True,
                 )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        self._debug(
-            True,
-            f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: Beibehalte vorherige Position.",
-        )
+        _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: Beibehalte vorherige Position.")
         return self.STATE_DAWN_HORIZONTAL_NEUTRAL
 
     # =======================================================================
     # State DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
     async def _handle_state_dawn_horizontal_neutral_timer_running(self) -> str:
         if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
         if await self._is_dawn_handling_activated():
@@ -1781,10 +1529,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and dawn_threshold_close is not None
                     and dawn_brightness < dawn_threshold_close
             ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Dämmerungshelligkeit ({dawn_brightness}) wieder unter Schwellwert ({dawn_threshold_close}), gehe zu {self.STATE_DAWN_FULL_CLOSED} und stoppe Timer.",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Dämmerungshelligkeit ({dawn_brightness}) wieder unter Schwellwert ({dawn_threshold_close}), gehe zu {self.STATE_DAWN_FULL_CLOSED} und stoppe Timer.")
                 await self._stop_timer()
                 return self.STATE_DAWN_FULL_CLOSED
             else:
@@ -1797,22 +1542,13 @@ class ShadowControl(CoverEntity, RestoreEntity):
                             force=False,
                             stop_timer=True,
                         )
-                        self._debug(
-                            True,
-                            f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Timer abgelaufen, fahre auf Dämmerungshöhe ({dawn_height}%) mit geöffneten Lamellen ({dawn_open_slat_angle}°) und gehe zu {self.STATE_DAWN_HORIZONTAL_NEUTRAL}",
-                        )
+                        _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Timer abgelaufen, fahre auf Dämmerungshöhe ({dawn_height}%) mit geöffneten Lamellen ({dawn_open_slat_angle}°) und gehe zu {self.STATE_DAWN_HORIZONTAL_NEUTRAL}")
                         return self.STATE_DAWN_HORIZONTAL_NEUTRAL
                     else:
-                        self._debug(
-                            False,
-                            f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Dämmerungshöhe oder Winkel für offene Lamellen nicht konfiguriert, bleibe in {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}",
-                        )
+                        _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Dämmerungshöhe oder Winkel für offene Lamellen nicht konfiguriert, bleibe in {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}")
                         return self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
                 else:
-                    self._debug(
-                        True,
-                        f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Warte auf Timer (Helligkeit nicht niedrig genug)...",
-                    )
+                    _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Warte auf Timer (Helligkeit nicht niedrig genug)...")
                     return self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
         else:
             neutral_height = await self._get_input_value("height_neutral")
@@ -1825,33 +1561,21 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     force=True,
                     stop_timer=True,  # Stop Timer
                 )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        self._debug(
-            True,
-            f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.",
-        )
+        _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.")
         return self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
     # =======================================================================
     # State DAWN_FULL_CLOSED
     async def _handle_state_dawn_full_closed(self) -> str:
         if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_FULL_CLOSED}: LBS ist gesperrt, keine Aktion.",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSED}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_DAWN_FULL_CLOSED
 
         if await self._is_dawn_handling_activated():
@@ -1867,10 +1591,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and dawn_brightness > dawn_threshold_close
                     and dawn_open_slat_delay is not None
             ):
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungshelligkeit ({dawn_brightness}) über Schwellwert ({dawn_threshold_close}), starte Timer für {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({dawn_open_slat_delay}s)",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungshelligkeit ({dawn_brightness}) über Schwellwert ({dawn_threshold_close}), starte Timer für {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({dawn_open_slat_delay}s)")
                 await self._start_timer(dawn_open_slat_delay)
                 return self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
             elif dawn_height is not None and dawn_angle is not None:
@@ -1881,16 +1602,10 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     force=True,
                     stop_timer=False,
                 )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungshelligkeit nicht über Schwellwert, fahre in Dämmerungsposition ({dawn_height}%, {dawn_angle}%).",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungshelligkeit nicht über Schwellwert, fahre in Dämmerungsposition ({dawn_height}%, {dawn_angle}%).")
                 return self.STATE_DAWN_FULL_CLOSED
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungshöhe oder -winkel nicht konfiguriert, bleibe in {self.STATE_DAWN_FULL_CLOSED}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungshöhe oder -winkel nicht konfiguriert, bleibe in {self.STATE_DAWN_FULL_CLOSED}")
                 return self.STATE_DAWN_FULL_CLOSED
         else:
             neutral_height = await self._get_input_value("height_neutral")
@@ -1903,33 +1618,21 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     force=True,
                     stop_timer=True,  # Stop Timer
                 )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        self._debug(
-            True,
-            f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Beibehalte vorherige Position.",
-        )
+        _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Beibehalte vorherige Position.")
         return self.STATE_DAWN_FULL_CLOSED
 
     # =======================================================================
     # State DAWN_FULL_CLOSE_TIMER_RUNNING
     async def _handle_state_dawn_full_close_timer_running(self) -> str:
         if await self._is_lbs_locked_in_either_way():
-            self._debug(
-                True,
-                f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.",
-            )
+            _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
 
         if await self._is_dawn_handling_activated():
@@ -1952,28 +1655,16 @@ class ShadowControl(CoverEntity, RestoreEntity):
                             force=True,
                             stop_timer=True,
                         )
-                        self._debug(
-                            True,
-                            f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Timer abgelaufen, fahre in volle Dämmerungsposition ({dawn_height}%, {dawn_angle}%) und gehe zu {self.STATE_DAWN_FULL_CLOSED}",
-                        )
+                        _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Timer abgelaufen, fahre in volle Dämmerungsposition ({dawn_height}%, {dawn_angle}%) und gehe zu {self.STATE_DAWN_FULL_CLOSED}")
                         return self.STATE_DAWN_FULL_CLOSED
                     else:
-                        self._debug(
-                            False,
-                            f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Dämmerungshöhe oder -winkel nicht konfiguriert, bleibe in {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}",
-                        )
+                        _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Dämmerungshöhe oder -winkel nicht konfiguriert, bleibe in {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}")
                         return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
                 else:
-                    self._debug(
-                        True,
-                        f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Warte auf Timer (Helligkeit niedrig genug)...",
-                    )
+                    _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Warte auf Timer (Helligkeit niedrig genug)...")
                     return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
             else:
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Helligkeit ({dawn_brightness}) nicht unter Schwellwert ({dawn_threshold_close}), gehe zu {self.STATE_DAWN_NEUTRAL} und stoppe Timer.",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Helligkeit ({dawn_brightness}) nicht unter Schwellwert ({dawn_threshold_close}), gehe zu {self.STATE_DAWN_NEUTRAL} und stoppe Timer.")
                 await self._stop_timer()
                 return self.STATE_DAWN_NEUTRAL
         else:
@@ -1987,23 +1678,14 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     force=True,
                     stop_timer=True,  # Stop Timer
                 )
-                self._debug(
-                    True,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
             else:
-                self._debug(
-                    False,
-                    f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}",
-                )
+                _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {self.STATE_NEUTRAL}")
                 return self.STATE_NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        self._debug(
-            True,
-            f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Beibehalte vorherige Position.",
-        )
+        _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Beibehalte vorherige Position.")
         return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
 
     # End of state handling
@@ -2011,7 +1693,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
     async def _update_sun_state(self):
         """Berechnet, ob die Fassade von der Sonne beleuchtet wird und ob die Elevation im gültigen Bereich liegt."""
-        self._debug(True, "=== Überprüfe, ob Fassade in der Sonne ist... ===")
+        _LOGGER.debug(f"=== Überprüfe, ob Fassade in der Sonne ist... ===")
 
         azimuth = await self._get_input_value("azimuth")
         facade_angle = await self._get_input_value("facade_angle")
@@ -2030,10 +1712,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             or max_elevation is None
             or elevation is None
         ):
-            self._debug(
-                False,
-                "Kann Sonnenstatus nicht überprüfen: Nicht alle erforderlichen Eingabewerte sind verfügbar.",
-            )
+            _LOGGER.debug(f"Kann Sonnenstatus nicht überprüfen: Nicht alle erforderlichen Eingabewerte sind verfügbar.")
             return
 
         azimuth = float(azimuth)
@@ -2099,7 +1778,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             is_between_min_max_elevation = False
             await self._set_sun_at_facade_elevation(0)
 
-        self._debug(True, message + " ===")
+        _LOGGER.debug(f"{message} ===")
 
         # Speichere die Ergebnisse in internen Zustandsvariablen
         self._internal_is_in_sun = is_in_sun
@@ -2116,13 +1795,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
         return state_map.get(state_name)
 
     _debug_enabled: bool = True  # Standardmäßig Debug-Ausgaben aktivieren
-
-    def _debug(self, enabled: bool, message: str):
-        """Gibt eine Debug-Nachricht aus, wenn die Debug-Ausgabe aktiviert ist."""
-        if self._debug_enabled and enabled:
-            print(f"DEBUG (ShadowControl): {message}")
-        elif not enabled:
-            print(f"DEBUG (ShadowControl) (forced): {message}")
 
     async def _set_sun_at_facade_azimuth(self, value: int):
         entity_id = await self._get_home_assistant_entity_id("sun_at_facade_azimuth")
@@ -2159,17 +1831,11 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 or (attributes and current_state.attributes != attributes)
             ):
                 self.hass.states.async_set(entity_id, state, attributes)
-                self._debug(
-                    True,
-                    f"Home Assistant: Setze Zustand von '{entity_id}' auf '{state}' mit Attributen '{attributes}'.",
-                )
+                _LOGGER.debug(f"Home Assistant: Setze Zustand von '{entity_id}' auf '{state}' mit Attributen '{attributes}'.")
             else:
-                self._debug(
-                    True,
-                    f"Home Assistant: Zustand von '{entity_id}' ist bereits '{state}' (und Attribute sind gleich), überspringe Aktualisierung.",
-                )
+                _LOGGER.debug(f"Home Assistant: Zustand von '{entity_id}' ist bereits '{state}' (und Attribute sind gleich), überspringe Aktualisierung.")
         else:
-            self._debug(False, "Home Assistant API-Instanz nicht verfügbar.")
+            _LOGGER.debug(f"Home Assistant API-Instanz nicht verfügbar.")
 
     async def _get_home_assistant_entity_id(self, output_name: str) -> Optional[str]:
         """Holt die Home Assistant Entitäts-ID für den gegebenen Ausgangsnamen aus der Konfiguration."""
