@@ -296,14 +296,15 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         # === Hier beginnt Ihre gesamte Beschattungslogik ===
         # 1. Alle benötigten Werte abrufen (auch die Nicht-Trigger-Werte, die den letzten Stand behalten)
-        current_brightness_state = self.hass.states.get(self._brightness_entity_id)
-        current_brightness = float(current_brightness_state.state) if current_brightness_state and current_brightness_state.state != STATE_UNKNOWN else None
+        # Sonnenstand und Helligkeit
+        current_sun_elevation = self._get_entity_numeric_state(self._sun_elevation_entity_id, float)
+        current_sun_azimuth = self._get_entity_numeric_state(self._sun_azimuth_entity_id, float)
+        current_brightness = self._get_entity_numeric_state(self._brightness_entity_id, float)
+        current_brightness_dawn = self._get_entity_numeric_state(self._brightness_dawn_entity_id, float)
 
-        current_sun_elevation_state = self.hass.states.get(self._sun_elevation_entity_id)
-        current_sun_elevation = float(current_sun_elevation_state.state) if current_sun_elevation_state and current_sun_elevation_state.state != STATE_UNKNOWN else None
-
-        current_height = self.hass.states.get(self._shutter_current_height_entity_id)
-        current_angle = self.hass.states.get(self._shutter_current_angle_entity_id)
+        # Aktuelle Behang-Position
+        current_height = self._get_entity_numeric_state(self._shutter_current_height_entity_id, float)
+        current_angle = self._get_entity_numeric_state(self._shutter_current_angle_entity_id, float)
 
         # 2. Beschattungslogik ausführen
         _LOGGER.debug(f"{self._name}: Brightness={current_brightness}, Elevation={current_sun_elevation}, etc. - Performing calculation.")
@@ -2193,3 +2194,39 @@ class ShadowControl(CoverEntity, RestoreEntity):
             "sun_at_facade_elevation": "binary_sensor.shadow_control_sun_elevation",
             # ... weitere Zuordnungen
         }
+
+    def _get_entity_numeric_state(self, entity_id: str, target_type: type = float) -> float | int | None:
+        """
+        Ruft den Zustand einer Entität ab und versucht, ihn in einen numerischen Typ zu konvertieren.
+        Gibt den konvertierten Wert zurück oder None, wenn die Entität nicht gefunden,
+        der Zustand UNKNOWN/UNAVAILABLE ist oder die Konvertierung fehlschlägt.
+        """
+        state_obj = self.hass.states.get(entity_id)
+
+        if not state_obj:
+            _LOGGER.debug(f"{self._name}: Entität '{entity_id}' nicht gefunden.")
+            return None
+
+        state_value = state_obj.state
+
+        if state_value in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+            _LOGGER.debug(f"{self._name}: Zustand der Entität '{entity_id}' ist '{state_value}'.")
+            return None
+
+        try:
+            # Versuche, den Wert in den gewünschten Typ zu konvertieren
+            if target_type is float:
+                return float(state_value)
+            elif target_type is int:
+                # Konvertiere zuerst in float, um auch "10.0" als int zu verarbeiten
+                return int(float(state_value))
+            else:
+                # Fallback, sollte hier nicht nötig sein, da wir numerische Typen erwarten
+                _LOGGER.warning(f"{self._name}: Unerwarteter Zieltyp '{target_type.__name__}' für '{entity_id}'.")
+                return None
+        except (ValueError, TypeError):
+            _LOGGER.warning(
+                f"{self._name}: Konnte Zustand '{state_value}' der Entität '{entity_id}' nicht nach "
+                f"'{target_type.__name__}' konvertieren."
+            )
+            return None
