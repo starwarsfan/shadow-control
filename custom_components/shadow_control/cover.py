@@ -340,17 +340,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
             _LOGGER.debug(f"{self._name} is not locked. Change the position.")
         pass
 
-    # =======================================================================
-    # Helper to get and handle entity states
-    def _get_state_value(self, entity_id: str | None) -> str | None:
-        """Helper to get the state of an entity."""
-        if not entity_id:
-            return None
-        state = self.hass.states.get(entity_id)
-        if state:
-            return state.state
-        return None
-
     @callback
     async def _handle_sensor_change(self, event) -> None:
         """Handle changes in sensor states."""
@@ -2196,6 +2185,18 @@ class ShadowControl(CoverEntity, RestoreEntity):
             "sun_at_facade_elevation": "binary_sensor.shadow_control_sun_elevation",
             # ... weitere Zuordnungen
         }
+
+
+    # =======================================================================
+    # Entity state helper functions
+    def _get_state_value(self, entity_id: str | None) -> str | None:
+        """Helper to get the state of an entity."""
+        if not entity_id:
+            return None
+        state = self.hass.states.get(entity_id)
+        if state:
+            return state.state
+        return None
 
     def _get_entity_numeric_state(self, entity_id: str, target_type: type = float) -> float | int | None:
         """
