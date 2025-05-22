@@ -10,7 +10,7 @@ automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
-#knx: !include knx/all.yaml
+knx: !include knx/all.yaml
 
 logger:
   default: info
@@ -478,6 +478,7 @@ cover:
   - platform: shadow_control  # Verwenden Sie hier den Namen Ihrer Plattform
     name: "Test Shadow Control"
     cover: cover.test_cover1
+    target_cover_entity_id: "cover.fenster_buro_ost"
 
     # === Dynamische Eingänge (Test-Helfer) ===
     brightness_entity_id: input_number.d01_brightness

@@ -3,6 +3,7 @@
 from enum import IntEnum
 
 DOMAIN = "shadow_control"
+DEFAULT_NAME = "Shadow Control"
 
 CONF_NAME = "name"
 CONF_SUN_ELEVATION = "elevation"
@@ -54,6 +55,7 @@ CONF_DAWN_OPEN_SHUTTER_DELAY = "dawn_open_shutter_delay"
 CONF_DAWN_THRESHOLD_OPEN = "dawn_threshold_open"
 CONF_UPDATE_LOCKSTATE_OUTPUT = "update_lockstate_output"
 CONF_DEBUG_ENABLED = "debug_enabled"  # Für den Debug-Schalter
+CONF_TARGET_COVER_ENTITY_ID = "target_cover_entity_id"
 
 # --- Status Konstanten für die Behangsteuerung -----------------------------
 class ShutterState(IntEnum):

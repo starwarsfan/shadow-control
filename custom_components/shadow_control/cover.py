@@ -18,6 +18,8 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import (
+    DOMAIN,
+    DEFAULT_NAME,
     CONF_ANGLE_AFTER_DAWN,
     CONF_ANGLE_AFTER_SHADOW,
     CONF_ANGLE,
@@ -65,8 +67,8 @@ from .const import (
     CONF_SHUTTER_SLAT_WIDTH,
     CONF_SHUTTER_TYPE,
     CONF_UPDATE_LOCKSTATE_OUTPUT,
-    DOMAIN,
-    #    
+    CONF_TARGET_COVER_ENTITY_ID,
+    #
     ShutterState,
     LockState,
 )
@@ -88,15 +90,18 @@ async def async_setup_platform(
     _LOGGER.debug(f"Configuration from YAML: {config}") # Zur Überprüfung der Konfigurationsdaten
 
     name = config.get(CONF_NAME, DEFAULT_NAME)
-    cover_entity_id = config.get("cover")
-    # ... (hier könnten Sie die anderen Konfigurationsparameter lesen,
-    #      aber da wir sie fest verdrahtet haben, ist das jetzt optional)
+    target_cover_entity_id = config.get(CONF_TARGET_COVER_ENTITY_ID)
+
+    if not target_cover_entity_id:
+        _LOGGER.error(f"[{name}] Missing required configuration key '{CONF_TARGET_COVER_ENTITY_ID}'")
+        return # Wichtig: Hier sollte kein False zurückgegeben werden, Home Assistant erwartet nichts
+               # nach dem Logging des Fehlers und Beenden der Funktion.
 
     # Hier erstellen wir eine Instanz Ihrer ShadowControl-Klasse.
     # Die 'config' enthält alle Parameter, die Sie in der configuration.yaml
     # unter 'shadow_control:' definiert haben.
     # Wir übergeben 'config' direkt an den Konstruktor.
-    async_add_entities([ShadowControl(hass, config)])
+    async_add_entities([ShadowControl(hass, config, target_cover_entity_id)])
 
 class ShadowControl(CoverEntity, RestoreEntity):
     """Representation of a Shadow Control cover."""
@@ -111,6 +116,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             self,
             hass: HomeAssistant,
             config: ConfigType, # Empfängt die gesamte Konfiguration
+            target_cover_entity_id: str, # ID der zu steuernde Entität
     ) -> None:
         """Initialize the Shadow Control cover."""
         super().__init__() # Call base class constructor
@@ -123,6 +129,9 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # Die Entity ID, unter der diese Entität in HA erscheinen wird
         self._attr_unique_id = f"shadow_control_{self._name.lower().replace(' ', '_')}"
         self.entity_id = f"cover.{self._attr_unique_id}" # Wichtig, um die Entität eindeutig zu machen
+
+        # Entity ID des zu steuernden Behangs
+        self._target_cover_entity_id = target_cover_entity_id
 
         # Feste Verdrahtung der Entitäts-IDs für die Entwicklung
         # Diese Werte werden jetzt direkt hier gesetzt und nicht mehr aus 'config' gelesen,
