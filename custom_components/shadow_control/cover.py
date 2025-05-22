@@ -290,7 +290,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             entity_id = event.data.get("entity_id")
             old_state = event.data.get("old_state")
             new_state = event.data.get("new_state")
-            _LOGGER.debug(f"{self._name}: Trigger entity {entity_id} state changed from {old_state} to {new_state}. Recalculating...")
+            _LOGGER.debug(f"{self._name}: Trigger entity {entity_id} state changed from\n  {old_state}\nto\n  {new_state} --> Recalculating...")
         else:
             _LOGGER.debug(f"{self._name}: Initial trigger recalculation (no event).")
 
