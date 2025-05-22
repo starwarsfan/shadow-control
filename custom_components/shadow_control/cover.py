@@ -512,12 +512,12 @@ class ShadowControl(CoverEntity, RestoreEntity):
         new_state = self.STATE_NEUTRAL
 
         if (
-            await self._is_shadow_handling_activated() and not await self._is_in_sun()
+            await self._is_shadow_handling_activated() and not await self._check_if_facade_is_in_sun()
         ) or (
             await self._is_dawn_handling_activated() and await self._is_dawn_active()
         ):
             new_state = await self._get_appropriate_closed_state(current_state)
-        elif await self._is_in_sun() and await self._is_shadow_handling_activated():
+        elif await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
             new_state = await self._get_appropriate_sun_state(current_state)
         elif (
             await self._is_dawn_handling_activated()
@@ -532,7 +532,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
     async def _get_appropriate_closed_state(self, current_state: str) -> str:
         """Determine the appropriate closed state (shadow or dawn)."""
-        if await self._is_shadow_handling_activated() and not await self._is_in_sun():
+        if await self._is_shadow_handling_activated() and not await self._check_if_facade_is_in_sun():
             return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
         elif await self._is_dawn_handling_activated() and await self._is_dawn_active():
             return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
@@ -732,19 +732,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
             setattr(self, f"_current_{attribute}", value)
             self.async_write_ha_state()
 
-    async def _is_in_sun(self) -> bool:
-        """Prüft, ob die Sonne im relevanten Azimut- und Elevationsbereich ist."""
-        elevation = await self._get_input_value("elevation")
-        elevation_min = await self._get_input_value("elevation_min")
-        elevation_max = await self._get_input_value("elevation_max")
-
-        if elevation is None or elevation_min is None or elevation_max is None:
-            return False
-
-        is_elevation_in_range = elevation_min <= elevation <= elevation_max
-        _LOGGER.debug(f"Prüfe Sonneneinfall: Azimut im Bereich: {self._sun_between_offsets}, Elevation im Bereich: {is_elevation_in_range}")
-        return self._sun_between_offsets and is_elevation_in_range
-
     async def _check_if_facade_is_in_sun(self) -> None:
         """Calculate if the sun illuminates the given facade."""
         _LOGGER.debug(f"=== Checking if facade is in sun... ===")
@@ -862,7 +849,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
 
-        if await self._is_in_sun() and await self._is_shadow_handling_activated():
+        if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
             current_brightness = await self._get_input_value("brightness")
             shadow_threshold_close = await self._get_input_value(
                 "shadow_threshold_close"
@@ -923,7 +910,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSED}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_SHADOW_FULL_CLOSED
 
-        if await self._is_in_sun() and await self._is_shadow_handling_activated():
+        if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
             current_brightness = await self._get_input_value("brightness")
             shadow_threshold_close = await self._get_input_value(
                 "shadow_threshold_close"
@@ -981,7 +968,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
-        if await self._is_in_sun() and await self._is_shadow_handling_activated():
+        if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
             current_brightness = await self._get_input_value("brightness")
             shadow_threshold_close = await self._get_input_value(
                 "shadow_threshold_close"
@@ -1044,7 +1031,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_SHADOW_HORIZONTAL_NEUTRAL
 
-        if await self._is_in_sun() and await self._is_shadow_handling_activated():
+        if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
             current_brightness = await self._get_input_value("brightness")
             shadow_threshold_close = await self._get_input_value(
                 "shadow_threshold_close"
@@ -1107,7 +1094,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING
 
-        if await self._is_in_sun() and await self._is_shadow_handling_activated():
+        if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
             current_brightness = await self._get_input_value("brightness")
             shadow_threshold_close = await self._get_input_value(
                 "shadow_threshold_close"
@@ -1171,7 +1158,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL}: LBS ist gesperrt, keine Aktion.")
             return self.STATE_SHADOW_NEUTRAL
 
-        if await self._is_in_sun() and await self._is_shadow_handling_activated():
+        if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
             current_brightness = await self._get_input_value("brightness")
             shadow_threshold_close = await self._get_input_value(
                 "shadow_threshold_close"
@@ -1255,7 +1242,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             )
             return self.STATE_NEUTRAL
 
-        if await self._is_in_sun() and await self._is_shadow_handling_activated():
+        if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
             current_brightness = await self._get_input_value("brightness")
             shadow_threshold_close = await self._get_input_value(
                 "shadow_threshold_close"
@@ -1309,7 +1296,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         dawn_brightness = await self._get_input_value("brightness_dawn")
         dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
         dawn_close_delay = await self._get_input_value("dawn_close_delay")
-        is_in_sun = await self._is_in_sun()
+        is_in_sun = await self._check_if_facade_is_in_sun()
         shadow_handling_active = await self._is_shadow_handling_activated()
         current_brightness = await self._get_input_value("brightness")
         shadow_threshold_close = await self._get_input_value("shadow_threshold_close")
