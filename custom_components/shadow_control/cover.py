@@ -796,7 +796,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             await self._send_by_change("sun_at_facade_azimuth", False)
             effective_elevation = None
 
-        await self._send_by_change("effective_elevation", effective_elevation)
+        #await self._send_by_change("effective_elevation", effective_elevation)
 
         message += f", effective elevation {effective_elevation}° for given elevation of {sun_current_elevation}°"
         is_elevation_in_range = False
@@ -814,9 +814,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
             self._is_between_min_max_elevation = False
             await self._send_by_change("sun_at_facade_elevation", False)
         _LOGGER.debug(f"{message} ===")
-
-        # Setze _is_in_sun basierend auf beiden Bedingungen
-        # self._is_in_sun = is_azimuth_in_range and is_elevation_in_range # Wird nun in _calculate_state gemacht
 
     async def _is_dawn_active(self) -> bool:
         """Check if the current brightness is below the dawn threshold."""
