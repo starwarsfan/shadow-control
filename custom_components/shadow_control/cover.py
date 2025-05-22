@@ -68,6 +68,7 @@ from .const import (
     DOMAIN,
     #    
     ShutterState,
+    LockState,
 )
 
 DEFAULT_NAME = "Shadow Control"
@@ -311,6 +312,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         self._check_if_position_changed_externally(current_height, current_angle)
         await self._handle_lock_state()
+        await self._check_if_facade_is_in_sun()
 
         # 3. Jalousie steuern (async_set_cover_position, async_set_cover_tilt_position)
         # await self.async_set_cover_position(new_position)
@@ -323,8 +325,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self.async_write_ha_state()
 
     def _check_if_position_changed_externally(self, current_height, current_angle):
-        _LOGGER.debug(f"{self._name}: Checking if position changed externally. Current height: {current_height}, Current angle: {current_angle}")
-        _LOGGER.debug(f"{self._name}: TBD...")
+        #_LOGGER.debug(f"{self._name}: Checking if position changed externally. Current height: {current_height}, Current angle: {current_angle}")
+        _LOGGER.debug(f"{self._name}: Check for external shutter modification -> TBD")
         pass
 
     async def _handle_lock_state(self):
@@ -572,41 +574,41 @@ class ShadowControl(CoverEntity, RestoreEntity):
         state = self.hass.states.get(self._dawn_handling_activation_entity_id)
         return state.state.lower() == "on" if state else False
 
-    async def _is_locked(self) -> bool:
-        """Check if integration is locked."""
+    async def _is_locked(self) -> LockState:
+        """Check if the integration is locked."""
         lock_state_obj = self.hass.states.get(self._lock_integration_entity_id)
         if lock_state_obj: # Prüfen, ob das State-Objekt existiert
             if lock_state_obj.state == STATE_ON: # Vergleichen mit der Konstante STATE_ON
-                is_locked = True
+                is_locked = LockState.LOCKSTATE__LOCKED_MANUALLY
             elif lock_state_obj.state == STATE_OFF: # Vergleichen mit der Konstante STATE_OFF
-                is_locked = False
+                is_locked = LockState.LOCKSTATE__UNLOCKED
             else: # Fallback für den Fall, dass der Zustand weder 'on' noch 'off' ist (z.B. 'unavailable', 'unknown')
                 _LOGGER.warning(f"Unexpected state for {self._lock_integration_entity_id}: {lock_state_obj.state}. Assuming unlocked.")
-                is_locked = False
+                is_locked = LockState.LOCKSTATE__UNLOCKED
         else: # Fallback, wenn das State-Objekt nicht gefunden wird
             _LOGGER.warning(f"Entity {self._lock_integration_entity_id} not found. Assuming unlocked.")
-            is_locked = False
+            is_locked = LockState.LOCKSTATE__UNLOCKED
         return is_locked
 
-    async def _is_forced_locked(self) -> bool:
-        """Check if integration locked with forced position."""
+    async def _is_forced_locked(self) -> LockState:
+        """Check if integration locked with a forced position."""
         lock_state_obj = self.hass.states.get(self._lock_integration_with_position_entity_id)
         if lock_state_obj: # Prüfen, ob das State-Objekt existiert
             if lock_state_obj.state == STATE_ON: # Vergleichen mit der Konstante STATE_ON
-                is_locked = True
+                is_locked = LockState.LOCKSTATE__LOCKED_MANUALLY_WITH_FORCED_POSITION
             elif lock_state_obj.state == STATE_OFF: # Vergleichen mit der Konstante STATE_OFF
-                is_locked = False
+                is_locked = LockState.LOCKSTATE__UNLOCKED
             else: # Fallback für den Fall, dass der Zustand weder 'on' noch 'off' ist (z.B. 'unavailable', 'unknown')
                 _LOGGER.warning(f"Unexpected state for {self._lock_integration_entity_id}: {lock_state_obj.state}. Assuming unlocked.")
-                is_locked = False
+                is_locked = LockState.LOCKSTATE__UNLOCKED
         else: # Fallback, wenn das State-Objekt nicht gefunden wird
             _LOGGER.warning(f"Entity {self._lock_integration_entity_id} not found. Assuming unlocked.")
-            is_locked = False
+            is_locked = LockState.LOCKSTATE__UNLOCKED
         return is_locked
 
     async def _is_lbs_locked_in_either_way(self) -> bool:
         """Check if the cover is locked in any way."""
-        return await self._is_locked() or await self._is_forced_locked()
+        return await self._is_locked() == LockState.LOCKSTATE__UNLOCKED and await self._is_forced_locked() == LockState.LOCKSTATE__UNLOCKED
 
     async def _get_input_value(self, config_key: str) -> any:
         """Get the value of a configured input entity or setting."""
