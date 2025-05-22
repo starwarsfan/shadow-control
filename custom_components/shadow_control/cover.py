@@ -742,8 +742,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return False
 
         is_elevation_in_range = elevation_min <= elevation <= elevation_max
-        _LOGGER.debug(f"Prüfe Sonneneinfall: Azimut im Bereich: {self._sun_illuminates_facade}, Elevation im Bereich: {is_elevation_in_range}")
-        return self._sun_illuminates_facade and is_elevation_in_range
+        _LOGGER.debug(f"Prüfe Sonneneinfall: Azimut im Bereich: {self._sun_between_offsets}, Elevation im Bereich: {is_elevation_in_range}")
+        return self._sun_between_offsets and is_elevation_in_range
 
     async def _check_if_facade_is_in_sun(self) -> None:
         """Calculate if the sun illuminates the given facade."""
@@ -784,34 +784,30 @@ class ShadowControl(CoverEntity, RestoreEntity):
             azimuth_calc += 360
 
         is_azimuth_in_range = 0 <= azimuth_calc <= sun_exit_angle_calc
-        message = f"=== Finished facade check, real azimuth {sun_current_azimuth}° and facade at {facade_azimuth}° -> "
+        message = f"=== Finished facade check:\n -> real azimuth {sun_current_azimuth}° and facade at {facade_azimuth}° -> "
         if is_azimuth_in_range:
             message += f"IN SUN (from {sun_entry_angle}° to {sun_exit_angle}°)"
-            self._sun_illuminates_facade = True
+            self._sun_between_offsets = True
             await self._send_by_change("sun_at_facade_azimuth", True)
             effective_elevation = await self._calculate_effective_elevation()
         else:
             message += f"NOT IN SUN (shadow side, at sun from {sun_entry_angle}° to {sun_exit_angle}°)"
-            self._sun_illuminates_facade = False
+            self._sun_between_offsets = False
             await self._send_by_change("sun_at_facade_azimuth", False)
             effective_elevation = None
 
         #await self._send_by_change("effective_elevation", effective_elevation)
 
-        message += f", effective elevation {effective_elevation}° for given elevation of {sun_current_elevation}°"
+        message += f"\n -> effective elevation {effective_elevation}° for given elevation of {sun_current_elevation}°"
         is_elevation_in_range = False
-        if isinstance(
-            effective_elevation, (int, float)
-        ) and await self._get_input_value(
-            "elevation_min"
-        ) <= effective_elevation <= await self._get_input_value("elevation_max"):
-            message += f"° -> in min-max-range ({await self._get_input_value('elevation_min')}-{await self._get_input_value('elevation_max')})"
-            self._is_between_min_max_elevation = True
+        if effective_elevation > min_elevation and effective_elevation < max_elevation:
+            message += f" -> in min-max-range ({min_elevation}°-{max_elevation}°)"
+            self._sun_between_min_max = True
             is_elevation_in_range = True
             await self._send_by_change("sun_at_facade_elevation", True)
         else:
-            message += f"° -> NOT in min-max-range ({await self._get_input_value('elevation_min')}-{await self._get_input_value('elevation_max')})"
-            self._is_between_min_max_elevation = False
+            message += f" -> NOT in min-max-range ({min_elevation}°-{max_elevation}°)"
+            self._sun_between_min_max = False
             await self._send_by_change("sun_at_facade_elevation", False)
         _LOGGER.debug(f"{message} ===")
 
@@ -1775,14 +1771,14 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         # Speichere die Ergebnisse in internen Zustandsvariablen
         self._internal_is_in_sun = is_in_sun
-        self._internal_is_between_min_max_elevation = is_between_min_max_elevation
+        self._internal_sun_between_min_max = is_between_min_max_elevation
         self._internal_effective_elevation = effective_elevation
 
     async def _get_internal_state(self, state_name: str) -> bool | str | None:
         """Gibt den Wert einer internen Zustandsvariable zurück."""
         state_map = {
             "is_in_sun": self._internal_is_in_sun,
-            "is_between_min_max_elevation": self._internal_is_between_min_max_elevation,
+            "is_between_min_max_elevation": self._internal_sun_between_min_max,
             "effective_elevation": self._internal_effective_elevation,
         }
         return state_map.get(state_name)
