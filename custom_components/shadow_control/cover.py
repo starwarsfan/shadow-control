@@ -749,28 +749,28 @@ class ShadowControl(CoverEntity, RestoreEntity):
         """Calculate if the sun illuminates the given facade."""
         _LOGGER.debug(f"=== Checking if facade is in sun... ===")
 
-        azimuth = await self._get_input_value("azimuth")
-        facade_angle = await self._get_input_value("facade_angle")
-        facade_offset_start = await self._get_input_value("facade_offset_start")
-        facade_offset_end = await self._get_input_value("facade_offset_end")
-        min_elevation = await self._get_input_value("elevation_min")
-        max_elevation = await self._get_input_value("elevation_max")
-        current_elevation = await self._get_input_value("elevation")
+        sun_current_azimuth = self._get_entity_numeric_state(self._sun_azimuth_entity_id, int)
+        sun_current_elevation = self._get_entity_numeric_state(self._sun_elevation_entity_id, int)
+        facade_azimuth = self._get_entity_numeric_state(self._azimuth_facade_entity_id, int)
+        facade_offset_start = self._get_entity_numeric_state(self._offset_sun_in_entity_id, int)
+        facade_offset_end = self._get_entity_numeric_state(self._offset_sun_out_entity_id, int)
+        min_elevation = self._get_entity_numeric_state(self._elevation_sun_min_entity_id, int)
+        max_elevation = self._get_entity_numeric_state(self._elevation_sun_max_entity_id, int)
 
         if (
-            azimuth is None
-            or facade_angle is None
+            sun_current_azimuth is None
+            or sun_current_elevation is None
+            or facade_azimuth is None
             or facade_offset_start is None
             or facade_offset_end is None
             or min_elevation is None
             or max_elevation is None
-            or current_elevation is None
         ):
             _LOGGER.debug(f"Nicht alle erforderlichen Sonnen- oder Fassadendaten verfügbar für die Prüfung des Sonneneinfalls.")
             return
 
-        sun_entry_angle = facade_angle - abs(facade_offset_start)
-        sun_exit_angle = facade_angle + abs(facade_offset_end)
+        sun_entry_angle = facade_azimuth - abs(facade_offset_start)
+        sun_exit_angle = facade_azimuth + abs(facade_offset_end)
         if sun_entry_angle < 0:
             sun_entry_angle = 360 - abs(sun_entry_angle)
         if sun_exit_angle >= 360:
@@ -779,12 +779,12 @@ class ShadowControl(CoverEntity, RestoreEntity):
         sun_exit_angle_calc = sun_exit_angle - sun_entry_angle
         if sun_exit_angle_calc < 0:
             sun_exit_angle_calc += 360
-        azimuth_calc = azimuth - sun_entry_angle
+        azimuth_calc = sun_current_azimuth - sun_entry_angle
         if azimuth_calc < 0:
             azimuth_calc += 360
 
         is_azimuth_in_range = 0 <= azimuth_calc <= sun_exit_angle_calc
-        message = f"=== Finished facade check, real azimuth {azimuth}° and facade at {facade_angle}° -> "
+        message = f"=== Finished facade check, real azimuth {sun_current_azimuth}° and facade at {facade_azimuth}° -> "
         if is_azimuth_in_range:
             message += f"IN SUN (from {sun_entry_angle}° to {sun_exit_angle}°)"
             self._sun_illuminates_facade = True
@@ -798,7 +798,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         await self._send_by_change("effective_elevation", effective_elevation)
 
-        message += f", effective elevation {effective_elevation}° for given elevation of {current_elevation}°"
+        message += f", effective elevation {effective_elevation}° for given elevation of {sun_current_elevation}°"
         is_elevation_in_range = False
         if isinstance(
             effective_elevation, (int, float)
