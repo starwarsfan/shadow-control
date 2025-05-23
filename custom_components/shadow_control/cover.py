@@ -398,14 +398,14 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._min_slat_angle = self._get_entity_numeric_state(self._min_slat_angle_entity_id, float)
         self._stepping_height = self._get_entity_numeric_state(self._stepping_height_entity_id, float)
         self._stepping_angle = self._get_entity_numeric_state(self._stepping_angle_entity_id, float)
-        self._shutter_type = self._get_entity_numeric_state(self._shutter_type_entity_id, str) # ACHTUNG: input_select sind Strings
+        self._shutter_type = self._get_entity_string_state(self._shutter_type_entity_id)
         self._light_bar_width = self._get_entity_numeric_state(self._light_bar_width_entity_id, float)
         self._shutter_height = self._get_entity_numeric_state(self._shutter_height_entity_id, float)
         self._neutral_pos_height = self._get_entity_numeric_state(self._neutral_pos_height_entity_id, float)
         self._neutral_pos_angle = self._get_entity_numeric_state(self._neutral_pos_angle_entity_id, float)
-        self._movement_restriction_height = self._get_entity_numeric_state(self._movement_restriction_height_entity_id, str) # ACHTUNG: input_select sind Strings
-        self._movement_restriction_angle = self._get_entity_numeric_state(self._movement_restriction_angle_entity_id, str) # ACHTUNG: input_select sind Strings
-        self._update_lock_output = self._get_entity_numeric_state(self._update_lock_output_entity_id, str) # ACHTUNG: input_select sind Strings
+        self._movement_restriction_height = self._get_entity_string_state(self._movement_restriction_height_entity_id)
+        self._movement_restriction_angle = self._get_entity_string_state(self._movement_restriction_angle_entity_id)
+        self._update_lock_output = self._get_entity_string_state(self._update_lock_output_entity_id)
 
         # === Beschattungseinstellungen ===
         self._shadow_control_enabled = self._get_entity_boolean_state(self._shadow_control_enabled_entity_id)
@@ -2034,3 +2034,15 @@ class ShadowControl(CoverEntity, RestoreEntity):
         else:
             _LOGGER.warning(f"{self._name}: Unexpected state '{state.state}' for boolean entity {entity_id}.")
             return None
+
+    def _get_entity_string_state(self, entity_id: str | None) -> str | None:
+        """Helper to get a string state."""
+        if entity_id is None:
+            return None
+
+        state = self.hass.states.get(entity_id)
+        if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+            _LOGGER.debug(f"{self._name}: State for {entity_id} is unknown or unavailable (string).")
+            return None
+
+        return state.state
