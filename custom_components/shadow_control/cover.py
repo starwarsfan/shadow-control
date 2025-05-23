@@ -1939,3 +1939,21 @@ class ShadowControl(CoverEntity, RestoreEntity):
         except (ValueError, TypeError):
             _LOGGER.warning(f"{self._name}: Could not convert state '{state.state}' for {entity_id} to {value_type.__name__}.")
             return None
+
+    def _get_entity_boolean_state(self, entity_id: str | None) -> bool | None:
+        """Helper to get a boolean state (on/off)."""
+        if entity_id is None:
+            return None
+
+        state = self.hass.states.get(entity_id)
+        if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+            _LOGGER.debug(f"{self._name}: State for {entity_id} is unknown or unavailable (boolean).")
+            return None
+
+        if state.state == STATE_ON:
+            return True
+        elif state.state == STATE_OFF:
+            return False
+        else:
+            _LOGGER.warning(f"{self._name}: Unexpected state '{state.state}' for boolean entity {entity_id}.")
+            return None
