@@ -313,8 +313,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
             if initial_state_value is not None:
                 try:
-                    # Konvertieren Sie den Wert zu int, falls er als String gespeichert wurde.
-                    self._current_shutter_state = int(initial_state_value)
+                    self._current_shutter_state = ShutterState(int(initial_state_value))
                     _LOGGER.debug(f"{self._name}: Restored _current_shutter_state to {self._current_shutter_state}")
                 except (ValueError, TypeError):
                     _LOGGER.warning(f"{self._name}: Could not convert last state '{initial_state_value}' to int. Using STATE_NEUTRAL.")
