@@ -341,7 +341,9 @@ class ShadowControl(CoverEntity, RestoreEntity):
         else:
             _LOGGER.warning(f"{self._name}: No valid trigger entities configured. Recalculation will only happen on initial load.")
 
-        # Optional: Initialberechnung beim Start, falls Sie async_update entfernen
+        self._update_input_values()
+
+        # Initialberechnung beim Start
         await self._async_trigger_recalculation(None)
 
     # =======================================================================
@@ -362,6 +364,81 @@ class ShadowControl(CoverEntity, RestoreEntity):
             "current_shutter_state": self._current_shutter_state,
             # Fügen Sie hier alle internen Statusvariablen hinzu, die persistent sein sollen
         }
+
+    def _update_input_values(self) -> None:
+        """
+        Aktualisiert alle relevanten Eingangs- und Konfigurationswerte
+        aus Home Assistant und speichert sie in Instanzvariablen.
+        """
+        _LOGGER.debug(f"{self._name}: Aktualisiere alle Eingangswerte.")
+
+        # === Dynamische Eingänge (Sensor-Werte) ===
+        self._brightness = self._get_entity_numeric_state(self._brightness_entity_id, float)
+        self._brightness_dawn = self._get_entity_numeric_state(self._brightness_dawn_entity_id, float)
+        self._sun_elevation = self._get_entity_numeric_state(self._sun_elevation_entity_id, float)
+        self._sun_azimuth = self._get_entity_numeric_state(self._sun_azimuth_entity_id, float)
+        self._shutter_current_height = self._get_entity_numeric_state(self._shutter_current_height_entity_id, float)
+        self._shutter_current_angle = self._get_entity_numeric_state(self._shutter_current_angle_entity_id, float)
+        self._lock_integration = self._get_entity_boolean_state(self._lock_integration_entity_id)
+        self._lock_integration_with_position = self._get_entity_boolean_state(self._lock_integration_with_position_entity_id)
+        self._lock_height = self._get_entity_numeric_state(self._lock_height_entity_id, float)
+        self._lock_angle = self._get_entity_numeric_state(self._lock_angle_entity_id, float)
+        self._modification_tolerance_height = self._get_entity_numeric_state(self._modification_tolerance_height_entity_id, float)
+        self._modification_tolerance_angle = self._get_entity_numeric_state(self._modification_tolerance_angle_entity_id, float)
+
+        # === Allgemeine Einstellungen ===
+        self._azimuth_facade = self._get_entity_numeric_state(self._azimuth_facade_entity_id, float)
+        self._offset_sun_in = self._get_entity_numeric_state(self._offset_sun_in_entity_id, float)
+        self._offset_sun_out = self._get_entity_numeric_state(self._offset_sun_out_entity_id, float)
+        self._elevation_sun_min = self._get_entity_numeric_state(self._elevation_sun_min_entity_id, float)
+        self._elevation_sun_max = self._get_entity_numeric_state(self._elevation_sun_max_entity_id, float)
+        self._slat_width = self._get_entity_numeric_state(self._slat_width_entity_id, float)
+        self._slat_distance = self._get_entity_numeric_state(self._slat_distance_entity_id, float)
+        self._angle_offset = self._get_entity_numeric_state(self._angle_offset_entity_id, float)
+        self._min_slat_angle = self._get_entity_numeric_state(self._min_slat_angle_entity_id, float)
+        self._stepping_height = self._get_entity_numeric_state(self._stepping_height_entity_id, float)
+        self._stepping_angle = self._get_entity_numeric_state(self._stepping_angle_entity_id, float)
+        self._shutter_type = self._get_entity_numeric_state(self._shutter_type_entity_id, str) # ACHTUNG: input_select sind Strings
+        self._light_bar_width = self._get_entity_numeric_state(self._light_bar_width_entity_id, float)
+        self._shutter_height = self._get_entity_numeric_state(self._shutter_height_entity_id, float)
+        self._neutral_pos_height = self._get_entity_numeric_state(self._neutral_pos_height_entity_id, float)
+        self._neutral_pos_angle = self._get_entity_numeric_state(self._neutral_pos_angle_entity_id, float)
+        self._movement_restriction_height = self._get_entity_numeric_state(self._movement_restriction_height_entity_id, str) # ACHTUNG: input_select sind Strings
+        self._movement_restriction_angle = self._get_entity_numeric_state(self._movement_restriction_angle_entity_id, str) # ACHTUNG: input_select sind Strings
+        self._update_lock_output = self._get_entity_numeric_state(self._update_lock_output_entity_id, str) # ACHTUNG: input_select sind Strings
+
+        # === Beschattungseinstellungen ===
+        self._shadow_control_enabled = self._get_entity_boolean_state(self._shadow_control_enabled_entity_id)
+        self._shadow_brightness_level = self._get_entity_numeric_state(self._shadow_brightness_level_entity_id, float)
+        self._shadow_after_seconds = self._get_entity_numeric_state(self._shadow_after_seconds_entity_id, float)
+        self._shadow_max_height = self._get_entity_numeric_state(self._shadow_max_height_entity_id, float)
+        self._shadow_max_angle = self._get_entity_numeric_state(self._shadow_max_angle_entity_id, float)
+        self._shadow_look_through_seconds = self._get_entity_numeric_state(self._shadow_look_through_seconds_entity_id, float)
+        self._shadow_open_seconds = self._get_entity_numeric_state(self._shadow_open_seconds_entity_id, float)
+        self._shadow_look_through_angle = self._get_entity_numeric_state(self._shadow_look_through_angle_entity_id, float)
+        self._after_shadow_height = self._get_entity_numeric_state(self._after_shadow_height_entity_id, float)
+        self._after_shadow_angle = self._get_entity_numeric_state(self._after_shadow_angle_entity_id, float)
+
+        # === Dämmerungseinstellungen ===
+        self._dawn_control_enabled = self._get_entity_boolean_state(self._dawn_control_enabled_entity_id)
+        self._dawn_brightness_level = self._get_entity_numeric_state(self._dawn_brightness_level_entity_id, float)
+        self._dawn_after_seconds = self._get_entity_numeric_state(self._dawn_after_seconds_entity_id, float)
+        self._dawn_max_height = self._get_entity_numeric_state(self._dawn_max_height_entity_id, float)
+        self._dawn_max_angle = self._get_entity_numeric_state(self._dawn_max_angle_entity_id, float)
+        self._dawn_look_through_seconds = self._get_entity_numeric_state(self._dawn_look_through_seconds_entity_id, float)
+        self._dawn_open_seconds = self._get_entity_numeric_state(self._dawn_open_seconds_entity_id, float)
+        self._dawn_look_through_angle = self._get_entity_numeric_state(self._dawn_look_through_angle_entity_id, float)
+        self._after_dawn_height = self._get_entity_numeric_state(self._after_dawn_height_entity_id, float)
+        self._after_dawn_angle = self._get_entity_numeric_state(self._after_dawn_angle_entity_id, float)
+
+        # Optional: Logging der aktualisierten Werte zur Fehlersuche
+        _LOGGER.debug(
+            f"{self._name}: Aktualisierte Werte (Auszug): "
+            f"Brightness={self._brightness}, "
+            f"Elevation={self._sun_elevation}, "
+            f"ShadowEnabled={self._shadow_control_enabled}"
+            # ... weitere Werte nach Bedarf ...
+        )
 
     # =======================================================================
     # Beschattung neu berechnen
