@@ -1922,38 +1922,20 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return state.state
         return None
 
-    def _get_entity_numeric_state(self, entity_id: str, target_type: type = float) -> float | int | None:
-        """
-        Ruft den Zustand einer Entität ab und versucht, ihn in einen numerischen Typ zu konvertieren.
-        Gibt den konvertierten Wert zurück oder None, wenn die Entität nicht gefunden,
-        der Zustand UNKNOWN/UNAVAILABLE ist oder die Konvertierung fehlschlägt.
-        """
-        state_obj = self.hass.states.get(entity_id)
-
-        if not state_obj:
-            _LOGGER.debug(f"{self._name}: Entität '{entity_id}' nicht gefunden.")
+    # --- Hilfsfunktionen zum Abrufen von Entitätszuständen ---
+    def _get_entity_numeric_state(self, entity_id: str | None, value_type: type) -> Any | None:
+        """Helper to get a numeric state, converting to the specified type."""
+        if entity_id is None:
             return None
 
-        state_value = state_obj.state
-
-        if state_value in (STATE_UNKNOWN, STATE_UNAVAILABLE):
-            _LOGGER.debug(f"{self._name}: Zustand der Entität '{entity_id}' ist '{state_value}'.")
+        state = self.hass.states.get(entity_id)
+        if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+            _LOGGER.debug(f"{self._name}: State for {entity_id} is unknown or unavailable.")
             return None
 
         try:
-            # Versuche, den Wert in den gewünschten Typ zu konvertieren
-            if target_type is float:
-                return float(state_value)
-            elif target_type is int:
-                # Konvertiere zuerst in float, um auch "10.0" als int zu verarbeiten
-                return int(float(state_value))
-            else:
-                # Fallback, sollte hier nicht nötig sein, da wir numerische Typen erwarten
-                _LOGGER.warning(f"{self._name}: Unerwarteter Zieltyp '{target_type.__name__}' für '{entity_id}'.")
-                return None
+            # Konvertieren Sie den Zustandswert in den gewünschten Typ
+            return value_type(state.state)
         except (ValueError, TypeError):
-            _LOGGER.warning(
-                f"{self._name}: Konnte Zustand '{state_value}' der Entität '{entity_id}' nicht nach "
-                f"'{target_type.__name__}' konvertieren."
-            )
+            _LOGGER.warning(f"{self._name}: Could not convert state '{state.state}' for {entity_id} to {value_type.__name__}.")
             return None
