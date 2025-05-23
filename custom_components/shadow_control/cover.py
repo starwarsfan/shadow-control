@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import math
-from typing import Any, Callable, Optional
+from typing import Any, Awaitable, Callable, Optional
 
 import voluptuous as vol
 from homeassistant.components.cover import CoverEntity, CoverEntityFeature
@@ -270,9 +270,26 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # Logging der (fest verdrahteten) Entitäts-IDs
         _LOGGER.debug(f"--- Integration '{self._name}' initialized with fixed Entity IDs ---")
 
+        # Define dictionary with all state handlers
+        self._state_handlers: dict[ShutterState, Callable[[], Awaitable[ShutterState]]] = {
+            ShutterState.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING: self._handle_state_shadow_full_close_timer_running,
+            ShutterState.STATE_SHADOW_FULL_CLOSED: self._handle_state_shadow_full_closed,
+            ShutterState.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING: self._handle_state_shadow_horizontal_neutral_timer_running,
+            ShutterState.STATE_SHADOW_HORIZONTAL_NEUTRAL: self._handle_state_shadow_horizontal_neutral,
+            ShutterState.STATE_SHADOW_NEUTRAL_TIMER_RUNNING: self._handle_state_shadow_neutral_timer_running,
+            ShutterState.STATE_SHADOW_NEUTRAL: self._handle_state_shadow_neutral,
+            ShutterState.STATE_NEUTRAL: self._handle_state_neutral,
+            ShutterState.STATE_DAWN_NEUTRAL: self._handle_state_dawn_neutral,
+            ShutterState.STATE_DAWN_NEUTRAL_TIMER_RUNNING: self._handle_state_dawn_neutral_timer_running,
+            ShutterState.STATE_DAWN_HORIZONTAL_NEUTRAL: self._handle_state_dawn_horizontal_neutral,
+            ShutterState.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING: self._handle_state_dawn_horizontal_neutral_timer_running,
+            ShutterState.STATE_DAWN_FULL_CLOSED: self._handle_state_dawn_full_closed,
+            ShutterState.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING: self._handle_state_dawn_full_close_timer_running,
+        }
+
         # Interne persistente Variablen
         # Werden beim Start aus den persistenten Attributen gelesen.
-        self._current_shutter_state: float | None = None
+        self._current_shutter_state: ShutterState = ShutterState.STATE_NEUTRAL # Standardwert setzen
         self._current_lock_state: LockState = LockState.LOCKSTATE__UNLOCKED # Standardwert setzen
 
         self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
@@ -485,15 +502,34 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._check_if_position_changed_externally(self._shutter_current_height, self._shutter_current_angle)
         await self._check_if_facade_is_in_sun()
 
-        # 3. Jalousie steuern (async_set_cover_position, async_set_cover_tilt_position)
-        # await self.async_set_cover_position(new_position)
-        # await self.async_set_cover_tilt_position(new_tilt_position)
-        # ...
+        await self._process_shutter_state()
 
         # 4. Update the dictionary holding the attributes
         self._update_extra_state_attributes()
         # 5. Tell Home Assistant to save the updated state (and attributes)
         self.async_write_ha_state()
+
+    async def _process_shutter_state(self) -> None:
+        """
+        Verarbeitet den aktuellen Behangzustand und ruft die entsprechende Handler-Funktion auf.
+        Die Handler-Funktionen müssen den neuen ShutterState zurückgeben.
+        """
+        _LOGGER.debug(f"{self._name}: Aktueller Behangzustand vor der Verarbeitung: {self._current_shutter_state.name} ({self._current_shutter_state.value})")
+
+        handler_func = self._state_handlers.get(self._current_shutter_state)
+        new_shutter_state: ShutterState
+
+        if handler_func:
+            # Rufe die entsprechende Handler-Methode auf
+            new_shutter_state = await handler_func()
+        else:
+            # Standardfall: Wenn der Zustand nicht im Dictionary gefunden wird
+            _LOGGER.warning(f"{self._name}: Shutter ist in einem undefinierten Zustand ({self._current_shutter_state}). Setze auf NEUTRAL ({ShutterState.STATE_NEUTRAL.value}).")
+            new_shutter_state = await self._handle_state_neutral() # Ruft den Handler für NEUTRAL auf
+
+        # Aktualisiere den internen Behangzustand
+        self._current_shutter_state = new_shutter_state
+        _LOGGER.debug(f"{self._name}: Neuer Behangzustand nach der Verarbeitung: {self._current_shutter_state.name} ({self._current_shutter_state.value})")
 
     def _check_if_position_changed_externally(self, current_height, current_angle):
         #_LOGGER.debug(f"{self._name}: Checking if position changed externally. Current height: {current_height}, Current angle: {current_angle}")
@@ -690,22 +726,23 @@ class ShadowControl(CoverEntity, RestoreEntity):
         _LOGGER.debug(f"=== Calculated new state: {new_state} (was: {current_state}) ===")
         return new_state
 
-    async def _get_appropriate_closed_state(self, current_state: str) -> str:
+    async def _get_appropriate_closed_state(self, current_state: str) -> ShutterState:
         """Determine the appropriate closed state (shadow or dawn)."""
         if await self._is_shadow_handling_activated() and not await self._check_if_facade_is_in_sun():
-            return self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
+            return ShutterState.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
         elif await self._is_dawn_handling_activated() and await self._is_dawn_active():
-            return self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
-        return self.STATE_NEUTRAL
+            return ShutterState.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
+        return ShutterState.STATE_NEUTRAL
 
-    async def _get_appropriate_sun_state(self, current_state: str) -> str:
+    async def _get_appropriate_sun_state(self, current_state: str) -> ShutterState:
         """Determine the appropriate state when the sun is shining."""
         # Placeholder logic - needs more detailed implementation
-        return self.STATE_SHADOW_OPEN_SLATS_TIMER_RUNNING
+        return ShutterState.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
-    async def _get_appropriate_dawn_open_state(self, current_state: str) -> str:
+    async def _get_appropriate_dawn_open_state(self, current_state: str) -> ShutterState:
         """Determine the appropriate state after dawn."""
-        return self.STATE_DAWN_OPEN_SHUTTER_TIMER_RUNNING
+        # Placeholder logic - needs more detailed implementation
+        return ShutterState.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
     async def _is_shadow_handling_activated(self) -> bool:
         """Check if shadow handling is activated."""
