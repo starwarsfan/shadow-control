@@ -895,13 +895,14 @@ class ShadowControl(CoverEntity, RestoreEntity):
         """Calculate if the sun illuminates the given facade."""
         _LOGGER.debug(f"=== Checking if facade is in sun... ===")
 
-        sun_current_azimuth = self._get_entity_numeric_state(self._sun_azimuth_entity_id, int)
-        sun_current_elevation = self._get_entity_numeric_state(self._sun_elevation_entity_id, int)
-        facade_azimuth = self._get_entity_numeric_state(self._azimuth_facade_entity_id, int)
-        facade_offset_start = self._get_entity_numeric_state(self._offset_sun_in_entity_id, int)
-        facade_offset_end = self._get_entity_numeric_state(self._offset_sun_out_entity_id, int)
-        min_elevation = self._get_entity_numeric_state(self._elevation_sun_min_entity_id, int)
-        max_elevation = self._get_entity_numeric_state(self._elevation_sun_max_entity_id, int)
+        # Die Werte wurden bereits in _update_input_values als float abgerufen.
+        sun_current_azimuth = self._sun_azimuth
+        sun_current_elevation = self._sun_elevation
+        facade_azimuth = self._azimuth_facade
+        facade_offset_start = self._offset_sun_in
+        facade_offset_end = self._offset_sun_out
+        min_elevation = self._elevation_sun_min
+        max_elevation = self._elevation_sun_max
 
         if (
             sun_current_azimuth is None
@@ -969,9 +970,11 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
     async def _calculate_effective_elevation(self) -> float | None:
         """Berechnet die effektive Elevation der Sonne relativ zur Fassade."""
-        sun_current_azimuth = self._get_entity_numeric_state(self._sun_azimuth_entity_id, int)
-        sun_current_elevation = self._get_entity_numeric_state(self._sun_elevation_entity_id, int)
-        facade_azimuth = self._get_entity_numeric_state(self._azimuth_facade_entity_id, int)
+
+        # Die Werte wurden bereits in _update_input_values als float abgerufen.
+        sun_current_azimuth = self._sun_azimuth
+        sun_current_elevation = self._sun_elevation
+        facade_azimuth = self._azimuth_facade
 
         if sun_current_azimuth is None or sun_current_elevation is None or facade_azimuth is None:
             _LOGGER.debug(f"Kann effektive Elevation nicht berechnen: Nicht alle erforderlichen Eingabewerte sind verfügbar.")
