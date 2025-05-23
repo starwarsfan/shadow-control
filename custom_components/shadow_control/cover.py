@@ -745,13 +745,11 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
     async def _is_shadow_handling_activated(self) -> bool:
         """Check if shadow handling is activated."""
-        state = self.hass.states.get(self._shadow_handling_activation_entity_id)
-        return state.state.lower() == "on" if state else False
+        return self._shadow_control_enabled
 
     async def _is_dawn_handling_activated(self) -> bool:
         """Check if dawn handling is activated."""
-        state = self.hass.states.get(self._dawn_handling_activation_entity_id)
-        return state.state.lower() == "on" if state else False
+        return self._dawn_control_enabled
 
     async def _is_lbs_locked_in_either_way(self) -> bool:
         """Check if the cover is locked in any way."""
