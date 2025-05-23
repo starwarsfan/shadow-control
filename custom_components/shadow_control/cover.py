@@ -456,15 +456,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         # === Hier beginnt Ihre gesamte Beschattungslogik ===
         # 1. Alle benötigten Werte abrufen (auch die Nicht-Trigger-Werte, die den letzten Stand behalten)
-        # Sonnenstand und Helligkeit
-        current_sun_elevation = self._get_entity_numeric_state(self._sun_elevation_entity_id, float)
-        current_sun_azimuth = self._get_entity_numeric_state(self._sun_azimuth_entity_id, float)
-        current_brightness = self._get_entity_numeric_state(self._brightness_entity_id, float)
-        current_brightness_dawn = self._get_entity_numeric_state(self._brightness_dawn_entity_id, float)
-
-        # Aktuelle Behang-Position
-        current_height = self._get_entity_numeric_state(self._shutter_current_height_entity_id, float)
-        current_angle = self._get_entity_numeric_state(self._shutter_current_angle_entity_id, float)
+        self._update_input_values()
 
         # 2. Beschattungslogik ausführen
         _LOGGER.debug(f"{self._name}: Brightness={current_brightness}, Elevation={current_sun_elevation}, etc. - Performing calculation.")
