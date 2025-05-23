@@ -273,6 +273,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # Interne persistente Variablen
         # Werden beim Start aus den persistenten Attributen gelesen.
         self._current_shutter_state: float | None = None
+        self._current_lock_state: LockState = LockState.LOCKSTATE__UNLOCKED # Standardwert setzen
 
         self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
 
@@ -440,6 +441,28 @@ class ShadowControl(CoverEntity, RestoreEntity):
             # ... weitere Werte nach Bedarf ...
         )
 
+        # === Priorisierung des internen LockState ===
+        # Wenn CONF_LOCK_INTEGRATION_WITH_POSITION_ENTITY_ID (höchste Priorität) "on" ist
+        if self._lock_integration_with_position:
+            self._current_lock_state = LockState.LOCKSTATE__LOCKED_MANUALLY_WITH_FORCED_POSITION
+            _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__LOCKED_MANUALLY_WITH_FORCED_POSITION due to '{self._lock_integration_with_position_entity_id}' being ON.")
+        # Wenn CONF_LOCK_INTEGRATION_ENTITY_ID "on" ist (und die höhere Priorität nicht greift)
+        elif self._lock_integration:
+            self._current_lock_state = LockState.LOCKSTATE__LOCKED_MANUALLY
+            _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__LOCKED_MANUALLY due to '{self._lock_integration_entity_id}' being ON.")
+        # Ansonsten bleibt es UNLOCKED (oder ein anderer Standardwert, den Sie festgelegt haben)
+
+        # Optional: Weitere LockStates wie LOCKSTATE__LOCKED_BY_EXTERNAL_MODIFICATION
+        # elif self._is_external_modification_detected: # Pseudo-Variable
+        #    self._current_lock_state = LockState.LOCKSTATE__LOCKED_BY_EXTERNAL_MODIFICATION
+        #    _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__LOCKED_BY_EXTERNAL_MODIFICATION.")
+
+        else:
+            # Standardmässig ist der Zustand ungesperrt
+            self._current_lock_state = LockState.LOCKSTATE__UNLOCKED
+            _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__UNLOCKED due to '{self._lock_integration_entity_id}' and '{self._lock_integration_with_position_entity_id}' being OFF.")
+
+
     # =======================================================================
     # Beschattung neu berechnen
     async def _async_trigger_recalculation(
@@ -459,10 +482,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._update_input_values()
 
         # 2. Beschattungslogik ausführen
-        _LOGGER.debug(f"{self._name}: Brightness={current_brightness}, Elevation={current_sun_elevation}, etc. - Performing calculation.")
-
-        self._check_if_position_changed_externally(current_height, current_angle)
-        await self._handle_lock_state()
+        self._check_if_position_changed_externally(self._shutter_current_height, self._shutter_current_angle)
         await self._check_if_facade_is_in_sun()
 
         # 3. Jalousie steuern (async_set_cover_position, async_set_cover_tilt_position)
@@ -478,17 +498,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
     def _check_if_position_changed_externally(self, current_height, current_angle):
         #_LOGGER.debug(f"{self._name}: Checking if position changed externally. Current height: {current_height}, Current angle: {current_angle}")
         _LOGGER.debug(f"{self._name}: Check for external shutter modification -> TBD")
-        pass
-
-    async def _handle_lock_state(self):
-        if await self._is_locked():
-            _LOGGER.debug(f"{self._name} is locked. Do not change the position.")
-        elif await self._is_forced_locked():
-            _LOGGER.debug(f"{self._name} is forced locked. Do not change the position.")
-        # elif await self._is_modified_externally():
-        #     _LOGGER.debug(f"{self._name} is modified externally. Do not change the position.")
-        else:
-            _LOGGER.debug(f"{self._name} is not locked. Change the position.")
         pass
 
     @callback
@@ -708,41 +717,9 @@ class ShadowControl(CoverEntity, RestoreEntity):
         state = self.hass.states.get(self._dawn_handling_activation_entity_id)
         return state.state.lower() == "on" if state else False
 
-    async def _is_locked(self) -> LockState:
-        """Check if the integration is locked."""
-        lock_state_obj = self.hass.states.get(self._lock_integration_entity_id)
-        if lock_state_obj: # Prüfen, ob das State-Objekt existiert
-            if lock_state_obj.state == STATE_ON: # Vergleichen mit der Konstante STATE_ON
-                is_locked = LockState.LOCKSTATE__LOCKED_MANUALLY
-            elif lock_state_obj.state == STATE_OFF: # Vergleichen mit der Konstante STATE_OFF
-                is_locked = LockState.LOCKSTATE__UNLOCKED
-            else: # Fallback für den Fall, dass der Zustand weder 'on' noch 'off' ist (z.B. 'unavailable', 'unknown')
-                _LOGGER.warning(f"Unexpected state for {self._lock_integration_entity_id}: {lock_state_obj.state}. Assuming unlocked.")
-                is_locked = LockState.LOCKSTATE__UNLOCKED
-        else: # Fallback, wenn das State-Objekt nicht gefunden wird
-            _LOGGER.warning(f"Entity {self._lock_integration_entity_id} not found. Assuming unlocked.")
-            is_locked = LockState.LOCKSTATE__UNLOCKED
-        return is_locked
-
-    async def _is_forced_locked(self) -> LockState:
-        """Check if integration locked with a forced position."""
-        lock_state_obj = self.hass.states.get(self._lock_integration_with_position_entity_id)
-        if lock_state_obj: # Prüfen, ob das State-Objekt existiert
-            if lock_state_obj.state == STATE_ON: # Vergleichen mit der Konstante STATE_ON
-                is_locked = LockState.LOCKSTATE__LOCKED_MANUALLY_WITH_FORCED_POSITION
-            elif lock_state_obj.state == STATE_OFF: # Vergleichen mit der Konstante STATE_OFF
-                is_locked = LockState.LOCKSTATE__UNLOCKED
-            else: # Fallback für den Fall, dass der Zustand weder 'on' noch 'off' ist (z.B. 'unavailable', 'unknown')
-                _LOGGER.warning(f"Unexpected state for {self._lock_integration_entity_id}: {lock_state_obj.state}. Assuming unlocked.")
-                is_locked = LockState.LOCKSTATE__UNLOCKED
-        else: # Fallback, wenn das State-Objekt nicht gefunden wird
-            _LOGGER.warning(f"Entity {self._lock_integration_entity_id} not found. Assuming unlocked.")
-            is_locked = LockState.LOCKSTATE__UNLOCKED
-        return is_locked
-
     async def _is_lbs_locked_in_either_way(self) -> bool:
         """Check if the cover is locked in any way."""
-        return await self._is_locked() == LockState.LOCKSTATE__UNLOCKED and await self._is_forced_locked() == LockState.LOCKSTATE__UNLOCKED
+        return not self._current_lock_state == LockState.LOCKSTATE__UNLOCKED
 
     async def _get_input_value(self, config_key: str) -> any:
         """Get the value of a configured input entity or setting."""
@@ -847,7 +824,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         _LOGGER.debug(f"positionShutter(...), Werte für Höhe/Winkel: {height_percent}%/{angle_percent}%, Richtung: {direction}, Force: {force}, Stop Timer: {stop_timer}")
         if (
             self._initial_lbs_run_finished
-            and not await self._is_lbs_locked_in_either_way()
+            and self._current_lock_state == LockState.LOCKSTATE__UNLOCKED
         ):
             # Hier die Logik von LB_LBSID_positionShutter implementieren,
             # inklusive _send_by_change und Berücksichtigung der Bewegungsrichtung
