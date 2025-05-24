@@ -25,6 +25,35 @@ template:
         state: "30"
       - name: test_azimuth
         state: "180"
+
+      # Sensor für die berechnete Zielhöhe
+      - name: "Shadow Control Zielhöhe"
+        unique_id: shadow_control_target_height
+        state: "{{ state_attr('cover.test_shadow_control', 'calculated_target_height') }}"
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:ruler-vertical
+
+      # Sensor für den berechneten Zielwinkel
+      - name: "Shadow Control Zielwinkel"
+        unique_id: shadow_control_target_angle
+        state: "{{ state_attr('cover.test_shadow_control', 'calculated_target_angle') }}"
+        unit_of_measurement: "°"
+        state_class: measurement
+        icon: mdi:rotate-3d
+
+      # Sensor für den aktuellen Shutter Control Zustand
+      - name: "Shadow Control Zustand"
+        unique_id: shadow_control_current_state
+        state: "{{ state_attr('cover.test_shadow_control', 'current_shutter_state') }}"
+        icon: mdi:state-machine
+
+      # Sensor für den aktuellen Lock Zustand
+      - name: "Shadow Control Sperr-Zustand"
+        unique_id: shadow_control_lock_state
+        state: "{{ state_attr('cover.test_shadow_control', 'current_lock_state') }}"
+        icon: mdi:lock-open-check
+
   - binary_sensor:
       - name: shadow_handling_activation
         state: "on"

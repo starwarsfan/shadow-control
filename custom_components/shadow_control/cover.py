@@ -291,6 +291,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # Werden beim Start aus den persistenten Attributen gelesen.
         self._current_shutter_state: ShutterState = ShutterState.STATE_NEUTRAL # Standardwert setzen
         self._current_lock_state: LockState = LockState.LOCKSTATE__UNLOCKED # Standardwert setzen
+        self._calculated_shutter_height: float = 0.0
+        self._calculated_shutter_angle: float = 0.0
 
         self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
 
@@ -379,7 +381,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
         """Helper to update the extra_state_attributes dictionary."""
         self._attr_extra_state_attributes = {
             "current_shutter_state": self._current_shutter_state,
-            # Fügen Sie hier alle internen Statusvariablen hinzu, die persistent sein sollen
+            "calculated_shutter_height": self._calculated_shutter_height,
+            "calculated_shutter_angle": self._calculated_shutter_angle,
         }
 
     def _update_input_values(self) -> None:
