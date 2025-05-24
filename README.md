@@ -64,7 +64,7 @@ It is important how the used shutter actor behaves! If the actor updates its cur
 
 #### shutter_current_angle
 
-Connect this input with the actual, current angle of the shutter. The rest is the same as the previous configuration.
+Connect this input with the actual, current angle of the shutter. Everything else is described in the previous configuration entry.
 
 #### lock_integration
 
@@ -128,72 +128,155 @@ Width of the shutter slats in mm. Width and distance are required to compute the
 
 #### slat_distance
 
-Distance of the shutter slats in mm. Everything else described on previous configuation entry. Default: 40
+Distance of the shutter slats in mm. Everything else is described in the previous configuration entry. Default: 40
 
 #### angle_offset
 
+Angle offset in %. This value will be added to the computed slat angle and could be used if the computed angle needs to be corrected. This could be necessary if the shadow position has a slight gap, which lets the sun pass through. Default: 0
+
 #### min_slat_angle
+
+tbd
 
 #### stepping_height
 
+Stepping width for shutter height positioning. Most shutters could not handle repositioning of small values within the percent range. To handle this, the height will be modified in steps of a given width. Increasing or decreasing elevation of the sun will be handled properly. Default: 5
+
 #### stepping_angle
+
+Stepping width for slat angle positioning. Most shutters could not handle repositioning of small values within the percent range. To handle this, the shutter angle will be modified in steps of a given width. Increasing or decreasing elevation of the sun will be handled properly. Default: 5
 
 #### shutter_type
 
+Configuration of used shutter type. 
+
+Default is pivoting range of 0°-90°. These shutters are fully closed at 90° and horizontally open at 0°. 
+
+The other possible shutter type has a movement range from 0°-180°, whereas these shutters are closed to the inside at 0°, horizontally open at 90°, and closed to the outside at 180°.
+
 #### light_bar_width
+
+Width of a desired light strip. With this setting could be configured, how "deep" the sun should shine directly into the room. According to this setting, during shadow the shutter will not be at a height position of 100% (aka full closed) but instead at a computed height position, which produces the desired light strip. Default: 0
 
 #### shutter_height
 
+To compute the light strip given with configuration `light_bar_width`, the integration needs to know the overall height of the shutter (or window). The same unit as on light bar width must be used. Default: 2000
+
 #### neutral_pos_height
+
+Shutter height position in state _neutral_. The integration will switch to _neutral_ if
+
+* the integration is within a shadow- or a dawn-state and the corresponding regulation will be deactivated _or_
+* the sun leaves facade range.
+
+Default: 0
 
 #### neutral_pos_angle
 
+Shutter angle position in state _neutral_. Everything else is described in the previous configuration entry. Default: 0
+
 #### movement_restriction_height
+
+With this setting the movement direction could be restricted:
+
+* "No restriction" (Default)
+  No striction on shutter movement. The automation will open or close the shutter. 
+* "Only close"
+  In comparison to the current position, only closing positions will be activated. 
+* "Only open"
+  In comparison to the current position, only opening positions will be activated. 
+
+This could be used to prevent shutters from being opened after the sun goes down and close them some minutes later because of starting dawn. This setting might be modified using a timer clock or other appropriate automations.
 
 #### movement_restriction_angle
 
+Same as before but for shutter slat angle.
+
 #### update_lock_output
+
+tbd
 
 ### Shadow settings
 
 #### shadow_control_enabled
 
+With this switch the whole shadow handling could be de-/activated.
+
 #### shadow_brightness_level
+
+This is the brightness threshold in Lux. If this threshold is exceeded, the timer `shadow_after_seconds` is started. Default 50000 
 
 #### shadow_after_seconds
 
+This is the number of seconds which should be passed after the exceedance of `shadow_brightness_level`, until the shutter will be moved to the shadow position. Default: 150
+
 #### shadow_max_height
+
+Max height of the shutter in case of shadow position in %. Default: 100 
 
 #### shadow_max_angle
 
+Max angle of the shutter in case of shadow position in %. Default: 100 
+
 #### shadow_look_through_seconds
+
+If brightness falls below the value of `shadow_brightness_level`, the shutter slats will be moved to horizontal position after with this setting configured number of seconds. Default: 900
 
 #### shadow_open_seconds
 
+If brightness stays below the value of `shadow_brightness_level`, the shutter will be fully opened after with this setting configured number of seconds. Default: 3600
+
 #### shadow_look_through_angle
+
+This is the shutter slat angle in %, which should be used at the "look through" position. Default: 0
 
 #### after_shadow_height
 
+This is the shutter height in %, which should be set after the shadow position. Default: 0
+
 #### after_shadow_angle
+
+This is the shutter angle in %, which should be set after the shadow position. Default: 0
 
 ### Dawn settings
 
 #### dawn_control_enabled
 
+Same as `shadow_control_enabled`, see there.
+
 #### dawn_brightness_level
+
+Same as `shadow_brightness_level`, see there.
 
 #### dawn_after_seconds
 
+Same as `shadow_after_seconds`, see there.
+
 #### dawn_max_height
+
+Same as `shadow_max_height`, see there.
 
 #### dawn_max_angle
 
+Same as `shadow_max_angle`, see there.
+
 #### dawn_look_through_seconds
+
+Same as `shadow_look_through_seconds`, see there.
 
 #### dawn_open_seconds
 
+Same as `shadow_open_seconds`, see there.
+
 #### dawn_look_through_angle
+
+Same as `shadow_look_through_angle`, see there.
 
 #### after_dawn_height
 
+Same as `after_shadow_height`, see there.
+
 #### after_dawn_angle
+
+Same as `after_shadow_angle`, see there.
+
