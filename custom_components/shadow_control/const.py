@@ -89,10 +89,10 @@ class ShutterState(IntEnum):
 # --- Definition of all known internal lock states --------------------------
 class LockState(IntEnum):
     """Enum for the possible states of the lock."""
-    LOCKSTATE__UNLOCKED = 0
-    LOCKSTATE__LOCKED_MANUALLY = 1
-    LOCKSTATE__LOCKED_MANUALLY_WITH_FORCED_POSITION = 2
-    LOCKSTATE__LOCKED_BY_EXTERNAL_MODIFICATION = 3
+    UNLOCKED = 0
+    LOCKED_MANUALLY = 1
+    LOCKED_MANUALLY_WITH_FORCED_POSITION = 2
+    LOCKED_BY_EXTERNAL_MODIFICATION = 3
 
 # --- Definition of configuration values, how to update lockstate output ----
 class UpdateLockStateOutput(IntEnum):

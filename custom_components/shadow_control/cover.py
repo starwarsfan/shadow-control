@@ -292,7 +292,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # Interne persistente Variablen
         # Werden beim Start aus den persistenten Attributen gelesen.
         self._current_shutter_state: ShutterState = ShutterState.NEUTRAL # Standardwert setzen
-        self._current_lock_state: LockState = LockState.LOCKSTATE__UNLOCKED # Standardwert setzen
+        self._current_lock_state: LockState = LockState.UNLOCKED # Standardwert setzen
         self._calculated_shutter_height: float = 0.0
         self._calculated_shutter_angle: float = 0.0
         self._effective_elevation: float | None = None
@@ -514,11 +514,11 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # === Priorisierung des internen LockState ===
         # Wenn CONF_LOCK_INTEGRATION_WITH_POSITION_ENTITY_ID (höchste Priorität) "on" ist
         if self._lock_integration_with_position:
-            self._current_lock_state = LockState.LOCKSTATE__LOCKED_MANUALLY_WITH_FORCED_POSITION
+            self._current_lock_state = LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
             _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__LOCKED_MANUALLY_WITH_FORCED_POSITION due to '{self._lock_integration_with_position_entity_id}' being ON.")
         # Wenn CONF_LOCK_INTEGRATION_ENTITY_ID "on" ist (und die höhere Priorität nicht greift)
         elif self._lock_integration:
-            self._current_lock_state = LockState.LOCKSTATE__LOCKED_MANUALLY
+            self._current_lock_state = LockState.LOCKED_MANUALLY
             _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__LOCKED_MANUALLY due to '{self._lock_integration_entity_id}' being ON.")
         # Ansonsten bleibt es UNLOCKED (oder ein anderer Standardwert, den Sie festgelegt haben)
 
@@ -529,7 +529,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         else:
             # Standardmässig ist der Zustand ungesperrt
-            self._current_lock_state = LockState.LOCKSTATE__UNLOCKED
+            self._current_lock_state = LockState.UNLOCKED
             _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__UNLOCKED due to '{self._lock_integration_entity_id}' and '{self._lock_integration_with_position_entity_id}' being OFF.")
 
 
@@ -731,7 +731,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
     async def _is_lbs_locked_in_either_way(self) -> bool:
         """Check if the cover is locked in any way."""
-        return not self._current_lock_state == LockState.LOCKSTATE__UNLOCKED
+        return not self._current_lock_state == LockState.UNLOCKED
 
     async def _get_input_value(self, config_key: str) -> any:
         """Get the value of a configured input entity or setting."""
@@ -1040,7 +1040,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return
 
         # Prüfung, ob die Steuerung gesperrt ist
-        if self._current_lock_state != LockState.LOCKSTATE__UNLOCKED:
+        if self._current_lock_state != LockState.UNLOCKED:
             _LOGGER.debug(
                 f"{self._name}: LBS gesperrt ({self._current_lock_state.name}), aktualisiere Ausgänge nicht.")
             return
