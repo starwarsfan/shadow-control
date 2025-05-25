@@ -139,6 +139,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         self.hass = hass # Speichern der hass Instanz
         self._name = config.get(CONF_NAME, DEFAULT_NAME)
+        self._config = config
 
         _LOGGER.debug(f"Initializing Shadow Control: {self._name}")
 
