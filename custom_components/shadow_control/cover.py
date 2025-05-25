@@ -293,6 +293,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._current_lock_state: LockState = LockState.LOCKSTATE__UNLOCKED # Standardwert setzen
         self._calculated_shutter_height: float = 0.0
         self._calculated_shutter_angle: float = 0.0
+        self._effective_elevation: float | None = None
 
         self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
 
@@ -791,63 +792,239 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._timer_finish_time = 0
         _LOGGER.debug("Timer stopped.")
 
-    async def _calculate_shutter_height(self) -> float | None:
-        """Calculate the target shutter height based on current conditions."""
-        elevation = await self._get_input_value("elevation")
-        elevation_min = await self._get_input_value("elevation_min")
-        elevation_max = await self._get_input_value("elevation_max")
-        shadow_max_height = await self._get_input_value("shadow_max_height")
+    def _calculate_shutter_height(self) -> float:
+        """
+        Berechnet die Zielhöhe des Rolladens basierend auf Sonnenstand und
+        Konfiguration für den Beschattungsbereich.
+        Gibt die berechnete Höhe in Prozent (0-100) zurück.
+        """
+        _LOGGER.debug(f"{self._name}: Starte Berechnung der Rolladenhöhe.")
 
+        width_of_light_strip = self._light_bar_width
+        shadow_max_height_percent = self._shadow_max_height
+        elevation = self._sun_elevation
+        shutter_overall_height = self._shutter_height
+
+        # Initialer Rückgabewert, falls Berechnung nicht möglich ist oder Bedingungen nicht erfüllt sind
+        # Hier wird der Standardwert shadow_max_height_percent gesetzt
+        shutter_height_to_set_percent = shadow_max_height_percent
+
+        # Prüfen auf None-Werte, bevor mit Berechnungen begonnen wird
         if (
-            elevation is None
-            or elevation_min is None
-            or elevation_max is None
-            or shadow_max_height is None
+                width_of_light_strip is None
+                or elevation is None
+                or shutter_overall_height is None
+                or shadow_max_height_percent is None  # Muss auch None-geprüft werden
         ):
-            return None
+            _LOGGER.warning(
+                f"{self._name}: Nicht alle erforderlichen Werte für die Höhenberechnung verfügbar. "
+                f"width_of_light_strip={width_of_light_strip}, elevation={elevation}, "
+                f"shutter_overall_height={shutter_overall_height}, "
+                f"shadow_max_height_percent={shadow_max_height_percent}. "
+                f"Gebe initialen Standardwert von {shutter_height_to_set_percent}% zurück.")
+            # Rückgabe des Standardwerts oder eines Fehlerwerts, je nach gewünschtem Verhalten
+            return shutter_height_to_set_percent  # Oder ein anderer Standard/Fehlerwert
 
-        # Placeholder for actual calculation logic
-        effective_elevation = elevation  # For now, use raw elevation
-        height_percent = (
-            100
-            - ((effective_elevation - elevation_min) / (elevation_max - elevation_min))
-            * shadow_max_height
-        )
-        return max(0.0, min(100.0, height_percent))
+        if width_of_light_strip != 0:
+            # PHP's deg2rad entspricht math.radians
+            # PHP's tan entspricht math.tan
+            shutter_height_from_bottom_raw = width_of_light_strip * math.tan(
+                math.radians(elevation))
 
-    async def _calculate_shutter_angle(self) -> float | None:
-        """Calculate the target shutter angle based on current conditions."""
-        azimuth = await self._get_input_value("azimuth")
-        facade_angle = await self._get_input_value("facade_angle")
-        facade_offset_start = await self._get_input_value("facade_offset_start")
-        facade_offset_end = await self._get_input_value("facade_offset_end")
-        angle_offset = await self._get_input_value("angle_offset")
-        min_shutter_angle = await self._get_input_value("min_shutter_angle")
-        shadow_max_angle = await self._get_input_value("shadow_max_angle")
+            # PHP's round ist in der Regel kaufmännisch runden (0.5 aufrunden).
+            # Python's round() rundet zur nächsten geraden Zahl bei .5 (banker's rounding).
+            # Für kaufmännisches Runden müsste man math.floor(x + 0.5) verwenden oder Decimal.
+            # Für Rolladenpositionen ist der Unterschied meist unerheblich, daher bleiben wir bei round().
+            shutter_height_to_set = round(shutter_height_from_bottom_raw)
 
+            # PHP: 100 - round($shutterHeightToSet * 100 / $shutterOverallHeight);
+            new_shutter_height = 100 - round((shutter_height_to_set * 100) / shutter_overall_height)
+
+            if new_shutter_height < shadow_max_height_percent:
+                shutter_height_to_set_percent = new_shutter_height
+                _LOGGER.debug(
+                    f"{self._name}: Elevation: {elevation}°, Fensterhöhe: {shutter_overall_height}, "
+                    f"Lichtstreifenbreite: {width_of_light_strip}, "
+                    f"resultierende Rolladenhöhe (von unten): {shutter_height_to_set} (entspricht {shutter_height_to_set_percent}% von oben). "
+                    f"Ist kleiner als max. Höhe.")
+            else:
+                _LOGGER.debug(
+                    f"{self._name}: Elevation: {elevation}°, Fensterhöhe: {shutter_overall_height}, "
+                    f"Lichtstreifenbreite: {width_of_light_strip}, "
+                    f"resultierende Rolladenhöhe ({new_shutter_height}%) ist größer oder gleich als gegebene max. Höhe ({shadow_max_height_percent}%). "
+                    f"Verwende gegebene max. Höhe.")
+                # shutter_height_to_set_percent behält seinen initialen Wert von shadow_max_height_percent
+        else:
+            _LOGGER.debug(
+                f"{self._name}: width_of_light_strip ist 0. Keine Höhenberechnung notwendig. "
+                f"Verwende Standardwert für Rolladenhöhe: {shutter_height_to_set_percent}%.")
+
+        # Der Aufruf zu LB_LBSID_handleShutterHeightStepping($E, $shutterHeightToSetPercent)
+        # wird hier durch einen Aufruf der entsprechenden Python-Methode ersetzt.
+        # Nehmen wir an, diese Methode heißt _handle_shutter_height_stepping
+        return self._handle_shutter_height_stepping(shutter_height_to_set_percent)
+
+    # Sie müssen dann die Methode _handle_shutter_height_stepping implementieren:
+    def _handle_shutter_height_stepping(self, calculated_height_percent: float) -> float:
+        """
+        Passt die berechnete Rolladenhöhe an das vorgegebene Stepping an.
+        Dies ist eine Platzhalterfunktion. Implementieren Sie die tatsächliche Logik hier.
+        """
+        _LOGGER.debug(
+            f"{self._name}: Bearbeite Rolladenhöhe Stepping für {calculated_height_percent}%.")
+        # Hier würde die Logik für das Stepping stattfinden, z.B.:
+        # stepping = self._stepping_height # Annahme, dass dies eine Instanzvariable ist
+        # if stepping and stepping > 0:
+        #    return round(calculated_height_percent / stepping) * stepping
+        return calculated_height_percent  # Vorerst einfach den Wert zurückgeben
+
+    def _calculate_shutter_angle(self) -> float:
+        """
+        Berechnet den Zielwinkel der Lamellen, um Sonneneinstrahlung zu verhindern.
+        Gibt den berechneten Winkel in Prozent (0-100) zurück.
+        """
+        _LOGGER.debug(f"{self._name}: Starte Berechnung des Rolladenwinkels.")
+
+        # Entsprechende Instanzvariablen aus _update_input_values
+        elevation = self._sun_elevation
+        azimuth = self._sun_azimuth  # Für Logging verwendet
+        given_shutter_slat_width = self._slat_width
+        shutter_slat_distance = self._slat_distance
+        shutter_angle_offset = self._angle_offset
+        min_shutter_angle_percent = self._min_slat_angle
+        max_shutter_angle_percent = self._shadow_max_angle
+        shutter_type_str = self._shutter_type  # String wie "90_degree_slats" oder "180_degree_slats"
+
+        # Der effektive Elevationswinkel kommt aus der Instanzvariable, die von _check_if_facade_is_in_sun gesetzt wird
+        effective_elevation = self._effective_elevation
+
+        # --- Prüfen auf None-Werte ---
         if (
-            azimuth is None
-            or facade_angle is None
-            or facade_offset_start is None
-            or facade_offset_end is None
-            or angle_offset is None
-            or min_shutter_angle is None
-            or shadow_max_angle is None
+                elevation is None or azimuth is None
+                or given_shutter_slat_width is None or shutter_slat_distance is None
+                or shutter_angle_offset is None or min_shutter_angle_percent is None
+                or max_shutter_angle_percent is None or shutter_type_str is None
+                or effective_elevation is None
         ):
-            return None
+            _LOGGER.warning(
+                f"{self._name}: Nicht alle erforderlichen Werte für die Winkelberechnung verfügbar. "
+                f"elevation={elevation}, azimuth={azimuth}, "
+                f"slat_width={given_shutter_slat_width}, slat_distance={shutter_slat_distance}, "
+                f"angle_offset={shutter_angle_offset}, min_angle={min_shutter_angle_percent}, "
+                f"max_angle={max_shutter_angle_percent}, shutter_type={shutter_type_str}, "
+                f"effective_elevation={effective_elevation}. Gebe 0.0 zurück.")
+            return 0.0  # Standardwert bei fehlenden Daten
 
-        relative_azimuth = (azimuth - facade_angle + 360) % 360
-        if facade_offset_start <= relative_azimuth <= (360 + facade_offset_end) % 360:
-            angle_percent = min_shutter_angle + (
-                (relative_azimuth - facade_offset_start)
-                / (
-                    facade_offset_end - facade_offset_start + 360
-                    if facade_offset_end < facade_offset_start
-                    else facade_offset_end - facade_offset_start
-                )
-            ) * (shadow_max_angle - min_shutter_angle)
-            return max(0.0, min(100.0, angle_percent))
-        return float(self._angle_neutral)  # Default to neutral if not in facade range
+        # --- Mathematische Berechnungen basierend auf dem schiefen Dreieck ---
+
+        # $alpha is the opposit angle of shutter slat width, so this is the difference
+        # between $GLOBALS["LB_LBSID_INTERNAL__effectiveElevation"] and vertical
+        alpha_deg = 90 - effective_elevation
+        alpha_rad = math.radians(alpha_deg)
+
+        # $beta is the opposit angle of shutter slat distance
+        asin_arg = (math.sin(alpha_rad) * shutter_slat_distance) / given_shutter_slat_width
+
+        # Schutz vor domain error für asin() wenn Argument > 1 oder < -1
+        if not (-1 <= asin_arg <= 1):
+            _LOGGER.warning(
+                f"{self._name}: Argument für asin() ausserhalb des gültigen Bereichs ({-1 <= asin_arg <= 1}). "
+                f"Aktueller Wert: {asin_arg}. Kann Winkel nicht berechnen. Gebe 0.0 zurück.")
+            return 0.0
+
+        beta_rad = math.asin(asin_arg)
+        beta_deg = math.degrees(beta_rad)
+
+        # $gamma is the angle between vertical and shutter slat
+        gamma_deg = 180 - alpha_deg - beta_deg
+
+        # $shutterAnglePercent is the difference between horizontal and shutter slat,
+        # so this is the result of the calculation
+        shutter_angle_degrees = round(90 - gamma_deg)
+
+        _LOGGER.debug(f"{self._name}: Elevation/Azimut: {elevation}°/{azimuth}°, "
+                      f"resultierende effektive Elevation und Rollladenwinkel: "
+                      f"{effective_elevation}°/{shutter_angle_degrees}° (ohne Stepping und Offset)")
+
+        # --- Anpassung basierend auf Rollladentyp (90° oder 180° Lamellen) ---
+        shutter_angle_percent: float
+        if shutter_type_str == "90_degree_slats":
+            shutter_angle_percent = shutter_angle_degrees / 0.9
+        elif shutter_type_str == "180_degree_slats":
+            shutter_angle_percent = shutter_angle_degrees / 1.8 + 50
+        else:
+            _LOGGER.warning(
+                f"{self._name}: Unbekannter Rollladentyp '{shutter_type_str}'. Verwende Standard (90°).")
+            shutter_angle_percent = shutter_angle_degrees / 0.9  # Standardverhalten
+
+        # Sicherstellen, dass der Winkel nicht negativ wird
+        if shutter_angle_percent < 0:
+            shutter_angle_percent = 0.0
+
+        # Runden vor dem Stepping, wie im PHP-Code
+        shutter_angle_percent_rounded_for_stepping = round(shutter_angle_percent)
+
+        # --- Anwendung des Winkel-Steppings ---
+        # Diese Methode (_handle_shutter_angle_stepping) muss noch implementiert werden
+        shutter_angle_percent_with_stepping = self._handle_shutter_angle_stepping(
+            shutter_angle_percent_rounded_for_stepping)
+
+        # --- Hinzufügen des konfigurierten Offsets ---
+        shutter_angle_percent_with_stepping += shutter_angle_offset
+
+        # --- Begrenzung des Winkels auf Min/Max-Werte ---
+        if shutter_angle_percent_with_stepping < min_shutter_angle_percent:
+            final_shutter_angle_percent = min_shutter_angle_percent
+            _LOGGER.debug(
+                f"{self._name}: Begrenze Winkel auf Minimum: {min_shutter_angle_percent}%")
+        elif shutter_angle_percent_with_stepping > max_shutter_angle_percent:
+            final_shutter_angle_percent = max_shutter_angle_percent
+            _LOGGER.debug(
+                f"{self._name}: Begrenze Winkel auf Maximum: {max_shutter_angle_percent}%")
+        else:
+            final_shutter_angle_percent = shutter_angle_percent_with_stepping
+
+        # Endgültiges Runden des finalen Winkels
+        final_shutter_angle_percent = round(final_shutter_angle_percent)
+
+        _LOGGER.debug(
+            f"{self._name}: Resultierender Rollladenwinkel mit Offset und Stepping: {final_shutter_angle_percent}%")
+        return float(final_shutter_angle_percent)  # Sicherstellen, dass es ein Float zurückgibt
+
+    def _handle_shutter_angle_stepping(self, calculated_angle_percent: float) -> float:
+        """
+        Passt den berechneten Lamellenwinkel an das vorgegebene Stepping an.
+        """
+        _LOGGER.debug(
+            f"{self._name}: Bearbeite Lamellenwinkel Stepping für {calculated_angle_percent}%.")
+
+        # Entsprechende Instanzvariable für die Schrittweite
+        # Stellen Sie sicher, dass self._stepping_angle in _update_input_values gefüllt wird!
+        shutter_stepping_percent = self._stepping_angle
+
+        # Prüfen auf None-Werte für die Schrittweite
+        if shutter_stepping_percent is None:
+            _LOGGER.warning(
+                f"{self._name}: 'stepping_angle' ist None. Stepping kann nicht angewendet werden. Gebe ursprünglichen Winkel {calculated_angle_percent}% zurück.")
+            return calculated_angle_percent
+
+        # Die PHP-Logik in Python:
+        # if ($shutterSteppingPercent != 0 && ($shutterAnglePercent % $shutterSteppingPercent) != 0) {
+        #    $shutterAnglePercent = $shutterAnglePercent + $shutterSteppingPercent - ($shutterAnglePercent % $shutterSteppingPercent);
+        # }
+
+        if shutter_stepping_percent != 0:
+            remainder = calculated_angle_percent % shutter_stepping_percent
+            if remainder != 0:
+                adjusted_angle = calculated_angle_percent + shutter_stepping_percent - remainder
+                _LOGGER.debug(
+                    f"{self._name}: Angewendetes Stepping: von {calculated_angle_percent}% auf {adjusted_angle}%. Schrittweite: {shutter_stepping_percent}%.")
+                return adjusted_angle
+
+        # Wenn kein Stepping angewendet werden muss oder shutter_stepping_percent 0 ist
+        _LOGGER.debug(
+            f"{self._name}: Kein Stepping nötig oder Stepping ist 0. Gebe ursprünglichen Winkel {calculated_angle_percent}% zurück.")
+        return calculated_angle_percent
 
     async def _position_shutter(
         self,
