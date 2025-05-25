@@ -1223,15 +1223,11 @@ class ShadowControl(CoverEntity, RestoreEntity):
         if is_azimuth_in_range:
             message += f"IN SUN (from {sun_entry_angle}° to {sun_exit_angle}°)"
             self._sun_between_offsets = True
-            await self._send_by_change("sun_at_facade_azimuth", True)
             self._effective_elevation = await self._calculate_effective_elevation()
         else:
             message += f"NOT IN SUN (shadow side, at sun from {sun_entry_angle}° to {sun_exit_angle}°)"
             self._sun_between_offsets = False
-            await self._send_by_change("sun_at_facade_azimuth", False)
             self._effective_elevation = None
-
-        #await self._send_by_change("effective_elevation", effective_elevation)
 
         message += f"\n -> effective elevation {self._effective_elevation}° for given elevation of {sun_current_elevation}°"
         is_elevation_in_range = False
@@ -1239,11 +1235,9 @@ class ShadowControl(CoverEntity, RestoreEntity):
             message += f" -> in min-max-range ({min_elevation}°-{max_elevation}°)"
             self._sun_between_min_max = True
             is_elevation_in_range = True
-            await self._send_by_change("sun_at_facade_elevation", True)
         else:
             message += f" -> NOT in min-max-range ({min_elevation}°-{max_elevation}°)"
             self._sun_between_min_max = False
-            await self._send_by_change("sun_at_facade_elevation", False)
         _LOGGER.debug(f"{message} ===")
 
     async def _is_dawn_active(self) -> bool:
