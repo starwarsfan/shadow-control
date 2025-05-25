@@ -1003,11 +1003,9 @@ class ShadowControl(CoverEntity, RestoreEntity):
     async def _position_shutter(
             self,
             shutter_height_percent: float,
-            # Name des Parameters angepasst, da er jetzt die berechnete Höhe ist
             shutter_angle_percent: float,
-            # Name des Parameters angepasst, da er jetzt der berechnete Winkel ist
-            shadow_position: bool,  # Parameter, der angibt, ob Beschattung aktiv ist
-            stop_timer: bool  # Parameter, der angibt, ob Timer gestoppt werden sollen
+            shadow_position: bool,
+            stop_timer: bool
     ) -> None:
         """
         Sendet die berechneten Höhen- und Winkelwerte an die KNX-Cover-Entität.
@@ -1309,8 +1307,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                         await self._position_shutter(
                             target_height,
                             target_angle,
-                            -1,  # Richtung: Schliessen/Abwärts
-                            force=False,
+                            shadow_position=True,
                             stop_timer=True,
                         )
                         _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Timer abgelaufen, Helligkeit hoch genug, fahre in Vollschatten ({target_height}%, {target_angle}%) und gehe zu {self.STATE_SHADOW_FULL_CLOSED}")
@@ -1332,8 +1329,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 await self._position_shutter(
                     float(neutral_height),
                     float(neutral_angle),
-                    0,  # Richtung: Neutral
-                    force=True,  # Force
+                    shadow_position=False,
                     stop_timer=True,  # Stop Timer
                 )
                 _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
@@ -1374,8 +1370,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     await self._position_shutter(
                         target_height,
                         target_angle,
-                        1,  # Richtung: Öffnen/Aufwärts (für Anpassung innerhalb des Schattenmodus)
-                        force=True,
+                        shadow_position=True,
                         stop_timer=False,
                     )
                 return ShutterState.STATE_SHADOW_FULL_CLOSED
@@ -1386,8 +1381,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 await self._position_shutter(
                     float(neutral_height),
                     float(neutral_angle),
-                    0,  # Richtung: Neutral
-                    force=True,
+                    shadow_position=False,
                     stop_timer=True,  # Stop Timer
                 )
                 _LOGGER.debug(f"Zustand {self.STATE_SHADOW_FULL_CLOSED}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
@@ -1427,8 +1421,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                         await self._position_shutter(
                             target_height,
                             float(shadow_open_slat_angle),
-                            0,  # Richtung: Neutral (da nur Winkel der Lamellen geändert wird)
-                            force=True,
+                            shadow_position=False,
                             stop_timer=True,
                         )
                         _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Timer abgelaufen, fahre auf Höhe {target_height}% mit neutralen Lamellen ({shadow_open_slat_angle}°) und gehe zu {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}")
@@ -1446,8 +1439,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 await self._position_shutter(
                     float(neutral_height),
                     float(neutral_angle),
-                    0,  # Richtung: Neutral
-                    force=True,
+                    shadow_position=False,
                     stop_timer=True,  # Stop Timer
                 )
                 _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
@@ -1483,8 +1475,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     await self._position_shutter(
                         target_height,
                         target_angle,
-                        1,  # Richtung: Öffnen/Aufwärts (für volle Schattenposition)
-                        force=True,
+                        shadow_position=True,
                         stop_timer=False,
                     )
                     _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Helligkeit ({current_brightness}) über Schwellwert ({shadow_threshold_close}), fahre in Vollschatten ({target_height}%, {target_angle}%) und gehe zu {self.STATE_SHADOW_FULL_CLOSED}")
@@ -1506,8 +1497,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 await self._position_shutter(
                     float(neutral_height),
                     float(neutral_angle),
-                    0,  # Richtung: Neutral
-                    force=True,
+                    shadow_position=False,
                     stop_timer=True,  # Stop Timer (falls ein Timer aktiv war)
                 )
                 _LOGGER.debug(f"Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
@@ -1549,8 +1539,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                         await self._position_shutter(
                             float(height_after_shadow),
                             float(angle_after_shadow),
-                            0,  # Richtung: Neutral
-                            force=True,
+                            shadow_position=False,
                             stop_timer=True,
                         )
                         _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Timer abgelaufen, fahre in Position nach Schatten ({height_after_shadow}%, {angle_after_shadow}°) und gehe zu {self.STATE_SHADOW_NEUTRAL}")
@@ -1568,8 +1557,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 await self._position_shutter(
                     float(neutral_height),
                     float(neutral_angle),
-                    0,  # Richtung: Neutral
-                    force=True,
+                    shadow_position=False,
                     stop_timer=True,  # Stop Timer
                 )
                 _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
@@ -1623,8 +1611,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 await self._position_shutter(
                     float(height_after_shadow),
                     float(angle_after_shadow),
-                    0,  # Richtung: Neutral
-                    force=True,
+                    shadow_position=False,
                     stop_timer=False,
                 )
                 _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL}: Bewege Behang in Position nach Schatten ({height_after_shadow}%, {angle_after_shadow}%).")
@@ -1653,8 +1640,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                0,  # Richtung: Neutral
-                force=True,
+                shadow_position=False,
                 stop_timer=True,  # Stop Timer (falls ein Timer aktiv war)
             )
             _LOGGER.debug(f"Zustand {self.STATE_SHADOW_NEUTRAL}: Nicht in Sonne oder Schattenmodus deaktiviert und Dämmerung nicht aktiv, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
@@ -1705,8 +1691,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                0,  # Richtung: Neutral
-                force=True,
+                shadow_position=False,
                 stop_timer=False,
             )
             _LOGGER.debug(f"Zustand {self.STATE_NEUTRAL}: Bewege Behang in Neutralposition ({neutral_height}%, {neutral_angle}%).")
@@ -1758,8 +1743,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 await self._position_shutter(
                     float(height_after_dawn),
                     float(angle_after_dawn),
-                    0,  # Richtung: Neutral
-                    force=True,
+                    shadow_position=False,
                     stop_timer=False,
                 )
                 _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL}: Bewege Behang in Position nach Dämmerung ({height_after_dawn}%, {angle_after_dawn}%).")
@@ -1784,8 +1768,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                0,  # Richtung: Neutral
-                force=True,
+                shadow_position=False,
                 stop_timer=True,  # Stop Timer (falls ein Timer aktiv war)
             )
             _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL}: Dämmerungsbehandlung deaktiviert oder nicht die Bedingungen für Schatten, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%).")
@@ -1821,8 +1804,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                         await self._position_shutter(
                             float(dawn_height),
                             float(dawn_open_slat_angle),
-                            0,  # Richtung: Neutral
-                            force=True,
+                            shadow_position=False,
                             stop_timer=True,
                         )
                         _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Timer abgelaufen, fahre auf Dämmerungshöhe ({dawn_height}%) mit geöffneten Lamellen ({dawn_open_slat_angle}°) und gehe zu {self.STATE_DAWN_NEUTRAL}")
@@ -1840,8 +1822,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 await self._position_shutter(
                     float(neutral_height),
                     float(neutral_angle),
-                    0,  # Richtung: Neutral
-                    force=True,
+                    shadow_position=False,
                     stop_timer=True,  # Stop Timer
                 )
                 _LOGGER.debug(f"Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
@@ -1880,8 +1861,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 await self._position_shutter(
                     float(dawn_height),
                     float(dawn_open_slat_angle),
-                    0,  # Richtung: Neutral
-                    force=False,
+                    shadow_position=False,
                     stop_timer=False,
                 )
                 _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: Dämmerungshelligkeit ({dawn_brightness}) unter Schwellwert ({dawn_threshold_close}), fahre auf Dämmerungshöhe ({dawn_height}%) mit geöffneten Lamellen ({dawn_open_slat_angle}°) und gehe zu {self.STATE_DAWN_FULL_CLOSED}")
@@ -1900,8 +1880,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 await self._position_shutter(
                     float(neutral_height),
                     float(neutral_angle),
-                    0,  # Richtung: Neutral
-                    force=True,
+                    shadow_position=False,
                     stop_timer=True,
                 )
                 _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
@@ -1941,8 +1920,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                         await self._position_shutter(
                             float(dawn_height),
                             float(dawn_open_slat_angle),
-                            0,  # Richtung: Neutral
-                            force=False,
+                            shadow_position=False,
                             stop_timer=True,
                         )
                         _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Timer abgelaufen, fahre auf Dämmerungshöhe ({dawn_height}%) mit geöffneten Lamellen ({dawn_open_slat_angle}°) und gehe zu {self.STATE_DAWN_HORIZONTAL_NEUTRAL}")
@@ -1960,8 +1938,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 await self._position_shutter(
                     float(neutral_height),
                     float(neutral_angle),
-                    0,  # Richtung: Neutral
-                    force=True,
+                    shadow_position=False,
                     stop_timer=True,  # Stop Timer
                 )
                 _LOGGER.debug(f"Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
@@ -2001,8 +1978,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 await self._position_shutter(
                     float(dawn_height),
                     float(dawn_angle),
-                    0,  # Richtung: Neutral
-                    force=True,
+                    shadow_position=False,
                     stop_timer=False,
                 )
                 _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungshelligkeit nicht über Schwellwert, fahre in Dämmerungsposition ({dawn_height}%, {dawn_angle}%).")
@@ -2017,8 +1993,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 await self._position_shutter(
                     float(neutral_height),
                     float(neutral_angle),
-                    0,  # Richtung: Neutral
-                    force=True,
+                    shadow_position=False,
                     stop_timer=True,  # Stop Timer
                 )
                 _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSED}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
@@ -2054,8 +2029,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                         await self._position_shutter(
                             float(dawn_height),
                             float(dawn_angle),
-                            0,  # Richtung: Neutral
-                            force=True,
+                            shadow_position=False,
                             stop_timer=True,
                         )
                         _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Timer abgelaufen, fahre in volle Dämmerungsposition ({dawn_height}%, {dawn_angle}%) und gehe zu {self.STATE_DAWN_FULL_CLOSED}")
@@ -2077,8 +2051,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 await self._position_shutter(
                     float(neutral_height),
                     float(neutral_angle),
-                    0,  # Richtung: Neutral
-                    force=True,
+                    shadow_position=False,
                     stop_timer=True,  # Stop Timer
                 )
                 _LOGGER.debug(f"Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: Dämmerungsbehandlung deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {self.STATE_NEUTRAL}")
