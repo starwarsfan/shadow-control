@@ -1396,7 +1396,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 return ShutterState.NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        _LOGGER.debug(f"{self._name}: Zustand {self.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Beibehalte vorherige Position.")
+        _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Beibehalte vorherige Position.")
         return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
 
     # =======================================================================
@@ -1449,7 +1449,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 return ShutterState.NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        _LOGGER.debug(f"{self._name}: Zustand {self.SHADOW_FULL_CLOSED}: Beibehalte vorherige Position.")
+        _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_FULL_CLOSED}: Beibehalte vorherige Position.")
         return ShutterState.SHADOW_FULL_CLOSED
 
     # =======================================================================
@@ -1508,7 +1508,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 return ShutterState.NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        _LOGGER.debug(f"{self._name}: Zustand {self.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.")
+        _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.")
         return ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
     # =======================================================================
@@ -1567,7 +1567,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 return ShutterState.NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        _LOGGER.debug(f"{self._name}: Zustand {self.SHADOW_HORIZONTAL_NEUTRAL}: Beibehalte vorherige Position.")
+        _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_HORIZONTAL_NEUTRAL}: Beibehalte vorherige Position.")
         return ShutterState.SHADOW_HORIZONTAL_NEUTRAL
 
     # =======================================================================
@@ -1628,7 +1628,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 return ShutterState.NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        _LOGGER.debug(f"{self._name}: Zustand {self.SHADOW_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.")
+        _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.")
         return ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING
 
     # =======================================================================
@@ -1899,7 +1899,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 return ShutterState.NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        _LOGGER.debug(f"{self._name}: Zustand {self.DAWN_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.")
+        _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.")
         return ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
 
     # =======================================================================
@@ -1958,7 +1958,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 return ShutterState.NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        _LOGGER.debug(f"{self._name}: Zustand {self.DAWN_HORIZONTAL_NEUTRAL}: Beibehalte vorherige Position.")
+        _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_HORIZONTAL_NEUTRAL}: Beibehalte vorherige Position.")
         return ShutterState.DAWN_HORIZONTAL_NEUTRAL
 
     # =======================================================================
@@ -2017,7 +2017,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 return ShutterState.NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        _LOGGER.debug(f"{self._name}: Zustand {self.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.")
+        _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Beibehalte vorherige Position.")
         return ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
     # =======================================================================
@@ -2073,7 +2073,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 return ShutterState.NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        _LOGGER.debug(f"{self._name}: Zustand {self.DAWN_FULL_CLOSED}: Beibehalte vorherige Position.")
+        _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_FULL_CLOSED}: Beibehalte vorherige Position.")
         return ShutterState.DAWN_FULL_CLOSED
 
     # =======================================================================
@@ -2132,7 +2132,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 return ShutterState.NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        _LOGGER.debug(f"{self._name}: Zustand {self.DAWN_FULL_CLOSE_TIMER_RUNNING}: Beibehalte vorherige Position.")
+        _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING}: Beibehalte vorherige Position.")
         return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
 
     # End of state handling
