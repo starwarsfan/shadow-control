@@ -1271,10 +1271,9 @@ class ShadowControl(CoverEntity, RestoreEntity):
         if azimuth_calc < 0:
             azimuth_calc += 360
 
-        is_azimuth_in_range = 0 <= azimuth_calc <= sun_exit_angle_calc
         message = f"{self._name}: Finished facade check:\n -> real azimuth {sun_current_azimuth}° and facade at {facade_azimuth}° -> "
         _sun_between_offsets = False
-        if is_azimuth_in_range:
+        if 0 <= azimuth_calc <= sun_exit_angle_calc:
             message += f"IN SUN (from {sun_entry_angle}° to {sun_exit_angle}°)"
             _sun_between_offsets = True
             self._effective_elevation = await self._calculate_effective_elevation()
