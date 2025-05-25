@@ -2241,49 +2241,51 @@ class ShadowControl(CoverEntity, RestoreEntity):
         return None
 
     # --- Hilfsfunktionen zum Abrufen von Entitätszuständen ---
-    def _get_entity_numeric_state(self, entity_id: str | None, value_type: type) -> Any | None:
-        """Helper to get a numeric state, converting to the specified type."""
-        if entity_id is None:
-            return None
+    def _get_entity_numeric_state(self, entity_id: str | None, target_type: type, default_value: Any = None) -> Any:
+        """
+        Gibt den numerischen Zustand einer Entität zurück oder einen Standardwert,
+        wenn die Entität nicht existiert, ihr Zustand nicht verfügbar ist oder nicht konvertiert werden kann.
+        """
+        if not entity_id: # <-- WICHTIG: Prüfung auf None/leeren String
+            _LOGGER.warning(f"{self._name}: Entitäts-ID für numerischen Zustand fehlt (None/Empty). Verwende Standardwert {default_value}.")
+            return default_value
 
-        state = self.hass.states.get(entity_id)
-        if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
-            _LOGGER.debug(f"{self._name}: State for {entity_id} is unknown or unavailable.")
-            return None
-
+        state_obj = self.hass.states.get(entity_id)
+        if not state_obj or state_obj.state in ['unknown', 'unavailable', 'none', None]:
+            _LOGGER.debug(f"{self._name}: Zustand für '{entity_id}' nicht verfügbar oder ungültig ('{state_obj.state if state_obj else 'None'}'). Verwende Standardwert {default_value}.")
+            return default_value
         try:
-            # Konvertieren Sie den Zustandswert in den gewünschten Typ
-            return value_type(state.state)
+            return target_type(state_obj.state)
         except (ValueError, TypeError):
-            _LOGGER.warning(f"{self._name}: Could not convert state '{state.state}' for {entity_id} to {value_type.__name__}.")
-            return None
+            _LOGGER.warning(f"{self._name}: Konnte Zustand '{state_obj.state}' von '{entity_id}' nicht in {target_type.__name__} konvertieren. Verwende Standardwert {default_value}.")
+            return default_value
 
-    def _get_entity_boolean_state(self, entity_id: str | None) -> bool | None:
-        """Helper to get a boolean state (on/off)."""
-        if entity_id is None:
-            return None
+    def _get_entity_boolean_state(self, entity_id: str | None, default_value: bool = False) -> bool:
+        """
+        Gibt den booleschen Zustand einer Entität zurück oder einen Standardwert,
+        wenn die Entität nicht existiert, ihr Zustand nicht verfügbar ist oder nicht konvertiert werden kann.
+        """
+        if not entity_id: # <-- WICHTIG: Prüfung auf None/leeren String
+            _LOGGER.warning(f"{self._name}: Entitäts-ID für booleschen Zustand fehlt (None/Empty). Verwende Standardwert {default_value}.")
+            return default_value
 
-        state = self.hass.states.get(entity_id)
-        if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
-            _LOGGER.debug(f"{self._name}: State for {entity_id} is unknown or unavailable (boolean).")
-            return None
+        state_obj = self.hass.states.get(entity_id)
+        if not state_obj or state_obj.state in ['unknown', 'unavailable', 'none', None]:
+            _LOGGER.debug(f"{self._name}: Zustand für '{entity_id}' nicht verfügbar oder ungültig ('{state_obj.state if state_obj else 'None'}'). Verwende Standardwert {default_value}.")
+            return default_value
+        return state_obj.state.lower() == 'on' # HA States sind oft 'on'/'off' Strings
 
-        if state.state == STATE_ON:
-            return True
-        elif state.state == STATE_OFF:
-            return False
-        else:
-            _LOGGER.warning(f"{self._name}: Unexpected state '{state.state}' for boolean entity {entity_id}.")
-            return None
+    def _get_entity_string_state(self, entity_id: str | None, default_value: str | None = None) -> str | None:
+        """
+        Gibt den String-Zustand einer Entität zurück oder einen Standardwert,
+        wenn die Entität nicht existiert oder ihr Zustand nicht verfügbar ist.
+        """
+        if not entity_id: # <-- WICHTIG: Prüfung auf None/leeren String
+            _LOGGER.warning(f"{self._name}: Entitäts-ID für String-Zustand fehlt (None/Empty). Verwende Standardwert {default_value}.")
+            return default_value
 
-    def _get_entity_string_state(self, entity_id: str | None) -> str | None:
-        """Helper to get a string state."""
-        if entity_id is None:
-            return None
-
-        state = self.hass.states.get(entity_id)
-        if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
-            _LOGGER.debug(f"{self._name}: State for {entity_id} is unknown or unavailable (string).")
-            return None
-
-        return state.state
+        state_obj = self.hass.states.get(entity_id)
+        if not state_obj or state_obj.state in ['unknown', 'unavailable', 'none', None]:
+            _LOGGER.debug(f"{self._name}: Zustand für '{entity_id}' nicht verfügbar oder ungültig ('{state_obj.state if state_obj else 'None'}'). Verwende Standardwert {default_value}.")
+            return default_value
+        return str(state_obj.state)
