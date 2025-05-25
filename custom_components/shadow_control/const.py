@@ -1,6 +1,6 @@
 """Constants for the Shadow Control integration."""
 
-from enum import IntEnum
+from enum import Enum, IntEnum
 
 DOMAIN = "shadow_control"
 DEFAULT_NAME = "Shadow Control"
@@ -103,8 +103,8 @@ class UpdateLockStateOutput(IntEnum):
     UPDATE_LOCKSTATE_OUTPUT__ONLY_ON_MANUAL_LOCK = 2
 
 # --- Definition of configuration values, how to update position outputs ----
-class MovementRestricted(IntEnum):
-    """Enum for the possible states of the lock."""
-    MOVEMENT_RESTRICTED__NO_RESTRICTION = 0
-    MOVEMENT_RESTRICTED__ONLY_DOWN = 1
-    MOVEMENT_RESTRICTED__ONLY_UP = 2
+class MovementRestricted(Enum):
+    """Enum for the possible movement restrictions."""
+    NO_RESTRICTION = "No restriction"
+    ONLY_CLOSE = "Only close"
+    ONLY_OPEN = "Only open"

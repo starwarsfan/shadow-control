@@ -86,6 +86,7 @@ from .const import (
     # Enumerations
     ShutterState,
     LockState,
+    MovementRestricted,
 )
 
 DEFAULT_NAME = "Shadow Control"
@@ -239,8 +240,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._shutter_height: float | None = None
         self._neutral_pos_height: float | None = None
         self._neutral_pos_angle: float | None = None
-        self._movement_restriction_height: str | None = None
-        self._movement_restriction_angle: str | None = None
+        self._movement_restriction_height: MovementRestricted = MovementRestricted.NO_RESTRICTION
+        self._movement_restriction_angle: MovementRestricted = MovementRestricted.NO_RESTRICTION
         self._update_lock_output: str | None = None
 
         # === Beschattungseinstellungen (Test-Helfer) ===
@@ -424,8 +425,49 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._shutter_height = self._get_entity_numeric_state(self._shutter_height_entity_id, float)
         self._neutral_pos_height = self._get_entity_numeric_state(self._neutral_pos_height_entity_id, float)
         self._neutral_pos_angle = self._get_entity_numeric_state(self._neutral_pos_angle_entity_id, float)
-        self._movement_restriction_height = self._get_entity_string_state(self._movement_restriction_height_entity_id)
-        self._movement_restriction_angle = self._get_entity_string_state(self._movement_restriction_angle_entity_id)
+
+        # -------------------------------------------
+        # Movement restriction to enumeration mapping
+        #self._movement_restriction_height = self._get_entity_string_state(self._movement_restriction_height_entity_id)
+        height_restriction_entity_id = self._config.get(CONF_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID)
+        if height_restriction_entity_id:
+            state_obj = self.hass.states.get(height_restriction_entity_id)
+            if state_obj and state_obj.state:
+                # Suchen Sie den Enum-Member, dessen Wert (value) dem input_select String entspricht
+                for restriction_type in MovementRestricted:
+                    if restriction_type.value == state_obj.state:
+                        self._movement_restriction_height = restriction_type
+                        _LOGGER.debug(f"{self._name}: Bewegungsbeschränkung Höhe gesetzt auf: {self._movement_restriction_height.name} (Value: {state_obj.state})")
+                        break
+                else: # Wenn die Schleife ohne break beendet wird (Wert nicht gefunden)
+                    _LOGGER.warning(f"{self._name}: Unbekannte Option für {height_restriction_entity_id}: '{state_obj.state}'. Setze auf NO_RESTRICTION.")
+                    self._movement_restriction_height = MovementRestricted.NO_RESTRICTION
+            else:
+                _LOGGER.warning(f"{self._name}: Zustand für {height_restriction_entity_id} nicht verfügbar oder leer. Setze auf NO_RESTRICTION.")
+                self._movement_restriction_height = MovementRestricted.NO_RESTRICTION
+        else:
+            _LOGGER.warning(f"{self._name}: Konfiguration für '{CONF_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID}' fehlt. Setze auf NO_RESTRICTION.")
+            self._movement_restriction_height = MovementRestricted.NO_RESTRICTION
+        #self._movement_restriction_angle = self._get_entity_string_state(self._movement_restriction_angle_entity_id)
+        angle_restriction_entity_id = self._config.get(CONF_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID)
+        if angle_restriction_entity_id:
+            state_obj = self.hass.states.get(angle_restriction_entity_id)
+            if state_obj and state_obj.state:
+                for restriction_type in MovementRestricted:
+                    if restriction_type.value == state_obj.state:
+                        self._movement_restriction_angle = restriction_type
+                        _LOGGER.debug(f"{self._name}: Bewegungsbeschränkung Winkel gesetzt auf: {self._movement_restriction_angle.name} (Value: {state_obj.state})")
+                        break
+                else:
+                    _LOGGER.warning(f"{self._name}: Unbekannte Option für {angle_restriction_entity_id}: '{state_obj.state}'. Setze auf NO_RESTRICTION.")
+                    self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
+            else:
+                _LOGGER.warning(f"{self._name}: Zustand für {angle_restriction_entity_id} nicht verfügbar oder leer. Setze auf NO_RESTRICTION.")
+                self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
+        else:
+            _LOGGER.warning(f"{self._name}: Konfiguration für '{CONF_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID}' fehlt. Setze auf NO_RESTRICTION.")
+            self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
+
         self._update_lock_output = self._get_entity_string_state(self._update_lock_output_entity_id)
 
         # === Beschattungseinstellungen ===
