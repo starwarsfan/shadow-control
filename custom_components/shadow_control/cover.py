@@ -709,13 +709,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
         )
         self.async_write_ha_state()
 
-    # Optional: Methoden für Tilt, falls unterstützt
-    # async def async_set_cover_tilt_position(self, **kwargs: any) -> None:
-    #     tilt_position = kwargs[ATTR_TILT_POSITION]
-    #     _LOGGER.info(f"{self._name}: Setting cover tilt to {tilt_position}")
-    #     # Rufen Sie hier Ihr Skript für die Neigung auf
-    #     self.async_write_ha_state()
-
     @property
     def unique_id(self) -> str | None:
         """Return the unique ID of the cover."""
@@ -726,75 +719,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
         """Return the current tilt of the cover."""
         # Hier den aktuellen Neigungswinkel abrufen oder aus dem Zustand ableiten
         return None  # Placeholder
-
-    async def async_set_cover_tilt(self, **kwargs: any) -> None:
-        """Set the tilt of the cover."""
-        if (tilt := kwargs.get("tilt")) is not None:
-            _LOGGER.debug(f"Set cover tilt to {tilt}")
-            self._target_tilt = tilt
-            await self._perform_state_handling()
-
-    async def _perform_state_handling(self):
-        """Handle the state machine and trigger actions."""
-        new_state = await self._calculate_state()
-        if new_state != self._current_shutter_state:
-            _LOGGER.debug(f"State changed from {self._current_shutter_state} to {new_state}")
-            self._current_shutter_state = new_state
-            # Potentially trigger another state calculation if needed
-            await self._perform_state_handling()
-        else:
-            _LOGGER.debug(f"Current state: {self._current_shutter_state}")
-            # Perform actions based on the current state
-            method_name = f"_handle_state_{self._current_shutter_state.lower()}"
-            if hasattr(self, method_name):
-                next_state = await getattr(self, method_name)()
-                if next_state and next_state != self._current_shutter_state:
-                    _LOGGER.debug(f"State handling requested transition to {next_state}")
-                    self._current_shutter_state = next_state
-                    await self._perform_state_handling()
-
-    async def _calculate_state(self) -> str:
-        """Determine the current state based on sensor values and conditions."""
-        _LOGGER.debug(f"=== Calculating shutter state... ===")
-        current_state = self._current_shutter_state
-        new_state = self.STATE_NEUTRAL
-
-        if (
-            await self._is_shadow_handling_activated() and not await self._check_if_facade_is_in_sun()
-        ) or (
-            await self._is_dawn_handling_activated() and await self._is_dawn_active()
-        ):
-            new_state = await self._get_appropriate_closed_state(current_state)
-        elif await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
-            new_state = await self._get_appropriate_sun_state(current_state)
-        elif (
-            await self._is_dawn_handling_activated()
-            and not await self._is_dawn_active()
-        ):
-            new_state = await self._get_appropriate_dawn_open_state(current_state)
-        else:
-            new_state = self.STATE_NEUTRAL
-
-        _LOGGER.debug(f"=== Calculated new state: {new_state} (was: {current_state}) ===")
-        return new_state
-
-    async def _get_appropriate_closed_state(self, current_state: str) -> ShutterState:
-        """Determine the appropriate closed state (shadow or dawn)."""
-        if await self._is_shadow_handling_activated() and not await self._check_if_facade_is_in_sun():
-            return ShutterState.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING
-        elif await self._is_dawn_handling_activated() and await self._is_dawn_active():
-            return ShutterState.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING
-        return ShutterState.STATE_NEUTRAL
-
-    async def _get_appropriate_sun_state(self, current_state: str) -> ShutterState:
-        """Determine the appropriate state when the sun is shining."""
-        # Placeholder logic - needs more detailed implementation
-        return ShutterState.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
-
-    async def _get_appropriate_dawn_open_state(self, current_state: str) -> ShutterState:
-        """Determine the appropriate state after dawn."""
-        # Placeholder logic - needs more detailed implementation
-        return ShutterState.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
     async def _is_shadow_handling_activated(self) -> bool:
         """Check if shadow handling is activated."""
