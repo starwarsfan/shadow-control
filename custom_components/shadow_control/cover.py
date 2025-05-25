@@ -1177,7 +1177,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # ... (Ihre _should_output_be_updated, _convert_shutter_angle_percent_to_degrees und _cancel_all_shadow_timers) ...
     # Denken Sie daran, dass _update_input_values auch in der Klasse sein muss.
 
-    async def _check_if_facade_is_in_sun(self) -> None:
+    async def _check_if_facade_is_in_sun(self) -> bool:
         """Calculate if the sun illuminates the given facade."""
         _LOGGER.debug(f"{self._name}: Checking if facade is in sun...")
 
@@ -1201,7 +1201,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         ):
             _LOGGER.debug(f"{self._name}: Nicht alle erforderlichen Sonnen- oder Fassadendaten verfügbar für die Prüfung des Sonneneinfalls.")
             self._effective_elevation = None
-            return
+            return False
 
         sun_entry_angle = facade_azimuth - abs(facade_offset_start)
         sun_exit_angle = facade_azimuth + abs(facade_offset_end)
@@ -1219,25 +1219,27 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         is_azimuth_in_range = 0 <= azimuth_calc <= sun_exit_angle_calc
         message = f"{self._name}: Finished facade check:\n -> real azimuth {sun_current_azimuth}° and facade at {facade_azimuth}° -> "
+        _sun_between_offsets = False
         if is_azimuth_in_range:
             message += f"IN SUN (from {sun_entry_angle}° to {sun_exit_angle}°)"
-            self._sun_between_offsets = True
+            _sun_between_offsets = True
             self._effective_elevation = await self._calculate_effective_elevation()
         else:
             message += f"NOT IN SUN (shadow side, at sun from {sun_entry_angle}° to {sun_exit_angle}°)"
-            self._sun_between_offsets = False
             self._effective_elevation = None
 
         message += f"\n -> effective elevation {self._effective_elevation}° for given elevation of {sun_current_elevation}°"
-        is_elevation_in_range = False
+        _is_elevation_in_range = False
         if min_elevation < self._effective_elevation < max_elevation:
             message += f" -> in min-max-range ({min_elevation}°-{max_elevation}°)"
             self._sun_between_min_max = True
-            is_elevation_in_range = True
+            _is_elevation_in_range = True
         else:
             message += f" -> NOT in min-max-range ({min_elevation}°-{max_elevation}°)"
             self._sun_between_min_max = False
         _LOGGER.debug(f"{message} ===")
+
+        return _sun_between_offsets and _is_elevation_in_range
 
     async def _is_dawn_active(self) -> bool:
         """Check if the current brightness is below the dawn threshold."""
