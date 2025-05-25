@@ -1062,6 +1062,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     else int(round(angle_percent))
                 )
                 await self._send_by_change("tilt", self._target_tilt)
+        else:
+            _LOGGER.debug(f" -> self._initial_lbs_run_finished = {self._initial_lbs_run_finished} and self._current_lock_state = {self._current_lock_state} -> no new shutter positioning")
 
         if stop_timer:
             await self._stop_timer()
