@@ -1242,8 +1242,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
     async def _is_dawn_active(self) -> bool:
         """Check if the current brightness is below the dawn threshold."""
-        brightness_dawn = await self._get_input_value("brightness_dawn")
-        dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
+        brightness_dawn = self._brightness_dawn
+        dawn_threshold_close = self._dawn_brightness_level
         return (
             brightness_dawn is not None
             and dawn_threshold_close is not None
