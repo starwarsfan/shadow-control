@@ -1222,7 +1222,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         # === Timer stoppen ===
         if stop_timer:
-            _LOGGER.debug(f"{self._name}: Stop Timer wurde angefordert (Platzhalter).")
+            _LOGGER.debug(f"{self._name}: Timer wird beendet")
             self._cancel_recalculation_timer()
 
         _LOGGER.debug(
