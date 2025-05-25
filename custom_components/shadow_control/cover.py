@@ -1179,7 +1179,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
     async def _check_if_facade_is_in_sun(self) -> None:
         """Calculate if the sun illuminates the given facade."""
-        _LOGGER.debug(f"=== Checking if facade is in sun... ===")
+        _LOGGER.debug(f"{self._name}: Checking if facade is in sun...")
 
         # Die Werte wurden bereits in _update_input_values als float abgerufen.
         sun_current_azimuth = self._sun_azimuth
@@ -1199,7 +1199,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             or min_elevation is None
             or max_elevation is None
         ):
-            _LOGGER.debug(f"Nicht alle erforderlichen Sonnen- oder Fassadendaten verfügbar für die Prüfung des Sonneneinfalls.")
+            _LOGGER.debug(f"{self._name}: Nicht alle erforderlichen Sonnen- oder Fassadendaten verfügbar für die Prüfung des Sonneneinfalls.")
             self._effective_elevation = None
             return
 
@@ -1218,7 +1218,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             azimuth_calc += 360
 
         is_azimuth_in_range = 0 <= azimuth_calc <= sun_exit_angle_calc
-        message = f"=== Finished facade check:\n -> real azimuth {sun_current_azimuth}° and facade at {facade_azimuth}° -> "
+        message = f"{self._name}: Finished facade check:\n -> real azimuth {sun_current_azimuth}° and facade at {facade_azimuth}° -> "
         if is_azimuth_in_range:
             message += f"IN SUN (from {sun_entry_angle}° to {sun_exit_angle}°)"
             self._sun_between_offsets = True
@@ -1258,10 +1258,10 @@ class ShadowControl(CoverEntity, RestoreEntity):
         facade_azimuth = self._azimuth_facade
 
         if sun_current_azimuth is None or sun_current_elevation is None or facade_azimuth is None:
-            _LOGGER.debug(f"Kann effektive Elevation nicht berechnen: Nicht alle erforderlichen Eingabewerte sind verfügbar.")
+            _LOGGER.debug(f"{self._name}: Kann effektive Elevation nicht berechnen: Nicht alle erforderlichen Eingabewerte sind verfügbar.")
             return None
 
-        _LOGGER.debug(f"Current sun position (a:e): {sun_current_azimuth}°:{sun_current_elevation}°, facade: {facade_azimuth}°")
+        _LOGGER.debug(f"{self._name}: Current sun position (a:e): {sun_current_azimuth}°:{sun_current_elevation}°, facade: {facade_azimuth}°")
 
         try:
             virtual_depth = math.cos(math.radians(abs(sun_current_azimuth - facade_azimuth)))
@@ -1273,13 +1273,13 @@ class ShadowControl(CoverEntity, RestoreEntity):
             else:
                 effective_elevation = math.degrees(math.atan(virtual_height / virtual_depth))
 
-            _LOGGER.debug(f"Virtuelle Tiefe und Höhe der Sonnenposition in 90° zur Fassade: {virtual_depth}, {virtual_height}, effektive Elevation: {effective_elevation}")
+            _LOGGER.debug(f"{self._name}: Virtuelle Tiefe und Höhe der Sonnenposition in 90° zur Fassade: {virtual_depth}, {virtual_height}, effektive Elevation: {effective_elevation}")
             return effective_elevation
         except ValueError:
-            _LOGGER.debug(f"Kann effektive Elevation nicht berechnen: Ungültige numerische Eingabewerte.")
+            _LOGGER.debug(f"{self._name}: Kann effektive Elevation nicht berechnen: Ungültige numerische Eingabewerte.")
             return None
         except ZeroDivisionError:
-            _LOGGER.debug(f"Kann effektive Elevation nicht berechnen: Division durch Null.")
+            _LOGGER.debug(f"{self._name}: Kann effektive Elevation nicht berechnen: Division durch Null.")
             return None
 
     # #######################################################################
@@ -2350,3 +2350,68 @@ class ShadowControl(CoverEntity, RestoreEntity):
             f"{self._name}: Konvertiere Winkel: {angle_percent}% -> {calculated_degrees} Grad (min_slat_angle={min_slat_angle}, angle_offset={angle_offset})")
 
         return calculated_degrees
+
+    def _should_output_be_updated(self, config_value: MovementRestricted, new_value: float,
+                                  previous_value: float | None) -> float:
+        """
+        Abhängig vom übergebenen Konfigurationswert, gibt den vorherigen oder den neuen Wert zurück.
+        Neuer Wert wird zurückgegeben, wenn:
+        - config_value ist 'ONLY_DOWN' und neuer Wert ist größer als vorheriger Wert oder
+        - config_value ist 'ONLY_UP' und neuer Wert ist kleiner als vorheriger Ausgabewert oder
+        - config_value ist 'NO_RESTRICTION' oder etwas anderes.
+        Alle anderen Fälle geben den vorherigen Wert zurück.
+
+        Entspricht der PHP-Funktion LB_LBSID_shouldOutputBeUpdated.
+        """
+        # Annahme: LB_LBSID_INTERNAL__doUpdatePositionOutputs ist in Python über
+        # die Zustandsmaschine und die _current_lock_state Logik abgedeckt.
+        # Hier geht es nur um die reine Bewegungsbeschränkung.
+
+        # Falls previous_value noch None ist (z.B. beim Initiallauf),
+        # sollte der new_value immer zurückgegeben werden, da es noch keinen "previous" gibt.
+        if previous_value is None:
+            _LOGGER.debug(
+                f"{self._name}: _should_output_be_updated: previous_value ist None. Gebe new_value ({new_value}) zurück.")
+            return new_value
+
+        # Überprüfen Sie, ob sich der Wert überhaupt geändert hat,
+        # bevor Sie die komplexere Logik anwenden.
+        # Eine kleine Toleranz kann hier sinnvoll sein, um unnötige Bewegungen zu vermeiden.
+        # Home Assistant filtert oft schon, aber eine explizite Prüfung ist gut.
+        if abs(new_value - previous_value) < 0.001:  # Kleine Toleranz für Floating Point Vergleiche
+            _LOGGER.debug(
+                f"{self._name}: _should_output_be_updated: new_value ({new_value}) ist praktisch identisch mit previous_value ({previous_value}). Gebe previous_value zurück.")
+            return previous_value
+
+        _LOGGER.debug(
+            f"{self._name}: _should_output_be_updated: config_value={config_value.name}, new_value={new_value}, previous_value={previous_value}")
+
+        if config_value == MovementRestricted.ONLY_CLOSE:
+            if new_value > previous_value:
+                _LOGGER.debug(
+                    f"{self._name}: _should_output_be_updated: ONLY_DOWN - new_value ({new_value}) > previous_value ({previous_value}). Gebe new_value zurück.")
+                return new_value
+            else:
+                _LOGGER.debug(
+                    f"{self._name}: _should_output_be_updated: ONLY_DOWN - new_value ({new_value}) <= previous_value ({previous_value}). Gebe previous_value zurück.")
+                return previous_value
+        elif config_value == MovementRestricted.ONLY_OPEN:
+            if new_value < previous_value:
+                _LOGGER.debug(
+                    f"{self._name}: _should_output_be_updated: ONLY_UP - new_value ({new_value}) < previous_value ({previous_value}). Gebe new_value zurück.")
+                return new_value
+            else:
+                _LOGGER.debug(
+                    f"{self._name}: _should_output_be_updated: ONLY_UP - new_value ({new_value}) >= previous_value ({previous_value}). Gebe previous_value zurück.")
+                return previous_value
+        elif config_value == MovementRestricted.NO_RESTRICTION:
+            _LOGGER.debug(
+                f"{self._name}: _should_output_be_updated: NO_RESTRICTION. Gebe new_value ({new_value}) zurück.")
+            return new_value
+        else:
+            # Für alle anderen (unbekannten) config_values, geben wir den previous_value zurück
+            # oder den new_value, je nachdem, wie Sie die "default" in PHP interpretieren.
+            # Die PHP "default" ist "return $newValue;", also lassen wir das auch hier so.
+            _LOGGER.warning(
+                f"{self._name}: _should_output_be_updated: Unbekannter config_value '{config_value.name}'. Gebe new_value ({new_value}) zurück.")
+            return new_value
