@@ -1288,6 +1288,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # =======================================================================
     # State SHADOW_FULL_CLOSE_TIMER_RUNNING
     async def _handle_state_shadow_full_close_timer_running(self) -> ShutterState:
+        _LOGGER.debug(f"{self._name}: Handle SHADOW_FULL_CLOSE_TIMER_RUNNING")
         if await self._is_lbs_locked_in_either_way():
             _LOGGER.debug(f"{self._name}: Zustand {self.STATE_SHADOW_FULL_CLOSE_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
@@ -1345,6 +1346,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # =======================================================================
     # State SHADOW_FULL_CLOSED
     async def _handle_state_shadow_full_closed(self) -> ShutterState:
+        _LOGGER.debug(f"{self._name}: Handle SHADOW_FULL_CLOSED")
         if await self._is_lbs_locked_in_either_way():
             _LOGGER.debug(f"{self._name}: Zustand {self.STATE_SHADOW_FULL_CLOSED}: LBS ist gesperrt, keine Aktion.")
             return ShutterState.SHADOW_FULL_CLOSED
@@ -1397,6 +1399,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # =======================================================================
     # State SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
     async def _handle_state_shadow_horizontal_neutral_timer_running(self) -> ShutterState:
+        _LOGGER.debug(f"{self._name}: Handle SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING")
         if await self._is_lbs_locked_in_either_way():
             _LOGGER.debug(f"{self._name}: Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
@@ -1455,6 +1458,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # =======================================================================
     # State SHADOW_HORIZONTAL_NEUTRAL
     async def _handle_state_shadow_horizontal_neutral(self) -> ShutterState:
+        _LOGGER.debug(f"{self._name}: Handle SHADOW_HORIZONTAL_NEUTRAL")
         if await self._is_lbs_locked_in_either_way():
             _LOGGER.debug(f"{self._name}: Zustand {self.STATE_SHADOW_HORIZONTAL_NEUTRAL}: LBS ist gesperrt, keine Aktion.")
             return ShutterState.SHADOW_HORIZONTAL_NEUTRAL
@@ -1513,6 +1517,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # =======================================================================
     # State SHADOW_NEUTRAL_TIMER_RUNNING
     async def _handle_state_shadow_neutral_timer_running(self) -> ShutterState:
+        _LOGGER.debug(f"{self._name}: Handle SHADOW_NEUTRAL_TIMER_RUNNING")
         if await self._is_lbs_locked_in_either_way():
             _LOGGER.debug(f"{self._name}: Zustand {self.STATE_SHADOW_NEUTRAL_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING
@@ -1573,6 +1578,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # =======================================================================
     # State SHADOW_NEUTRAL
     async def _handle_state_shadow_neutral(self) -> ShutterState:
+        _LOGGER.debug(f"{self._name}: Handle SHADOW_NEUTRAL")
         if await self._is_lbs_locked_in_either_way():
             _LOGGER.debug(f"{self._name}: Zustand {self.STATE_SHADOW_NEUTRAL}: LBS ist gesperrt, keine Aktion.")
             return ShutterState.SHADOW_NEUTRAL
@@ -1652,6 +1658,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # =======================================================================
     # State NEUTRAL
     async def _handle_state_neutral(self) -> ShutterState:
+        _LOGGER.debug(f"{self._name}: Handle NEUTRAL")
         if await self._is_lbs_locked_in_either_way():
             _LOGGER.debug(f"{self._name}: Zustand {ShutterState.NEUTRAL}: LBS ist gesperrt, keine Aktion."
             )
@@ -1700,6 +1707,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # =======================================================================
     # State DAWN_NEUTRAL
     async def _handle_state_dawn_neutral(self) -> ShutterState:
+        _LOGGER.debug(f"{self._name}: Handle DAWN_NEUTRAL")
         if await self._is_lbs_locked_in_either_way():
             _LOGGER.debug(f"{self._name}: Zustand {self.STATE_DAWN_NEUTRAL}: LBS ist gesperrt, keine Aktion.")
             return ShutterState.DAWN_NEUTRAL
@@ -1780,6 +1788,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # =======================================================================
     # State DAWN_NEUTRAL_TIMER_RUNNING
     async def _handle_state_dawn_neutral_timer_running(self) -> ShutterState:
+        _LOGGER.debug(f"{self._name}: Handle DAWN_NEUTRAL_TIMER_RUNNING")
         if await self._is_lbs_locked_in_either_way():
             _LOGGER.debug(f"{self._name}: Zustand {self.STATE_DAWN_NEUTRAL_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
@@ -1838,6 +1847,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # =======================================================================
     # State DAWN_HORIZONTAL_NEUTRAL
     async def _handle_state_dawn_horizontal_neutral(self) -> ShutterState:
+        _LOGGER.debug(f"{self._name}: Handle DAWN_HORIZONTAL_NEUTRAL")
         if await self._is_lbs_locked_in_either_way():
             _LOGGER.debug(f"{self._name}: Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL}: LBS ist gesperrt, keine Aktion.")
             return ShutterState.DAWN_HORIZONTAL_NEUTRAL
@@ -1896,6 +1906,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # =======================================================================
     # State DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
     async def _handle_state_dawn_horizontal_neutral_timer_running(self) -> ShutterState:
+        _LOGGER.debug(f"{self._name}: Handle DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING")
         if await self._is_lbs_locked_in_either_way():
             _LOGGER.debug(f"{self._name}: Zustand {self.STATE_DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
@@ -1954,6 +1965,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # =======================================================================
     # State DAWN_FULL_CLOSED
     async def _handle_state_dawn_full_closed(self) -> ShutterState:
+        _LOGGER.debug(f"{self._name}: Handle DAWN_FULL_CLOSED")
         if await self._is_lbs_locked_in_either_way():
             _LOGGER.debug(f"{self._name}: Zustand {self.STATE_DAWN_FULL_CLOSED}: LBS ist gesperrt, keine Aktion.")
             return ShutterState.DAWN_FULL_CLOSED
@@ -2009,6 +2021,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # =======================================================================
     # State DAWN_FULL_CLOSE_TIMER_RUNNING
     async def _handle_state_dawn_full_close_timer_running(self) -> ShutterState:
+        _LOGGER.debug(f"{self._name}: Handle DAWN_FULL_CLOSE_TIMER_RUNNING")
         if await self._is_lbs_locked_in_either_way():
             _LOGGER.debug(f"{self._name}: Zustand {self.STATE_DAWN_FULL_CLOSE_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
             return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
