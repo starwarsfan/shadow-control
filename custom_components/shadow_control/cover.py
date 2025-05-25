@@ -1770,19 +1770,22 @@ class ShadowControl(CoverEntity, RestoreEntity):
             _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_NEUTRAL}: LBS ist gesperrt, keine Aktion.")
             return ShutterState.DAWN_NEUTRAL
 
-        dawn_handling_active = await self._is_dawn_handling_activated()
-        dawn_brightness = await self._get_input_value("brightness_dawn")
-        dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
-        dawn_close_delay = await self._get_input_value("dawn_close_delay")
-        is_in_sun = await self._check_if_facade_is_in_sun()
-        shadow_handling_active = await self._is_shadow_handling_activated()
-        current_brightness = await self._get_input_value("brightness")
-        shadow_threshold_close = await self._get_input_value("shadow_threshold_close")
-        shadow_close_delay = await self._get_input_value("shadow_close_delay")
-        height_after_dawn = await self._get_input_value("height_after_dawn")
-        angle_after_dawn = await self._get_input_value("angle_after_dawn")
-        neutral_height = await self._get_input_value("height_neutral")
-        neutral_angle = await self._get_input_value("angle_neutral")
+        current_brightness = self._brightness
+
+        shadow_handling_active = self._is_shadow_handling_activated()
+        shadow_threshold_close = self._shadow_brightness_level
+        shadow_close_delay = self._shadow_after_seconds
+
+        dawn_handling_active = self._is_dawn_handling_activated()
+        dawn_brightness = self._brightness_dawn
+        dawn_threshold_close = self._dawn_brightness_level
+        dawn_close_delay = self._dawn_after_seconds
+        height_after_dawn = self._after_dawn_height
+        angle_after_dawn = self._after_dawn_angle
+
+        is_in_sun = self._check_if_facade_is_in_sun()
+        neutral_height = self._neutral_pos_height
+        neutral_angle = self._neutral_pos_angle
 
         if dawn_handling_active:
             if (
@@ -1852,10 +1855,10 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
 
         if await self._is_dawn_handling_activated():
-            dawn_brightness = await self._get_input_value("brightness_dawn")
-            dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
-            dawn_height = await self._get_input_value("dawn_height")
-            dawn_open_slat_angle = await self._get_input_value("dawn_open_slat_angle")
+            dawn_brightness = self._brightness_dawn
+            dawn_threshold_close = self._dawn_brightness_level
+            dawn_height = self._dawn_max_height
+            dawn_open_slat_angle = self._dawn_look_through_angle
 
             if (
                     dawn_brightness is not None
@@ -1883,8 +1886,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING}: Warte auf Timer (Helligkeit nicht niedrig genug)...")
                     return ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
         else:
-            neutral_height = await self._get_input_value("height_neutral")
-            neutral_angle = await self._get_input_value("angle_neutral")
+            neutral_height = self._neutral_pos_height
+            neutral_angle = self._neutral_pos_angle
             if neutral_height is not None and neutral_angle is not None:
                 await self._position_shutter(
                     float(neutral_height),
@@ -1911,13 +1914,11 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.DAWN_HORIZONTAL_NEUTRAL
 
         if await self._is_dawn_handling_activated():
-            dawn_brightness = await self._get_input_value("brightness_dawn")
-            dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
-            dawn_height = await self._get_input_value("dawn_height")
-            dawn_open_slat_angle = await self._get_input_value("dawn_open_slat_angle")
-            dawn_open_shutter_delay = await self._get_input_value(
-                "dawn_open_shutter_delay"
-            )
+            dawn_brightness = self._brightness_dawn
+            dawn_threshold_close = self._dawn_brightness_level
+            dawn_height = self._dawn_max_height
+            dawn_open_slat_angle = self._dawn_look_through_angle
+            dawn_open_shutter_delay = self._dawn_open_seconds
 
             if (
                     dawn_brightness is not None
@@ -1942,8 +1943,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_HORIZONTAL_NEUTRAL}: Dämmerungshelligkeit nicht unter Schwellwert und 'dawn_open_shutter_delay' nicht konfiguriert, bleibe in {ShutterState.DAWN_HORIZONTAL_NEUTRAL}")
                 return ShutterState.DAWN_HORIZONTAL_NEUTRAL
         else:
-            neutral_height = await self._get_input_value("height_neutral")
-            neutral_angle = await self._get_input_value("angle_neutral")
+            neutral_height = self._neutral_pos_height
+            neutral_angle = self._neutral_pos_angle
             if neutral_height is not None and neutral_angle is not None:
                 await self._position_shutter(
                     float(neutral_height),
@@ -1970,11 +1971,10 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
         if await self._is_dawn_handling_activated():
-            dawn_brightness = await self._get_input_value("brightness_dawn")
-            dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
-            dawn_height = await self._get_input_value("dawn_height")
-            dawn_open_slat_angle = await self._get_input_value("dawn_open_slat_angle")
-
+            dawn_brightness = self._brightness_dawn
+            dawn_threshold_close = self._dawn_brightness_level
+            dawn_height = self._dawn_max_height
+            dawn_open_slat_angle = self._dawn_look_through_angle
             if (
                     dawn_brightness is not None
                     and dawn_threshold_close is not None
@@ -2001,8 +2001,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Warte auf Timer (Helligkeit nicht niedrig genug)...")
                     return ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
         else:
-            neutral_height = await self._get_input_value("height_neutral")
-            neutral_angle = await self._get_input_value("angle_neutral")
+            neutral_height = self._neutral_pos_height
+            neutral_angle = self._neutral_pos_angle
             if neutral_height is not None and neutral_angle is not None:
                 await self._position_shutter(
                     float(neutral_height),
@@ -2029,12 +2029,11 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.DAWN_FULL_CLOSED
 
         if await self._is_dawn_handling_activated():
-            dawn_brightness = await self._get_input_value("brightness_dawn")
-            dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
-            dawn_open_slat_delay = await self._get_input_value("dawn_open_slat_delay")
-            dawn_height = await self._get_input_value("dawn_height")
-            dawn_angle = await self._get_input_value("dawn_angle")
-
+            dawn_brightness = self._brightness_dawn
+            dawn_threshold_close = self._dawn_brightness_level
+            dawn_height = self._dawn_max_height
+            dawn_open_slat_delay = self._dawn_look_through_seconds
+            dawn_angle = self._dawn_max_angle
             if (
                     dawn_brightness is not None
                     and dawn_threshold_close is not None
@@ -2057,8 +2056,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_FULL_CLOSED}: Dämmerungshöhe oder -winkel nicht konfiguriert, bleibe in {ShutterState.DAWN_FULL_CLOSED}")
                 return ShutterState.DAWN_FULL_CLOSED
         else:
-            neutral_height = await self._get_input_value("height_neutral")
-            neutral_angle = await self._get_input_value("angle_neutral")
+            neutral_height = self._neutral_pos_height
+            neutral_angle = self._neutral_pos_angle
             if neutral_height is not None and neutral_angle is not None:
                 await self._position_shutter(
                     float(neutral_height),
@@ -2085,11 +2084,10 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
 
         if await self._is_dawn_handling_activated():
-            dawn_brightness = await self._get_input_value("brightness_dawn")
-            dawn_threshold_close = await self._get_input_value("dawn_threshold_close")
-            dawn_height = await self._get_input_value("dawn_height")
-            dawn_angle = await self._get_input_value("dawn_angle")
-
+            dawn_brightness = self._brightness_dawn
+            dawn_threshold_close = self._dawn_brightness_level
+            dawn_height = self._dawn_max_height
+            dawn_angle = self._dawn_max_angle
             if (
                     dawn_brightness is not None
                     and dawn_threshold_close is not None
@@ -2116,8 +2114,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 self._cancel_recalculation_timer()
                 return ShutterState.DAWN_NEUTRAL
         else:
-            neutral_height = await self._get_input_value("height_neutral")
-            neutral_angle = await self._get_input_value("angle_neutral")
+            neutral_height = self._neutral_pos_height
+            neutral_angle = self._neutral_pos_angle
             if neutral_height is not None and neutral_angle is not None:
                 await self._position_shutter(
                     float(neutral_height),
