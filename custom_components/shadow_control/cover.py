@@ -7,13 +7,14 @@ import math
 from typing import Any, Awaitable, Callable, Optional
 
 import voluptuous as vol
+from datetime import datetime, timedelta, timezone
 from homeassistant.components.cover import CoverEntity, CoverEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME, STATE_ON, STATE_OFF, STATE_UNAVAILABLE, STATE_UNKNOWN 
-from homeassistant.core import Event, HomeAssistant, callback, State
+from homeassistant.core import Event, HomeAssistant, callback, State, CALLBACK_TYPE
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.event import async_track_state_change_event
+from homeassistant.helpers.event import callback, async_call_later, async_track_state_change_event
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.restore_state import RestoreEntity
 
@@ -305,6 +306,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._calculated_angle_degrees: float | None = None
 
         self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
+        self._recalculation_timer: Callable[[], None] | None = None # Zum Speichern des Callbacks für den geplanten Timer
 
     # =======================================================================
     # Listener registrieren, welche die Integration triggern
@@ -752,19 +754,71 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 getattr(self, attribute_key) if hasattr(self, attribute_key) else None
             )
 
-    async def _start_timer(self, delay: float) -> None:
-        """Start a timer that finishes after the given delay in seconds."""
-        self._timer_finish_time = self.hass.loop.time() + delay
-        _LOGGER.debug(f"Timer started for {delay} seconds. Finish time: {self._timer_finish_time}")
+    async def _start_recalculation_timer(self, delay_seconds: float) -> None:
+        """
+        Startet einen Timer, der nach 'delay_seconds' eine Neuberechnung auslöst.
+        Bestehende Timer werden vorher abgebrochen.
+        """
+        self._cancel_recalculation_timer()  # Immer erst den alten Timer abbrechen
 
-    async def _is_timer_finished(self) -> bool:
-        """Check if the current time is after the timer finish time."""
-        return self.hass.loop.time() >= self._timer_finish_time
+        if delay_seconds <= 0:
+            _LOGGER.debug(
+                f"{self._name}: Timer-Verzögerung ist <= 0 ({delay_seconds}s). Löse sofortige Neuberechnung aus.")
+            await self._async_trigger_recalculation(None)
+            return
 
-    async def _stop_timer(self) -> None:
-        """Stop the active timer."""
-        self._timer_finish_time = 0
-        _LOGGER.debug("Timer stopped.")
+        _LOGGER.debug(f"{self._name}: Starte Neuberechnungs-Timer für {delay_seconds} Sekunden.")
+
+        # Speichere Startzeit und Dauer
+        self._recalculation_timer_start_time = datetime.now(timezone.utc) # UTC für Konsistenz
+        self._recalculation_timer_duration_seconds = delay_seconds
+
+        # async_call_later gibt einen Callback-Handle zurück, den wir speichern, um den Timer abbrechen zu können
+        self._recalculation_timer = async_call_later(
+            self.hass,
+            delay_seconds,
+            self._async_timer_callback
+        )
+
+    def _cancel_recalculation_timer(self) -> None:
+        """Bricht einen laufenden Neuberechnungs-Timer ab."""
+        if self._recalculation_timer:
+            _LOGGER.debug(f"{self._name}: Breche bestehenden Neuberechnungs-Timer ab.")
+            self._recalculation_timer()  # Aufruf des Handles bricht den Timer ab
+            self._recalculation_timer = None
+
+        # Timer-Tracking-Variablen zurücksetzen
+        self._recalculation_timer_start_time = None
+        self._recalculation_timer_duration_seconds = None
+
+    async def _async_timer_callback(self, now) -> None:
+        """
+        Dieser Callback wird vom Home Assistant Scheduler aufgerufen, wenn der Timer abläuft.
+        'now' ist das aktuelle Zeitpunkt-Objekt, das von async_call_later übergeben wird.
+        """
+        _LOGGER.debug(f"{self._name}: Neuberechnungs-Timer abgelaufen. Löse Neuberechnung aus.")
+        # Variablen zurücksetzen, da der Timer abgelaufen ist
+        self._recalculation_timer = None
+        self._recalculation_timer_start_time = None
+        self._recalculation_timer_duration_seconds = None
+        await self._async_trigger_recalculation(None)  # Oder ein spezifisches Event triggern
+
+    def get_remaining_timer_seconds(self) -> float | None:
+        """
+        Gibt die verbleibende Zeit des Timers in Sekunden zurück, oder None, wenn kein Timer läuft.
+        """
+        if self._recalculation_timer and self._recalculation_timer_start_time and self._recalculation_timer_duration_seconds is not None:
+            elapsed_time = (datetime.now(timezone.utc) - self._recalculation_timer_start_time).total_seconds()
+            remaining_time = self._recalculation_timer_duration_seconds - elapsed_time
+            return max(0.0, remaining_time) # Stelle sicher, dass es nicht negativ ist
+        return None
+
+    def _is_timer_finished(self) -> bool:
+        """
+        Prüft, ob ein Neuberechnungs-Timer aktiv ist.
+        """
+        return self._recalculation_timer is None
+
 
     def _calculate_shutter_height(self) -> float:
         """
@@ -1169,7 +1223,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # === Timer stoppen ===
         if stop_timer:
             _LOGGER.debug(f"{self._name}: Stop Timer wurde angefordert (Platzhalter).")
-            await self._stop_timer()
+            self._cancel_recalculation_timer()
 
         _LOGGER.debug(
             f"{self._name}: _position_shutter für Höhe {shutter_height_percent}% und Winkel {shutter_angle_percent}% abgeschlossen.")
@@ -1323,7 +1377,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
             else:
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Helligkeit ({current_brightness}) nicht höher als Schwellwert ({shadow_threshold_close}), gehe zu {ShutterState.SHADOW_NEUTRAL}")
-                await self._stop_timer()
+                self._cancel_recalculation_timer()
                 return ShutterState.SHADOW_NEUTRAL
         else:
             neutral_height = self._neutral_pos_height
@@ -1364,7 +1418,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and current_brightness < shadow_threshold_close
             ):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_FULL_CLOSED}: Helligkeit ({current_brightness}) unter Schwellwert ({shadow_threshold_close}), starte Timer für {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({shadow_open_slat_delay}s)")
-                await self._start_timer(shadow_open_slat_delay)
+                await self._start_recalculation_timer(shadow_open_slat_delay)
                 return ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
             else:
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_FULL_CLOSED}: Helligkeit nicht unter Schwellwert, Neuberechnung der Schattenposition.")
@@ -1417,7 +1471,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and current_brightness > shadow_threshold_close
             ):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Helligkeit ({current_brightness}) wieder über Schwellwert ({shadow_threshold_close}), gehe zu {ShutterState.SHADOW_FULL_CLOSED} und stoppe Timer.")
-                await self._stop_timer()
+                self._cancel_recalculation_timer()
                 return ShutterState.SHADOW_FULL_CLOSED
             else:
                 if await self._is_timer_finished():
@@ -1491,7 +1545,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     return ShutterState.SHADOW_HORIZONTAL_NEUTRAL
             elif shadow_open_shutter_delay is not None:
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_HORIZONTAL_NEUTRAL}: Helligkeit nicht über Schwellwert, starte Timer für {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING} ({shadow_open_shutter_delay}s)")
-                await self._start_timer(shadow_open_shutter_delay)
+                await self._start_recalculation_timer(shadow_open_shutter_delay)
                 return ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING
             else:
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_HORIZONTAL_NEUTRAL}: Helligkeit nicht über Schwellwert und 'shadow_open_shutter_delay' nicht konfiguriert, bleibe in {ShutterState.SHADOW_HORIZONTAL_NEUTRAL}")
@@ -1535,7 +1589,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and current_brightness > shadow_threshold_close
             ):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING}: Helligkeit ({current_brightness}) wieder über Schwellwert ({shadow_threshold_close}), gehe zu {ShutterState.SHADOW_FULL_CLOSED} und stoppe Timer.")
-                await self._stop_timer()
+                self._cancel_recalculation_timer()
                 return ShutterState.SHADOW_FULL_CLOSED
             else:
                 if await self._is_timer_finished():
@@ -1603,7 +1657,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and shadow_close_delay is not None
             ):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_NEUTRAL}: Helligkeit ({current_brightness}) über Schatten-Schwellwert ({shadow_threshold_close}), starte Timer für {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)")
-                await self._start_timer(shadow_close_delay)
+                await self._start_recalculation_timer(shadow_close_delay)
                 return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
             elif (
                     dawn_handling_active
@@ -1613,7 +1667,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and dawn_close_delay is not None
             ):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_NEUTRAL}: Dämmerungsbehandlung aktiv und Helligkeit ({dawn_brightness}) unter Dämmerungs-Schwellwert ({dawn_threshold_close}), starte Timer für {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)")
-                await self._start_timer(dawn_close_delay)
+                await self._start_recalculation_timer(dawn_close_delay)
                 return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
             elif height_after_shadow is not None and angle_after_shadow is not None:
                 await self._position_shutter(
@@ -1639,7 +1693,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and dawn_close_delay is not None
             ):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_NEUTRAL}: Dämmerungsbehandlung aktiv und Helligkeit ({dawn_brightness}) unter Dämmerungs-Schwellwert ({dawn_threshold_close}), starte Timer für {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)")
-                await self._start_timer(dawn_close_delay)
+                await self._start_recalculation_timer(dawn_close_delay)
                 return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
 
         neutral_height = self._neutral_pos_height
@@ -1679,7 +1733,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 and shadow_close_delay is not None
             ):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.NEUTRAL}: Helligkeit ({current_brightness}) über Schatten-Schwellwert ({shadow_threshold_close}), starte Timer für {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)")
-                await self._start_timer(shadow_close_delay)
+                await self._start_recalculation_timer(shadow_close_delay)
                 return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
 
         if await self._is_dawn_handling_activated():
@@ -1693,7 +1747,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 and dawn_close_delay is not None
             ):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.NEUTRAL}: Dämmerungsbehandlung aktiv und Helligkeit ({dawn_brightness}) unter Dämmerungs-Schwellwert ({dawn_threshold_close}), starte Timer für {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)")
-                await self._start_timer(dawn_close_delay)
+                await self._start_recalculation_timer(dawn_close_delay)
                 return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
 
         neutral_height = self._neutral_pos_height
@@ -1738,7 +1792,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and dawn_close_delay is not None
             ):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_NEUTRAL}: Dämmerungsbehandlung aktiv und Helligkeit ({dawn_brightness}) unter Dämmerungs-Schwellwert ({dawn_threshold_close}), starte Timer für {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)")
-                await self._start_timer(dawn_close_delay)
+                await self._start_recalculation_timer(dawn_close_delay)
                 return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
             elif (
                     is_in_sun
@@ -1749,7 +1803,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and shadow_close_delay is not None
             ):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_NEUTRAL}: Sonne scheint, Schattenbehandlung aktiv und Helligkeit ({current_brightness}) über Schatten-Schwellwert ({shadow_threshold_close}), starte Timer für {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)")
-                await self._start_timer(shadow_close_delay)
+                await self._start_recalculation_timer(shadow_close_delay)
                 return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
             elif height_after_dawn is not None and angle_after_dawn is not None:
                 await self._position_shutter(
@@ -1773,7 +1827,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 and shadow_close_delay is not None
         ):
             _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_NEUTRAL}: Sonne scheint, Schattenbehandlung aktiv und Helligkeit ({current_brightness}) über Schatten-Schwellwert ({shadow_threshold_close}), starte Timer für {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)")
-            await self._start_timer(shadow_close_delay)
+            await self._start_recalculation_timer(shadow_close_delay)
             return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
 
         if neutral_height is not None and neutral_angle is not None:
@@ -1809,7 +1863,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and dawn_brightness < dawn_threshold_close
             ):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING}: Dämmerungshelligkeit ({dawn_brightness}) wieder unter Schwellwert ({dawn_threshold_close}), gehe zu {ShutterState.DAWN_FULL_CLOSED} und stoppe Timer.")
-                await self._stop_timer()
+                self._cancel_recalculation_timer()
                 return ShutterState.DAWN_FULL_CLOSED
             else:
                 if await self._is_timer_finished():
@@ -1882,7 +1936,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 return ShutterState.DAWN_FULL_CLOSED
             elif dawn_open_shutter_delay is not None:
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_HORIZONTAL_NEUTRAL}: Dämmerungshelligkeit nicht unter Schwellwert, starte Timer für {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING} ({dawn_open_shutter_delay}s)")
-                await self._start_timer(dawn_open_shutter_delay)
+                await self._start_recalculation_timer(dawn_open_shutter_delay)
                 return ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
             else:
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_HORIZONTAL_NEUTRAL}: Dämmerungshelligkeit nicht unter Schwellwert und 'dawn_open_shutter_delay' nicht konfiguriert, bleibe in {ShutterState.DAWN_HORIZONTAL_NEUTRAL}")
@@ -1927,7 +1981,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and dawn_brightness < dawn_threshold_close
             ):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Dämmerungshelligkeit ({dawn_brightness}) wieder unter Schwellwert ({dawn_threshold_close}), gehe zu {ShutterState.DAWN_FULL_CLOSED} und stoppe Timer.")
-                await self._stop_timer()
+                self._cancel_recalculation_timer()
                 return ShutterState.DAWN_FULL_CLOSED
             else:
                 if await self._is_timer_finished():
@@ -1988,7 +2042,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and dawn_open_slat_delay is not None
             ):
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_FULL_CLOSED}: Dämmerungshelligkeit ({dawn_brightness}) über Schwellwert ({dawn_threshold_close}), starte Timer für {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({dawn_open_slat_delay}s)")
-                await self._start_timer(dawn_open_slat_delay)
+                await self._start_recalculation_timer(dawn_open_slat_delay)
                 return ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
             elif dawn_height is not None and dawn_angle is not None:
                 await self._position_shutter(
@@ -2059,7 +2113,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
             else:
                 _LOGGER.debug(f"{self._name}: Zustand {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING}: Helligkeit ({dawn_brightness}) nicht unter Schwellwert ({dawn_threshold_close}), gehe zu {ShutterState.DAWN_NEUTRAL} und stoppe Timer.")
-                await self._stop_timer()
+                self._cancel_recalculation_timer()
                 return ShutterState.DAWN_NEUTRAL
         else:
             neutral_height = await self._get_input_value("height_neutral")
