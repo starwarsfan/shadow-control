@@ -1357,7 +1357,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and shadow_threshold_close is not None
                     and current_brightness > shadow_threshold_close
             ):
-                if await self._is_timer_finished():
+                if self._is_timer_finished():
                     target_height = self._calculate_shutter_height()
                     target_angle = self._calculate_shutter_angle()
                     if target_height is not None and target_angle is not None:
@@ -1474,8 +1474,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 self._cancel_recalculation_timer()
                 return ShutterState.SHADOW_FULL_CLOSED
             else:
-                if await self._is_timer_finished():
-                    target_height = await self._calculate_shutter_height()
+                if self._is_timer_finished():
+                    target_height = self._calculate_shutter_height()
                     if target_height is not None and shadow_open_slat_angle is not None:
                         await self._position_shutter(
                             target_height,
@@ -1592,7 +1592,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 self._cancel_recalculation_timer()
                 return ShutterState.SHADOW_FULL_CLOSED
             else:
-                if await self._is_timer_finished():
+                if self._is_timer_finished():
                     if (
                             height_after_shadow is not None
                             and angle_after_shadow is not None
@@ -1866,7 +1866,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 self._cancel_recalculation_timer()
                 return ShutterState.DAWN_FULL_CLOSED
             else:
-                if await self._is_timer_finished():
+                if self._is_timer_finished():
                     if dawn_height is not None and dawn_open_slat_angle is not None:
                         await self._position_shutter(
                             float(dawn_height),
@@ -1984,7 +1984,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 self._cancel_recalculation_timer()
                 return ShutterState.DAWN_FULL_CLOSED
             else:
-                if await self._is_timer_finished():
+                if self._is_timer_finished():
                     if dawn_height is not None and dawn_open_slat_angle is not None:
                         await self._position_shutter(
                             float(dawn_height),
@@ -2095,7 +2095,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     and dawn_threshold_close is not None
                     and dawn_brightness < dawn_threshold_close
             ):
-                if await self._is_timer_finished():
+                if self._is_timer_finished():
                     if dawn_height is not None and dawn_angle is not None:
                         await self._position_shutter(
                             float(dawn_height),
