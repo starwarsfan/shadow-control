@@ -125,10 +125,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
     _attr_has_entity_name = True
 
-    # Initialisiere _attr_extra_state_attributes hier, damit es immer ein Dictionary ist
-    # und Home Assistant es als persistierbares Attribut erkennt.
-    _attr_extra_state_attributes: dict[str, Any] = {}
-
     def __init__(
             self,
             hass: HomeAssistant,
@@ -144,12 +140,13 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         _LOGGER.debug(f"{self._name}: Initializing Shadow Control")
 
-        # Die Entity ID, unter der diese Entität in HA erscheinen wird
+        # Entity ID with which the integration will be visible within HA
         self._attr_unique_id = f"shadow_control_{self._name.lower().replace(' ', '_')}"
         self.entity_id = f"cover.{self._attr_unique_id}" # Wichtig, um die Entität eindeutig zu machen
 
-        # Entity ID des zu steuernden Behangs
         self._target_cover_entity_id = target_cover_entity_id
+
+        self._attr_extra_state_attributes: dict[str, Any] = {}
 
         # === Dynamische Eingänge (Test-Helfer) ===
         self._brightness_entity_id = config.get(CONF_BRIGHTNESS_ENTITY_ID)
