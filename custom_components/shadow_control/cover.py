@@ -103,14 +103,14 @@ async def async_setup_platform(
         discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Set up the Shadow Control platform from YAML."""
-    _LOGGER.info(f"{self._name}: Setting up Shadow Control platform from YAML")
-    _LOGGER.debug(f"{self._name}: Configuration from YAML: {config}")
+    _LOGGER.info(f"Setting up Shadow Control platform from YAML")
+    _LOGGER.debug(f"Configuration from YAML: {config}")
 
     name = config.get(CONF_NAME, DEFAULT_NAME)
     target_cover_entity_id = config.get(CONF_TARGET_COVER_ENTITY_ID)
 
     if not target_cover_entity_id:
-        _LOGGER.error(f"{self._name}: Missing required configuration key '{CONF_TARGET_COVER_ENTITY_ID}'")
+        _LOGGER.error(f"[{name}]: Missing required configuration key '{CONF_TARGET_COVER_ENTITY_ID}'")
         return # Wichtig: Hier sollte kein False zurückgegeben werden, Home Assistant erwartet nichts
                # nach dem Logging des Fehlers und Beenden der Funktion.
 
@@ -138,11 +138,11 @@ class ShadowControl(CoverEntity, RestoreEntity):
         """Initialize the Shadow Control cover."""
         super().__init__() # Call base class constructor
 
-        _LOGGER.debug(f"{self._name}: Initializing Shadow Control")
-
         self.hass = hass # Speichern der hass Instanz
         self._name = config.get(CONF_NAME, DEFAULT_NAME)
         self._config = config
+
+        _LOGGER.debug(f"{self._name}: Initializing Shadow Control")
 
         # Die Entity ID, unter der diese Entität in HA erscheinen wird
         self._attr_unique_id = f"shadow_control_{self._name.lower().replace(' ', '_')}"
