@@ -29,7 +29,7 @@ template:
       # Sensor für die berechnete Zielhöhe
       - name: "Shadow Control Zielhöhe"
         unique_id: shadow_control_target_height
-        state: "{{ state_attr('cover.test_shadow_control', 'calculated_target_height') }}"
+        state: "{{ state_attr('cover.test_shadow_control', 'calculated_shutter_height') }}"
         unit_of_measurement: "%"
         state_class: measurement
         icon: mdi:ruler-vertical
@@ -37,7 +37,7 @@ template:
       # Sensor für den berechneten Zielwinkel
       - name: "Shadow Control Zielwinkel"
         unique_id: shadow_control_target_angle
-        state: "{{ state_attr('cover.test_shadow_control', 'calculated_target_angle') }}"
+        state: "{{ state_attr('cover.test_shadow_control', 'calculated_shutter_angle') }}"
         unit_of_measurement: "°"
         state_class: measurement
         icon: mdi:rotate-3d
