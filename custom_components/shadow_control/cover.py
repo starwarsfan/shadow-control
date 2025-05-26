@@ -1060,26 +1060,38 @@ class ShadowControl(CoverEntity, RestoreEntity):
             stop_timer: bool
     ) -> None:
         """
-        Sendet die berechneten Höhen- und Winkelwerte an die KNX-Cover-Entität.
-        Aktualisiert interne Zustände und publiziert den Binary Sensor für 'Beschattung aktiv'.
+        Sends the calculated height and angle values to the KNX cover entity.
+        Updates internal states and publishes the Binary Sensor for 'shadow active'.
         """
         _LOGGER.debug(
-            f"{self._name}: Starting _position_shutter with height {shutter_height_percent}% and angle {shutter_angle_percent}%")
+            f"{self._name}: Starting _position_shutter with target height {shutter_height_percent:.2f}% "
+            f"and angle {shutter_angle_percent:.2f}% (is_initial_run: {self._is_initial_run}, "
+            f"lock_state: {self._current_lock_state.name})"
+        )
 
-        # Prüfung auf den initialen Lauf
+        # Always handle timer cancellation if required, regardless of initial run or lock state
+        if stop_timer:
+            _LOGGER.debug(f"{self._name}: Canceling timer.")
+            self._cancel_recalculation_timer()
+
+        # --- Phase 1: Update internal states that should always reflect the calculation ---
+        # These are the *calculated target* values.
+        self._calculated_shutter_height = shutter_height_percent
+        self._calculated_shutter_angle = shutter_angle_percent
+        self._calculated_angle_degrees = self._convert_shutter_angle_percent_to_degrees(
+            shutter_angle_percent)
+
+        # --- Phase 2: Handle initial run special logic ---
         if self._is_initial_run:
-            _LOGGER.debug(
-                f"{self._name}: Initialer run of integration, only internal computing, no update of outputs")
-            # Wir aktualisieren die internen Previous-Werte, damit beim NÄCHSTEN Lauf
-            # die sendByChange-ähnliche Logik funktioniert.
+            _LOGGER.info(
+                f"{self._name}: Initial run of integration. Setting internal states. No physical output update.")
+            # Only set internal previous values for the *next* run's send-by-change logic.
+            # These are now set to the *initial target* values.
             self._previous_shutter_height = shutter_height_percent
             self._previous_shutter_angle = shutter_angle_percent
-            self._is_initial_run = False
-            self._is_producing_shadow = shadow_position  # Auch den initialen Zustand setzen
-            self._calculated_angle_degrees = self._convert_shutter_angle_percent_to_degrees(
-                shutter_angle_percent)
+            self._is_initial_run = False  # Initial run completed
 
-            # Publizieren des initialen Beschattungszustands, da es sich um einen initialen Lauf handelt
+            # Handle ProduceShadow binary sensor for initial state
             binary_sensor_entity_id = f"input_boolean.{self._name.lower().replace(' ', '_')}_shadow_active"
             await self.hass.services.async_call(
                 "input_boolean",
@@ -1087,19 +1099,32 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 {"entity_id": binary_sensor_entity_id},
                 blocking=False
             )
-            # Hier ist es wichtig, dass die _update_extra_state_attributes auch nach dem initialen Lauf aufgerufen wird
-            self.async_write_ha_state()  # Erzeugt ein State-Update, um Attribute zu aktualisieren
-            return
+            self._is_producing_shadow = shadow_position
 
-        # Prüfung, ob die Steuerung gesperrt ist
-        if self._current_lock_state != LockState.UNLOCKED:
-            _LOGGER.debug(
-                f"{self._name}: Integration is locked ({self._current_lock_state.name}), no update of outputs")
-            return
+            self._update_extra_state_attributes()
+            self.async_write_ha_state()  # Update HA state to reflect initial attributes
+            return  # Exit here, as no physical output should happen on initial run
 
-        # === ProduceShadow als Binary Sensor steuern ===
-        # Dies ist der Part für LB_LBSID_sendByChange(LB_LBSID_OUTPUT_ProduceShadow, $shadowPosition);
-        # Nur senden, wenn sich der Zustand ändert
+        # --- Phase 3: Check for Lock State BEFORE applying stepping/should_output_be_updated and sending commands ---
+        # This ensures that calculations still happen, but outputs are skipped.
+        is_locked = (self._current_lock_state != LockState.UNLOCKED)
+        if is_locked:
+            _LOGGER.info(
+                f"{self._name}: Integration is locked ({self._current_lock_state.name}). "
+                f"Calculations are running, but physical outputs are skipped."
+            )
+            # Update internal _previous values here to reflect that if it *were* unlocked,
+            # it would have moved to these calculated positions.
+            # This prepares for a smooth transition when unlocked.
+            self._previous_shutter_height = shutter_height_percent
+            self._previous_shutter_angle = shutter_angle_percent
+            self._update_extra_state_attributes()
+            self.async_write_ha_state()  # Update HA state to show calculated values (even if not sent)
+            return  # Exit here, no physical output while locked
+
+        # --- Phase 4: Apply stepping and output restriction logic (only if not initial run AND not locked) ---
+
+        # ProduceShadow as Binary Sensor
         if self._is_producing_shadow != shadow_position:
             binary_sensor_entity_id = f"input_boolean.{self._name.lower().replace(' ', '_')}_shadow_active"
             _LOGGER.debug(
@@ -1110,124 +1135,73 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 {"entity_id": binary_sensor_entity_id},
                 blocking=False
             )
-            self._is_producing_shadow = shadow_position  # Internen Zustand aktualisieren
+            self._is_producing_shadow = shadow_position
 
-        # --- Höhen-Handling ---
+        # Height Handling
+        height_to_set_percent = self._handle_shutter_height_stepping(shutter_height_percent)
         height_to_set_percent = self._should_output_be_updated(
-            config_value=self._movement_restriction_height,  # Korrekte Instanzvariable
-            new_value=shutter_height_percent,
+            config_value=self._movement_restriction_height,
+            new_value=height_to_set_percent,
             previous_value=self._previous_shutter_height
         )
 
-        # Senden des Höhenbefehls nur, wenn sich der Wert ändert oder eine erzwungene Aktualisierung nötig ist
-        if height_to_set_percent != self._previous_shutter_height:
+        # Angle Handling - Crucial for "send angle if height changed" logic
+        # We need the value of _previous_shutter_height *before* it's updated for height.
+        # So, compare the *calculated* `shutter_height_percent` with what was previously *stored*.
+        height_calculated_different_from_previous = (
+                    abs(shutter_height_percent - self._previous_shutter_height) > 0.001) if self._previous_shutter_height is not None else True
+
+        angle_to_set_percent = self._should_output_be_updated(
+            config_value=self._movement_restriction_angle,
+            new_value=shutter_angle_percent,
+            previous_value=self._previous_shutter_angle
+        )
+
+        # --- Phase 5: Send commands if values actually changed (only if not initial run AND not locked) ---
+
+        send_height_command = abs(
+            height_to_set_percent - self._previous_shutter_height) > 0.001 if self._previous_shutter_height is not None else True
+
+        # Send angle command if angle changed OR if height changed significantly
+        send_angle_command = (
+                                 abs(angle_to_set_percent - self._previous_shutter_angle) > 0.001 if self._previous_shutter_angle is not None else True) or height_calculated_different_from_previous
+
+        if send_height_command:
             _LOGGER.debug(
-                f"{self._name}: Sending height of {height_to_set_percent}% to {self._target_cover_entity_id}.")
+                f"{self._name}: Sending height of {height_to_set_percent:.2f}% to {self._target_cover_entity_id}.")
             await self.hass.services.async_call(
                 "cover",
                 "set_position",
                 {"entity_id": self._target_cover_entity_id, "position": height_to_set_percent},
                 blocking=False
             )
+            self._previous_shutter_height = height_to_set_percent  # Update previous after sending
         else:
             _LOGGER.debug(
-                f"{self._name}: Height '{height_to_set_percent}%' not sent, value was the same than before or has another restriction")
+                f"{self._name}: Height '{height_to_set_percent:.2f}%' not sent, value was the same or restricted.")
 
-        self._previous_shutter_height = shutter_height_percent  # Immer mit dem NEUEN *berechneten* Wert aktualisieren
-
-        # --- Winkel-Handling ---
-        angle_to_set_percent = self._should_output_be_updated(
-            config_value=self._movement_restriction_angle,  # Korrekte Instanzvariable
-            new_value=shutter_angle_percent,
-            previous_value=self._previous_shutter_angle
-        )
-
-        # Logik für "if height has changed, update angle anyway"
-        # PHP: if ($previousHeight != $shutterHeightPercent)
-        # In Python: Wir vergleichen den vorherigen, *ungefilterten* Wert mit dem neuen, *ungefilterten* Wert.
-        # Der Vergleich muss mit dem Wert von *vor* dem aktuellen _position_shutter-Aufruf erfolgen
-        # Dafür nutzen wir den original shutter_height_percent und den alten self._previous_shutter_height
-        # ABER: Die Logik ist jetzt so, dass _previous_shutter_height *bereits* auf den neuen Wert gesetzt wurde.
-        # Daher muss man vorsichtig sein oder den alten Wert separat speichern.
-        # Einfacher ist es, den Vergleich VOR der Zuweisung zu self._previous_shutter_height zu machen.
-        # Da ich den Code oben jetzt so angepasst habe, dass self._previous_shutter_height nach dem Höhenbefehl aktualisiert wird,
-        # verwende ich hier den *lokalen* Wert `height_to_set_percent` für den Vergleich,
-        # oder alternativ müsste ein `_old_shutter_height_before_this_run` Parameter übergeben werden.
-        # Für die PHP-Logik bedeutet "$previousHeight" den Wert, der *vor* dem Aufruf von positionShutter aktuell war.
-        # Den aktuellen `self._previous_shutter_height` nach der Aktualisierung der Höhe zu verwenden, ist nicht korrekt für den Vergleich.
-
-        # Korrektur der PHP-Logik "if ($previousHeight != $shutterHeightPercent)"
-        # um sicherzustellen, dass die Bedingung sich auf die tatsächliche Änderung der Höhe
-        # *durch DIESEN Lauf der Berechnung* bezieht, nicht auf den internen self._previous_shutter_height
-        # der bereits aktualisiert wurde.
-
-        # Um die PHP-Logik genau nachzubilden, benötigen wir den Wert, der *vor diesem Aufruf*
-        # der Funktion self._previous_shutter_height hatte.
-        # Da wir self._previous_shutter_height bereits mit dem neuen Wert aktualisiert haben,
-        # müssen wir den ursprünglichen "previous_shutter_height" (der aus der Instanzvariablen kam)
-        # in der _should_output_be_updated Methode nutzen.
-        # Der hier relevante Vergleich ist der von `shutter_height_percent` (berechneter neuer Wert)
-        # mit dem, was `self._previous_shutter_height` *zu Beginn dieses Funktionsaufrufs* war.
-        # Da `self._previous_shutter_height` *nach* dem Höhenbefehl aktualisiert wird, ist der Vergleich hier schwierig.
-
-        # Eine einfachere Lösung ist, den Winkelbefehl immer zu senden, wenn sich der berechnete Winkel ändert,
-        # ODER wenn sich die Höhe geändert hat (im Sinne von `shutter_height_percent != self._previous_shutter_height_at_start_of_call`).
-        # Da wir keinen "shutter_height_percent_at_start_of_call" haben,
-        # und die PHP-Logik im Kern sagt "wenn der *Höhen-Zielwert* sich geändert hat,
-        # sende den Winkel-Zielwert auch, um den Aktor zu triggern",
-        # können wir die Logik auf die tatsächlich von Home Assistant gesendeten Werte beziehen.
-
-        # Alternative Interpretation der PHP-Logik (einfacher in Python):
-        # Sende den Tilt-Befehl, WENN:
-        # 1. Der neu berechnete Winkel (nach _should_output_be_updated) sich vom *zuletzt gesendeten Winkel* unterscheidet, ODER
-        # 2. Der neu berechnete Höhe (nach _should_output_be_updated) sich vom *zuletzt gesendeten Höhe* unterscheidet.
-        # Dies ist das Robusteste, da Home Assistant normalerweise nur aktualisiert, wenn sich der Wert ändert.
-        # Das bedeutet, der Befehl wird gesendet, wenn `angle_to_set_percent` ungleich `self._previous_shutter_angle` ist,
-        # ODER wenn `height_to_set_percent` ungleich `self._previous_shutter_height` ist (beides VOR der Aktualisierung von _previous_).
-
-        # PHP-Code: if ($previousHeight != $shutterHeightPercent)
-        # Dies bedeutet: Wenn der *berechnete* (ungefilterte) Wert von height_percent ungleich des *zuletzt wirklich gesendeten* Werts ist.
-        # `self._previous_shutter_height` speichert den *ungefilterten* Wert, der *zuletzt berechnet* wurde.
-        # Wir müssen also `shutter_height_percent` mit dem Wert von `self._previous_shutter_height` *vor der Aktualisierung* der Höhe vergleichen.
-
-        # Da wir self._previous_shutter_height *nach* dem Höhenbefehl aktualisieren,
-        # MÜSSEN wir hier einen temporären Wert nutzen:
-        height_was_different_before_height_update = (
-                    self._previous_shutter_height != shutter_height_percent)
-
-        # Sende Winkelbefehl, wenn der Wert sich ändert ODER wenn sich die Höhe geändert hat.
-        if angle_to_set_percent != self._previous_shutter_angle or height_was_different_before_height_update:
+        if send_angle_command:
             _LOGGER.debug(
-                f"{self._name}: Sending angle {angle_to_set_percent}% to {self._target_cover_entity_id}. "
-                f"Angle update: {angle_to_set_percent != self._previous_shutter_angle}. Height update: {height_was_different_before_height_update}")
+                f"{self._name}: Sending angle {angle_to_set_percent:.2f}% to {self._target_cover_entity_id}. "
+                f"Angle update: {abs(angle_to_set_percent - self._previous_shutter_angle) > 0.001 if self._previous_shutter_angle is not None else True}. "
+                f"Height-triggered update: {height_calculated_different_from_previous}"
+            )
             await self.hass.services.async_call(
                 "cover",
                 "set_tilt_position",
                 {"entity_id": self._target_cover_entity_id, "tilt_position": angle_to_set_percent},
                 blocking=False
             )
+            self._previous_shutter_angle = angle_to_set_percent  # Update previous after sending
         else:
             _LOGGER.debug(
-                f"{self._name}: Angle '{angle_to_set_percent}%' not sent, value was the same than before or has another restriction")
+                f"{self._name}: Angle '{angle_to_set_percent:.2f}%' not sent, value was the same or restricted.")
 
-        self._previous_shutter_angle = shutter_angle_percent  # Immer mit dem NEUEN *berechneten* Wert aktualisieren
-
-        # --- Neuen Sensor für Winkel in Grad publizieren ---
-        self._calculated_angle_degrees = self._convert_shutter_angle_percent_to_degrees(
-            angle_to_set_percent)
-        # Wichtig: HA-Zustand aktualisieren, damit Attribute (inkl. calculated_angle_degrees) publiziert werden
+        # Always update HA state at the end to reflect the latest internal calculated values and attributes
+        self._update_extra_state_attributes()
         self.async_write_ha_state()
 
-        # === Timer stoppen ===
-        if stop_timer:
-            _LOGGER.debug(f"{self._name}: Canceling timer")
-            self._cancel_recalculation_timer()
-
-        _LOGGER.debug(
-            f"{self._name}: _position_shutter for height {shutter_height_percent}% and angle {shutter_angle_percent}% finished")
-
-    # ... (Ihre _should_output_be_updated, _convert_shutter_angle_percent_to_degrees und _cancel_all_shadow_timers) ...
-    # Denken Sie daran, dass _update_input_values auch in der Klasse sein muss.
+        _LOGGER.debug(f"{self._name}: _position_shutter finished.")
 
     async def _check_if_facade_is_in_sun(self) -> bool:
         """Calculate if the sun illuminates the given facade."""
