@@ -103,14 +103,14 @@ async def async_setup_platform(
         discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Set up the Shadow Control platform from YAML."""
-    _LOGGER.info("Setting up Shadow Control platform from YAML - WIRD AUSGEFÜHRT!") # <--- HINZUGEFÜGT
-    _LOGGER.debug(f"Configuration from YAML: {config}") # Zur Überprüfung der Konfigurationsdaten
+    _LOGGER.info(f"{self._name}: Setting up Shadow Control platform from YAML")
+    _LOGGER.debug(f"{self._name}: Configuration from YAML: {config}")
 
     name = config.get(CONF_NAME, DEFAULT_NAME)
     target_cover_entity_id = config.get(CONF_TARGET_COVER_ENTITY_ID)
 
     if not target_cover_entity_id:
-        _LOGGER.error(f"[{name}] Missing required configuration key '{CONF_TARGET_COVER_ENTITY_ID}'")
+        _LOGGER.error(f"{self._name}: Missing required configuration key '{CONF_TARGET_COVER_ENTITY_ID}'")
         return # Wichtig: Hier sollte kein False zurückgegeben werden, Home Assistant erwartet nichts
                # nach dem Logging des Fehlers und Beenden der Funktion.
 
@@ -138,11 +138,11 @@ class ShadowControl(CoverEntity, RestoreEntity):
         """Initialize the Shadow Control cover."""
         super().__init__() # Call base class constructor
 
+        _LOGGER.debug(f"{self._name}: Initializing Shadow Control")
+
         self.hass = hass # Speichern der hass Instanz
         self._name = config.get(CONF_NAME, DEFAULT_NAME)
         self._config = config
-
-        _LOGGER.debug(f"Initializing Shadow Control: {self._name}")
 
         # Die Entity ID, unter der diese Entität in HA erscheinen wird
         self._attr_unique_id = f"shadow_control_{self._name.lower().replace(' ', '_')}"
@@ -270,9 +270,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._after_dawn_height: float | None = None
         self._after_dawn_angle: float | None = None
 
-        # Logging der (fest verdrahteten) Entitäts-IDs
-        _LOGGER.debug(f"--- Integration '{self._name}' initialized with fixed Entity IDs ---")
-
         # Define dictionary with all state handlers
         self._state_handlers: dict[ShutterState, Callable[[], Awaitable[ShutterState]]] = {
             ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING: self._handle_state_shadow_full_close_timer_running,
@@ -307,6 +304,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
         self._recalculation_timer: Callable[[], None] | None = None # Zum Speichern des Callbacks für den geplanten Timer
+
+        _LOGGER.debug(f"{self._name}: Integration initialization finished")
 
     # =======================================================================
     # Listener registrieren, welche die Integration triggern
@@ -370,7 +369,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             )
             _LOGGER.debug(f"{self._name}: Registered listeners for input changes on: {valid_trigger_entities}")
         else:
-            _LOGGER.warning(f"{self._name}: No valid trigger entities configured. Recalculation will only happen on initial load.")
+            _LOGGER.warning(f"{self._name}: No valid trigger entities configured. Recalculation will only happen on initial load")
 
         self._update_input_values()
 
@@ -402,7 +401,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         Aktualisiert alle relevanten Eingangs- und Konfigurationswerte
         aus Home Assistant und speichert sie in Instanzvariablen.
         """
-        _LOGGER.debug(f"{self._name}: Aktualisiere alle Eingangswerte.")
+        _LOGGER.debug(f"{self._name}: Updating all input values")
 
         # === Dynamische Eingänge (Sensor-Werte) ===
         self._brightness = self._get_entity_numeric_state(self._brightness_entity_id, float)
@@ -447,16 +446,16 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 for restriction_type in MovementRestricted:
                     if restriction_type.value == state_obj.state:
                         self._movement_restriction_height = restriction_type
-                        _LOGGER.debug(f"{self._name}: Bewegungsbeschränkung Höhe gesetzt auf: {self._movement_restriction_height.name} (Value: {state_obj.state})")
+                        _LOGGER.debug(f"{self._name}: Movement restriction for height set ({self._movement_restriction_height.name}, value: {state_obj.state})")
                         break
                 else: # Wenn die Schleife ohne break beendet wird (Wert nicht gefunden)
-                    _LOGGER.warning(f"{self._name}: Unbekannte Option für {height_restriction_entity_id}: '{state_obj.state}'. Setze auf NO_RESTRICTION.")
+                    _LOGGER.warning(f"{self._name}: Unknown option for {height_restriction_entity_id}: '{state_obj.state}'. Using NO_RESTRICTION.")
                     self._movement_restriction_height = MovementRestricted.NO_RESTRICTION
             else:
-                _LOGGER.warning(f"{self._name}: Zustand für {height_restriction_entity_id} nicht verfügbar oder leer. Setze auf NO_RESTRICTION.")
+                _LOGGER.warning(f"{self._name}: Value of {height_restriction_entity_id} not available or empty. Using NO_RESTRICTION.")
                 self._movement_restriction_height = MovementRestricted.NO_RESTRICTION
         else:
-            _LOGGER.warning(f"{self._name}: Konfiguration für '{CONF_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID}' fehlt. Setze auf NO_RESTRICTION.")
+            _LOGGER.warning(f"{self._name}: Configuration of '{CONF_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID}' missing. Using NO_RESTRICTION.")
             self._movement_restriction_height = MovementRestricted.NO_RESTRICTION
         #self._movement_restriction_angle = self._get_entity_string_state(self._movement_restriction_angle_entity_id)
         angle_restriction_entity_id = self._config.get(CONF_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID)
@@ -466,16 +465,16 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 for restriction_type in MovementRestricted:
                     if restriction_type.value == state_obj.state:
                         self._movement_restriction_angle = restriction_type
-                        _LOGGER.debug(f"{self._name}: Bewegungsbeschränkung Winkel gesetzt auf: {self._movement_restriction_angle.name} (Value: {state_obj.state})")
+                        _LOGGER.debug(f"{self._name}: Movement restriction for angle set {self._movement_restriction_angle.name}, value: {state_obj.state})")
                         break
                 else:
-                    _LOGGER.warning(f"{self._name}: Unbekannte Option für {angle_restriction_entity_id}: '{state_obj.state}'. Setze auf NO_RESTRICTION.")
+                    _LOGGER.warning(f"{self._name}: Unknown option for {angle_restriction_entity_id}: '{state_obj.state}'. Using NO_RESTRICTION.")
                     self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
             else:
-                _LOGGER.warning(f"{self._name}: Zustand für {angle_restriction_entity_id} nicht verfügbar oder leer. Setze auf NO_RESTRICTION.")
+                _LOGGER.warning(f"{self._name}: Value of {angle_restriction_entity_id} not available or empty. Using NO_RESTRICTION.")
                 self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
         else:
-            _LOGGER.warning(f"{self._name}: Konfiguration für '{CONF_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID}' fehlt. Setze auf NO_RESTRICTION.")
+            _LOGGER.warning(f"{self._name}: Configuration of '{CONF_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID}' missing. Using NO_RESTRICTION.")
             self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
 
         self._update_lock_output = self._get_entity_string_state(self._update_lock_output_entity_id)
@@ -504,13 +503,11 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._after_dawn_height = self._get_entity_numeric_state(self._after_dawn_height_entity_id, float)
         self._after_dawn_angle = self._get_entity_numeric_state(self._after_dawn_angle_entity_id, float)
 
-        # Optional: Logging der aktualisierten Werte zur Fehlersuche
         _LOGGER.debug(
-            f"{self._name}: Aktualisierte Werte (Auszug): "
+            f"{self._name}: Updated values (part of): "
             f"Brightness={self._brightness}, "
             f"Elevation={self._sun_elevation}, "
             f"ShadowEnabled={self._shadow_control_enabled}"
-            # ... weitere Werte nach Bedarf ...
         )
 
         # === Priorisierung des internen LockState ===
@@ -569,7 +566,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         Verarbeitet den aktuellen Behangzustand und ruft die entsprechende Handler-Funktion auf.
         Die Handler-Funktionen müssen den neuen ShutterState zurückgeben.
         """
-        _LOGGER.debug(f"{self._name}: Aktueller Behangzustand vor der Verarbeitung: {self._current_shutter_state.name} ({self._current_shutter_state.value})")
+        _LOGGER.debug(f"{self._name}: Current shutter state (before processing): {self._current_shutter_state.name} ({self._current_shutter_state.value})")
 
         handler_func = self._state_handlers.get(self._current_shutter_state)
         new_shutter_state: ShutterState
@@ -579,12 +576,12 @@ class ShadowControl(CoverEntity, RestoreEntity):
             new_shutter_state = await handler_func()
         else:
             # Standardfall: Wenn der Zustand nicht im Dictionary gefunden wird
-            _LOGGER.warning(f"{self._name}: Shutter ist in einem undefinierten Zustand ({self._current_shutter_state}). Setze auf NEUTRAL ({ShutterState.NEUTRAL.value}).")
+            _LOGGER.warning(f"{self._name}: Shutter within undefined state ({self._current_shutter_state}). Using NEUTRAL ({ShutterState.NEUTRAL.value}).")
             new_shutter_state = await self._handle_state_neutral() # Ruft den Handler für NEUTRAL auf
 
         # Aktualisiere den internen Behangzustand
         self._current_shutter_state = new_shutter_state
-        _LOGGER.debug(f"{self._name}: Neuer Behangzustand nach der Verarbeitung: {self._current_shutter_state.name} ({self._current_shutter_state.value})")
+        _LOGGER.debug(f"{self._name}: New shutter state after processing: {self._current_shutter_state.name} ({self._current_shutter_state.value})")
 
     def _check_if_position_changed_externally(self, current_height, current_angle):
         #_LOGGER.debug(f"{self._name}: Checking if position changed externally. Current height: {current_height}, Current angle: {current_angle}")
