@@ -76,7 +76,7 @@ input_number:
     max: 100000
     step: 100
     mode: slider
-    initial: 1000
+    initial: 0
   d03_sun_elevation:
     #[e#7 trigger    =Elevation Sonne (°)                     #init=45     ]
     name: "D03: Sun Elevation"
@@ -290,7 +290,7 @@ input_number:
     max: 100
     step: 1
     mode: slider
-    initial: 0
+    initial: 100
   s05_shadow_max_angle:
     #[e#44           =Max. Winkel bei Beschattung (%)         #init=100    ]
     name: "S05: Shadow max angle (%)"
@@ -298,7 +298,7 @@ input_number:
     max: 100
     step: 1
     mode: slider
-    initial: 0
+    initial: 100
   s06_shadow_look_through_seconds:
     #[e#45           =Durchsicht nach y Sekunden              #init=900    ]
     name: "S03: Look through after n seconds"
@@ -365,7 +365,7 @@ input_number:
     max: 100
     step: 1
     mode: slider
-    initial: 0
+    initial: 100
   sd05_dawn_max_angle:
     #[e#44           =Max. Winkel bei Daemmerung (%)         #init=100    ]
     name: "SD05: Dawn max angle (%)"
@@ -373,7 +373,7 @@ input_number:
     max: 100
     step: 1
     mode: slider
-    initial: 0
+    initial: 100
   sd06_dawn_look_through_seconds:
     #[e#45           =Durchsicht nach y Sekunden              #init=900    ]
     name: "SD03: Look through after n seconds"
