@@ -892,16 +892,35 @@ class ShadowControl(CoverEntity, RestoreEntity):
     # Sie müssen dann die Methode _handle_shutter_height_stepping implementieren:
     def _handle_shutter_height_stepping(self, calculated_height_percent: float) -> float:
         """
-        Passt die berechnete Rolladenhöhe an das vorgegebene Stepping an.
-        ToDo: Dies ist eine Platzhalterfunktion. Implementieren Sie die tatsächliche Logik hier.
+        Passt die Rollladenhöhe an die konfigurierte minimale Schrittweite an.
+        Entspricht der PHP-Funktion LB_LBSID_handleShutterHeightStepping.
         """
+        shutter_stepping_percent = self._shutter_height_stepping_percent
+
+        if shutter_stepping_percent is None:
+            _LOGGER.warning(
+                f"{self._name}: 'shutter_height_stepping_percent' is None. Using 0 (no stepping).")
+            shutter_stepping_percent = 0.0  # Standardwert, wenn nicht konfiguriert
+
+        # Only apply stepping if the stepping value is not zero and height is not already a multiple
+        if shutter_stepping_percent != 0:
+            remainder = calculated_height_percent % shutter_stepping_percent
+            if remainder != 0:
+                # The PHP logic seems to round up to the next full step.
+                # Example: 10% stepping, current height 23%. remainder = 3.
+                # 23 + 10 - 3 = 30. (Rounds up to the next full step).
+                adjusted_height = calculated_height_percent + shutter_stepping_percent - remainder
+                _LOGGER.debug(
+                    f"{self._name}: Adjusting shutter height from {calculated_height_percent:.2f}% "
+                    f"to {adjusted_height:.2f}% (stepping: {shutter_stepping_percent:.2f}%)."
+                )
+                return adjusted_height
+
         _LOGGER.debug(
-            f"{self._name}: ToDo: handle stepping")
-        # Hier würde die Logik für das Stepping stattfinden, z.B.:
-        # stepping = self._stepping_height # Annahme, dass dies eine Instanzvariable ist
-        # if stepping and stepping > 0:
-        #    return round(calculated_height_percent / stepping) * stepping
-        return calculated_height_percent  # Vorerst einfach den Wert zurückgeben
+            f"{self._name}: Shutter height {calculated_height_percent:.2f}% "
+            f"fits stepping or stepping is 0. No adjustment."
+        )
+        return calculated_height_percent
 
     def _calculate_shutter_angle(self) -> float:
         """
