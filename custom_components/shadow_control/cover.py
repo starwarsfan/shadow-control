@@ -1021,7 +1021,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         Passt den berechneten Lamellenwinkel an das vorgegebene Stepping an.
         """
         _LOGGER.debug(
-            f"{self._name}: Bearbeite Lamellenwinkel Stepping für {calculated_angle_percent}%.")
+            f"{self._name}: Computing shutter angle stepping for {calculated_angle_percent}%")
 
         # Entsprechende Instanzvariable für die Schrittweite
         # Stellen Sie sicher, dass self._stepping_angle in _update_input_values gefüllt wird!
@@ -1030,7 +1030,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # Prüfen auf None-Werte für die Schrittweite
         if shutter_stepping_percent is None:
             _LOGGER.warning(
-                f"{self._name}: 'stepping_angle' ist None. Stepping kann nicht angewendet werden. Gebe ursprünglichen Winkel {calculated_angle_percent}% zurück.")
+                f"{self._name}: 'stepping_angle' is None. Stepping can't be computed, returning initial angle {calculated_angle_percent}%")
             return calculated_angle_percent
 
         # Die PHP-Logik in Python:
@@ -1043,12 +1043,12 @@ class ShadowControl(CoverEntity, RestoreEntity):
             if remainder != 0:
                 adjusted_angle = calculated_angle_percent + shutter_stepping_percent - remainder
                 _LOGGER.debug(
-                    f"{self._name}: Angewendetes Stepping: von {calculated_angle_percent}% auf {adjusted_angle}%. Schrittweite: {shutter_stepping_percent}%.")
+                    f"{self._name}: Applied stepping of {calculated_angle_percent}% to resulting {adjusted_angle}%. Stepping width: {shutter_stepping_percent}%.")
                 return adjusted_angle
 
         # Wenn kein Stepping angewendet werden muss oder shutter_stepping_percent 0 ist
         _LOGGER.debug(
-            f"{self._name}: Kein Stepping nötig oder Stepping ist 0. Gebe ursprünglichen Winkel {calculated_angle_percent}% zurück.")
+            f"{self._name}: No stepping necessary or stepping value is 0. Returning initial angle {calculated_angle_percent}%")
         return calculated_angle_percent
 
     async def _position_shutter(
@@ -1063,12 +1063,12 @@ class ShadowControl(CoverEntity, RestoreEntity):
         Aktualisiert interne Zustände und publiziert den Binary Sensor für 'Beschattung aktiv'.
         """
         _LOGGER.debug(
-            f"{self._name}: Starte _position_shutter mit Höhe: {shutter_height_percent}%, Winkel: {shutter_angle_percent}%.")
+            f"{self._name}: Starting _position_shutter with height {shutter_height_percent}% and angle {shutter_angle_percent}%")
 
         # Prüfung auf den initialen Lauf
         if self._is_initial_run:
             _LOGGER.debug(
-                f"{self._name}: Initialer Lauf der LBS, aktualisiere Ausgänge nicht direkt (nur interne Variablen).")
+                f"{self._name}: Initialer run of integration, only internal computing, no update of outputs")
             # Wir aktualisieren die internen Previous-Werte, damit beim NÄCHSTEN Lauf
             # die sendByChange-ähnliche Logik funktioniert.
             self._previous_shutter_height = shutter_height_percent
@@ -1093,7 +1093,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # Prüfung, ob die Steuerung gesperrt ist
         if self._current_lock_state != LockState.UNLOCKED:
             _LOGGER.debug(
-                f"{self._name}: LBS gesperrt ({self._current_lock_state.name}), aktualisiere Ausgänge nicht.")
+                f"{self._name}: Integration is locked ({self._current_lock_state.name}), no update of outputs")
             return
 
         # === ProduceShadow als Binary Sensor steuern ===
@@ -1102,7 +1102,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         if self._is_producing_shadow != shadow_position:
             binary_sensor_entity_id = f"input_boolean.{self._name.lower().replace(' ', '_')}_shadow_active"
             _LOGGER.debug(
-                f"{self._name}: Aktualisiere Binary Sensor '{binary_sensor_entity_id}' auf {shadow_position}.")
+                f"{self._name}: Updating binary sensor '{binary_sensor_entity_id}' to {shadow_position}.")
             await self.hass.services.async_call(
                 "input_boolean",
                 "turn_on" if shadow_position else "turn_off",
@@ -1121,7 +1121,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # Senden des Höhenbefehls nur, wenn sich der Wert ändert oder eine erzwungene Aktualisierung nötig ist
         if height_to_set_percent != self._previous_shutter_height:
             _LOGGER.debug(
-                f"{self._name}: Sende Höhenbefehl: {height_to_set_percent}% an {self._target_cover_entity_id}.")
+                f"{self._name}: Sending height of {height_to_set_percent}% to {self._target_cover_entity_id}.")
             await self.hass.services.async_call(
                 "cover",
                 "set_position",
@@ -1130,7 +1130,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             )
         else:
             _LOGGER.debug(
-                f"{self._name}: Höhenbefehl '{height_to_set_percent}%' nicht gesendet, da Wert sich nicht geändert hat oder durch Beschränkung gefiltert wurde.")
+                f"{self._name}: Height '{height_to_set_percent}%' not sent, value was the same than before or has another restriction")
 
         self._previous_shutter_height = shutter_height_percent  # Immer mit dem NEUEN *berechneten* Wert aktualisieren
 
@@ -1197,8 +1197,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # Sende Winkelbefehl, wenn der Wert sich ändert ODER wenn sich die Höhe geändert hat.
         if angle_to_set_percent != self._previous_shutter_angle or height_was_different_before_height_update:
             _LOGGER.debug(
-                f"{self._name}: Sende Winkelbefehl: {angle_to_set_percent}% an {self._target_cover_entity_id}. "
-                f"Winkeländerung: {angle_to_set_percent != self._previous_shutter_angle}. Höhenänderung: {height_was_different_before_height_update}")
+                f"{self._name}: Sending angle {angle_to_set_percent}% to {self._target_cover_entity_id}. "
+                f"Angle update: {angle_to_set_percent != self._previous_shutter_angle}. Height update: {height_was_different_before_height_update}")
             await self.hass.services.async_call(
                 "cover",
                 "set_tilt_position",
@@ -1207,7 +1207,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             )
         else:
             _LOGGER.debug(
-                f"{self._name}: Winkelbefehl '{angle_to_set_percent}%' nicht gesendet, da Wert sich nicht geändert hat oder durch Beschränkung gefiltert wurde und Höhe sich nicht geändert hat.")
+                f"{self._name}: Angle '{angle_to_set_percent}%' not sent, value was the same than before or has another restriction")
 
         self._previous_shutter_angle = shutter_angle_percent  # Immer mit dem NEUEN *berechneten* Wert aktualisieren
 
@@ -1219,18 +1219,18 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         # === Timer stoppen ===
         if stop_timer:
-            _LOGGER.debug(f"{self._name}: Timer wird beendet")
+            _LOGGER.debug(f"{self._name}: Canceling timer")
             self._cancel_recalculation_timer()
 
         _LOGGER.debug(
-            f"{self._name}: _position_shutter für Höhe {shutter_height_percent}% und Winkel {shutter_angle_percent}% abgeschlossen.")
+            f"{self._name}: _position_shutter for height {shutter_height_percent}% and angle {shutter_angle_percent}% finished")
 
     # ... (Ihre _should_output_be_updated, _convert_shutter_angle_percent_to_degrees und _cancel_all_shadow_timers) ...
     # Denken Sie daran, dass _update_input_values auch in der Klasse sein muss.
 
     async def _check_if_facade_is_in_sun(self) -> bool:
         """Calculate if the sun illuminates the given facade."""
-        _LOGGER.debug(f"{self._name}: Checking if facade is in sun...")
+        _LOGGER.debug(f"{self._name}: Checking if facade is in sun")
 
         # Die Werte wurden bereits in _update_input_values als float abgerufen.
         sun_current_azimuth = self._sun_azimuth
@@ -1250,7 +1250,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             or min_elevation is None
             or max_elevation is None
         ):
-            _LOGGER.debug(f"{self._name}: Nicht alle erforderlichen Sonnen- oder Fassadendaten verfügbar für die Prüfung des Sonneneinfalls.")
+            _LOGGER.debug(f"{self._name}: Not all required values available to compute sun state of facade")
             self._effective_elevation = None
             return False
 
@@ -1287,7 +1287,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         else:
             message += f" -> NOT in min-max-range ({min_elevation}°-{max_elevation}°)"
             self._sun_between_min_max = False
-        _LOGGER.debug(f"{message} ===")
+        _LOGGER.debug(f"{message}")
 
         return _sun_between_offsets and _is_elevation_in_range
 
@@ -1310,7 +1310,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         facade_azimuth = self._azimuth_facade
 
         if sun_current_azimuth is None or sun_current_elevation is None or facade_azimuth is None:
-            _LOGGER.debug(f"{self._name}: Kann effektive Elevation nicht berechnen: Nicht alle erforderlichen Eingabewerte sind verfügbar.")
+            _LOGGER.debug(f"{self._name}: Unable to compute effective elevation, not all required values available")
             return None
 
         _LOGGER.debug(f"{self._name}: Current sun position (a:e): {sun_current_azimuth}°:{sun_current_elevation}°, facade: {facade_azimuth}°")
@@ -1325,13 +1325,13 @@ class ShadowControl(CoverEntity, RestoreEntity):
             else:
                 effective_elevation = math.degrees(math.atan(virtual_height / virtual_depth))
 
-            _LOGGER.debug(f"{self._name}: Virtuelle Tiefe und Höhe der Sonnenposition in 90° zur Fassade: {virtual_depth}, {virtual_height}, effektive Elevation: {effective_elevation}")
+            _LOGGER.debug(f"{self._name}: Virtual deep and height of the sun against the facade: {virtual_depth}, {virtual_height}, effektive Elevation: {effective_elevation}")
             return effective_elevation
         except ValueError:
-            _LOGGER.debug(f"{self._name}: Kann effektive Elevation nicht berechnen: Ungültige numerische Eingabewerte.")
+            _LOGGER.debug(f"{self._name}: Unable to compute effective elevation: Invalid input values")
             return None
         except ZeroDivisionError:
-            _LOGGER.debug(f"{self._name}: Kann effektive Elevation nicht berechnen: Division durch Null.")
+            _LOGGER.debug(f"{self._name}: Unable to compute effective elevation: Division by zero")
             return None
 
     # #######################################################################
@@ -1342,7 +1342,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
     async def _handle_state_shadow_full_close_timer_running(self) -> ShutterState:
         _LOGGER.debug(f"{self._name}: Handle SHADOW_FULL_CLOSE_TIMER_RUNNING")
         if await self._is_lbs_locked_in_either_way():
-            _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: LBS ist gesperrt, keine Aktion.")
+            _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Integration locked, no action performed")
             return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
 
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
@@ -1363,16 +1363,16 @@ class ShadowControl(CoverEntity, RestoreEntity):
                             shadow_position=True,
                             stop_timer=True,
                         )
-                        _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Timer abgelaufen, Helligkeit hoch genug, fahre in Vollschatten ({target_height}%, {target_angle}%) und gehe zu {ShutterState.SHADOW_FULL_CLOSED}")
+                        _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Timer finished, brightness above threshold, moving to shadow position ({target_height}%, {target_angle}%). Next state: {ShutterState.SHADOW_FULL_CLOSED}")
                         return ShutterState.SHADOW_FULL_CLOSED
                     else:
-                        _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Fehler beim Berechnen der Schattenhöhe oder des Winkels, bleibe in {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}")
+                        _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Error within calculation of height a/o angle, staying at {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}")
                         return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
                 else:
-                    _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Warte auf Timer (Helligkeit hoch genug)...")
+                    _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Waiting for timer (Brightness big enough)")
                     return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
             else:
-                _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Helligkeit ({current_brightness}) nicht höher als Schwellwert ({shadow_threshold_close}), gehe zu {ShutterState.SHADOW_NEUTRAL}")
+                _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Brightness ({current_brightness}) not above threshold ({shadow_threshold_close}), transitioning to {ShutterState.SHADOW_NEUTRAL}")
                 self._cancel_recalculation_timer()
                 return ShutterState.SHADOW_NEUTRAL
         else:
@@ -1385,14 +1385,14 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     shadow_position=False,
                     stop_timer=True,  # Stop Timer
                 )
-                _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Nicht in Sonne oder Schattenmodus deaktiviert, fahre in Neutralposition ({neutral_height}%, {neutral_angle}%) und gehe zu {ShutterState.NEUTRAL}")
+                _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Not in the sun or shadow mode disabled, transitioning to ({neutral_height}%, {neutral_angle}%) with state {ShutterState.NEUTRAL}")
                 return ShutterState.NEUTRAL
             else:
-                _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Neutrale Höhe oder Winkel nicht konfiguriert, gehe zu {ShutterState.NEUTRAL}")
+                _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
                 return ShutterState.NEUTRAL
 
         # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
-        _LOGGER.debug(f"{self._name}: Zustand {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Beibehalte vorherige Position.")
+        _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Staying at previous position.")
         return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
 
     # =======================================================================
