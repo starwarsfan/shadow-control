@@ -391,6 +391,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             "current_shutter_state": self._current_shutter_state,
             "calculated_shutter_height": self._calculated_shutter_height,
             "calculated_shutter_angle": self._calculated_shutter_angle,
+            "current_lock_state": self._current_lock_state,
         }
 
     def _update_input_values(self) -> None:
