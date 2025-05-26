@@ -766,11 +766,11 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         _LOGGER.debug(f"{self._name}: Starting recalculation timer for {delay_seconds}s")
 
-        # Speichere Startzeit und Dauer
-        self._recalculation_timer_start_time = datetime.now(timezone.utc) # UTC für Konsistenz
+        # Save start time and duration
+        self._recalculation_timer_start_time = datetime.now(timezone.utc)
         self._recalculation_timer_duration_seconds = delay_seconds
 
-        # async_call_later gibt einen Callback-Handle zurück, den wir speichern, um den Timer abbrechen zu können
+        # Save callback handle from async_call_later to enable timer canceling
         self._recalculation_timer = async_call_later(
             self.hass,
             delay_seconds,
@@ -784,7 +784,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             self._recalculation_timer()  # Aufruf des Handles bricht den Timer ab
             self._recalculation_timer = None
 
-        # Timer-Tracking-Variablen zurücksetzen
+        # Reset timer tracking variables
         self._recalculation_timer_start_time = None
         self._recalculation_timer_duration_seconds = None
 
@@ -830,11 +830,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
         elevation = self._sun_elevation
         shutter_overall_height = self._shutter_height
 
-        # Initialer Rückgabewert, falls Berechnung nicht möglich ist oder Bedingungen nicht erfüllt sind
-        # Hier wird der Standardwert shadow_max_height_percent gesetzt
         shutter_height_to_set_percent = shadow_max_height_percent
 
-        # Prüfen auf None-Werte, bevor mit Berechnungen begonnen wird
         if (
                 width_of_light_strip is None
                 or elevation is None
@@ -847,7 +844,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 f"shutter_overall_height={shutter_overall_height}, "
                 f"shadow_max_height_percent={shadow_max_height_percent}. "
                 f"Using initial default value of {shutter_height_to_set_percent}%")
-            # Rückgabe des Standardwerts oder eines Fehlerwerts, je nach gewünschtem Verhalten
             return shutter_height_to_set_percent  # Oder ein anderer Standard/Fehlerwert
 
         if width_of_light_strip != 0:
@@ -878,18 +874,13 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     f"Light strip width: {width_of_light_strip}, "
                     f"Resulting shutter height ({new_shutter_height}%) is bigger or equal than given max height ({shadow_max_height_percent}%). "
                     f"Using max height")
-                # shutter_height_to_set_percent behält seinen initialen Wert von shadow_max_height_percent
         else:
             _LOGGER.debug(
                 f"{self._name}: width_of_light_strip is 0. No height calculation required. "
                 f"Using default height {shutter_height_to_set_percent}%.")
 
-        # Der Aufruf zu LB_LBSID_handleShutterHeightStepping($E, $shutterHeightToSetPercent)
-        # wird hier durch einen Aufruf der entsprechenden Python-Methode ersetzt.
-        # Nehmen wir an, diese Methode heißt _handle_shutter_height_stepping
         return self._handle_shutter_height_stepping(shutter_height_to_set_percent)
 
-    # Sie müssen dann die Methode _handle_shutter_height_stepping implementieren:
     def _handle_shutter_height_stepping(self, calculated_height_percent: float) -> float:
         """
         Passt die Rollladenhöhe an die konfigurierte minimale Schrittweite an.
@@ -929,20 +920,18 @@ class ShadowControl(CoverEntity, RestoreEntity):
         """
         _LOGGER.debug(f"{self._name}: Starting calculation of shutter angle")
 
-        # Entsprechende Instanzvariablen aus _update_input_values
         elevation = self._sun_elevation
-        azimuth = self._sun_azimuth  # Für Logging verwendet
+        azimuth = self._sun_azimuth  # For logging
         given_shutter_slat_width = self._slat_width
         shutter_slat_distance = self._slat_distance
         shutter_angle_offset = self._angle_offset
         min_shutter_angle_percent = self._min_slat_angle
         max_shutter_angle_percent = self._shadow_max_angle
-        shutter_type_str = self._shutter_type  # String wie "90_degree_slats" oder "180_degree_slats"
+        shutter_type_str = self._shutter_type  # String "90_degree_slats" or "180_degree_slats"
 
         # Der effektive Elevationswinkel kommt aus der Instanzvariable, die von _check_if_facade_is_in_sun gesetzt wird
         effective_elevation = self._effective_elevation
 
-        # --- Prüfen auf None-Werte ---
         if (
                 elevation is None or azimuth is None
                 or given_shutter_slat_width is None or shutter_slat_distance is None
@@ -959,17 +948,17 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 f"effective_elevation={effective_elevation}. Returning 0.0")
             return 0.0  # Standardwert bei fehlenden Daten
 
-        # --- Mathematische Berechnungen basierend auf dem schiefen Dreieck ---
+        # ==============================
+        # Math based on oblique triangle
 
-        # $alpha is the opposit angle of shutter slat width, so this is the difference
-        # between $GLOBALS["LB_LBSID_INTERNAL__effectiveElevation"] and vertical
+        # $alpha is the opposite angle of shutter slat width, so this is the difference
+        # effectiveElevation and vertical
         alpha_deg = 90 - effective_elevation
         alpha_rad = math.radians(alpha_deg)
 
         # $beta is the opposit angle of shutter slat distance
         asin_arg = (math.sin(alpha_rad) * shutter_slat_distance) / given_shutter_slat_width
 
-        # Schutz vor domain error für asin() wenn Argument > 1 oder < -1
         if not (-1 <= asin_arg <= 1):
             _LOGGER.warning(
                 f"{self._name}: Argument for asin() out of valid range ({-1 <= asin_arg <= 1}). "
@@ -988,9 +977,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         _LOGGER.debug(f"{self._name}: Elevation/azimuth: {elevation}°/{azimuth}°, "
                       f"resulting effective elevation and shutter angle: "
-                      f"{effective_elevation}°/{shutter_angle_degrees}° (wihthout stepping and offset)")
+                      f"{effective_elevation}°/{shutter_angle_degrees}° (without stepping and offset)")
 
-        # --- Anpassung basierend auf Rollladentyp (90° oder 180° Lamellen) ---
         shutter_angle_percent: float
         if shutter_type_str == "90_degree_slats":
             shutter_angle_percent = shutter_angle_degrees / 0.9
@@ -1008,15 +996,11 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # Runden vor dem Stepping, wie im PHP-Code
         shutter_angle_percent_rounded_for_stepping = round(shutter_angle_percent)
 
-        # --- Anwendung des Winkel-Steppings ---
-        # Diese Methode (_handle_shutter_angle_stepping) muss noch implementiert werden
         shutter_angle_percent_with_stepping = self._handle_shutter_angle_stepping(
             shutter_angle_percent_rounded_for_stepping)
 
-        # --- Hinzufügen des konfigurierten Offsets ---
         shutter_angle_percent_with_stepping += shutter_angle_offset
 
-        # --- Begrenzung des Winkels auf Min/Max-Werte ---
         if shutter_angle_percent_with_stepping < min_shutter_angle_percent:
             final_shutter_angle_percent = min_shutter_angle_percent
             _LOGGER.debug(
@@ -1042,11 +1026,8 @@ class ShadowControl(CoverEntity, RestoreEntity):
         _LOGGER.debug(
             f"{self._name}: Computing shutter angle stepping for {calculated_angle_percent}%")
 
-        # Entsprechende Instanzvariable für die Schrittweite
-        # Stellen Sie sicher, dass self._stepping_angle in _update_input_values gefüllt wird!
         shutter_stepping_percent = self._stepping_angle
 
-        # Prüfen auf None-Werte für die Schrittweite
         if shutter_stepping_percent is None:
             _LOGGER.warning(
                 f"{self._name}: 'stepping_angle' is None. Stepping can't be computed, returning initial angle {calculated_angle_percent}%")
@@ -1065,7 +1046,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
                     f"{self._name}: Applied stepping of {calculated_angle_percent}% to resulting {adjusted_angle}%. Stepping width: {shutter_stepping_percent}%.")
                 return adjusted_angle
 
-        # Wenn kein Stepping angewendet werden muss oder shutter_stepping_percent 0 ist
         _LOGGER.debug(
             f"{self._name}: No stepping necessary or stepping value is 0. Returning initial angle {calculated_angle_percent}%")
         return calculated_angle_percent
