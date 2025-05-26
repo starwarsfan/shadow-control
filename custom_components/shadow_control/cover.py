@@ -888,11 +888,11 @@ class ShadowControl(CoverEntity, RestoreEntity):
         Passt die Rollladenhöhe an die konfigurierte minimale Schrittweite an.
         Entspricht der PHP-Funktion LB_LBSID_handleShutterHeightStepping.
         """
-        shutter_stepping_percent = self._shutter_height_stepping_percent
+        shutter_stepping_percent = self._stepping_height
 
         if shutter_stepping_percent is None:
             _LOGGER.warning(
-                f"{self._name}: 'shutter_height_stepping_percent' is None. Using 0 (no stepping).")
+                f"{self._name}: 'self._stepping_height' is None. Using 0 (no stepping).")
             shutter_stepping_percent = 0.0  # Standardwert, wenn nicht konfiguriert
 
         # Only apply stepping if the stepping value is not zero and height is not already a multiple
