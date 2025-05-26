@@ -282,7 +282,7 @@ input_number:
     max: 3600
     step: 15
     mode: slider
-    initial: 150
+    initial: 15
   s04_shadow_max_height:
     #[e#43           =Max. Hoehe bei Beschattung (%)          #init=100    ]
     name: "S04: Shadow max height (%)"
@@ -306,7 +306,7 @@ input_number:
     max: 7200
     step: 15
     mode: slider
-    initial: 900
+    initial: 15
   s07_shadow_open_seconds:
     #[e#46           =Oeffnen nach z Sekunden                 #init=3600   ]
     name: "S07: Open after n seconds"
@@ -314,7 +314,7 @@ input_number:
     max: 7200
     step: 15
     mode: slider
-    initial: 3600
+    initial: 15
   s08_shadow_look_through_angle:
     #[e#47           =Winkel Durchsicht (%)                   #init=0      ]
     name: "S08: Shadow look through angle (%)"
@@ -343,13 +343,13 @@ input_number:
   # =========================================================================
   # Dawn settings
   sd02_dawn_brightness_level:
-    #[e#41 important =Daemmerungsschwelle (schliessen, Lux)  #init=50000  ]
+    #[e#41 important =Daemmerungsschwelle (schliessen, Lux)  #init=5000  ]
     name: "SD02: Dawn brightness level"
     min: 0
     max: 100000
     step: 100
     mode: slider
-    initial: 50000
+    initial: 5000
   sd03_dawn_after_seconds:
     #[e#42           =Daemmerungsposition nach x Sekunden             #init=150    ]
     name: "SD03: Dawn after n seconds"
@@ -381,7 +381,7 @@ input_number:
     max: 7200
     step: 15
     mode: slider
-    initial: 900
+    initial: 15
   sd07_dawn_open_seconds:
     #[e#46           =Oeffnen nach z Sekunden                 #init=3600   ]
     name: "SD07: Open after n seconds"
@@ -389,7 +389,7 @@ input_number:
     max: 7200
     step: 15
     mode: slider
-    initial: 3600
+    initial: 15
   sd08_dawn_look_through_angle:
     #[e#47           =Winkel Durchsicht (%)                   #init=0      ]
     name: "SD08: Dawn look through angle (%)"
