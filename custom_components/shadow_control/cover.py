@@ -144,10 +144,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._attr_unique_id = f"shadow_control_{self._name.lower().replace(' ', '_')}"
         self.entity_id = f"cover.{self._attr_unique_id}" # Wichtig, um die Entität eindeutig zu machen
 
-        self._target_cover_entity_id = target_cover_entity_id
-
-        self._attr_extra_state_attributes: dict[str, Any] = {}
-
         # === Dynamische Eingänge (Test-Helfer) ===
         self._brightness_entity_id = config.get(CONF_BRIGHTNESS_ENTITY_ID)
         self._brightness_dawn_entity_id = config.get(CONF_BRIGHTNESS_DAWN_ENTITY_ID)
@@ -284,20 +280,22 @@ class ShadowControl(CoverEntity, RestoreEntity):
             ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING: self._handle_state_dawn_full_close_timer_running,
         }
 
+        self._target_cover_entity_id = target_cover_entity_id
+        self._attr_extra_state_attributes: dict[str, Any] = {}
+
         # Interne persistente Variablen
         # Werden beim Start aus den persistenten Attributen gelesen.
         self._current_shutter_state: ShutterState = ShutterState.NEUTRAL # Standardwert setzen
         self._current_lock_state: LockState = LockState.UNLOCKED # Standardwert setzen
         self._calculated_shutter_height: float = 0.0
         self._calculated_shutter_angle: float = 0.0
+        self._calculated_shutter_angle_degrees: float | None = None
         self._effective_elevation: float | None = None
         self._previous_shutter_height: float | None = None
         self._previous_shutter_angle: float | None = None
         self._is_initial_run: bool = True # Flag für den initialen Lauf
         self._is_producing_shadow: bool = False # Neuer interner Zustand für ProduceShadow
-
-        # Für den "output" der Gradzahl
-        self._calculated_angle_degrees: float | None = None
+        self._next_modification_timestamp: datetime | None = None
 
         self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
         self._recalculation_timer: Callable[[], None] | None = None # Zum Speichern des Callbacks für den geplanten Timer
@@ -309,7 +307,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
     async def async_added_to_hass(self) -> None:
         """Run when this Entity has been added to Home Assistant."""
         await super().async_added_to_hass()
-
         _LOGGER.debug(f"{self._name}: async_added_to_hass called. Registering listeners.")
 
         # === 1. Lade den zuletzt gespeicherten Status der Entität ===
@@ -317,23 +314,41 @@ class ShadowControl(CoverEntity, RestoreEntity):
         last_state = await self.async_get_last_state()
 
         if last_state:
-            _LOGGER.debug(f"{self._name}: Successfully retrieved last state.")
-            # last_state.attributes.get gibt None zurück, wenn das Attribut nicht existiert
-            initial_state_value = last_state.attributes.get("current_shutter_state")
+            _LOGGER.debug(f"{self._name}: Restoring state: {last_state.state}")
 
-            if initial_state_value is not None:
-                try:
-                    self._current_shutter_state = ShutterState(int(initial_state_value))
-                    _LOGGER.debug(f"{self._name}: Restored _current_shutter_state to {self._current_shutter_state}")
-                except (ValueError, TypeError):
-                    _LOGGER.warning(f"{self._name}: Could not convert last state '{initial_state_value}' to int. Using STATE_NEUTRAL.")
-                    self._current_shutter_state = ShutterState.NEUTRAL
-            else:
+            # Restore last shutter state and lock state
+            default_shutter_state_value = ShutterState.NEUTRAL.value
+            default_lock_state_value = LockState.UNLOCKED.value
+            restored_shutter_state_value = last_state.attributes.get("current_shutter_state", default_shutter_state_value)
+            restored_lock_state_value = last_state.attributes.get("lock_state", default_lock_state_value)
+            try:
+                self._current_shutter_state = ShutterState(restored_shutter_state_value)
+            except ValueError:
+                _LOGGER.warning(f"{self._name}: Could not restore ShutterState from value '{restored_shutter_state_value}'. Defaulting to {ShutterState.NEUTRAL.name}.")
                 self._current_shutter_state = ShutterState.NEUTRAL
-                _LOGGER.debug(f"{self._name}: 'current_shutter_state' not found in last state. Initializing to {self._current_shutter_state}")
+            try:
+                self._current_lock_state = LockState(restored_lock_state_value)
+            except ValueError:
+                _LOGGER.warning(f"{self._name}: Could not restore LockState from value '{restored_lock_state_value}'. Defaulting to {LockState.UNLOCKED.name}.")
+                self._current_lock_state = LockState.UNLOCKED
+
+            self._is_producing_shadow = last_state.attributes.get("is_producing_shadow", False)
+            self._previous_shutter_height = last_state.attributes.get("previous_sent_shutter_height_ha_style")
+            self._previous_shutter_angle = last_state.attributes.get("previous_sent_shutter_angle_ha_style")
+            self._calculated_shutter_height = last_state.attributes.get("calculated_shutter_height_ha_style")
+            self._calculated_shutter_angle = last_state.attributes.get("calculated_shutter_angle_ha_style")
+            self._calculated_shutter_angle_degrees = last_state.attributes.get("calculated_shutter_angle_degrees")
+            # Stellen Sie sicher, dass Sie den Timestamp auch wiederherstellen, falls er persistent sein soll
+            next_mod_ts = last_state.attributes.get("next_modification_timestamp")
+            if next_mod_ts:
+                try:
+                    self._next_modification_timestamp = datetime.fromisoformat(next_mod_ts)
+                except ValueError:
+                    _LOGGER.warning(f"{self._name}: Could not restore next_modification_timestamp from '{next_mod_ts}'.")
+
         else:
-            self._current_shutter_state = ShutterState.NEUTRAL
-            _LOGGER.debug(f"{self._name}: No last state found. Initializing _current_shutter_state to {self._current_shutter_state}")
+            _LOGGER.debug(f"{self._name}: No previous state found. Initializing.")
+            # Standardwerte bleiben wie in __init__ gesetzt
 
         # Aktualisiere die Attribute und speichere den Zustand sofort, falls er wiederhergestellt wurde
         self._update_extra_state_attributes()
@@ -391,7 +406,9 @@ class ShadowControl(CoverEntity, RestoreEntity):
             "current_shutter_state": self._current_shutter_state,
             "calculated_shutter_height": self._calculated_shutter_height,
             "calculated_shutter_angle": self._calculated_shutter_angle,
+            "calculated_shutter_angle_degrees": self._calculated_shutter_angle_degrees,
             "current_lock_state": self._current_lock_state,
+            "next_modification_timestamp": self._next_modification_timestamp.isoformat() if self._next_modification_timestamp else None,
         }
 
     def _update_input_values(self) -> None:
@@ -764,13 +781,19 @@ class ShadowControl(CoverEntity, RestoreEntity):
             _LOGGER.debug(
                 f"{self._name}: Timer delay is <= 0 ({delay_seconds}s). Trigger immediate recalculation")
             await self._async_trigger_recalculation(None)
+            # Wenn sofortige Neuberechnung, gibt es keinen zukünftigen Timer.
+            self._next_modification_timestamp = None
             return
 
         _LOGGER.debug(f"{self._name}: Starting recalculation timer for {delay_seconds}s")
 
         # Save start time and duration
+        current_utc_time = datetime.now(timezone.utc)
         self._recalculation_timer_start_time = datetime.now(timezone.utc)
         self._recalculation_timer_duration_seconds = delay_seconds
+
+        self._next_modification_timestamp = current_utc_time + timedelta(seconds=delay_seconds)
+        _LOGGER.debug(f"{self._name}: Next modification scheduled for: {self._next_modification_timestamp}")
 
         # Save callback handle from async_call_later to enable timer canceling
         self._recalculation_timer = async_call_later(
@@ -778,6 +801,9 @@ class ShadowControl(CoverEntity, RestoreEntity):
             delay_seconds,
             self._async_timer_callback
         )
+
+        self._update_extra_state_attributes()
+        self.async_write_ha_state()
 
     def _cancel_recalculation_timer(self) -> None:
         """Bricht einen laufenden Neuberechnungs-Timer ab."""
@@ -789,6 +815,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # Reset timer tracking variables
         self._recalculation_timer_start_time = None
         self._recalculation_timer_duration_seconds = None
+        self._next_modification_timestamp = None
 
     async def _async_timer_callback(self, now) -> None:
         """
@@ -1078,7 +1105,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         # These are the *calculated target* values.
         self._calculated_shutter_height = shutter_height_percent
         self._calculated_shutter_angle = shutter_angle_percent
-        self._calculated_angle_degrees = self._convert_shutter_angle_percent_to_degrees(
+        self._calculated_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(
             shutter_angle_percent)
 
         # --- Phase 2: Handle initial run special logic ---
