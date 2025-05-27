@@ -17,3 +17,5 @@ coverage.xml
 config/*
 !config/configuration.yaml
 !config/scripts.yaml
+
+talk/
