@@ -72,11 +72,11 @@ input_number:
   d02_brightness_dawn:
     #[e#6 trigger    =Helligkeit Daemmerung (Lux)                          ]
     name: "D02: Sun Brightness (dawn)"
-    min: 0
-    max: 100000
+    min: -1
+    max: 10000
     step: 100
     mode: slider
-    initial: 0
+    initial: -1
   d03_sun_elevation:
     #[e#7 trigger    =Elevation Sonne (°)                     #init=45     ]
     name: "D03: Sun Elevation"
