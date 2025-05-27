@@ -1200,7 +1200,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 "cover",
                 "set_position",
                 {"entity_id": self._target_cover_entity_id, "position": height_to_set_percent},
-                blocking=False
+                blocking=True
             )
             self._previous_shutter_height = height_to_set_percent  # Update previous after sending
         else:
@@ -1217,7 +1217,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 "cover",
                 "set_tilt_position",
                 {"entity_id": self._target_cover_entity_id, "tilt_position": angle_to_set_percent},
-                blocking=False
+                blocking=True
             )
             self._previous_shutter_angle = angle_to_set_percent  # Update previous after sending
         else:
