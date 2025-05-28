@@ -286,11 +286,11 @@ class ShadowControlManager:
         self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
         self._recalculation_timer: Callable[[], None] | None = None # Zum Speichern des Callbacks für den geplanten Timer
 
-        _LOGGER.debug(f"[{DOMAIN}] Manager for '{self._name}' initialized for target: {self._target_cover_entity_id}.")
+        _LOGGER.debug(f"{self._name}: Manager initialized for target: {self._target_cover_entity_id}.")
 
     def register_listeners(self) -> None:
         """Register listeners for relevant state changes for this specific cover."""
-        _LOGGER.debug(f"[{DOMAIN}] Registering listeners for '{self._name}'.")
+        _LOGGER.debug(f"{self._name}: Registering listeners")
 
         # Liste aller Entitäten, auf deren Änderungen dieser Manager reagieren soll
         # Dies sind die Entitäten aus Ihrer config, deren Zustand die Logik beeinflusst
@@ -323,12 +323,12 @@ class ShadowControlManager:
         #                             minute=None, second=0)
         # )
 
-        _LOGGER.debug(f"[{DOMAIN}] All relevant state listeners registered for '{self._name}'.")
+        _LOGGER.debug(f"{self._name}: All relevant state listeners registered")
 
 
     async def async_hass_started(self, event: Event) -> None:
         """Handle Home Assistant start event for this specific manager."""
-        _LOGGER.info(f"[{DOMAIN}] Home Assistant has started. Initializing Shadow Control for '{self._name}'.")
+        _LOGGER.info(f"{self._name}: Home Assistant has started. Initializing Shadow Control")
         # Hier können Sie den initialen Zustand abrufen und die erste Berechnung ausführen
 
         # Initialberechnung beim Start
@@ -473,7 +473,7 @@ class ShadowControlManager:
     @callback
     async def _async_handle_input_change(self, event: Event | None) -> None:
         """Handle changes to any relevant input entity for this specific cover."""
-        _LOGGER.debug(f"[{DOMAIN}] Input change detected for '{self._name}'. Event: {event}")
+        _LOGGER.debug(f"{self._name}: Input change detected. Event: {event}")
 
         await self._async_calculate_and_apply_cover_position(event)
 
@@ -483,7 +483,7 @@ class ShadowControlManager:
         Calculate and apply the new cover and tilt position for this specific cover.
         This is where your main Shadow Control logic resides.
         """
-        _LOGGER.debug(f"[{DOMAIN}] Calculating and applying cover positions for '{self._name}'.")
+        _LOGGER.debug(f"{self._name}: Calculating and applying cover positions")
 
         self._update_input_values()
 
@@ -497,7 +497,7 @@ class ShadowControlManager:
         if not brightness_state or brightness_state.state in ['unavailable', 'unknown'] or \
                 not sun_elevation_state or sun_elevation_state.state in ['unavailable', 'unknown'] or \
                 not sun_azimuth_state or sun_azimuth_state.state in ['unavailable', 'unknown']:
-            _LOGGER.warning(f"[{DOMAIN}] Missing or invalid input data for '{self._name}'. Skipping calculation.")
+            _LOGGER.warning(f"{self._name}: Missing or invalid input data. Skipping calculation.")
             return
 
         # Werte in den richtigen Typ umwandeln
@@ -506,7 +506,7 @@ class ShadowControlManager:
             current_elevation = float(sun_elevation_state.state)
             current_azimuth = float(sun_azimuth_state.state)
         except ValueError as e:
-            _LOGGER.error(f"[{DOMAIN}] Invalid state value for sensor for '{self._name}': {e}. Skipping calculation.")
+            _LOGGER.error(f"{self._name}: Invalid state value for sensor: {e}. Skipping calculation.")
             return
 
         self._check_if_position_changed_externally(self._shutter_current_height, self._shutter_current_angle)
@@ -673,7 +673,7 @@ class ShadowControlManager:
         current_cover_state: State | None = self.hass.states.get(entity_id)
 
         if not current_cover_state:
-            _LOGGER.warning(f"[{DOMAIN}] Target cover entity '{entity_id}' not found. Cannot send commands.")
+            _LOGGER.warning(f"{self._name}: Target cover entity '{entity_id}' not found. Cannot send commands.")
             return
 
         supported_features = current_cover_state.attributes.get(ATTR_SUPPORTED_FEATURES, 0)
@@ -682,7 +682,7 @@ class ShadowControlManager:
         has_pos_service = self.hass.services.has_service("cover", "set_cover_position")
         has_tilt_service = self.hass.services.has_service("cover", "set_cover_tilt_position")
 
-        _LOGGER.debug(f"[{DOMAIN}] Services availability for '{self._name}' ({entity_id}): set_cover_position={has_pos_service}, set_cover_tilt_position={has_tilt_service}")
+        _LOGGER.debug(f"{self._name}: Services availability ({entity_id}): set_cover_position={has_pos_service}, set_cover_tilt_position={has_tilt_service}")
 
         # Aktuelle Positionen für Optimierung abrufen
         current_pos = current_cover_state.attributes.get('current_position')
@@ -703,7 +703,7 @@ class ShadowControlManager:
         # Höhen-Befehl senden
         if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
             if current_pos is None or abs(current_pos - shutter_height_percent) > tolerance_height:
-                _LOGGER.info(f"[{DOMAIN}] Setting '{self._name}' ({entity_id}) position to {shutter_height_percent:.1f}% (current: {current_pos}).")
+                _LOGGER.info(f"{self._name}: Setting position to {shutter_height_percent:.1f}% (current: {current_pos}).")
                 try:
                     await self.hass.services.async_call(
                         "cover",
@@ -712,17 +712,17 @@ class ShadowControlManager:
                         blocking=False
                     )
                 except Exception as e:
-                    _LOGGER.error(f"[{DOMAIN}] Failed to set position for '{self._name}' ({entity_id}): {e}")
+                    _LOGGER.error(f"{self._name}: Failed to set position: {e}")
             else:
-                _LOGGER.debug(f"[{DOMAIN}] Position for '{self._name}' ({entity_id}) already at {shutter_height_percent:.1f}% (current: {current_pos}).")
+                _LOGGER.debug(f"{self._name}: Position already at {shutter_height_percent:.1f}% (current: {current_pos}).")
         else:
-            _LOGGER.debug(f"[{DOMAIN}] Skipping position set for '{self._name}' ({entity_id}). Supported: {supported_features & CoverEntityFeature.SET_POSITION}, Service Found: {has_pos_service}.")
+            _LOGGER.debug(f"{self._name}: Skipping position set. Supported: {supported_features & CoverEntityFeature.SET_POSITION}, Service Found: {has_pos_service}.")
 
 
         # Winkel-Befehl senden
         if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
             if current_tilt is None or abs(current_tilt - shutter_angle_percent) > tolerance_angle:
-                _LOGGER.info(f"[{DOMAIN}] Setting '{self._name}' ({entity_id}) tilt position to {shutter_angle_percent:.1f}% (current: {current_tilt}).")
+                _LOGGER.info(f"{self._name}: Setting tilt position to {shutter_angle_percent:.1f}% (current: {current_tilt}).")
                 try:
                     await self.hass.services.async_call(
                         "cover",
@@ -731,16 +731,16 @@ class ShadowControlManager:
                         blocking=False
                     )
                 except Exception as e:
-                    _LOGGER.error(f"[{DOMAIN}] Failed to set tilt position for '{self._name}' ({entity_id}): {e}")
+                    _LOGGER.error(f"{self._name}: Failed to set tilt position: {e}")
             else:
-                _LOGGER.debug(f"[{DOMAIN}] Tilt position for '{self._name}' ({entity_id}) already at {shutter_angle_percent:.1f}% (current: {current_tilt}).")
+                _LOGGER.debug(f"{self._name}: Tilt position already at {shutter_angle_percent:.1f}% (current: {current_tilt}).")
         else:
-            _LOGGER.debug(f"[{DOMAIN}] Skipping tilt set for '{self._name}' ({entity_id}). Supported: {supported_features & CoverEntityFeature.SET_TILT_POSITION}, Service Found: {has_tilt_service}.")
+            _LOGGER.debug(f"{self._name}: Skipping tilt set. Supported: {supported_features & CoverEntityFeature.SET_TILT_POSITION}, Service Found: {has_tilt_service}.")
 
 
     async def async_unload(self) -> bool:
         """Clean up when the integration is unloaded."""
-        _LOGGER.debug(f"[{DOMAIN}] Unloading Shadow Control for '{self._name}'.")
+        _LOGGER.debug(f"{self._name}: Unloading Shadow Control")
         for listener in self._listeners:
             listener() # Remove event listener
         return True
