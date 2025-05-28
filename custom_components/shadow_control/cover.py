@@ -1198,7 +1198,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 f"{self._name}: Sending height of {height_to_set_percent:.2f}% to {self._target_cover_entity_id}.")
             await self.hass.services.async_call(
                 "cover",
-                "set_position",
+                "set_cover_position",
                 {"entity_id": self._target_cover_entity_id, "position": height_to_set_percent},
                 blocking=True
             )
@@ -1215,7 +1215,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             )
             await self.hass.services.async_call(
                 "cover",
-                "set_tilt_position",
+                "set_cover_tilt_position",
                 {"entity_id": self._target_cover_entity_id, "tilt_position": angle_to_set_percent},
                 blocking=True
             )
