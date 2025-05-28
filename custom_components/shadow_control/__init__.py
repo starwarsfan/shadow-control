@@ -272,21 +272,23 @@ class ShadowControlManager:
         # Dies sind die Entitäten aus Ihrer config, deren Zustand die Logik beeinflusst
         relevant_entity_ids = [
             self._brightness_entity_id,
+            self._brightness_dawn_entity_id,
             self._sun_elevation_entity_id,
             self._sun_azimuth_entity_id,
+            self._lock_integration_entity_id,
+            self._lock_integration_with_position_entity_id,
             self._shadow_control_enabled_entity_id,
-            # Fügen Sie hier ALLE anderen Entitäten-IDs ein, die Sie oben zugewiesen haben,
-            # und die Zustandsänderungen auslösen sollen!
-            # z.B. self._lock_integration_entity_id, self._threshold_temperature_entity_id, etc.
+            self._dawn_control_enabled_entity_id
         ]
 
-        # Filtern Sie None-Werte heraus, falls ein optionaler Parameter nicht gesetzt ist
-        relevant_entity_ids = [eid for eid in relevant_entity_ids if eid]
+        # Filtern Sie None-Werte heraus (falls ein optionaler Parameter nicht gesetzt ist,
+        # oder wenn Sie versehentlich einen Platzhalter eingefügt haben, der None ist)
+        unique_relevant_entity_ids = list(set(eid for eid in relevant_entity_ids if eid))
 
         self._listeners.append(
             async_track_state_change_event(
                 self.hass,
-                relevant_entity_ids,
+                unique_relevant_entity_ids,
                 self._async_handle_input_change, # EINE zentrale Methode für alle Änderungen
             )
         )
