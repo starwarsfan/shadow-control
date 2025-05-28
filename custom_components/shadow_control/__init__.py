@@ -655,8 +655,13 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Check for external shutter modification -> TBD")
         pass
 
-
-    async def _send_cover_commands(self, desired_height: float, desired_tilt_position: float) -> None:
+    async def _position_shutter(
+            self,
+            shutter_height_percent: float,
+            shutter_angle_percent: float,
+            shadow_position: bool,
+            stop_timer: bool
+    ) -> None:
         """Helper to send commands to the target cover."""
         entity_id = self._target_cover_entity_id
         current_cover_state: State | None = self.hass.states.get(entity_id)
@@ -678,47 +683,44 @@ class ShadowControlManager:
         current_tilt = current_cover_state.attributes.get('current_tilt_position')
 
         # Toleranzen aus Konfiguration verwenden
-        # tolerance_height = float(self.hass.states.get(self._config["modification_tolerance_height_entity_id"]).state)
-        # tolerance_angle = float(self.hass.states.get(self._config["modification_tolerance_angle_entity_id"]).state)
-        # Für den Moment fixe Toleranzen, bis Sie die Entitätenwerte lesen
-        tolerance_height = 0.5
-        tolerance_angle = 0.5
+        tolerance_height = float(self.hass.states.get(self._config[SCDynamicInput.CONF_MODIFICATION_TOLERANCE_HEIGHT_ENTITY_ID.value]).state)
+        tolerance_angle = float(self.hass.states.get(self._config[SCDynamicInput.CONF_MODIFICATION_TOLERANCE_ANGLE_ENTITY_ID.value]).state)
 
 
         # Höhen-Befehl senden
         if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
-            if current_pos is None or abs(current_pos - desired_height) > tolerance_height:
-                _LOGGER.info(f"[{DOMAIN}] Setting '{self._name}' ({entity_id}) position to {desired_height:.1f}% (current: {current_pos}).")
+            if current_pos is None or abs(current_pos - shutter_height_percent) > tolerance_height:
+                _LOGGER.info(f"[{DOMAIN}] Setting '{self._name}' ({entity_id}) position to {shutter_height_percent:.1f}% (current: {current_pos}).")
                 try:
                     await self.hass.services.async_call(
                         "cover",
                         "set_cover_position", # Korrekter Dienstname
-                        {"entity_id": entity_id, "position": desired_height},
+                        {"entity_id": entity_id, "position": shutter_height_percent},
                         blocking=False
                     )
                 except Exception as e:
                     _LOGGER.error(f"[{DOMAIN}] Failed to set position for '{self._name}' ({entity_id}): {e}")
             else:
-                _LOGGER.debug(f"[{DOMAIN}] Position for '{self._name}' ({entity_id}) already at {desired_height:.1f}% (current: {current_pos}).")
+                _LOGGER.debug(f"[{DOMAIN}] Position for '{self._name}' ({entity_id}) already at {shutter_height_percent:.1f}% (current: {current_pos}).")
         else:
             _LOGGER.debug(f"[{DOMAIN}] Skipping position set for '{self._name}' ({entity_id}). Supported: {supported_features & CoverEntityFeature.SET_POSITION}, Service Found: {has_pos_service}.")
 
 
         # Winkel-Befehl senden
         if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
-            if current_tilt is None or abs(current_tilt - desired_tilt_position) > tolerance_angle:
-                _LOGGER.info(f"[{DOMAIN}] Setting '{self._name}' ({entity_id}) tilt position to {desired_tilt_position:.1f}% (current: {current_tilt}).")
+            if current_tilt is None or abs(current_tilt - shutter_angle_percent) > tolerance_angle:
+                _LOGGER.info(f"[{DOMAIN}] Setting '{self._name}' ({entity_id}) tilt position to {shutter_angle_percent:.1f}% (current: {current_tilt}).")
                 try:
                     await self.hass.services.async_call(
                         "cover",
                         "set_cover_tilt_position", # Korrekter Dienstname
-                        {"entity_id": entity_id, "tilt_position": desired_tilt_position},
+                        {"entity_id": entity_id, "tilt_position": shutter_angle_percent},
                         blocking=False
                     )
                 except Exception as e:
                     _LOGGER.error(f"[{DOMAIN}] Failed to set tilt position for '{self._name}' ({entity_id}): {e}")
             else:
-                _LOGGER.debug(f"[{DOMAIN}] Tilt position for '{self._name}' ({entity_id}) already at {desired_tilt_position:.1f}% (current: {current_tilt}).")
+                _LOGGER.debug(f"[{DOMAIN}] Tilt position for '{self._name}' ({entity_id}) already at {shutter_angle_percent:.1f}% (current: {current_tilt}).")
         else:
             _LOGGER.debug(f"[{DOMAIN}] Skipping tilt set for '{self._name}' ({entity_id}). Supported: {supported_features & CoverEntityFeature.SET_TILT_POSITION}, Service Found: {has_tilt_service}.")
 
