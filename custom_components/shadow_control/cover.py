@@ -37,49 +37,49 @@ from .const import (
     CONF_MODIFICATION_TOLERANCE_ANGLE_ENTITY_ID,
 
     # === Allgemeine Einstellungen (Test-Helfer) ===
-    CONF_AZIMUTH_FACADE_ENTITY_ID,
-    CONF_OFFSET_SUN_IN_ENTITY_ID,
-    CONF_OFFSET_SUN_OUT_ENTITY_ID,
-    CONF_ELEVATION_SUN_MIN_ENTITY_ID,
-    CONF_ELEVATION_SUN_MAX_ENTITY_ID,
-    CONF_SLAT_WIDTH_ENTITY_ID,
-    CONF_SLAT_DISTANCE_ENTITY_ID,
-    CONF_ANGLE_OFFSET_ENTITY_ID,
-    CONF_MIN_SLAT_ANGLE_ENTITY_ID,
-    CONF_STEPPING_HEIGHT_ENTITY_ID,
-    CONF_STEPPING_ANGLE_ENTITY_ID,
-    CONF_SHUTTER_TYPE_ENTITY_ID,
-    CONF_LIGHT_BAR_WIDTH_ENTITY_ID,
-    CONF_SHUTTER_HEIGHT_ENTITY_ID,
-    CONF_NEUTRAL_POS_HEIGHT_ENTITY_ID,
-    CONF_NEUTRAL_POS_ANGLE_ENTITY_ID,
-    CONF_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID,
-    CONF_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID,
-    CONF_UPDATE_LOCK_OUTPUT_ENTITY_ID,
+    CONF_FACADE_AZIMUTH_ENTITY_ID,
+    CONF_FACADE_OFFSET_SUN_IN_ENTITY_ID,
+    CONF_FACADE_OFFSET_SUN_OUT_ENTITY_ID,
+    CONF_FACADE_ELEVATION_SUN_MIN_ENTITY_ID,
+    CONF_FACADE_ELEVATION_SUN_MAX_ENTITY_ID,
+    CONF_FACADE_SLAT_WIDTH_ENTITY_ID,
+    CONF_FACADE_SLAT_DISTANCE_ENTITY_ID,
+    CONF_FACADE_SLAT_ANGLE_OFFSET_ENTITY_ID,
+    CONF_FACADE_SLAT_MIN_ANGLE_ENTITY_ID,
+    CONF_FACADE_SHUTTER_STEPPING_HEIGHT_ENTITY_ID,
+    CONF_FACADE_SHUTTER_STEPPING_ANGLE_ENTITY_ID,
+    CONF_FACADE_SHUTTER_TYPE_ENTITY_ID,
+    CONF_FACADE_LIGHT_STRIP_WIDTH_ENTITY_ID,
+    CONF_FACADE_SHUTTER_HEIGHT_ENTITY_ID,
+    CONF_FACADE_NEUTRAL_POS_HEIGHT_ENTITY_ID,
+    CONF_FACADE_NEUTRAL_POS_ANGLE_ENTITY_ID,
+    CONF_FACADE_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID,
+    CONF_FACADE_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID,
+    CONF_FACADE_UPDATE_LOCK_OUTPUT_ENTITY_ID,
 
     # === Beschattungseinstellungen (Test-Helfer) ===
     CONF_SHADOW_CONTROL_ENABLED_ENTITY_ID,
-    CONF_SHADOW_BRIGHTNESS_LEVEL_ENTITY_ID,
+    CONF_SHADOW_BRIGHTNESS_THRESHOLD_ENTITY_ID,
     CONF_SHADOW_AFTER_SECONDS_ENTITY_ID,
-    CONF_SHADOW_MAX_HEIGHT_ENTITY_ID,
-    CONF_SHADOW_MAX_ANGLE_ENTITY_ID,
-    CONF_SHADOW_LOOK_THROUGH_SECONDS_ENTITY_ID,
-    CONF_SHADOW_OPEN_SECONDS_ENTITY_ID,
-    CONF_SHADOW_LOOK_THROUGH_ANGLE_ENTITY_ID,
-    CONF_AFTER_SHADOW_HEIGHT_ENTITY_ID,
-    CONF_AFTER_SHADOW_ANGLE_ENTITY_ID,
+    CONF_SHADOW_SHUTTER_MAX_HEIGHT_ENTITY_ID,
+    CONF_SHADOW_SHUTTER_MAX_ANGLE_ENTITY_ID,
+    CONF_SHADOW_SHUTTER_LOOK_THROUGH_SECONDS_ENTITY_ID,
+    CONF_SHADOW_SHUTTER_OPEN_SECONDS_ENTITY_ID,
+    CONF_SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_ENTITY_ID,
+    CONF_SHADOW_HEIGHT_AFTER_SUN_ENTITY_ID,
+    CONF_SHADOW_ANGLE_AFTER_SUN_ENTITY_ID,
 
     # === Dämmerungseinstellungen (Test-Helfer) ===
     CONF_DAWN_CONTROL_ENABLED_ENTITY_ID,
-    CONF_DAWN_BRIGHTNESS_LEVEL_ENTITY_ID,
+    CONF_DAWN_BRIGHTNESS_THRESHOLD_ENTITY_ID,
     CONF_DAWN_AFTER_SECONDS_ENTITY_ID,
-    CONF_DAWN_MAX_HEIGHT_ENTITY_ID,
-    CONF_DAWN_MAX_ANGLE_ENTITY_ID,
-    CONF_DAWN_LOOK_THROUGH_SECONDS_ENTITY_ID,
-    CONF_DAWN_OPEN_SECONDS_ENTITY_ID,
-    CONF_DAWN_LOOK_THROUGH_ANGLE_ENTITY_ID,
-    CONF_AFTER_DAWN_HEIGHT_ENTITY_ID,
-    CONF_AFTER_DAWN_ANGLE_ENTITY_ID,
+    CONF_DAWN_SHUTTER_MAX_HEIGHT_ENTITY_ID,
+    CONF_DAWN_SHUTTER_MAX_ANGLE_ENTITY_ID,
+    CONF_DAWN_SHUTTER_LOOK_THROUGH_SECONDS_ENTITY_ID,
+    CONF_DAWN_SHUTTER_OPEN_SECONDS_ENTITY_ID,
+    CONF_DAWN_SHUTTER_LOOK_THROUGH_ANGLE_ENTITY_ID,
+    CONF_DAWN_HEIGHT_AFTER_DAWN_ENTITY_ID,
+    CONF_DAWN_ANGLE_AFTER_DAWN_ENTITY_ID,
 
     # Ausgang
     CONF_TARGET_COVER_ENTITY_ID,
@@ -159,49 +159,49 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._modification_tolerance_angle_entity_id = config.get(CONF_MODIFICATION_TOLERANCE_ANGLE_ENTITY_ID)
 
         # === Allgemeine Einstellungen (Test-Helfer) ===
-        self._azimuth_facade_entity_id = config.get(CONF_AZIMUTH_FACADE_ENTITY_ID)
-        self._offset_sun_in_entity_id = config.get(CONF_OFFSET_SUN_IN_ENTITY_ID)
-        self._offset_sun_out_entity_id = config.get(CONF_OFFSET_SUN_OUT_ENTITY_ID)
-        self._elevation_sun_min_entity_id = config.get(CONF_ELEVATION_SUN_MIN_ENTITY_ID)
-        self._elevation_sun_max_entity_id = config.get(CONF_ELEVATION_SUN_MAX_ENTITY_ID)
-        self._slat_width_entity_id = config.get(CONF_SLAT_WIDTH_ENTITY_ID)
-        self._slat_distance_entity_id = config.get(CONF_SLAT_DISTANCE_ENTITY_ID)
-        self._angle_offset_entity_id = config.get(CONF_ANGLE_OFFSET_ENTITY_ID)
-        self._min_slat_angle_entity_id = config.get(CONF_MIN_SLAT_ANGLE_ENTITY_ID)
-        self._stepping_height_entity_id = config.get(CONF_STEPPING_HEIGHT_ENTITY_ID)
-        self._stepping_angle_entity_id = config.get(CONF_STEPPING_ANGLE_ENTITY_ID)
-        self._shutter_type_entity_id = config.get(CONF_SHUTTER_TYPE_ENTITY_ID)
-        self._light_bar_width_entity_id = config.get(CONF_LIGHT_BAR_WIDTH_ENTITY_ID)
-        self._shutter_height_entity_id = config.get(CONF_SHUTTER_HEIGHT_ENTITY_ID)
-        self._neutral_pos_height_entity_id = config.get(CONF_NEUTRAL_POS_HEIGHT_ENTITY_ID)
-        self._neutral_pos_angle_entity_id = config.get(CONF_NEUTRAL_POS_ANGLE_ENTITY_ID)
-        self._movement_restriction_height_entity_id = config.get(CONF_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID)
-        self._movement_restriction_angle_entity_id = config.get(CONF_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID)
-        self._update_lock_output_entity_id = config.get(CONF_UPDATE_LOCK_OUTPUT_ENTITY_ID)
+        self._facade_azimuth_entity_id = config.get(CONF_FACADE_AZIMUTH_ENTITY_ID)
+        self._facade_offset_sun_in_entity_id = config.get(CONF_FACADE_OFFSET_SUN_IN_ENTITY_ID)
+        self._facade_offset_sun_out_entity_id = config.get(CONF_FACADE_OFFSET_SUN_OUT_ENTITY_ID)
+        self._facade_elevation_sun_min_entity_id = config.get(CONF_FACADE_ELEVATION_SUN_MIN_ENTITY_ID)
+        self._facade_elevation_sun_max_entity_id = config.get(CONF_FACADE_ELEVATION_SUN_MAX_ENTITY_ID)
+        self._facade_slat_width_entity_id = config.get(CONF_FACADE_SLAT_WIDTH_ENTITY_ID)
+        self._facade_slat_distance_entity_id = config.get(CONF_FACADE_SLAT_DISTANCE_ENTITY_ID)
+        self._facade_slat_angle_offset_entity_id = config.get(CONF_FACADE_SLAT_ANGLE_OFFSET_ENTITY_ID)
+        self._facade_slat_min_angle_entity_id = config.get(CONF_FACADE_SLAT_MIN_ANGLE_ENTITY_ID)
+        self._facade_shutter_stepping_height_entity_id = config.get(CONF_FACADE_SHUTTER_STEPPING_HEIGHT_ENTITY_ID)
+        self._facade_shutter_stepping_angle_entity_id = config.get(CONF_FACADE_SHUTTER_STEPPING_ANGLE_ENTITY_ID)
+        self._facade_shutter_type_entity_id = config.get(CONF_FACADE_SHUTTER_TYPE_ENTITY_ID)
+        self._facade_light_strip_width_entity_id = config.get(CONF_FACADE_LIGHT_STRIP_WIDTH_ENTITY_ID)
+        self._facade_shutter_height_entity_id = config.get(CONF_FACADE_SHUTTER_HEIGHT_ENTITY_ID)
+        self._facade_neutral_pos_height_entity_id = config.get(CONF_FACADE_NEUTRAL_POS_HEIGHT_ENTITY_ID)
+        self._facade_neutral_pos_angle_entity_id = config.get(CONF_FACADE_NEUTRAL_POS_ANGLE_ENTITY_ID)
+        self._facade_movement_restriction_height_entity_id = config.get(CONF_FACADE_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID)
+        self._facade_movement_restriction_angle_entity_id = config.get(CONF_FACADE_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID)
+        self._facade_update_lock_output_entity_id = config.get(CONF_FACADE_UPDATE_LOCK_OUTPUT_ENTITY_ID)
 
         # === Beschattungseinstellungen (Test-Helfer) ===
         self._shadow_control_enabled_entity_id = config.get(CONF_SHADOW_CONTROL_ENABLED_ENTITY_ID)
-        self._shadow_brightness_level_entity_id = config.get(CONF_SHADOW_BRIGHTNESS_LEVEL_ENTITY_ID)
+        self._shadow_brightness_threshold_entity_id = config.get(CONF_SHADOW_BRIGHTNESS_THRESHOLD_ENTITY_ID)
         self._shadow_after_seconds_entity_id = config.get(CONF_SHADOW_AFTER_SECONDS_ENTITY_ID)
-        self._shadow_max_height_entity_id = config.get(CONF_SHADOW_MAX_HEIGHT_ENTITY_ID)
-        self._shadow_max_angle_entity_id = config.get(CONF_SHADOW_MAX_ANGLE_ENTITY_ID)
-        self._shadow_look_through_seconds_entity_id = config.get(CONF_SHADOW_LOOK_THROUGH_SECONDS_ENTITY_ID)
-        self._shadow_open_seconds_entity_id = config.get(CONF_SHADOW_OPEN_SECONDS_ENTITY_ID)
-        self._shadow_look_through_angle_entity_id = config.get(CONF_SHADOW_LOOK_THROUGH_ANGLE_ENTITY_ID)
-        self._after_shadow_height_entity_id = config.get(CONF_AFTER_SHADOW_HEIGHT_ENTITY_ID)
-        self._after_shadow_angle_entity_id = config.get(CONF_AFTER_SHADOW_ANGLE_ENTITY_ID)
+        self._shadow_shutter_max_height_entity_id = config.get(CONF_SHADOW_SHUTTER_MAX_HEIGHT_ENTITY_ID)
+        self._shadow_shutter_max_angle_entity_id = config.get(CONF_SHADOW_SHUTTER_MAX_ANGLE_ENTITY_ID)
+        self._shadow_shutter_look_through_seconds_entity_id = config.get(CONF_SHADOW_SHUTTER_LOOK_THROUGH_SECONDS_ENTITY_ID)
+        self._shadow_shutter_open_seconds_entity_id = config.get(CONF_SHADOW_SHUTTER_OPEN_SECONDS_ENTITY_ID)
+        self._shadow_shutter_look_through_angle_entity_id = config.get(CONF_SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_ENTITY_ID)
+        self._shadow_height_after_sun_entity_id = config.get(CONF_SHADOW_HEIGHT_AFTER_SUN_ENTITY_ID)
+        self._shadow_angle_after_sun_entity_id = config.get(CONF_SHADOW_ANGLE_AFTER_SUN_ENTITY_ID)
 
         # === Dämmerungseinstellungen (Test-Helfer) ===
         self._dawn_control_enabled_entity_id = config.get(CONF_DAWN_CONTROL_ENABLED_ENTITY_ID)
-        self._dawn_brightness_level_entity_id = config.get(CONF_DAWN_BRIGHTNESS_LEVEL_ENTITY_ID)
+        self._dawn_brightness_threshold_entity_id = config.get(CONF_DAWN_BRIGHTNESS_THRESHOLD_ENTITY_ID)
         self._dawn_after_seconds_entity_id = config.get(CONF_DAWN_AFTER_SECONDS_ENTITY_ID)
-        self._dawn_max_height_entity_id = config.get(CONF_DAWN_MAX_HEIGHT_ENTITY_ID)
-        self._dawn_max_angle_entity_id = config.get(CONF_DAWN_MAX_ANGLE_ENTITY_ID)
-        self._dawn_look_through_seconds_entity_id = config.get(CONF_DAWN_LOOK_THROUGH_SECONDS_ENTITY_ID)
-        self._dawn_open_seconds_entity_id = config.get(CONF_DAWN_OPEN_SECONDS_ENTITY_ID)
-        self._dawn_look_through_angle_entity_id = config.get(CONF_DAWN_LOOK_THROUGH_ANGLE_ENTITY_ID)
-        self._after_dawn_height_entity_id = config.get(CONF_AFTER_DAWN_HEIGHT_ENTITY_ID)
-        self._after_dawn_angle_entity_id = config.get(CONF_AFTER_DAWN_ANGLE_ENTITY_ID)
+        self._dawn_shutter_max_height_entity_id = config.get(CONF_DAWN_SHUTTER_MAX_HEIGHT_ENTITY_ID)
+        self._dawn_shutter_max_angle_entity_id = config.get(CONF_DAWN_SHUTTER_MAX_ANGLE_ENTITY_ID)
+        self._dawn_shutter_look_through_seconds_entity_id = config.get(CONF_DAWN_SHUTTER_LOOK_THROUGH_SECONDS_ENTITY_ID)
+        self._dawn_shutter_open_seconds_entity_id = config.get(CONF_DAWN_SHUTTER_OPEN_SECONDS_ENTITY_ID)
+        self._dawn_shutter_look_through_angle_entity_id = config.get(CONF_DAWN_SHUTTER_LOOK_THROUGH_ANGLE_ENTITY_ID)
+        self._dawn_height_after_dawn_entity_id = config.get(CONF_DAWN_HEIGHT_AFTER_DAWN_ENTITY_ID)
+        self._dawn_angle_after_dawn_entity_id = config.get(CONF_DAWN_ANGLE_AFTER_DAWN_ENTITY_ID)
 
         # Aktuelle Werte der Eingänge resp. deren Entitäten
         # === Dynamische Eingänge (Test-Helfer) ===
@@ -433,27 +433,27 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._modification_tolerance_angle = self._get_entity_numeric_state(self._modification_tolerance_angle_entity_id, float)
 
         # === Allgemeine Einstellungen ===
-        self._azimuth_facade = self._get_entity_numeric_state(self._azimuth_facade_entity_id, float)
-        self._offset_sun_in = self._get_entity_numeric_state(self._offset_sun_in_entity_id, float)
-        self._offset_sun_out = self._get_entity_numeric_state(self._offset_sun_out_entity_id, float)
-        self._elevation_sun_min = self._get_entity_numeric_state(self._elevation_sun_min_entity_id, float)
-        self._elevation_sun_max = self._get_entity_numeric_state(self._elevation_sun_max_entity_id, float)
-        self._slat_width = self._get_entity_numeric_state(self._slat_width_entity_id, float)
-        self._slat_distance = self._get_entity_numeric_state(self._slat_distance_entity_id, float)
-        self._angle_offset = self._get_entity_numeric_state(self._angle_offset_entity_id, float)
-        self._min_slat_angle = self._get_entity_numeric_state(self._min_slat_angle_entity_id, float)
-        self._stepping_height = self._get_entity_numeric_state(self._stepping_height_entity_id, float)
-        self._stepping_angle = self._get_entity_numeric_state(self._stepping_angle_entity_id, float)
-        self._shutter_type = self._get_entity_string_state(self._shutter_type_entity_id)
-        self._light_bar_width = self._get_entity_numeric_state(self._light_bar_width_entity_id, float)
-        self._shutter_height = self._get_entity_numeric_state(self._shutter_height_entity_id, float)
-        self._neutral_pos_height = self._get_entity_numeric_state(self._neutral_pos_height_entity_id, float)
-        self._neutral_pos_angle = self._get_entity_numeric_state(self._neutral_pos_angle_entity_id, float)
+        self._azimuth_facade = self._get_entity_numeric_state(self._facade_azimuth_entity_id, float)
+        self._offset_sun_in = self._get_entity_numeric_state(self._facade_offset_sun_in_entity_id, float)
+        self._offset_sun_out = self._get_entity_numeric_state(self._facade_offset_sun_out_entity_id, float)
+        self._elevation_sun_min = self._get_entity_numeric_state(self._facade_elevation_sun_min_entity_id, float)
+        self._elevation_sun_max = self._get_entity_numeric_state(self._facade_elevation_sun_max_entity_id, float)
+        self._slat_width = self._get_entity_numeric_state(self._facade_slat_width_entity_id, float)
+        self._slat_distance = self._get_entity_numeric_state(self._facade_slat_distance_entity_id, float)
+        self._angle_offset = self._get_entity_numeric_state(self._facade_slat_angle_offset_entity_id, float)
+        self._min_slat_angle = self._get_entity_numeric_state(self._facade_slat_min_angle_entity_id, float)
+        self._stepping_height = self._get_entity_numeric_state(self._facade_shutter_stepping_height_entity_id, float)
+        self._stepping_angle = self._get_entity_numeric_state(self._facade_shutter_stepping_angle_entity_id, float)
+        self._shutter_type = self._get_entity_string_state(self._facade_shutter_type_entity_id)
+        self._light_bar_width = self._get_entity_numeric_state(self._facade_light_strip_width_entity_id, float)
+        self._shutter_height = self._get_entity_numeric_state(self._facade_shutter_height_entity_id, float)
+        self._neutral_pos_height = self._get_entity_numeric_state(self._facade_neutral_pos_height_entity_id, float)
+        self._neutral_pos_angle = self._get_entity_numeric_state(self._facade_neutral_pos_angle_entity_id, float)
 
         # -------------------------------------------
         # Movement restriction to enumeration mapping
-        #self._movement_restriction_height = self._get_entity_string_state(self._movement_restriction_height_entity_id)
-        height_restriction_entity_id = self._config.get(CONF_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID)
+        #self._movement_restriction_height = self._get_entity_string_state(self._facade_movement_restriction_height_entity_id)
+        height_restriction_entity_id = self._config.get(CONF_FACADE_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID)
         if height_restriction_entity_id:
             state_obj = self.hass.states.get(height_restriction_entity_id)
             if state_obj and state_obj.state:
@@ -470,10 +470,10 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 _LOGGER.warning(f"{self._name}: Value of {height_restriction_entity_id} not available or empty. Using NO_RESTRICTION.")
                 self._movement_restriction_height = MovementRestricted.NO_RESTRICTION
         else:
-            _LOGGER.warning(f"{self._name}: Configuration of '{CONF_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID}' missing. Using NO_RESTRICTION.")
+            _LOGGER.warning(f"{self._name}: Configuration of '{CONF_FACADE_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID}' missing. Using NO_RESTRICTION.")
             self._movement_restriction_height = MovementRestricted.NO_RESTRICTION
-        #self._movement_restriction_angle = self._get_entity_string_state(self._movement_restriction_angle_entity_id)
-        angle_restriction_entity_id = self._config.get(CONF_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID)
+        #self._movement_restriction_angle = self._get_entity_string_state(self._facade_movement_restriction_angle_entity_id)
+        angle_restriction_entity_id = self._config.get(CONF_FACADE_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID)
         if angle_restriction_entity_id:
             state_obj = self.hass.states.get(angle_restriction_entity_id)
             if state_obj and state_obj.state:
@@ -489,34 +489,34 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 _LOGGER.warning(f"{self._name}: Value of {angle_restriction_entity_id} not available or empty. Using NO_RESTRICTION.")
                 self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
         else:
-            _LOGGER.warning(f"{self._name}: Configuration of '{CONF_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID}' missing. Using NO_RESTRICTION.")
+            _LOGGER.warning(f"{self._name}: Configuration of '{CONF_FACADE_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID}' missing. Using NO_RESTRICTION.")
             self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
 
-        self._update_lock_output = self._get_entity_string_state(self._update_lock_output_entity_id)
+        self._update_lock_output = self._get_entity_string_state(self._facade_update_lock_output_entity_id)
 
         # === Beschattungseinstellungen ===
         self._shadow_control_enabled = self._get_entity_boolean_state(self._shadow_control_enabled_entity_id)
-        self._shadow_brightness_level = self._get_entity_numeric_state(self._shadow_brightness_level_entity_id, float)
+        self._shadow_brightness_level = self._get_entity_numeric_state(self._shadow_brightness_threshold_entity_id, float)
         self._shadow_after_seconds = self._get_entity_numeric_state(self._shadow_after_seconds_entity_id, float)
-        self._shadow_max_height = self._get_entity_numeric_state(self._shadow_max_height_entity_id, float)
-        self._shadow_max_angle = self._get_entity_numeric_state(self._shadow_max_angle_entity_id, float)
-        self._shadow_look_through_seconds = self._get_entity_numeric_state(self._shadow_look_through_seconds_entity_id, float)
-        self._shadow_open_seconds = self._get_entity_numeric_state(self._shadow_open_seconds_entity_id, float)
-        self._shadow_look_through_angle = self._get_entity_numeric_state(self._shadow_look_through_angle_entity_id, float)
-        self._after_shadow_height = self._get_entity_numeric_state(self._after_shadow_height_entity_id, float)
-        self._after_shadow_angle = self._get_entity_numeric_state(self._after_shadow_angle_entity_id, float)
+        self._shadow_max_height = self._get_entity_numeric_state(self._shadow_shutter_max_height_entity_id, float)
+        self._shadow_max_angle = self._get_entity_numeric_state(self._shadow_shutter_max_angle_entity_id, float)
+        self._shadow_look_through_seconds = self._get_entity_numeric_state(self._shadow_shutter_look_through_seconds_entity_id, float)
+        self._shadow_open_seconds = self._get_entity_numeric_state(self._shadow_shutter_open_seconds_entity_id, float)
+        self._shadow_look_through_angle = self._get_entity_numeric_state(self._shadow_shutter_look_through_angle_entity_id, float)
+        self._after_shadow_height = self._get_entity_numeric_state(self._shadow_height_after_sun_entity_id, float)
+        self._after_shadow_angle = self._get_entity_numeric_state(self._shadow_angle_after_sun_entity_id, float)
 
         # === Dämmerungseinstellungen ===
         self._dawn_control_enabled = self._get_entity_boolean_state(self._dawn_control_enabled_entity_id)
-        self._dawn_brightness_level = self._get_entity_numeric_state(self._dawn_brightness_level_entity_id, float)
+        self._dawn_brightness_level = self._get_entity_numeric_state(self._dawn_brightness_threshold_entity_id, float)
         self._dawn_after_seconds = self._get_entity_numeric_state(self._dawn_after_seconds_entity_id, float)
-        self._dawn_max_height = self._get_entity_numeric_state(self._dawn_max_height_entity_id, float)
-        self._dawn_max_angle = self._get_entity_numeric_state(self._dawn_max_angle_entity_id, float)
-        self._dawn_look_through_seconds = self._get_entity_numeric_state(self._dawn_look_through_seconds_entity_id, float)
-        self._dawn_open_seconds = self._get_entity_numeric_state(self._dawn_open_seconds_entity_id, float)
-        self._dawn_look_through_angle = self._get_entity_numeric_state(self._dawn_look_through_angle_entity_id, float)
-        self._after_dawn_height = self._get_entity_numeric_state(self._after_dawn_height_entity_id, float)
-        self._after_dawn_angle = self._get_entity_numeric_state(self._after_dawn_angle_entity_id, float)
+        self._dawn_max_height = self._get_entity_numeric_state(self._dawn_shutter_max_height_entity_id, float)
+        self._dawn_max_angle = self._get_entity_numeric_state(self._dawn_shutter_max_angle_entity_id, float)
+        self._dawn_look_through_seconds = self._get_entity_numeric_state(self._dawn_shutter_look_through_seconds_entity_id, float)
+        self._dawn_open_seconds = self._get_entity_numeric_state(self._dawn_shutter_open_seconds_entity_id, float)
+        self._dawn_look_through_angle = self._get_entity_numeric_state(self._dawn_shutter_look_through_angle_entity_id, float)
+        self._after_dawn_height = self._get_entity_numeric_state(self._dawn_height_after_dawn_entity_id, float)
+        self._after_dawn_angle = self._get_entity_numeric_state(self._dawn_angle_after_dawn_entity_id, float)
 
         _LOGGER.debug(
             f"{self._name}: Updated values (part of): "
@@ -2143,7 +2143,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
         100% = 90 Grad (Lamellen geschlossen)
         Kann auch auf mehr als 90 Grad gehen, wenn im Enum entsprechend definiert.
         """
-        # Stellen Sie sicher, dass _min_slat_angle_entity_id und _angle_offset_entity_id
+        # Stellen Sie sicher, dass _facade_slat_min_angle_entity_id und _facade_slat_angle_offset_entity_id
         # in __init__ korrekt initialisiert sind und über _get_entity_numeric_state gelesen werden.
 
         min_slat_angle = self._min_slat_angle  # Dieser Wert sollte jetzt über _update_input_values gesetzt sein
