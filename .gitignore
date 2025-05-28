@@ -15,6 +15,7 @@ coverage.xml
 
 # Home Assistant configuration
 config/*
+!config/shadow_control/*
 !config/configuration.yaml
 !config/scripts.yaml
 
