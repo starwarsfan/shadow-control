@@ -673,61 +673,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
         """Return if the cover is closing or not."""
         return False # Für ein Template-Cover meist False, es sei denn, Sie simulieren dies
 
-    # --- CoverEntity Methods ---
-    async def async_open_cover(self, **kwargs: any) -> None:
-        """Open the cover."""
-        _LOGGER.info(f"{self._name}: Opening cover (calling script)")
-        await self.hass.services.async_call(
-            "script",
-            "test_cover_open", # Ihr Test-Skript
-            blocking=True,
-        )
-        # Optional: Den Helfer für die aktuelle Position aktualisieren (falls nicht durch das Skript erledigt)
-        # self.hass.states.async_set(self._shutter_current_height_entity_id, 100)
-        self.async_write_ha_state()
-
-    async def async_close_cover(self, **kwargs: any) -> None:
-        """Close the cover."""
-        _LOGGER.info(f"{self._name}: Closing cover (calling script)")
-        await self.hass.services.async_call(
-            "script",
-            "test_cover_close", # Ihr Test-Skript
-            blocking=True,
-        )
-        # self.hass.states.async_set(self._shutter_current_height_entity_id, 0)
-        self.async_write_ha_state()
-
-    async def async_set_cover_position(self, **kwargs: any) -> None:
-        """Move the cover to a specific position."""
-        position = kwargs[ATTR_POSITION]
-        _LOGGER.info(f"{self._name}: Setting cover position to {position} (calling script)")
-        await self.hass.services.async_call(
-            "script",
-            "test_cover_set_position", # Ihr Test-Skript
-            service_data={"position": position},
-            blocking=True,
-        )
-        # Simuliert, dass das Skript den Ist-Wert-Helfer aktualisiert
-        # In der Realität würde das Skript oder das echte Cover den Zustand ändern.
-        # Für Testzwecke können Sie den input_number hier direkt setzen.
-        # await self.hass.services.async_call(
-        #     "input_number",
-        #     "set_value",
-        #     {"entity_id": self._shutter_current_height_entity_id, "value": position},
-        # )
-        self.async_write_ha_state()
-
-
-    async def async_stop_cover(self, **kwargs: any) -> None:
-        """Stop the cover."""
-        _LOGGER.info(f"{self._name}: Stopping cover (calling script)")
-        await self.hass.services.async_call(
-            "script",
-            "test_cover_stop", # Ihr Test-Skript
-            blocking=True,
-        )
-        self.async_write_ha_state()
-
     @property
     def unique_id(self) -> str | None:
         """Return the unique ID of the cover."""
