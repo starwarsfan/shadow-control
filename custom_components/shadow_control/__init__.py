@@ -669,6 +669,54 @@ class ShadowControlManager:
             stop_timer: bool
     ) -> None:
         """Helper to send commands to the target cover."""
+        _LOGGER.debug(
+            f"{self._name}: Starting _position_shutter with target height {shutter_height_percent:.2f}% "
+            f"and angle {shutter_angle_percent:.2f}% (is_initial_run: {self._is_initial_run}, "
+            f"lock_state: {self._current_lock_state.name})"
+        )
+
+        # Always handle timer cancellation if required, regardless of initial run or lock state
+        if stop_timer:
+            _LOGGER.debug(f"{self._name}: Canceling timer.")
+            self._cancel_recalculation_timer()
+
+        # --- Phase 1: Update internal states that should always reflect the calculation ---
+        # These are the *calculated target* values.
+        self._calculated_shutter_height = shutter_height_percent
+        self._calculated_shutter_angle = shutter_angle_percent
+        self._calculated_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(
+            shutter_angle_percent)
+
+        # --- Phase 2: Handle initial run special logic ---
+        if self._is_initial_run:
+            _LOGGER.info(
+                f"{self._name}: Initial run of integration. Setting internal states. No physical output update.")
+            # Only set internal previous values for the *next* run's send-by-change logic.
+            # These are now set to the *initial target* values.
+            self._previous_shutter_height = shutter_height_percent
+            self._previous_shutter_angle = shutter_angle_percent
+            self._is_initial_run = False  # Initial run completed
+
+            self._update_extra_state_attributes()
+            return  # Exit here, as no physical output should happen on initial run
+
+        # --- Phase 3: Check for Lock State BEFORE applying stepping/should_output_be_updated and sending commands ---
+        # This ensures that calculations still happen, but outputs are skipped.
+        is_locked = (self._current_lock_state != LockState.UNLOCKED)
+        if is_locked:
+            _LOGGER.info(
+                f"{self._name}: Integration is locked ({self._current_lock_state.name}). "
+                f"Calculations are running, but physical outputs are skipped."
+            )
+            # Update internal _previous values here to reflect that if it *were* unlocked,
+            # it would have moved to these calculated positions.
+            # This prepares for a smooth transition when unlocked.
+            self._previous_shutter_height = shutter_height_percent
+            self._previous_shutter_angle = shutter_angle_percent
+            self._update_extra_state_attributes()
+            return  # Exit here, no physical output while locked
+
+        # --- Phase 4: Apply stepping and output restriction logic (only if not initial run AND not locked) ---
         entity_id = self._target_cover_entity_id
         current_cover_state: State | None = self.hass.states.get(entity_id)
 
@@ -684,26 +732,55 @@ class ShadowControlManager:
 
         _LOGGER.debug(f"{self._name}: Services availability ({entity_id}): set_cover_position={has_pos_service}, set_cover_tilt_position={has_tilt_service}")
 
-        # Aktuelle Positionen für Optimierung abrufen
-        current_pos = current_cover_state.attributes.get('current_position')
-        current_tilt = current_cover_state.attributes.get('current_tilt_position')
-
-        # Toleranzen aus Konfiguration verwenden
-        tolerance_height = float(self.hass.states.get(self._config[SCDynamicInput.CONF_MODIFICATION_TOLERANCE_HEIGHT_ENTITY_ID.value]).state)
-        tolerance_angle = float(self.hass.states.get(self._config[SCDynamicInput.CONF_MODIFICATION_TOLERANCE_ANGLE_ENTITY_ID.value]).state)
-
-        self._calculated_shutter_height = shutter_height_percent
-        self._calculated_shutter_angle = shutter_angle_percent
-
         async_dispatcher_send(
             self.hass,
             f"{DOMAIN}_update_{self._name.lower().replace(' ', '_')}"
         )
 
-        # Höhen-Befehl senden
-        if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
-            if current_pos is None or abs(current_pos - shutter_height_percent) > tolerance_height:
-                _LOGGER.info(f"{self._name}: Setting position to {shutter_height_percent:.1f}% (current: {current_pos}).")
+        # ProduceShadow as Binary Sensor
+        if self._is_producing_shadow != shadow_position:
+            binary_sensor_entity_id = f"input_boolean.{self._name.lower().replace(' ', '_')}_shadow_active"
+            _LOGGER.debug(
+                f"{self._name}: Updating binary sensor '{binary_sensor_entity_id}' to {shadow_position}.")
+            await self.hass.services.async_call(
+                "input_boolean",
+                "turn_on" if shadow_position else "turn_off",
+                {"entity_id": binary_sensor_entity_id},
+                blocking=False
+            )
+            self._is_producing_shadow = shadow_position
+
+        # Height Handling
+        height_to_set_percent = self._handle_shutter_height_stepping(shutter_height_percent)
+        height_to_set_percent = self._should_output_be_updated(
+            config_value=self._movement_restriction_height,
+            new_value=height_to_set_percent,
+            previous_value=self._previous_shutter_height
+        )
+
+        # Angle Handling - Crucial for "send angle if height changed" logic
+        # We need the value of _previous_shutter_height *before* it's updated for height.
+        # So, compare the *calculated* `shutter_height_percent` with what was previously *stored*.
+        height_calculated_different_from_previous = (
+                abs(shutter_height_percent - self._previous_shutter_height) > 0.001) if self._previous_shutter_height is not None else True
+
+        angle_to_set_percent = self._should_output_be_updated(
+            config_value=self._movement_restriction_angle,
+            new_value=shutter_angle_percent,
+            previous_value=self._previous_shutter_angle
+        )
+
+        # --- Phase 5: Send commands if values actually changed (only if not initial run AND not locked) ---
+
+        send_height_command = abs(height_to_set_percent - self._previous_shutter_height) > 0.001 if self._previous_shutter_height is not None else True
+
+        # Send angle command if angle changed OR if height changed significantly
+        send_angle_command = (abs(angle_to_set_percent - self._previous_shutter_angle) > 0.001 if self._previous_shutter_angle is not None else True) or height_calculated_different_from_previous
+
+        # Height positioning
+        if send_height_command:
+            if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
+                _LOGGER.info(f" {self._name}: Setting position to {shutter_height_percent:.1f}% (current: {self._previous_shutter_height}).")
                 try:
                     await self.hass.services.async_call(
                         "cover",
@@ -713,16 +790,17 @@ class ShadowControlManager:
                     )
                 except Exception as e:
                     _LOGGER.error(f"{self._name}: Failed to set position: {e}")
+                self._previous_shutter_height = shutter_height_percent
             else:
-                _LOGGER.debug(f"{self._name}: Position already at {shutter_height_percent:.1f}% (current: {current_pos}).")
+                _LOGGER.debug(f"{self._name}: Skipping position set. Supported: {supported_features & CoverEntityFeature.SET_POSITION}, Service Found: {has_pos_service}.")
         else:
-            _LOGGER.debug(f"{self._name}: Skipping position set. Supported: {supported_features & CoverEntityFeature.SET_POSITION}, Service Found: {has_pos_service}.")
+            _LOGGER.debug(
+                f"{self._name}: Height '{height_to_set_percent:.2f}%' not sent, value was the same or restricted.")
 
-
-        # Winkel-Befehl senden
-        if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
-            if current_tilt is None or abs(current_tilt - shutter_angle_percent) > tolerance_angle:
-                _LOGGER.info(f"{self._name}: Setting tilt position to {shutter_angle_percent:.1f}% (current: {current_tilt}).")
+        # Angle positioning
+        if send_angle_command:
+            if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
+                _LOGGER.info(f" {self._name}: Setting tilt position to {shutter_angle_percent:.1f}% (current: {self._previous_shutter_angle}).")
                 try:
                     await self.hass.services.async_call(
                         "cover",
@@ -732,11 +810,17 @@ class ShadowControlManager:
                     )
                 except Exception as e:
                     _LOGGER.error(f"{self._name}: Failed to set tilt position: {e}")
+                self._previous_shutter_angle = shutter_angle_percent
             else:
-                _LOGGER.debug(f"{self._name}: Tilt position already at {shutter_angle_percent:.1f}% (current: {current_tilt}).")
+                _LOGGER.debug(f"{self._name}: Skipping tilt set. Supported: {supported_features & CoverEntityFeature.SET_TILT_POSITION}, Service Found: {has_tilt_service}.")
         else:
-            _LOGGER.debug(f"{self._name}: Skipping tilt set. Supported: {supported_features & CoverEntityFeature.SET_TILT_POSITION}, Service Found: {has_tilt_service}.")
+            _LOGGER.debug(
+                f"{self._name}: Angle '{angle_to_set_percent:.2f}%' not sent, value was the same or restricted.")
 
+        # Always update HA state at the end to reflect the latest internal calculated values and attributes
+        self._update_extra_state_attributes()
+
+        _LOGGER.debug(f"{self._name}: _position_shutter finished.")
 
     async def async_unload(self) -> bool:
         """Clean up when the integration is unloaded."""
