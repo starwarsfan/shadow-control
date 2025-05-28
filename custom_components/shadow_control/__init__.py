@@ -708,6 +708,13 @@ class ShadowControlManager:
         tolerance_height = float(self.hass.states.get(self._config[SCDynamicInput.CONF_MODIFICATION_TOLERANCE_HEIGHT_ENTITY_ID.value]).state)
         tolerance_angle = float(self.hass.states.get(self._config[SCDynamicInput.CONF_MODIFICATION_TOLERANCE_ANGLE_ENTITY_ID.value]).state)
 
+        self._calculated_shutter_height = shutter_height_percent
+        self._calculated_shutter_angle = shutter_angle_percent
+
+        async_dispatcher_send(
+            self.hass,
+            f"{DOMAIN}_update_{self._name.lower().replace(' ', '_')}"
+        )
 
         # Höhen-Befehl senden
         if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
