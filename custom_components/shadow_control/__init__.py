@@ -1411,18 +1411,18 @@ class ShadowControlManager:
 
         current_brightness = self._get_current_brightness()
 
-        shadow_handling_active = self._is_shadow_handling_activated()
+        shadow_handling_active = await self._is_shadow_handling_activated()
         shadow_threshold_close = self._shadow_brightness_level
         shadow_close_delay = self._shadow_after_seconds
 
-        dawn_handling_active = self._is_dawn_handling_activated()
+        dawn_handling_active = await self._is_dawn_handling_activated()
         dawn_brightness = self._get_current_dawn_brightness()
         dawn_threshold_close = self._dawn_brightness_level
         dawn_close_delay = self._dawn_after_seconds
         height_after_dawn = self._after_dawn_height
         angle_after_dawn = self._after_dawn_angle
 
-        is_in_sun = self._check_if_facade_is_in_sun()
+        is_in_sun = await self._check_if_facade_is_in_sun()
         neutral_height = self._neutral_pos_height
         neutral_angle = self._neutral_pos_angle
 
