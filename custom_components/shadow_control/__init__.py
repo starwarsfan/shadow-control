@@ -328,7 +328,7 @@ class ShadowControlManager:
 
     async def async_hass_started(self, event: Event) -> None:
         """Handle Home Assistant start event for this specific manager."""
-        _LOGGER.info(f"{self._name}: Home Assistant has started. Initializing Shadow Control")
+        _LOGGER.info(f" {self._name}: Home Assistant has started. Initializing Shadow Control")
         # Hier können Sie den initialen Zustand abrufen und die erste Berechnung ausführen
 
         # Initialberechnung beim Start
