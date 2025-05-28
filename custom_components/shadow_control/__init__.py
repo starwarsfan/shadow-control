@@ -177,7 +177,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         _async_hass_started_all_managers
     )
 
-    _LOGGER.info(f"[{DOMAIN}] Integration 'Shadow Control' successfully set up. Configured {len(managers_list)} covers.")
+    _LOGGER.info(f" [{DOMAIN}] Integration 'Shadow Control' successfully set up. Configured {len(managers_list)} covers.")
     return True
 
 class ShadowControlManager:
