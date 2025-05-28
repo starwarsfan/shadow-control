@@ -3,7 +3,9 @@
 from enum import Enum, IntEnum
 
 DOMAIN = "shadow_control"
+DOMAIN_DATA_MANAGERS = f"{DOMAIN}_managers" # A good practice for unique keys
 DEFAULT_NAME = "Shadow Control"
+CONF_COVERS = "covers" # Konstante für den 'covers' Schlüssel in der Konfiguration
 
 #CONF_NAME = "name"
 
