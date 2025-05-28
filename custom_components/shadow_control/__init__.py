@@ -112,48 +112,60 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the Shadow Control integration."""
     _LOGGER.debug(f"[{DOMAIN}] async_setup called.")
 
-    # Holen Sie sich die Konfiguration für Shadow Control
-    conf = config[DOMAIN]
+    # 1. Konfiguration validieren (falls nicht bereits global in const.py passiert)
+    # Wenn Sie das Schema direkt hier validieren würden:
+    # try:
+    #     validated_config = PLATFORM_SCHEMA(config) # Oder nur die relevante Unter-Config
+    # except vol.Invalid as e:
+    #     _LOGGER.error(f"[{DOMAIN}] Invalid configuration: {e}")
+    #     return False
 
-    # Die 'covers' Liste aus der Konfiguration
-    covers_config = conf["covers"]
+    # Überprüfen, ob der Hauptschlüssel unserer Integration vorhanden ist
+    if DOMAIN not in config:
+        _LOGGER.warning(f"[{DOMAIN}] No configuration found for {DOMAIN}.")
+        return False # Oder True, je nachdem, ob die Integration ohne Konfig laufen kann
 
-    hass.data.setdefault(DOMAIN, {}) # Initialisiert den Datenbereich für die Integration
+    # Zugriff auf die spezifische Konfiguration für unsere Integration
+    # Wir nehmen an, dass die gesamte Konfiguration des Domains unter config[DOMAIN] liegt
+    domain_config = config[DOMAIN]
 
-    # Für jedes konfigurierte Cover einen eigenen Manager erstellen
-    # Das ist der Schlüssel für die Skalierbarkeit und Trennung der Logik pro Cover
-    for cover_conf in covers_config:
-        cover_name = cover_conf["name"]
-        _LOGGER.debug(f"[{DOMAIN}] Setting up manager for cover: {cover_name}")
+    # Initialisiere die Liste der Manager
+    managers_list = [] # <--- managers_list wird hier initialisiert
 
-        manager = ShadowControlManager(
-            hass,
-            cover_conf # Übergeben Sie die gesamte Konfiguration dieses Covers an den Manager
-        )
+    # Überprüfen, ob der 'covers' Schlüssel vorhanden ist und eine Liste ist
+    if CONF_COVERS in domain_config and isinstance(domain_config[CONF_COVERS], list):
+        for cover_config in domain_config[CONF_COVERS]:
+            _LOGGER.debug(f"[{DOMAIN}] Setting up manager for cover: {cover_config['name']}")
+            manager = ShadowControlManager(hass, cover_config)
+            managers_list.append(manager)
+            manager.register_listeners() # Listener für diesen Manager registrieren
 
-        # Speichern Sie den Manager unter dem Namen des Covers (oder der target_cover_entity_id)
-        # So können Sie später darauf zugreifen, falls nötig
-        hass.data[DOMAIN][cover_name] = manager
+    # Speichern Sie die Liste der Manager in hass.data
+    # Stellen Sie sicher, dass DOMAIN_DATA_MANAGERS als Schlüssel verwendet wird
+    hass.data.setdefault(DOMAIN, {})[DOMAIN_DATA_MANAGERS] = managers_list
 
-        # Registriere Listener für alle relevanten Entitäten DIESES Covers
-        manager.register_listeners()
 
-    # WICHTIG: Listener für EVENT_HOMEASSISTANT_STARTED NACHDEM alle Manager initialisiert sind
-    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, _async_hass_started_all_managers)
+    async def _async_hass_started_all_managers(event: Event) -> None:
+        """Called when Home Assistant has finished starting up."""
+        # Das 'hass'-Objekt ist hier bereits aus dem äußeren Scope ('async_setup') verfügbar.
+        # KEIN hass = event.hass
+        _LOGGER.debug(f"[{DOMAIN}] Home Assistant started event received. Triggering initial run for all managers.")
 
-    _LOGGER.info(f"[{DOMAIN}] Integration 'Shadow Control' successfully set up. Configured {len(covers_config)} covers.")
+        # Zugriff auf die Manager über hass.data
+        if DOMAIN in hass.data and DOMAIN_DATA_MANAGERS in hass.data[DOMAIN]:
+            for manager in hass.data[DOMAIN][DOMAIN_DATA_MANAGERS]:
+                # Führen Sie die Logik für jeden Manager aus.
+                # event=None signalisiert, dass dies ein initialer Start ist und nicht durch ein spezifisches Event ausgelöst wurde.
+                await manager._async_handle_input_change(None) # Oder Ihre Methode für den Initial-Run
+
+    # Registrieren Sie den Listener für das Home Assistant Started Event
+    hass.bus.async_listen_once(
+        EVENT_HOMEASSISTANT_STARTED,
+        _async_hass_started_all_managers
+    )
+
+    _LOGGER.info(f"[{DOMAIN}] Integration 'Shadow Control' successfully set up. Configured {len(managers_list)} covers.")
     return True
-
-# Callback, der alle Manager nach dem HA-Start benachrichtigt
-async def _async_hass_started_all_managers(event: Event) -> None:
-    """Call async_hass_started on all configured managers."""
-    hass = event.hass # Greifen Sie auf die HomeAssistant-Instanz zu
-    _LOGGER.debug(f"[{DOMAIN}] EVENT_HOMEASSISTANT_STARTED received. Notifying all managers.")
-    for manager_name, manager_instance in hass.data[DOMAIN].items():
-        if isinstance(manager_instance, ShadowControlManager): # Sicherstellen, dass es ein Manager ist
-            await manager_instance.async_hass_started(event)
-        else:
-            _LOGGER.warning(f"[{DOMAIN}] Found unexpected item in hass.data[{DOMAIN}]: {manager_name}")
 
 class ShadowControlManager:
     """Manages the Shadow Control logic for a single cover."""
