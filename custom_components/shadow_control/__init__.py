@@ -311,8 +311,143 @@ class ShadowControlManager:
         self._auto_mode_active = (auto_mode_state and auto_mode_state.state == STATE_ON)
         _LOGGER.debug(f"[{DOMAIN}] Initial auto mode for '{self._name}': {self._auto_mode_active}")
 
-        # Erste Berechnung starten
+        # Initialberechnung beim Start
         await self._async_calculate_and_apply_cover_position(None)
+
+    def _update_input_values(self) -> None:
+        """
+        Aktualisiert alle relevanten Eingangs- und Konfigurationswerte
+        aus Home Assistant und speichert sie in Instanzvariablen.
+        """
+        _LOGGER.debug(f"{self._name}: Updating all input values")
+
+        # === Dynamische Eingänge (Sensor-Werte) ===
+        self._brightness = self._get_entity_numeric_state(self._brightness_entity_id, float)
+        self._brightness_dawn = self._get_entity_numeric_state(self._brightness_dawn_entity_id, float)
+        self._sun_elevation = self._get_entity_numeric_state(self._sun_elevation_entity_id, float)
+        self._sun_azimuth = self._get_entity_numeric_state(self._sun_azimuth_entity_id, float)
+        self._shutter_current_height = self._get_entity_numeric_state(self._shutter_current_height_entity_id, float)
+        self._shutter_current_angle = self._get_entity_numeric_state(self._shutter_current_angle_entity_id, float)
+        self._lock_integration = self._get_entity_boolean_state(self._lock_integration_entity_id)
+        self._lock_integration_with_position = self._get_entity_boolean_state(self._lock_integration_with_position_entity_id)
+        self._lock_height = self._get_entity_numeric_state(self._lock_height_entity_id, float)
+        self._lock_angle = self._get_entity_numeric_state(self._lock_angle_entity_id, float)
+        self._modification_tolerance_height = self._get_entity_numeric_state(self._modification_tolerance_height_entity_id, float)
+        self._modification_tolerance_angle = self._get_entity_numeric_state(self._modification_tolerance_angle_entity_id, float)
+
+        # === Allgemeine Einstellungen ===
+        self._azimuth_facade = self._get_entity_numeric_state(self._facade_azimuth_entity_id, float)
+        self._offset_sun_in = self._get_entity_numeric_state(self._facade_offset_sun_in_entity_id, float)
+        self._offset_sun_out = self._get_entity_numeric_state(self._facade_offset_sun_out_entity_id, float)
+        self._elevation_sun_min = self._get_entity_numeric_state(self._facade_elevation_sun_min_entity_id, float)
+        self._elevation_sun_max = self._get_entity_numeric_state(self._facade_elevation_sun_max_entity_id, float)
+        self._slat_width = self._get_entity_numeric_state(self._facade_slat_width_entity_id, float)
+        self._slat_distance = self._get_entity_numeric_state(self._facade_slat_distance_entity_id, float)
+        self._angle_offset = self._get_entity_numeric_state(self._facade_slat_angle_offset_entity_id, float)
+        self._min_slat_angle = self._get_entity_numeric_state(self._facade_slat_min_angle_entity_id, float)
+        self._stepping_height = self._get_entity_numeric_state(self._facade_shutter_stepping_height_entity_id, float)
+        self._stepping_angle = self._get_entity_numeric_state(self._facade_shutter_stepping_angle_entity_id, float)
+        self._shutter_type = self._get_entity_string_state(self._facade_shutter_type_entity_id)
+        self._light_bar_width = self._get_entity_numeric_state(self._facade_light_strip_width_entity_id, float)
+        self._shutter_height = self._get_entity_numeric_state(self._facade_shutter_height_entity_id, float)
+        self._neutral_pos_height = self._get_entity_numeric_state(self._facade_neutral_pos_height_entity_id, float)
+        self._neutral_pos_angle = self._get_entity_numeric_state(self._facade_neutral_pos_angle_entity_id, float)
+
+        # -------------------------------------------
+        # Movement restriction to enumeration mapping
+        #self._movement_restriction_height = self._get_entity_string_state(self._facade_movement_restriction_height_entity_id)
+        height_restriction_entity_id = self._config.get(SCConfigurationInput.CONF_FACADE_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID.value)
+        if height_restriction_entity_id:
+            state_obj = self.hass.states.get(height_restriction_entity_id)
+            if state_obj and state_obj.state:
+                # Suchen Sie den Enum-Member, dessen Wert (value) dem input_select String entspricht
+                for restriction_type in MovementRestricted:
+                    if restriction_type.value == state_obj.state:
+                        self._movement_restriction_height = restriction_type
+                        _LOGGER.debug(f"{self._name}: Movement restriction for height set ({self._movement_restriction_height.name}, value: {state_obj.state})")
+                        break
+                else: # Wenn die Schleife ohne break beendet wird (Wert nicht gefunden)
+                    _LOGGER.warning(f"{self._name}: Unknown option for {height_restriction_entity_id}: '{state_obj.state}'. Using NO_RESTRICTION.")
+                    self._movement_restriction_height = MovementRestricted.NO_RESTRICTION
+            else:
+                _LOGGER.warning(f"{self._name}: Value of {height_restriction_entity_id} not available or empty. Using NO_RESTRICTION.")
+                self._movement_restriction_height = MovementRestricted.NO_RESTRICTION
+        else:
+            _LOGGER.warning(f"{self._name}: Configuration of '{SCConfigurationInput.CONF_FACADE_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID.value}' missing. Using NO_RESTRICTION.")
+            self._movement_restriction_height = MovementRestricted.NO_RESTRICTION
+        #self._movement_restriction_angle = self._get_entity_string_state(self._facade_movement_restriction_angle_entity_id)
+        angle_restriction_entity_id = self._config.get(SCConfigurationInput.CONF_FACADE_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID.value)
+        if angle_restriction_entity_id:
+            state_obj = self.hass.states.get(angle_restriction_entity_id)
+            if state_obj and state_obj.state:
+                for restriction_type in MovementRestricted:
+                    if restriction_type.value == state_obj.state:
+                        self._movement_restriction_angle = restriction_type
+                        _LOGGER.debug(f"{self._name}: Movement restriction for angle set {self._movement_restriction_angle.name}, value: {state_obj.state})")
+                        break
+                else:
+                    _LOGGER.warning(f"{self._name}: Unknown option for {angle_restriction_entity_id}: '{state_obj.state}'. Using NO_RESTRICTION.")
+                    self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
+            else:
+                _LOGGER.warning(f"{self._name}: Value of {angle_restriction_entity_id} not available or empty. Using NO_RESTRICTION.")
+                self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
+        else:
+            _LOGGER.warning(f"{self._name}: Configuration of '{SCConfigurationInput.CONF_FACADE_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID.value}' missing. Using NO_RESTRICTION.")
+            self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
+
+        self._update_lock_output = self._get_entity_string_state(self._facade_update_lock_output_entity_id)
+
+        # === Beschattungseinstellungen ===
+        self._shadow_control_enabled = self._get_entity_boolean_state(self._shadow_control_enabled_entity_id)
+        self._shadow_brightness_level = self._get_entity_numeric_state(self._shadow_brightness_threshold_entity_id, float)
+        self._shadow_after_seconds = self._get_entity_numeric_state(self._shadow_after_seconds_entity_id, float)
+        self._shadow_max_height = self._get_entity_numeric_state(self._shadow_shutter_max_height_entity_id, float)
+        self._shadow_max_angle = self._get_entity_numeric_state(self._shadow_shutter_max_angle_entity_id, float)
+        self._shadow_look_through_seconds = self._get_entity_numeric_state(self._shadow_shutter_look_through_seconds_entity_id, float)
+        self._shadow_open_seconds = self._get_entity_numeric_state(self._shadow_shutter_open_seconds_entity_id, float)
+        self._shadow_look_through_angle = self._get_entity_numeric_state(self._shadow_shutter_look_through_angle_entity_id, float)
+        self._after_shadow_height = self._get_entity_numeric_state(self._shadow_height_after_sun_entity_id, float)
+        self._after_shadow_angle = self._get_entity_numeric_state(self._shadow_angle_after_sun_entity_id, float)
+
+        # === Dämmerungseinstellungen ===
+        self._dawn_control_enabled = self._get_entity_boolean_state(self._dawn_control_enabled_entity_id)
+        self._dawn_brightness_level = self._get_entity_numeric_state(self._dawn_brightness_threshold_entity_id, float)
+        self._dawn_after_seconds = self._get_entity_numeric_state(self._dawn_after_seconds_entity_id, float)
+        self._dawn_max_height = self._get_entity_numeric_state(self._dawn_shutter_max_height_entity_id, float)
+        self._dawn_max_angle = self._get_entity_numeric_state(self._dawn_shutter_max_angle_entity_id, float)
+        self._dawn_look_through_seconds = self._get_entity_numeric_state(self._dawn_shutter_look_through_seconds_entity_id, float)
+        self._dawn_open_seconds = self._get_entity_numeric_state(self._dawn_shutter_open_seconds_entity_id, float)
+        self._dawn_look_through_angle = self._get_entity_numeric_state(self._dawn_shutter_look_through_angle_entity_id, float)
+        self._after_dawn_height = self._get_entity_numeric_state(self._dawn_height_after_dawn_entity_id, float)
+        self._after_dawn_angle = self._get_entity_numeric_state(self._dawn_angle_after_dawn_entity_id, float)
+
+        _LOGGER.debug(
+            f"{self._name}: Updated values (part of): "
+            f"Brightness={self._brightness}, "
+            f"Elevation={self._sun_elevation}, "
+            f"ShadowEnabled={self._shadow_control_enabled}"
+        )
+
+        # === Priorisierung des internen LockState ===
+        # Wenn CONF_LOCK_INTEGRATION_WITH_POSITION_ENTITY_ID (höchste Priorität) "on" ist
+        if self._lock_integration_with_position:
+            self._current_lock_state = LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
+            _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__LOCKED_MANUALLY_WITH_FORCED_POSITION due to '{self._lock_integration_with_position_entity_id}' being ON.")
+        # Wenn CONF_LOCK_INTEGRATION_ENTITY_ID "on" ist (und die höhere Priorität nicht greift)
+        elif self._lock_integration:
+            self._current_lock_state = LockState.LOCKED_MANUALLY
+            _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__LOCKED_MANUALLY due to '{self._lock_integration_entity_id}' being ON.")
+        # Ansonsten bleibt es UNLOCKED (oder ein anderer Standardwert, den Sie festgelegt haben)
+
+        # Optional: Weitere LockStates wie LOCKSTATE__LOCKED_BY_EXTERNAL_MODIFICATION
+        # elif self._is_external_modification_detected: # Pseudo-Variable
+        #    self._current_lock_state = LockState.LOCKSTATE__LOCKED_BY_EXTERNAL_MODIFICATION
+        #    _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__LOCKED_BY_EXTERNAL_MODIFICATION.")
+
+        else:
+            # Standardmässig ist der Zustand ungesperrt
+            self._current_lock_state = LockState.UNLOCKED
+            _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__UNLOCKED due to '{self._lock_integration_entity_id}' and '{self._lock_integration_with_position_entity_id}' being OFF.")
 
 
     @callback
@@ -334,7 +469,6 @@ class ShadowControlManager:
         else:
             _LOGGER.debug(f"[{DOMAIN}] Auto mode for '{self._name}' is not active. Skipping calculation.")
 
-
     @callback
     async def _async_calculate_and_apply_cover_position(self, event: Event | None) -> None:
         """
@@ -342,6 +476,8 @@ class ShadowControlManager:
         This is where your main Shadow Control logic resides.
         """
         _LOGGER.debug(f"[{DOMAIN}] Calculating and applying cover positions for '{self._name}'.")
+
+        self._update_input_values()
 
         # 1. Alle benötigten Eingabedaten abrufen
         # Beispiel: Sonnenstand und Helligkeit
