@@ -707,8 +707,8 @@ class ShadowControlManager:
                 try:
                     await self.hass.services.async_call(
                         "cover",
-                        "set_cover_position", # Korrekter Dienstname
-                        {"entity_id": entity_id, "position": shutter_height_percent},
+                        "set_cover_position",
+                        {"entity_id": entity_id, "position": 100 - shutter_height_percent},
                         blocking=False
                     )
                 except Exception as e:
@@ -726,8 +726,8 @@ class ShadowControlManager:
                 try:
                     await self.hass.services.async_call(
                         "cover",
-                        "set_cover_tilt_position", # Korrekter Dienstname
-                        {"entity_id": entity_id, "tilt_position": shutter_angle_percent},
+                        "set_cover_tilt_position",
+                        {"entity_id": entity_id, "tilt_position": 100 - shutter_angle_percent},
                         blocking=False
                     )
                 except Exception as e:
