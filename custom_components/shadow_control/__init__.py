@@ -283,8 +283,8 @@ class ShadowControlManager:
         self._is_producing_shadow: bool = False # Neuer interner Zustand für ProduceShadow
         self._next_modification_timestamp: datetime | None = None
 
-        self._listeners = []
-        self._auto_mode_active = False # Initialer Zustand
+        self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
+        self._recalculation_timer: Callable[[], None] | None = None # Zum Speichern des Callbacks für den geplanten Timer
 
         _LOGGER.debug(f"[{DOMAIN}] Manager for '{self._name}' initialized for target: {self._target_cover_entity_id}.")
 
@@ -330,10 +330,6 @@ class ShadowControlManager:
         """Handle Home Assistant start event for this specific manager."""
         _LOGGER.info(f"[{DOMAIN}] Home Assistant has started. Initializing Shadow Control for '{self._name}'.")
         # Hier können Sie den initialen Zustand abrufen und die erste Berechnung ausführen
-        # Auto-Modus-Status aktualisieren
-        auto_mode_state = self.hass.states.get(self._shadow_control_enabled_entity_id)
-        self._auto_mode_active = (auto_mode_state and auto_mode_state.state == STATE_ON)
-        _LOGGER.debug(f"[{DOMAIN}] Initial auto mode for '{self._name}': {self._auto_mode_active}")
 
         # Initialberechnung beim Start
         await self._async_calculate_and_apply_cover_position(None)
@@ -479,19 +475,7 @@ class ShadowControlManager:
         """Handle changes to any relevant input entity for this specific cover."""
         _LOGGER.debug(f"[{DOMAIN}] Input change detected for '{self._name}'. Event: {event}")
 
-        # Wenn der Auslöser der Shadow Control Enabled Schalter ist, den Modus aktualisieren
-        if event and event.data.get("entity_id") == self._shadow_control_enabled_entity_id:
-            new_state = event.data.get("new_state")
-            if new_state:
-                self._auto_mode_active = (new_state.state == STATE_ON)
-                _LOGGER.info(f"[{DOMAIN}] Auto mode for '{self._name}' switched to: {self._auto_mode_active}")
-
-        # Unabhängig vom Auslöser, immer die Berechnung starten,
-        # wenn der Auto-Modus aktiv ist
-        if self._auto_mode_active:
-            await self._async_calculate_and_apply_cover_position(event)
-        else:
-            _LOGGER.debug(f"[{DOMAIN}] Auto mode for '{self._name}' is not active. Skipping calculation.")
+        await self._async_calculate_and_apply_cover_position(event)
 
     @callback
     async def _async_calculate_and_apply_cover_position(self, event: Event | None) -> None:
@@ -2022,7 +2006,6 @@ class ShadowControlManager:
         )
 
         self._update_extra_state_attributes()
-        self.async_write_ha_state()
 
     def _cancel_recalculation_timer(self) -> None:
         """Bricht einen laufenden Neuberechnungs-Timer ab."""
