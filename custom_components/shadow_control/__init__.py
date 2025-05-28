@@ -121,51 +121,55 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the Shadow Control integration."""
     _LOGGER.debug(f"[{DOMAIN}] async_setup called.")
 
-    # 1. Konfiguration validieren (falls nicht bereits global in const.py passiert)
-    # Wenn Sie das Schema direkt hier validieren würden:
-    # try:
-    #     validated_config = PLATFORM_SCHEMA(config) # Oder nur die relevante Unter-Config
-    # except vol.Invalid as e:
-    #     _LOGGER.error(f"[{DOMAIN}] Invalid configuration: {e}")
-    #     return False
-
-    # Überprüfen, ob der Hauptschlüssel unserer Integration vorhanden ist
     if DOMAIN not in config:
         _LOGGER.warning(f"[{DOMAIN}] No configuration found for {DOMAIN}.")
-        return False # Oder True, je nachdem, ob die Integration ohne Konfig laufen kann
+        return False
 
-    # Zugriff auf die spezifische Konfiguration für unsere Integration
-    # Wir nehmen an, dass die gesamte Konfiguration des Domains unter config[DOMAIN] liegt
     domain_config = config[DOMAIN]
+    managers_list = []
 
-    # Initialisiere die Liste der Manager
-    managers_list = [] # <--- managers_list wird hier initialisiert
-
-    # Überprüfen, ob der 'covers' Schlüssel vorhanden ist und eine Liste ist
     if CONF_COVERS in domain_config and isinstance(domain_config[CONF_COVERS], list):
         for cover_config in domain_config[CONF_COVERS]:
             _LOGGER.debug(f"[{DOMAIN}] Setting up manager for cover: {cover_config['name']}")
-            manager = ShadowControlManager(hass, cover_config)
+            manager = ShadowControlManager(hass, cover_config) # Hier muss ShadowControlManager verfügbar sein
             managers_list.append(manager)
-            manager.register_listeners() # Listener für diesen Manager registrieren
+            manager.register_listeners()
+    else:
+        _LOGGER.warning(f"[{DOMAIN}] No '{CONF_COVERS}' section found or it's not a list in the configuration. No covers will be managed.")
+        # Decide if this should return False (fatal) or True (proceed without covers)
+        # For now, let's assume it should continue if no covers are defined, but warn.
 
-    # Speichern Sie die Liste der Manager in hass.data
-    # Stellen Sie sicher, dass DOMAIN_DATA_MANAGERS als Schlüssel verwendet wird
+    # Speichern Sie die Liste der Manager in hass.data. Dies ist entscheidend!
+    # sensor.py wird über hass.data auf diese Manager zugreifen.
     hass.data.setdefault(DOMAIN, {})[DOMAIN_DATA_MANAGERS] = managers_list
 
+    # JETZT laden wir die 'sensor'-Plattform Ihrer Integration.
+    # Dies wird dazu führen, dass die `async_setup_platform`-Funktion in Ihrer `sensor.py` aufgerufen wird.
+    # Wir übergeben die `domain_config[CONF_COVERS]` als `discovery_info` an `sensor.py`,
+    # falls sensor.py spezifische Konfigurationsdetails für die Sensoren benötigt.
+    # Der letzte Parameter (`config`) ist der vollständige Home Assistant Konfigurations-Dict.
+    hass.async_create_task(
+        discovery.async_load_platform(
+            hass,              # Das fehlende 'hass' Objekt am Anfang
+            "sensor",          # Die Plattform, die geladen werden soll (sensor.py)
+            DOMAIN,            # Die Domain Ihrer Integration (shadow_control)
+            {CONF_COVERS: domain_config[CONF_COVERS]}, # Die Konfiguration für sensor.py (discovery_info)
+            config             # Der vollständige Home Assistant Konfigurations-Dict (hass_config)
+        )
+    )
 
+    # --------------------------------------------------------------------------
+    # Die _async_hass_started_all_managers Funktion bleibt eine INNERE Funktion
+    # --------------------------------------------------------------------------
     async def _async_hass_started_all_managers(event: Event) -> None:
         """Called when Home Assistant has finished starting up."""
-        # Das 'hass'-Objekt ist hier bereits aus dem äußeren Scope ('async_setup') verfügbar.
-        # KEIN hass = event.hass
         _LOGGER.debug(f"[{DOMAIN}] Home Assistant started event received. Triggering initial run for all managers.")
 
-        # Zugriff auf die Manager über hass.data
         if DOMAIN in hass.data and DOMAIN_DATA_MANAGERS in hass.data[DOMAIN]:
             for manager in hass.data[DOMAIN][DOMAIN_DATA_MANAGERS]:
-                # Führen Sie die Logik für jeden Manager aus.
-                # event=None signalisiert, dass dies ein initialer Start ist und nicht durch ein spezifisches Event ausgelöst wurde.
-                await manager._async_handle_input_change(None) # Oder Ihre Methode für den Initial-Run
+                await manager._async_handle_input_change(None)
+        else:
+            _LOGGER.warning(f"[{DOMAIN}] No managers found in hass.data during Home Assistant startup event.")
 
     # Registrieren Sie den Listener für das Home Assistant Started Event
     hass.bus.async_listen_once(
