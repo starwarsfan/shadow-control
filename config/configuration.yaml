@@ -60,10 +60,9 @@ input_boolean:
 input_select:
   !include shadow_control/input_select.yaml
 
-cover:
-  - platform: shadow_control  # Verwenden Sie hier den Namen Ihrer Plattform
-    name: "Test Shadow Control"
-    cover: cover.test_cover1
+shadow_control:
+  covers:
+  - name: "Büro Ost"
     target_cover_entity_id: "cover.fenster_buro_ost"
 
     # === Dynamische Eingänge (Test-Helfer) ===
