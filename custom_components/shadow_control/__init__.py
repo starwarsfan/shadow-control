@@ -501,44 +501,159 @@ class ShadowControlManager:
             _LOGGER.error(f"[{DOMAIN}] Invalid state value for sensor for '{self._name}': {e}. Skipping calculation.")
             return
 
-        # 2. Ihre komplexe Shadow Control Logik hier implementieren
-        # Basierend auf current_brightness, current_elevation, current_azimuth
-        # und all den anderen Parametern aus self._config
+        self._check_if_position_changed_externally(self._shutter_current_height, self._shutter_current_angle)
+        await self._check_if_facade_is_in_sun()
 
-        desired_height = 100 # Standard: Offen
-        desired_angle = 50 # Standard: Mitte
+        await self._process_shutter_state()
 
-        # Beispiel-Logik:
-        # Hier würden Sie Ihre Algorithmen einfügen, die die optimalen
-        # Höhen- und Lamellenpositionen berechnen.
-        # Zugriff auf Konfigurationswerte z.B.: self._config["facade_azimuth_entity_id"]
+    async def _check_if_facade_is_in_sun(self) -> bool:
+        """Calculate if the sun illuminates the given facade."""
+        _LOGGER.debug(f"{self._name}: Checking if facade is in sun")
 
-        # TODO: Implementieren Sie hier Ihre vollständige Shadow Control Logik
-        # (Dies ist nur ein Platzhalter)
-        if current_brightness > float(self.hass.states.get(self._config["shadow_brightness_threshold_entity_id"]).state):
-            _LOGGER.debug(f"[{DOMAIN}] High brightness ({current_brightness}) for '{self._name}'. Activating shading logic.")
-            # Beispiel: Abhängig von der Sonnenhöhe
-            if current_elevation > float(self.hass.states.get(self._config["facade_elevation_sun_min_entity_id"]).state):
-                desired_height = float(self.hass.states.get(self._config["shadow_shutter_max_height_entity_id"]).state)
-                # Lamellenwinkel berechnen (z.B. basierend auf elevation, facade_azimuth, slat_width/distance)
-                # Für den Moment ein Platzhalter:
-                desired_angle = float(self.hass.states.get(self._config["shadow_shutter_max_angle_entity_id"]).state)
-            else:
-                desired_height = 100 # Sonne zu tief, Fenster lieber offen
-                desired_angle = 50
+        # Die Werte wurden bereits in _update_input_values als float abgerufen.
+        sun_current_azimuth = self._sun_azimuth
+        sun_current_elevation = self._sun_elevation
+        facade_azimuth = self._azimuth_facade
+        facade_offset_start = self._offset_sun_in
+        facade_offset_end = self._offset_sun_out
+        min_elevation = self._elevation_sun_min
+        max_elevation = self._elevation_sun_max
+
+        if (
+                sun_current_azimuth is None
+                or sun_current_elevation is None
+                or facade_azimuth is None
+                or facade_offset_start is None
+                or facade_offset_end is None
+                or min_elevation is None
+                or max_elevation is None
+        ):
+            _LOGGER.debug(f"{self._name}: Not all required values available to compute sun state of facade")
+            self._effective_elevation = None
+            return False
+
+        sun_entry_angle = facade_azimuth - abs(facade_offset_start)
+        sun_exit_angle = facade_azimuth + abs(facade_offset_end)
+        if sun_entry_angle < 0:
+            sun_entry_angle = 360 - abs(sun_entry_angle)
+        if sun_exit_angle >= 360:
+            sun_exit_angle %= 360
+
+        sun_exit_angle_calc = sun_exit_angle - sun_entry_angle
+        if sun_exit_angle_calc < 0:
+            sun_exit_angle_calc += 360
+        azimuth_calc = sun_current_azimuth - sun_entry_angle
+        if azimuth_calc < 0:
+            azimuth_calc += 360
+
+        message = f"{self._name}: Finished facade check:\n -> real azimuth {sun_current_azimuth}° and facade at {facade_azimuth}° -> "
+        _sun_between_offsets = False
+        if 0 <= azimuth_calc <= sun_exit_angle_calc:
+            message += f"IN SUN (from {sun_entry_angle}° to {sun_exit_angle}°)"
+            _sun_between_offsets = True
+            self._effective_elevation = await self._calculate_effective_elevation()
         else:
-            _LOGGER.debug(f"[{DOMAIN}] Low brightness ({current_brightness}) for '{self._name}'. Opening covers.")
-            desired_height = 100
-            desired_angle = 50
+            message += f"NOT IN SUN (shadow side, at sun from {sun_entry_angle}° to {sun_exit_angle}°)"
+            self._effective_elevation = None
 
-        # Überprüfen Sie hier auch die "Lock"-Parameter
-        # if self.hass.states.get(self._lock_integration_entity_id).state == STATE_ON:
-        #     _LOGGER.info(f"[{DOMAIN}] Integration is locked for '{self._name}'. Skipping control.")
-        #     return
+        message += f"\n -> effective elevation {self._effective_elevation}° for given elevation of {sun_current_elevation}°"
+        _is_elevation_in_range = False
+        if min_elevation < self._effective_elevation < max_elevation:
+            message += f" -> in min-max-range ({min_elevation}°-{max_elevation}°)"
+            self._sun_between_min_max = True
+            _is_elevation_in_range = True
+        else:
+            message += f" -> NOT in min-max-range ({min_elevation}°-{max_elevation}°)"
+            self._sun_between_min_max = False
+        _LOGGER.debug(f"{message}")
 
+        return _sun_between_offsets and _is_elevation_in_range
 
-        # 3. Positionen an das Cover senden
-        await self._send_cover_commands(desired_height, desired_angle)
+    def _get_current_brightness(self) -> float:
+        return self._brightness
+
+    def _get_current_dawn_brightness(self) -> float:
+        if self._brightness_dawn is not None and self._brightness_dawn >= 0:
+            return self._brightness_dawn
+        return self._brightness
+
+    async def _calculate_effective_elevation(self) -> float | None:
+        """Berechnet die effektive Elevation der Sonne relativ zur Fassade."""
+
+        # Die Werte wurden bereits in _update_input_values als float abgerufen.
+        sun_current_azimuth = self._sun_azimuth
+        sun_current_elevation = self._sun_elevation
+        facade_azimuth = self._azimuth_facade
+
+        if sun_current_azimuth is None or sun_current_elevation is None or facade_azimuth is None:
+            _LOGGER.debug(f"{self._name}: Unable to compute effective elevation, not all required values available")
+            return None
+
+        _LOGGER.debug(f"{self._name}: Current sun position (a:e): {sun_current_azimuth}°:{sun_current_elevation}°, facade: {facade_azimuth}°")
+
+        try:
+            virtual_depth = math.cos(math.radians(abs(sun_current_azimuth - facade_azimuth)))
+            virtual_height = math.tan(math.radians(sun_current_elevation))
+
+            # Vermeide Division durch Null, falls virtual_depth sehr klein ist
+            if abs(virtual_depth) < 1e-9:
+                effective_elevation = 90.0 if virtual_height > 0 else -90.0
+            else:
+                effective_elevation = math.degrees(math.atan(virtual_height / virtual_depth))
+
+            _LOGGER.debug(f"{self._name}: Virtual deep and height of the sun against the facade: {virtual_depth}, {virtual_height}, effektive Elevation: {effective_elevation}")
+            return effective_elevation
+        except ValueError:
+            _LOGGER.debug(f"{self._name}: Unable to compute effective elevation: Invalid input values")
+            return None
+        except ZeroDivisionError:
+            _LOGGER.debug(f"{self._name}: Unable to compute effective elevation: Division by zero")
+            return None
+
+    # =======================================================================
+    # Persistente Werte
+    def _update_extra_state_attributes(self) -> None:
+        """Helper to update the extra_state_attributes dictionary."""
+        self._attr_extra_state_attributes = {
+            "current_shutter_state": self._current_shutter_state,
+            "calculated_shutter_height": self._calculated_shutter_height,
+            "calculated_shutter_angle": self._calculated_shutter_angle,
+            "calculated_shutter_angle_degrees": self._calculated_shutter_angle_degrees,
+            "current_lock_state": self._current_lock_state,
+            "next_modification_timestamp": self._next_modification_timestamp.isoformat() if self._next_modification_timestamp else None,
+        }
+
+    async def _process_shutter_state(self) -> None:
+        """
+        Verarbeitet den aktuellen Behangzustand und ruft die entsprechende Handler-Funktion auf.
+        Die Handler-Funktionen müssen den neuen ShutterState zurückgeben.
+        """
+        _LOGGER.debug(f"{self._name}: Current shutter state (before processing): {self._current_shutter_state.name} ({self._current_shutter_state.value})")
+
+        handler_func = self._state_handlers.get(self._current_shutter_state)
+        new_shutter_state: ShutterState
+
+        if handler_func:
+            new_shutter_state = await handler_func()
+            if new_shutter_state is not None and new_shutter_state != self._current_shutter_state:
+                _LOGGER.debug(
+                    f"{self._name}: State change from {self._current_shutter_state.name} to {new_shutter_state.name}")
+                self._current_shutter_state = new_shutter_state
+                self._update_extra_state_attributes()  # Attribute nach Zustandswechsel aktualisieren
+                self.async_schedule_update_ha_state()  # UI-Update anfordern
+        else:
+            _LOGGER.debug(
+                f"{self._name}: No specific handler for current state or locked. Current lock state: {self._current_lock_state.name}")
+            self._cancel_recalculation_timer()
+            self._update_extra_state_attributes()  # Auch hier Attribute aktualisieren, falls sich durch Sperrung etwas ändert
+            self.async_schedule_update_ha_state()  # UI-Update anfordern
+
+        _LOGGER.debug(f"{self._name}: New shutter state after processing: {self._current_shutter_state.name} ({self._current_shutter_state.value})")
+
+    def _check_if_position_changed_externally(self, current_height, current_angle):
+        #_LOGGER.debug(f"{self._name}: Checking if position changed externally. Current height: {current_height}, Current angle: {current_angle}")
+        _LOGGER.debug(f"{self._name}: Check for external shutter modification -> TBD")
+        pass
 
 
     async def _send_cover_commands(self, desired_height: float, desired_tilt_position: float) -> None:
