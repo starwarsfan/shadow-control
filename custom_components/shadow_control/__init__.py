@@ -664,13 +664,11 @@ class ShadowControlManager:
                     f"{self._name}: State change from {self._current_shutter_state.name} to {new_shutter_state.name}")
                 self._current_shutter_state = new_shutter_state
                 self._update_extra_state_attributes()  # Attribute nach Zustandswechsel aktualisieren
-                self.async_schedule_update_ha_state()  # UI-Update anfordern
         else:
             _LOGGER.debug(
                 f"{self._name}: No specific handler for current state or locked. Current lock state: {self._current_lock_state.name}")
             self._cancel_recalculation_timer()
             self._update_extra_state_attributes()  # Auch hier Attribute aktualisieren, falls sich durch Sperrung etwas ändert
-            self.async_schedule_update_ha_state()  # UI-Update anfordern
 
         _LOGGER.debug(f"{self._name}: New shutter state after processing: {self._current_shutter_state.name} ({self._current_shutter_state.value})")
 
