@@ -28,65 +28,65 @@ SINGLE_COVER_CONFIG_SCHEMA = vol.Schema({
     vol.Required("target_cover_entity_id"): str,
 
     # === Dynamische Eingänge (Mapped directly to your existing input_number/input_boolean entities) ===
-    vol.Required("brightness_entity_id"): str,
-    vol.Required("brightness_dawn_entity_id"): str,
-    vol.Required("sun_elevation_entity_id"): str,
-    vol.Required("sun_azimuth_entity_id"): str,
+    vol.Required(SCDynamicInput.CONF_BRIGHTNESS_ENTITY_ID.value): str,
+    vol.Required(SCDynamicInput.CONF_BRIGHTNESS_DAWN_ENTITY_ID.value): str,
+    vol.Required(SCDynamicInput.CONF_SUN_ELEVATION_ENTITY_ID.value): str,
+    vol.Required(SCDynamicInput.CONF_SUN_AZIMUTH_ENTITY_ID.value): str,
     # HINWEIS: shutter_current_height/angle würde man normalerweise direkt vom Cover bekommen.
     # Hier bleiben sie als input_number für Ihre Testzwecke.
-    vol.Required("shutter_current_height_entity_id"): str,
-    vol.Required("shutter_current_angle_entity_id"): str,
-    vol.Required("lock_integration_entity_id"): str,
-    vol.Required("lock_integration_with_position_entity_id"): str,
-    vol.Required("lock_height_entity_id"): str,
-    vol.Required("lock_angle_entity_id"): str,
-    vol.Required("modification_tolerance_height_entity_id"): str,
-    vol.Required("modification_tolerance_angle_entity_id"): str,
+    vol.Required(SCDynamicInput.CONF_SHUTTER_CURRENT_HEIGHT_ENTITY_ID.value): str,
+    vol.Required(SCDynamicInput.CONF_SHUTTER_CURRENT_ANGLE_ENTITY_ID.value): str,
+    vol.Required(SCDynamicInput.CONF_LOCK_INTEGRATION_ENTITY_ID.value): str,
+    vol.Required(SCDynamicInput.CONF_LOCK_INTEGRATION_WITH_POSITION_ENTITY_ID.value): str,
+    vol.Required(SCDynamicInput.CONF_LOCK_HEIGHT_ENTITY_ID.value): str,
+    vol.Required(SCDynamicInput.CONF_LOCK_ANGLE_ENTITY_ID.value): str,
+    vol.Required(SCDynamicInput.CONF_MODIFICATION_TOLERANCE_HEIGHT_ENTITY_ID.value): str,
+    vol.Required(SCDynamicInput.CONF_MODIFICATION_TOLERANCE_ANGLE_ENTITY_ID.value): str,
 
     # === Allgemeine Einstellungen (Mapped to your existing input_number/input_select entities) ===
-    vol.Required("facade_azimuth_entity_id"): str,
-    vol.Required("facade_offset_sun_in_entity_id"): str,
-    vol.Required("facade_offset_sun_out_entity_id"): str,
-    vol.Required("facade_elevation_sun_min_entity_id"): str,
-    vol.Required("facade_elevation_sun_max_entity_id"): str,
-    vol.Required("facade_slat_width_entity_id"): str,
-    vol.Required("facade_slat_distance_entity_id"): str,
-    vol.Required("facade_slat_angle_offset_entity_id"): str,
-    vol.Required("facade_slat_min_angle_entity_id"): str,
-    vol.Required("facade_shutter_stepping_height_entity_id"): str,
-    vol.Required("facade_shutter_stepping_angle_entity_id"): str,
-    vol.Required("facade_shutter_type_entity_id"): str, # input_select
-    vol.Required("facade_light_strip_width_entity_id"): str,
-    vol.Required("facade_shutter_height_entity_id"): str,
-    vol.Required("facade_neutral_pos_height_entity_id"): str,
-    vol.Required("facade_neutral_pos_angle_entity_id"): str,
-    vol.Required("facade_movement_restriction_height_entity_id"): str, # input_select
-    vol.Required("facade_movement_restriction_angle_entity_id"): str, # input_select
-    vol.Required("facade_update_lock_output_entity_id"): str, # input_select
+    vol.Required(SCConfigurationInput.CONF_FACADE_AZIMUTH_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_OFFSET_SUN_IN_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_OFFSET_SUN_OUT_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_ELEVATION_SUN_MIN_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_ELEVATION_SUN_MAX_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_SLAT_WIDTH_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_SLAT_DISTANCE_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_SLAT_ANGLE_OFFSET_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_SLAT_MIN_ANGLE_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_SHUTTER_STEPPING_HEIGHT_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_SHUTTER_STEPPING_ANGLE_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_SHUTTER_TYPE_ENTITY_ID.value): str, # input_select
+    vol.Required(SCConfigurationInput.CONF_FACADE_LIGHT_STRIP_WIDTH_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_SHUTTER_HEIGHT_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_NEUTRAL_POS_HEIGHT_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_NEUTRAL_POS_ANGLE_ENTITY_ID.value): str,
+    vol.Required(SCConfigurationInput.CONF_FACADE_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID.value): str, # input_select
+    vol.Required(SCConfigurationInput.CONF_FACADE_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID.value): str, # input_select
+    vol.Required(SCConfigurationInput.CONF_FACADE_UPDATE_LOCK_OUTPUT_ENTITY_ID.value): str, # input_select
 
     # === Beschattungseinstellungen ===
-    vol.Required("shadow_control_enabled_entity_id"): str, # input_boolean
-    vol.Required("shadow_brightness_threshold_entity_id"): str,
-    vol.Required("shadow_after_seconds_entity_id"): str,
-    vol.Required("shadow_shutter_max_height_entity_id"): str,
-    vol.Required("shadow_shutter_max_angle_entity_id"): str,
-    vol.Required("shadow_shutter_look_through_seconds_entity_id"): str,
-    vol.Required("shadow_shutter_look_through_angle_entity_id"): str,
-    vol.Required("shadow_shutter_open_seconds_entity_id"): str,
-    vol.Required("shadow_height_after_sun_entity_id"): str,
-    vol.Required("shadow_angle_after_sun_entity_id"): str,
+    vol.Required(SCShadowInput.CONF_SHADOW_CONTROL_ENABLED_ENTITY_ID.value): str, # input boolean
+    vol.Required(SCShadowInput.CONF_SHADOW_BRIGHTNESS_THRESHOLD_ENTITY_ID.value): str,
+    vol.Required(SCShadowInput.CONF_SHADOW_AFTER_SECONDS_ENTITY_ID.value): str,
+    vol.Required(SCShadowInput.CONF_SHADOW_SHUTTER_MAX_HEIGHT_ENTITY_ID.value): str,
+    vol.Required(SCShadowInput.CONF_SHADOW_SHUTTER_MAX_ANGLE_ENTITY_ID.value): str,
+    vol.Required(SCShadowInput.CONF_SHADOW_SHUTTER_LOOK_THROUGH_SECONDS_ENTITY_ID.value): str,
+    vol.Required(SCShadowInput.CONF_SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_ENTITY_ID.value): str,
+    vol.Required(SCShadowInput.CONF_SHADOW_SHUTTER_OPEN_SECONDS_ENTITY_ID.value): str,
+    vol.Required(SCShadowInput.CONF_SHADOW_HEIGHT_AFTER_SUN_ENTITY_ID.value): str,
+    vol.Required(SCShadowInput.CONF_SHADOW_ANGLE_AFTER_SUN_ENTITY_ID.value): str,
 
     # === Dämmerungseinstellungen ===
-    vol.Required("dawn_control_enabled_entity_id"): str, # input_boolean
-    vol.Required("dawn_brightness_threshold_entity_id"): str,
-    vol.Required("dawn_after_seconds_entity_id"): str,
-    vol.Required("dawn_shutter_max_height_entity_id"): str,
-    vol.Required("dawn_shutter_max_angle_entity_id"): str,
-    vol.Required("dawn_shutter_look_through_seconds_entity_id"): str,
-    vol.Required("dawn_shutter_look_through_angle_entity_id"): str,
-    vol.Required("dawn_shutter_open_seconds_entity_id"): str,
-    vol.Required("dawn_height_after_dawn_entity_id"): str,
-    vol.Required("dawn_angle_after_dawn_entity_id"): str,
+    vol.Required(SCDawnInput.CONF_DAWN_CONTROL_ENABLED_ENTITY_ID.value): str, # input boolean
+    vol.Required(SCDawnInput.CONF_DAWN_BRIGHTNESS_THRESHOLD_ENTITY_ID.value): str,
+    vol.Required(SCDawnInput.CONF_DAWN_AFTER_SECONDS_ENTITY_ID.value): str,
+    vol.Required(SCDawnInput.CONF_DAWN_SHUTTER_MAX_HEIGHT_ENTITY_ID.value): str,
+    vol.Required(SCDawnInput.CONF_DAWN_SHUTTER_MAX_ANGLE_ENTITY_ID.value): str,
+    vol.Required(SCDawnInput.CONF_DAWN_SHUTTER_LOOK_THROUGH_SECONDS_ENTITY_ID.value): str,
+    vol.Required(SCDawnInput.CONF_DAWN_SHUTTER_LOOK_THROUGH_ANGLE_ENTITY_ID.value): str,
+    vol.Required(SCDawnInput.CONF_DAWN_SHUTTER_OPEN_SECONDS_ENTITY_ID.value): str,
+    vol.Required(SCDawnInput.CONF_DAWN_HEIGHT_AFTER_DAWN_ENTITY_ID.value): str,
+    vol.Required(SCDawnInput.CONF_DAWN_ANGLE_AFTER_DAWN_ENTITY_ID.value): str,
 })
 
 # --- Schema für ein einzelnes Cover innerhalb der 'covers' Liste ---
@@ -169,13 +169,95 @@ class ShadowControlManager:
         self._name = config["name"] # Freundlicher Name
         self._target_cover_entity_id = config["target_cover_entity_id"]
 
-        # Entitäten-IDs aus der Konfiguration extrahieren
-        # Dies ist nur eine Auswahl, Sie müssen alle Ihre 40+ IDs hier zuweisen
-        self._brightness_entity_id = config["brightness_entity_id"]
-        self._sun_elevation_entity_id = config["sun_elevation_entity_id"]
-        self._sun_azimuth_entity_id = config["sun_azimuth_entity_id"]
-        self._shadow_control_enabled_entity_id = config["shadow_control_enabled_entity_id"]
-        # ... und so weiter für ALLE Ihre D- und G- und S- und SD-Parameter ...
+        # === Dynamische Eingänge (Test-Helfer) ===
+        self._brightness_entity_id = config.get(SCDynamicInput.CONF_BRIGHTNESS_ENTITY_ID.value)
+        self._brightness_dawn_entity_id = config.get(SCDynamicInput.CONF_BRIGHTNESS_DAWN_ENTITY_ID.value)
+        self._sun_elevation_entity_id = config.get(SCDynamicInput.CONF_SUN_ELEVATION_ENTITY_ID.value)
+        self._sun_azimuth_entity_id = config.get(SCDynamicInput.CONF_SUN_AZIMUTH_ENTITY_ID.value)
+        self._shutter_current_height_entity_id = config.get(SCDynamicInput.CONF_SHUTTER_CURRENT_HEIGHT_ENTITY_ID.value)
+        self._shutter_current_angle_entity_id = config.get(SCDynamicInput.CONF_SHUTTER_CURRENT_ANGLE_ENTITY_ID.value)
+        self._lock_integration_entity_id = config.get(SCDynamicInput.CONF_LOCK_INTEGRATION_ENTITY_ID.value)
+        self._lock_integration_with_position_entity_id = config.get(SCDynamicInput.CONF_LOCK_INTEGRATION_WITH_POSITION_ENTITY_ID.value)
+        self._lock_height_entity_id = config.get(SCDynamicInput.CONF_LOCK_HEIGHT_ENTITY_ID.value)
+        self._lock_angle_entity_id = config.get(SCDynamicInput.CONF_LOCK_ANGLE_ENTITY_ID.value)
+        self._modification_tolerance_height_entity_id = config.get(SCDynamicInput.CONF_MODIFICATION_TOLERANCE_HEIGHT_ENTITY_ID.value)
+        self._modification_tolerance_angle_entity_id = config.get(SCDynamicInput.CONF_MODIFICATION_TOLERANCE_ANGLE_ENTITY_ID.value)
+
+        # === Allgemeine Einstellungen (Test-Helfer) ===
+        self._facade_azimuth_entity_id = config.get(SCConfigurationInput.CONF_FACADE_AZIMUTH_ENTITY_ID.value)
+        self._facade_offset_sun_in_entity_id = config.get(SCConfigurationInput.CONF_FACADE_OFFSET_SUN_IN_ENTITY_ID.value)
+        self._facade_offset_sun_out_entity_id = config.get(SCConfigurationInput.CONF_FACADE_OFFSET_SUN_OUT_ENTITY_ID.value)
+        self._facade_elevation_sun_min_entity_id = config.get(SCConfigurationInput.CONF_FACADE_ELEVATION_SUN_MIN_ENTITY_ID.value)
+        self._facade_elevation_sun_max_entity_id = config.get(SCConfigurationInput.CONF_FACADE_ELEVATION_SUN_MAX_ENTITY_ID.value)
+        self._facade_slat_width_entity_id = config.get(SCConfigurationInput.CONF_FACADE_SLAT_WIDTH_ENTITY_ID.value)
+        self._facade_slat_distance_entity_id = config.get(SCConfigurationInput.CONF_FACADE_SLAT_DISTANCE_ENTITY_ID.value)
+        self._facade_slat_angle_offset_entity_id = config.get(SCConfigurationInput.CONF_FACADE_SLAT_ANGLE_OFFSET_ENTITY_ID.value)
+        self._facade_slat_min_angle_entity_id = config.get(SCConfigurationInput.CONF_FACADE_SLAT_MIN_ANGLE_ENTITY_ID.value)
+        self._facade_shutter_stepping_height_entity_id = config.get(SCConfigurationInput.CONF_FACADE_SHUTTER_STEPPING_HEIGHT_ENTITY_ID.value)
+        self._facade_shutter_stepping_angle_entity_id = config.get(SCConfigurationInput.CONF_FACADE_SHUTTER_STEPPING_ANGLE_ENTITY_ID.value)
+        self._facade_shutter_type_entity_id = config.get(SCConfigurationInput.CONF_FACADE_SHUTTER_TYPE_ENTITY_ID.value)
+        self._facade_light_strip_width_entity_id = config.get(SCConfigurationInput.CONF_FACADE_LIGHT_STRIP_WIDTH_ENTITY_ID.value)
+        self._facade_shutter_height_entity_id = config.get(SCConfigurationInput.CONF_FACADE_SHUTTER_HEIGHT_ENTITY_ID.value)
+        self._facade_neutral_pos_height_entity_id = config.get(SCConfigurationInput.CONF_FACADE_NEUTRAL_POS_HEIGHT_ENTITY_ID.value)
+        self._facade_neutral_pos_angle_entity_id = config.get(SCConfigurationInput.CONF_FACADE_NEUTRAL_POS_ANGLE_ENTITY_ID.value)
+        self._facade_movement_restriction_height_entity_id = config.get(SCConfigurationInput.CONF_FACADE_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID.value)
+        self._facade_movement_restriction_angle_entity_id = config.get(SCConfigurationInput.CONF_FACADE_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID.value)
+        self._facade_update_lock_output_entity_id = config.get(SCConfigurationInput.CONF_FACADE_UPDATE_LOCK_OUTPUT_ENTITY_ID.value)
+
+        # === Beschattungseinstellungen (Test-Helfer) ===
+        self._shadow_control_enabled_entity_id = config.get(SCShadowInput.CONF_SHADOW_CONTROL_ENABLED_ENTITY_ID.value)
+        self._shadow_brightness_threshold_entity_id = config.get(SCShadowInput.CONF_SHADOW_BRIGHTNESS_THRESHOLD_ENTITY_ID.value)
+        self._shadow_after_seconds_entity_id = config.get(SCShadowInput.CONF_SHADOW_AFTER_SECONDS_ENTITY_ID.value)
+        self._shadow_shutter_max_height_entity_id = config.get(SCShadowInput.CONF_SHADOW_SHUTTER_MAX_HEIGHT_ENTITY_ID.value)
+        self._shadow_shutter_max_angle_entity_id = config.get(SCShadowInput.CONF_SHADOW_SHUTTER_MAX_ANGLE_ENTITY_ID.value)
+        self._shadow_shutter_look_through_seconds_entity_id = config.get(SCShadowInput.CONF_SHADOW_SHUTTER_LOOK_THROUGH_SECONDS_ENTITY_ID.value)
+        self._shadow_shutter_open_seconds_entity_id = config.get(SCShadowInput.CONF_SHADOW_SHUTTER_OPEN_SECONDS_ENTITY_ID.value)
+        self._shadow_shutter_look_through_angle_entity_id = config.get(SCShadowInput.CONF_SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_ENTITY_ID.value)
+        self._shadow_height_after_sun_entity_id = config.get(SCShadowInput.CONF_SHADOW_HEIGHT_AFTER_SUN_ENTITY_ID.value)
+        self._shadow_angle_after_sun_entity_id = config.get(SCShadowInput.CONF_SHADOW_ANGLE_AFTER_SUN_ENTITY_ID.value)
+
+        # === Dämmerungseinstellungen (Test-Helfer) ===
+        self._dawn_control_enabled_entity_id = config.get(SCDawnInput.CONF_DAWN_CONTROL_ENABLED_ENTITY_ID.value)
+        self._dawn_brightness_threshold_entity_id = config.get(SCDawnInput.CONF_DAWN_BRIGHTNESS_THRESHOLD_ENTITY_ID.value)
+        self._dawn_after_seconds_entity_id = config.get(SCDawnInput.CONF_DAWN_AFTER_SECONDS_ENTITY_ID.value)
+        self._dawn_shutter_max_height_entity_id = config.get(SCDawnInput.CONF_DAWN_SHUTTER_MAX_HEIGHT_ENTITY_ID.value)
+        self._dawn_shutter_max_angle_entity_id = config.get(SCDawnInput.CONF_DAWN_SHUTTER_MAX_ANGLE_ENTITY_ID.value)
+        self._dawn_shutter_look_through_seconds_entity_id = config.get(SCDawnInput.CONF_DAWN_SHUTTER_LOOK_THROUGH_SECONDS_ENTITY_ID.value)
+        self._dawn_shutter_open_seconds_entity_id = config.get(SCDawnInput.CONF_DAWN_SHUTTER_OPEN_SECONDS_ENTITY_ID.value)
+        self._dawn_shutter_look_through_angle_entity_id = config.get(SCDawnInput.CONF_DAWN_SHUTTER_LOOK_THROUGH_ANGLE_ENTITY_ID.value)
+        self._dawn_height_after_dawn_entity_id = config.get(SCDawnInput.CONF_DAWN_HEIGHT_AFTER_DAWN_ENTITY_ID.value)
+        self._dawn_angle_after_dawn_entity_id = config.get(SCDawnInput.CONF_DAWN_ANGLE_AFTER_DAWN_ENTITY_ID.value)
+
+        # Define dictionary with all state handlers
+        self._state_handlers: dict[ShutterState, Callable[[], Awaitable[ShutterState]]] = {
+            ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING: self._handle_state_shadow_full_close_timer_running,
+            ShutterState.SHADOW_FULL_CLOSED: self._handle_state_shadow_full_closed,
+            ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING: self._handle_state_shadow_horizontal_neutral_timer_running,
+            ShutterState.SHADOW_HORIZONTAL_NEUTRAL: self._handle_state_shadow_horizontal_neutral,
+            ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING: self._handle_state_shadow_neutral_timer_running,
+            ShutterState.SHADOW_NEUTRAL: self._handle_state_shadow_neutral,
+            ShutterState.NEUTRAL: self._handle_state_neutral,
+            ShutterState.DAWN_NEUTRAL: self._handle_state_dawn_neutral,
+            ShutterState.DAWN_NEUTRAL_TIMER_RUNNING: self._handle_state_dawn_neutral_timer_running,
+            ShutterState.DAWN_HORIZONTAL_NEUTRAL: self._handle_state_dawn_horizontal_neutral,
+            ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING: self._handle_state_dawn_horizontal_neutral_timer_running,
+            ShutterState.DAWN_FULL_CLOSED: self._handle_state_dawn_full_closed,
+            ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING: self._handle_state_dawn_full_close_timer_running,
+        }
+
+        # Interne persistente Variablen
+        # Werden beim Start aus den persistenten Attributen gelesen.
+        self._current_shutter_state: ShutterState = ShutterState.NEUTRAL # Standardwert setzen
+        self._current_lock_state: LockState = LockState.UNLOCKED # Standardwert setzen
+        self._calculated_shutter_height: float = 0.0
+        self._calculated_shutter_angle: float = 0.0
+        self._calculated_shutter_angle_degrees: float | None = None
+        self._effective_elevation: float | None = None
+        self._previous_shutter_height: float | None = None
+        self._previous_shutter_angle: float | None = None
+        self._is_initial_run: bool = True # Flag für den initialen Lauf
+        self._is_producing_shadow: bool = False # Neuer interner Zustand für ProduceShadow
+        self._next_modification_timestamp: datetime | None = None
 
         self._listeners = []
         self._auto_mode_active = False # Initialer Zustand
