@@ -18,11 +18,10 @@ from homeassistant.const import (
 from homeassistant.components.cover import CoverEntityFeature
 
 from .const import SCDynamicInput, SCConfigurationInput, SCShadowInput, SCDawnInput, \
-    MovementRestricted, LockState, ShutterState
+    MovementRestricted, LockState, ShutterState, DOMAIN, DOMAIN_DATA_MANAGERS, CONF_COVERS
 
 _LOGGER = logging.getLogger(__name__)
 
-DOMAIN = "shadow_control"
 SINGLE_COVER_CONFIG_SCHEMA = vol.Schema({
     vol.Required("name"): str, # Freundlicher Name für dieses spezifische Cover
     vol.Required("target_cover_entity_id"): str,
