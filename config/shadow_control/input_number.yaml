@@ -296,7 +296,7 @@
     max: 3600
     step: 15
     mode: slider
-    initial: 150
+    initial: 15
   sd04_dawn_max_height:
     #[e#43           =Max. Hoehe bei Daemmerung (%)          #init=100    ]
     name: "SD04: Dawn max height (%)"
