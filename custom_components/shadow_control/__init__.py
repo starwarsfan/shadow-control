@@ -737,19 +737,6 @@ class ShadowControlManager:
             f"{DOMAIN}_update_{self._name.lower().replace(' ', '_')}"
         )
 
-        # ProduceShadow as Binary Sensor
-        if self._is_producing_shadow != shadow_position:
-            binary_sensor_entity_id = f"input_boolean.{self._name.lower().replace(' ', '_')}_shadow_active"
-            _LOGGER.debug(
-                f"{self._name}: Updating binary sensor '{binary_sensor_entity_id}' to {shadow_position}.")
-            await self.hass.services.async_call(
-                "input_boolean",
-                "turn_on" if shadow_position else "turn_off",
-                {"entity_id": binary_sensor_entity_id},
-                blocking=False
-            )
-            self._is_producing_shadow = shadow_position
-
         # Height Handling
         height_to_set_percent = self._handle_shutter_height_stepping(shutter_height_percent)
         height_to_set_percent = self._should_output_be_updated(
