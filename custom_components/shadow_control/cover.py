@@ -1238,15 +1238,13 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         return _sun_between_offsets and _is_elevation_in_range
 
-    async def _is_dawn_active(self) -> bool:
-        """Check if the current brightness is below the dawn threshold."""
-        brightness_dawn = self._brightness_dawn
-        dawn_threshold_close = self._dawn_brightness_level
-        return (
-            brightness_dawn is not None
-            and dawn_threshold_close is not None
-            and brightness_dawn < dawn_threshold_close
-        )
+    def _get_current_brightness(self) -> float:
+        return self._brightness
+
+    def _get_current_dawn_brightness(self) -> float:
+        if self._brightness_dawn is not None and self._brightness_dawn >= 0:
+            return self._brightness_dawn
+        return self._brightness
 
     async def _calculate_effective_elevation(self) -> float | None:
         """Berechnet die effektive Elevation der Sonne relativ zur Fassade."""
@@ -1351,7 +1349,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.SHADOW_FULL_CLOSED
 
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
-            current_brightness = self._brightness
+            current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_brightness_level
             shadow_open_slat_delay = self._shadow_look_through_seconds
             if (
@@ -1404,7 +1402,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
-            current_brightness = self._brightness
+            current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_brightness_level
             shadow_open_slat_angle = self._shadow_look_through_angle
             if (
@@ -1463,7 +1461,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.SHADOW_HORIZONTAL_NEUTRAL
 
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
-            current_brightness = self._brightness
+            current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_brightness_level
             shadow_open_shutter_delay = self._shadow_open_seconds
             if (
@@ -1522,7 +1520,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING
 
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
-            current_brightness = self._brightness
+            current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_brightness_level
             height_after_shadow = self._after_shadow_height
             angle_after_shadow = self._after_shadow_angle
@@ -1583,10 +1581,10 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.SHADOW_NEUTRAL
 
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
-            current_brightness = self._brightness
+            current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_brightness_level
             dawn_handling_active = self._dawn_control_enabled
-            dawn_brightness = self._brightness_dawn
+            dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             shadow_close_delay = self._shadow_after_seconds
             dawn_close_delay = self._dawn_after_seconds
@@ -1626,7 +1624,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 return ShutterState.SHADOW_NEUTRAL
 
         if await self._is_dawn_handling_activated():
-            dawn_brightness = self._brightness_dawn
+            dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             dawn_close_delay = self._dawn_after_seconds
             if (
@@ -1665,7 +1663,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
 
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
             _LOGGER.debug(f"{self._name}: self._check_if_facade_is_in_sun and self._is_shadow_handling_activated")
-            current_brightness = self._brightness
+            current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_brightness_level
             shadow_close_delay = self._shadow_after_seconds
             if (
@@ -1679,7 +1677,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
                 return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
 
         if await self._is_dawn_handling_activated():
-            dawn_brightness = self._brightness_dawn
+            dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             dawn_close_delay = self._dawn_after_seconds
             if (
@@ -1712,14 +1710,14 @@ class ShadowControl(CoverEntity, RestoreEntity):
             _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_NEUTRAL}: Integration locked, no action performed")
             return ShutterState.DAWN_NEUTRAL
 
-        current_brightness = self._brightness
+        current_brightness = self._get_current_brightness()
 
         shadow_handling_active = self._is_shadow_handling_activated()
         shadow_threshold_close = self._shadow_brightness_level
         shadow_close_delay = self._shadow_after_seconds
 
         dawn_handling_active = self._is_dawn_handling_activated()
-        dawn_brightness = self._brightness_dawn
+        dawn_brightness = self._get_current_dawn_brightness()
         dawn_threshold_close = self._dawn_brightness_level
         dawn_close_delay = self._dawn_after_seconds
         height_after_dawn = self._after_dawn_height
@@ -1797,7 +1795,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
 
         if await self._is_dawn_handling_activated():
-            dawn_brightness = self._brightness_dawn
+            dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             dawn_height = self._dawn_max_height
             dawn_open_slat_angle = self._dawn_look_through_angle
@@ -1856,7 +1854,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.DAWN_HORIZONTAL_NEUTRAL
 
         if await self._is_dawn_handling_activated():
-            dawn_brightness = self._brightness_dawn
+            dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             dawn_height = self._dawn_max_height
             dawn_open_slat_angle = self._dawn_look_through_angle
@@ -1913,7 +1911,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
         if await self._is_dawn_handling_activated():
-            dawn_brightness = self._brightness_dawn
+            dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             dawn_height = self._dawn_max_height
             dawn_open_slat_angle = self._dawn_look_through_angle
@@ -1971,7 +1969,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.DAWN_FULL_CLOSED
 
         if await self._is_dawn_handling_activated():
-            dawn_brightness = self._brightness_dawn
+            dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             dawn_height = self._dawn_max_height
             dawn_open_slat_delay = self._dawn_look_through_seconds
@@ -2026,7 +2024,7 @@ class ShadowControl(CoverEntity, RestoreEntity):
             return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
 
         if await self._is_dawn_handling_activated():
-            dawn_brightness = self._brightness_dawn
+            dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             dawn_height = self._dawn_max_height
             dawn_angle = self._dawn_max_angle
