@@ -7,15 +7,24 @@ import voluptuous as vol
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Callable, Awaitable
 
-from homeassistant.core import HomeAssistant, callback, Event, State
-from homeassistant.helpers.typing import ConfigType
-from homeassistant.helpers.event import async_track_state_change_event, async_track_time_change
+from homeassistant.components.cover import CoverEntityFeature
+from homeassistant.components.sensor import SensorEntity # Für die Basisklasse Sensor
 from homeassistant.const import (
     ATTR_SUPPORTED_FEATURES,
     STATE_ON, STATE_OFF,
     EVENT_HOMEASSISTANT_STARTED
 )
-from homeassistant.components.cover import CoverEntityFeature
+from homeassistant.core import HomeAssistant, callback, Event, State
+from homeassistant.helpers import discovery
+from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.helpers.entity import DeviceInfo # Für Gerätedefinitionen (optional, aber gut)
+from homeassistant.helpers.event import async_track_state_change_event, async_track_time_change, async_call_later
+from homeassistant.helpers.typing import ConfigType
+from homeassistant.helpers.update_coordinator import ( # Für die Benachrichtigung von Sensoren über Updates
+    CoordinatorEntity,
+    DataUpdateCoordinator,
+    UpdateFailed,
+)
 
 from .const import SCDynamicInput, SCConfigurationInput, SCShadowInput, SCDawnInput, \
     MovementRestricted, LockState, ShutterState, DOMAIN, DOMAIN_DATA_MANAGERS, CONF_COVERS
