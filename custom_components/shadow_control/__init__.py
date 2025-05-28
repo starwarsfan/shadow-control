@@ -1999,7 +1999,7 @@ class ShadowControlManager:
         if delay_seconds <= 0:
             _LOGGER.debug(
                 f"{self._name}: Timer delay is <= 0 ({delay_seconds}s). Trigger immediate recalculation")
-            await self._async_trigger_recalculation(None)
+            await self._async_calculate_and_apply_cover_position(None)
             # Wenn sofortige Neuberechnung, gibt es keinen zukünftigen Timer.
             self._next_modification_timestamp = None
             return
@@ -2046,7 +2046,7 @@ class ShadowControlManager:
         self._recalculation_timer = None
         self._recalculation_timer_start_time = None
         self._recalculation_timer_duration_seconds = None
-        await self._async_trigger_recalculation(None)  # Oder ein spezifisches Event triggern
+        await self._async_calculate_and_apply_cover_position(None)  # Oder ein spezifisches Event triggern
 
     def get_remaining_timer_seconds(self) -> float | None:
         """
