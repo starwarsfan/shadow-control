@@ -1231,7 +1231,7 @@ class ShadowControlManager:
                         target_height,
                         target_angle,
                         shadow_position=True,
-                        stop_timer=False,
+                        stop_timer=True,
                     )
                     _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL}: Brightness ({current_brightness}) above threshold ({shadow_threshold_close}), moving to shadow position ({target_height}%, {target_angle}%) and state {ShutterState.SHADOW_FULL_CLOSED}")
                     return ShutterState.SHADOW_FULL_CLOSED
@@ -1361,7 +1361,7 @@ class ShadowControlManager:
                     float(height_after_shadow),
                     float(angle_after_shadow),
                     shadow_position=False,
-                    stop_timer=False,
+                    stop_timer=True,
                 )
                 _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_NEUTRAL}: Moving to after-shadow position ({height_after_shadow}%, {angle_after_shadow}%)")
                 return ShutterState.SHADOW_NEUTRAL
@@ -1438,7 +1438,7 @@ class ShadowControlManager:
                 float(neutral_height),
                 float(neutral_angle),
                 shadow_position=False,
-                stop_timer=False,
+                stop_timer=True,
             )
             _LOGGER.debug(f"{self._name}: State {ShutterState.NEUTRAL}: Moving shutter to neutral position ({neutral_height}%, {neutral_angle}%).")
         return ShutterState.NEUTRAL
@@ -1490,7 +1490,7 @@ class ShadowControlManager:
                     float(height_after_dawn),
                     float(angle_after_dawn),
                     shadow_position=False,
-                    stop_timer=False,
+                    stop_timer=True,
                 )
                 _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_NEUTRAL}: Moving shutter to after-dawn position ({height_after_dawn}%, {angle_after_dawn}%).")
                 return ShutterState.DAWN_NEUTRAL
@@ -1515,7 +1515,7 @@ class ShadowControlManager:
                 float(neutral_height),
                 float(neutral_angle),
                 shadow_position=False,
-                stop_timer=True,  # Stop Timer (falls ein Timer aktiv war)
+                stop_timer=True,
             )
             _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_NEUTRAL}: Dawn mode disabled or requirements for shadow not given, moving to neutral position ({neutral_height}%, {neutral_angle}%)")
             return ShutterState.NEUTRAL
@@ -1655,7 +1655,7 @@ class ShadowControlManager:
                             float(dawn_height),
                             float(dawn_open_slat_angle),
                             shadow_position=False,
-                            stop_timer=True,
+                            stop_timer=False,
                         )
                         _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Timer finished, moving to dawn height ({dawn_height}%) with open slats ({dawn_open_slat_angle}°) and state {ShutterState.DAWN_HORIZONTAL_NEUTRAL}")
                         return ShutterState.DAWN_HORIZONTAL_NEUTRAL
@@ -1709,7 +1709,7 @@ class ShadowControlManager:
                     float(dawn_height),
                     float(dawn_angle),
                     shadow_position=False,
-                    stop_timer=False,
+                    stop_timer=True,
                 )
                 _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_FULL_CLOSED}: Dawn brightness not above threshold, moving to dawn position ({dawn_height}%, {dawn_angle}%)")
                 return ShutterState.DAWN_FULL_CLOSED
