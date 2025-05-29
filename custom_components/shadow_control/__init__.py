@@ -477,7 +477,6 @@ class ShadowControlManager:
 
         await self._async_calculate_and_apply_cover_position(event)
 
-    @callback
     async def _async_calculate_and_apply_cover_position(self, event: Event | None) -> None:
         """
         Calculate and apply the new cover and tilt position for this specific cover.
