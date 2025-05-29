@@ -1369,7 +1369,7 @@ class ShadowControlManager:
                 _LOGGER.warning(f"{self._name}: State {ShutterState.SHADOW_NEUTRAL}: Height or angle after shadow not configured, staying at {ShutterState.SHADOW_NEUTRAL}")
                 return ShutterState.SHADOW_NEUTRAL
 
-        if await self._is_dawn_handling_activated():
+        if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             dawn_close_delay = self._dawn_after_seconds
@@ -1417,7 +1417,7 @@ class ShadowControlManager:
                 await self._start_recalculation_timer(shadow_close_delay)
                 return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
 
-        if await self._is_dawn_handling_activated():
+        if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             dawn_close_delay = self._dawn_after_seconds
@@ -1449,11 +1449,11 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Handle DAWN_NEUTRAL")
         current_brightness = self._get_current_brightness()
 
-        shadow_handling_active = await self._is_shadow_handling_activated()
+        shadow_handling_active = await self._is_shadow_control_enabled()
         shadow_threshold_close = self._shadow_brightness_level
         shadow_close_delay = self._shadow_after_seconds
 
-        dawn_handling_active = await self._is_dawn_handling_activated()
+        dawn_handling_active = await self._is_dawn_control_enabled()
         dawn_brightness = self._get_current_dawn_brightness()
         dawn_threshold_close = self._dawn_brightness_level
         dawn_close_delay = self._dawn_after_seconds
