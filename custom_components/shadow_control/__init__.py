@@ -1793,11 +1793,11 @@ class ShadowControlManager:
     # End of state handling
     # #######################################################################
 
-    async def _is_shadow_handling_activated(self) -> bool:
+    async def _is_shadow_control_enabled(self) -> bool:
         """Check if shadow handling is activated."""
         return self._shadow_control_enabled
 
-    async def _is_dawn_handling_activated(self) -> bool:
+    async def _is_dawn_control_enabled(self) -> bool:
         """Check if dawn handling is activated."""
         return self._dawn_control_enabled
 
