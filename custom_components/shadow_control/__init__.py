@@ -1987,8 +1987,8 @@ class ShadowControlManager:
         # Falls previous_value noch None ist (z.B. beim Initiallauf),
         # sollte der new_value immer zurückgegeben werden, da es noch keinen "previous" gibt.
         if previous_value is None:
-            _LOGGER.debug(
-                f"{self._name}: _should_output_be_updated: previous_value is None. Returning new value ({new_value})")
+            # _LOGGER.debug(
+            #     f"{self._name}: _should_output_be_updated: previous_value is None. Returning new value ({new_value})")
             return new_value
 
         # Überprüfen Sie, ob sich der Wert überhaupt geändert hat,
@@ -1996,41 +1996,41 @@ class ShadowControlManager:
         # Eine kleine Toleranz kann hier sinnvoll sein, um unnötige Bewegungen zu vermeiden.
         # Home Assistant filtert oft schon, aber eine explizite Prüfung ist gut.
         if abs(new_value - previous_value) < 0.001:  # Kleine Toleranz für Floating Point Vergleiche
-            _LOGGER.debug(
-                f"{self._name}: _should_output_be_updated: new_value ({new_value}) is nearly identical to previous_value ({previous_value}). Returning previous_value")
+            # _LOGGER.debug(
+            #     f"{self._name}: _should_output_be_updated: new_value ({new_value}) is nearly identical to previous_value ({previous_value}). Returning previous_value")
             return previous_value
 
-        _LOGGER.debug(
-            f"{self._name}: _should_output_be_updated: config_value={config_value.name}, new_value={new_value}, previous_value={previous_value}")
+        # _LOGGER.debug(
+        #     f"{self._name}: _should_output_be_updated: config_value={config_value.name}, new_value={new_value}, previous_value={previous_value}")
 
         if config_value == MovementRestricted.ONLY_CLOSE:
             if new_value > previous_value:
-                _LOGGER.debug(
-                    f"{self._name}: _should_output_be_updated: ONLY_DOWN -> new_value ({new_value}) > previous_value ({previous_value}). Returning new_value")
+                # _LOGGER.debug(
+                #     f"{self._name}: _should_output_be_updated: ONLY_DOWN -> new_value ({new_value}) > previous_value ({previous_value}). Returning new_value")
                 return new_value
             else:
-                _LOGGER.debug(
-                    f"{self._name}: _should_output_be_updated: ONLY_DOWN -> new_value ({new_value}) <= previous_value ({previous_value}). Returning previous_value")
+                # _LOGGER.debug(
+                #     f"{self._name}: _should_output_be_updated: ONLY_DOWN -> new_value ({new_value}) <= previous_value ({previous_value}). Returning previous_value")
                 return previous_value
         elif config_value == MovementRestricted.ONLY_OPEN:
             if new_value < previous_value:
-                _LOGGER.debug(
-                    f"{self._name}: _should_output_be_updated: ONLY_UP -> new_value ({new_value}) < previous_value ({previous_value}). Returning new_value")
+                # _LOGGER.debug(
+                #     f"{self._name}: _should_output_be_updated: ONLY_UP -> new_value ({new_value}) < previous_value ({previous_value}). Returning new_value")
                 return new_value
             else:
-                _LOGGER.debug(
-                    f"{self._name}: _should_output_be_updated: ONLY_UP -> new_value ({new_value}) >= previous_value ({previous_value}). Returning previous_value")
+                # _LOGGER.debug(
+                #     f"{self._name}: _should_output_be_updated: ONLY_UP -> new_value ({new_value}) >= previous_value ({previous_value}). Returning previous_value")
                 return previous_value
         elif config_value == MovementRestricted.NO_RESTRICTION:
-            _LOGGER.debug(
-                f"{self._name}: _should_output_be_updated: NO_RESTRICTION -> Returning new_value ({new_value})")
+            # _LOGGER.debug(
+            #     f"{self._name}: _should_output_be_updated: NO_RESTRICTION -> Returning new_value ({new_value})")
             return new_value
         else:
             # Für alle anderen (unbekannten) config_values, geben wir den previous_value zurück
             # oder den new_value, je nachdem, wie Sie die "default" in PHP interpretieren.
             # Die PHP "default" ist "return $newValue;", also lassen wir das auch hier so.
-            _LOGGER.warning(
-                f"{self._name}: _should_output_be_updated: Unknown value '{config_value.name}'. Returning new_value ({new_value})")
+            # _LOGGER.warning(
+            #     f"{self._name}: _should_output_be_updated: Unknown value '{config_value.name}'. Returning new_value ({new_value})")
             return new_value
 
     async def _start_recalculation_timer(self, delay_seconds: float) -> None:
