@@ -1056,11 +1056,7 @@ class ShadowControlManager:
     # State SHADOW_FULL_CLOSE_TIMER_RUNNING
     async def _handle_state_shadow_full_close_timer_running(self) -> ShutterState:
         _LOGGER.debug(f"{self._name}: Handle SHADOW_FULL_CLOSE_TIMER_RUNNING")
-        if await self._is_lbs_locked_in_either_way():
-            _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}: Integration locked, no action performed")
-            return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
-
-        if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
+        if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._brightness
             shadow_threshold_close = self._shadow_brightness_level
             if (
@@ -1114,11 +1110,7 @@ class ShadowControlManager:
     # State SHADOW_FULL_CLOSED
     async def _handle_state_shadow_full_closed(self) -> ShutterState:
         _LOGGER.debug(f"{self._name}: Handle SHADOW_FULL_CLOSED")
-        if await self._is_lbs_locked_in_either_way():
-            _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_FULL_CLOSED}: Integration locked, no action performed")
-            return ShutterState.SHADOW_FULL_CLOSED
-
-        if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
+        if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_brightness_level
             shadow_open_slat_delay = self._shadow_look_through_seconds
@@ -1167,11 +1159,7 @@ class ShadowControlManager:
     # State SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
     async def _handle_state_shadow_horizontal_neutral_timer_running(self) -> ShutterState:
         _LOGGER.debug(f"{self._name}: Handle SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING")
-        if await self._is_lbs_locked_in_either_way():
-            _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Integration locked, no action performed")
-            return ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
-
-        if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
+        if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_brightness_level
             shadow_open_slat_angle = self._shadow_look_through_angle
@@ -1226,11 +1214,7 @@ class ShadowControlManager:
     # State SHADOW_HORIZONTAL_NEUTRAL
     async def _handle_state_shadow_horizontal_neutral(self) -> ShutterState:
         _LOGGER.debug(f"{self._name}: Handle SHADOW_HORIZONTAL_NEUTRAL")
-        if await self._is_lbs_locked_in_either_way():
-            _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL}: Integration locked, no action performed")
-            return ShutterState.SHADOW_HORIZONTAL_NEUTRAL
-
-        if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
+        if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_brightness_level
             shadow_open_shutter_delay = self._shadow_open_seconds
@@ -1285,11 +1269,7 @@ class ShadowControlManager:
     # State SHADOW_NEUTRAL_TIMER_RUNNING
     async def _handle_state_shadow_neutral_timer_running(self) -> ShutterState:
         _LOGGER.debug(f"{self._name}: Handle SHADOW_NEUTRAL_TIMER_RUNNING")
-        if await self._is_lbs_locked_in_either_way():
-            _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING}: Integration locked, no action performed")
-            return ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING
-
-        if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
+        if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_brightness_level
             height_after_shadow = self._after_shadow_height
@@ -1346,11 +1326,7 @@ class ShadowControlManager:
     # State SHADOW_NEUTRAL
     async def _handle_state_shadow_neutral(self) -> ShutterState:
         _LOGGER.debug(f"{self._name}: Handle SHADOW_NEUTRAL")
-        if await self._is_lbs_locked_in_either_way():
-            _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_NEUTRAL}: Integration locked, no action performed")
-            return ShutterState.SHADOW_NEUTRAL
-
-        if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
+        if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_brightness_level
             dawn_handling_active = self._dawn_control_enabled
@@ -1426,12 +1402,7 @@ class ShadowControlManager:
     # State NEUTRAL
     async def _handle_state_neutral(self) -> ShutterState:
         _LOGGER.debug(f"{self._name}: Handle NEUTRAL")
-        if await self._is_lbs_locked_in_either_way():
-            _LOGGER.debug(f"{self._name}: State {ShutterState.NEUTRAL}: Integration locked, no action performed"
-                          )
-            return ShutterState.NEUTRAL
-
-        if await self._check_if_facade_is_in_sun() and await self._is_shadow_handling_activated():
+        if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             _LOGGER.debug(f"{self._name}: self._check_if_facade_is_in_sun and self._is_shadow_handling_activated")
             current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_brightness_level
@@ -1476,10 +1447,6 @@ class ShadowControlManager:
     # State DAWN_NEUTRAL
     async def _handle_state_dawn_neutral(self) -> ShutterState:
         _LOGGER.debug(f"{self._name}: Handle DAWN_NEUTRAL")
-        if await self._is_lbs_locked_in_either_way():
-            _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_NEUTRAL}: Integration locked, no action performed")
-            return ShutterState.DAWN_NEUTRAL
-
         current_brightness = self._get_current_brightness()
 
         shadow_handling_active = await self._is_shadow_handling_activated()
@@ -1560,11 +1527,7 @@ class ShadowControlManager:
     # State DAWN_NEUTRAL_TIMER_RUNNING
     async def _handle_state_dawn_neutral_timer_running(self) -> ShutterState:
         _LOGGER.debug(f"{self._name}: Handle DAWN_NEUTRAL_TIMER_RUNNING")
-        if await self._is_lbs_locked_in_either_way():
-            _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING}: Integration locked, no action performed")
-            return ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
-
-        if await self._is_dawn_handling_activated():
+        if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             dawn_height = self._dawn_max_height
@@ -1619,11 +1582,7 @@ class ShadowControlManager:
     # State DAWN_HORIZONTAL_NEUTRAL
     async def _handle_state_dawn_horizontal_neutral(self) -> ShutterState:
         _LOGGER.debug(f"{self._name}: Handle DAWN_HORIZONTAL_NEUTRAL")
-        if await self._is_lbs_locked_in_either_way():
-            _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_HORIZONTAL_NEUTRAL}: Integration locked, no action performed")
-            return ShutterState.DAWN_HORIZONTAL_NEUTRAL
-
-        if await self._is_dawn_handling_activated():
+        if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             dawn_height = self._dawn_max_height
@@ -1676,11 +1635,7 @@ class ShadowControlManager:
     # State DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
     async def _handle_state_dawn_horizontal_neutral_timer_running(self) -> ShutterState:
         _LOGGER.debug(f"{self._name}: Handle DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING")
-        if await self._is_lbs_locked_in_either_way():
-            _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}: Integration locked, no action performed")
-            return ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
-
-        if await self._is_dawn_handling_activated():
+        if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             dawn_height = self._dawn_max_height
@@ -1734,11 +1689,7 @@ class ShadowControlManager:
     # State DAWN_FULL_CLOSED
     async def _handle_state_dawn_full_closed(self) -> ShutterState:
         _LOGGER.debug(f"{self._name}: Handle DAWN_FULL_CLOSED")
-        if await self._is_lbs_locked_in_either_way():
-            _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_FULL_CLOSED}: Integration locked, no action performed")
-            return ShutterState.DAWN_FULL_CLOSED
-
-        if await self._is_dawn_handling_activated():
+        if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             dawn_height = self._dawn_max_height
@@ -1789,11 +1740,7 @@ class ShadowControlManager:
     # State DAWN_FULL_CLOSE_TIMER_RUNNING
     async def _handle_state_dawn_full_close_timer_running(self) -> ShutterState:
         _LOGGER.debug(f"{self._name}: Handle DAWN_FULL_CLOSE_TIMER_RUNNING")
-        if await self._is_lbs_locked_in_either_way():
-            _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING}: Integration locked, no action performed")
-            return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
-
-        if await self._is_dawn_handling_activated():
+        if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_brightness_level
             dawn_height = self._dawn_max_height
@@ -1853,10 +1800,6 @@ class ShadowControlManager:
     async def _is_dawn_handling_activated(self) -> bool:
         """Check if dawn handling is activated."""
         return self._dawn_control_enabled
-
-    async def _is_lbs_locked_in_either_way(self) -> bool:
-        """Check if the cover is locked in any way."""
-        return not self._current_lock_state == LockState.UNLOCKED
 
     # =======================================================================
     # Entity state helper functions
