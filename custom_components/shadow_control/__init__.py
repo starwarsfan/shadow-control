@@ -486,32 +486,45 @@ class ShadowControlManager:
 
         self._update_input_values()
 
-        # 1. Alle benötigten Eingabedaten abrufen
-        # Beispiel: Sonnenstand und Helligkeit
-        brightness_state = self.hass.states.get(self._brightness_entity_id)
-        sun_elevation_state = self.hass.states.get(self._sun_elevation_entity_id)
-        sun_azimuth_state = self.hass.states.get(self._sun_azimuth_entity_id)
+        shadow_handling_was_disabled = False
+        dawn_handling_was_disabled = False
+        
+        if event: # Prüfen, ob es sich um ein tatsächliches Event handelt (nicht None, wie beim Initial-Run)
+            event_type = event.event_type
+            event_data = event.data
 
-        # Prüfen, ob alle benötigten Sensoren verfügbar sind und gültige Werte haben
-        if not brightness_state or brightness_state.state in ['unavailable', 'unknown'] or \
-                not sun_elevation_state or sun_elevation_state.state in ['unavailable', 'unknown'] or \
-                not sun_azimuth_state or sun_azimuth_state.state in ['unavailable', 'unknown']:
-            _LOGGER.warning(f"{self._name}: Missing or invalid input data. Skipping calculation.")
-            return
+            if event_type == "state_changed":
+                entity_id = event_data.get("entity_id")
+                old_state: State | None = event_data.get("old_state")
+                new_state: State | None = event_data.get("new_state")
 
-        # Werte in den richtigen Typ umwandeln
-        try:
-            current_brightness = float(brightness_state.state)
-            current_elevation = float(sun_elevation_state.state)
-            current_azimuth = float(sun_azimuth_state.state)
-        except ValueError as e:
-            _LOGGER.error(f"{self._name}: Invalid state value for sensor: {e}. Skipping calculation.")
-            return
+                _LOGGER.debug(f"{self._name}: State change for entity: {entity_id}")
+                _LOGGER.debug(f"{self._name}:   Old state: {old_state.state if old_state else 'None'}")
+                _LOGGER.debug(f"{self._name}:   New state: {new_state.state if new_state else 'None'}")
+
+                # Hier können Sie spezifische Logik hinzufügen, basierend auf der entity_id
+                if entity_id == self._shadow_control_enabled_entity_id:
+                    _LOGGER.debug(f"{self._name}: Shadow control enable changed")
+                    shadow_handling_was_disabled = new_state.state == "off"
+                elif entity_id == self._dawn_control_enabled_entity_id:
+                    _LOGGER.debug(f"{self._name}: Dawn control enable changed")
+                    dawn_handling_was_disabled = new_state.state == "off"
+            elif event_type == "time_changed":
+                _LOGGER.debug(f"{self._name}: Time changed event received")
+            else:
+                _LOGGER.debug(f"{self._name}: Unhandled event type: {event_type}")
+        else:
+            _LOGGER.debug(f"{self._name}: No specific event data (likely initial run or manual trigger)")
 
         self._check_if_position_changed_externally(self._shutter_current_height, self._shutter_current_angle)
         await self._check_if_facade_is_in_sun()
 
-        await self._process_shutter_state()
+        if shadow_handling_was_disabled:
+            await self._shadow_handling_was_disabled()
+        elif dawn_handling_was_disabled:
+            await self._dawn_handling_was_disabled()
+        else:
+            await self._process_shutter_state()
 
     async def _check_if_facade_is_in_sun(self) -> bool:
         """Calculate if the sun illuminates the given facade."""
@@ -629,6 +642,40 @@ class ShadowControlManager:
             "current_lock_state": self._current_lock_state,
             "next_modification_timestamp": self._next_modification_timestamp.isoformat() if self._next_modification_timestamp else None,
         }
+
+    async def _shadow_handling_was_disabled(self) -> None:
+        match self._current_shutter_state:
+            case ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING | \
+                 ShutterState.SHADOW_FULL_CLOSED | \
+                 ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING | \
+                 ShutterState.SHADOW_HORIZONTAL_NEUTRAL | \
+                 ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING | \
+                 ShutterState.SHADOW_NEUTRAL:
+                _LOGGER.debug(f"{self._name}: Shadow handling was disabled, position shutter at neutral height")
+                self._cancel_recalculation_timer()
+                self._current_shutter_state = ShutterState.NEUTRAL
+                self._update_extra_state_attributes()  # Attribute nach Zustandswechsel aktualisieren
+            case ShutterState.NEUTRAL:
+                _LOGGER.debug(f"{self._name}: Shadow handling was disabled, but shutter already at neutral height. Nothing to do")
+            case _:
+                _LOGGER.debug(f"{self._name}: Shadow handling was disabled but currently within a dawn state. Nothing to do")
+
+    async def _dawn_handling_was_disabled(self) -> None:
+        match self._current_shutter_state:
+            case ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING | \
+                 ShutterState.DAWN_FULL_CLOSED | \
+                 ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING | \
+                 ShutterState.DAWN_HORIZONTAL_NEUTRAL | \
+                 ShutterState.DAWN_NEUTRAL_TIMER_RUNNING | \
+                 ShutterState.DAWN_NEUTRAL:
+                _LOGGER.debug(f"{self._name}: Dawn handling was disabled, position shutter at neutral height")
+                self._cancel_recalculation_timer()
+                self._current_shutter_state = ShutterState.NEUTRAL
+                self._update_extra_state_attributes()  # Attribute nach Zustandswechsel aktualisieren
+            case ShutterState.NEUTRAL:
+                _LOGGER.debug(f"{self._name}: Dawn handling was disabled, but shutter already at neutral height. Nothing to do")
+            case _:
+                _LOGGER.debug(f"{self._name}: Dawn handling was disabled but currently within a shadow state. Nothing to do")
 
     async def _process_shutter_state(self) -> None:
         """
