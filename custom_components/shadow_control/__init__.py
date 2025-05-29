@@ -2089,7 +2089,7 @@ class ShadowControlManager:
         self._recalculation_timer = None
         self._recalculation_timer_start_time = None
         self._recalculation_timer_duration_seconds = None
-        await self._async_calculate_and_apply_cover_position(None)  # Oder ein spezifisches Event triggern
+        await self._async_calculate_and_apply_cover_position(None)
 
     def get_remaining_timer_seconds(self) -> float | None:
         """
