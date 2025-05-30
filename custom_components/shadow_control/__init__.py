@@ -811,7 +811,7 @@ class ShadowControlManager:
         # We need the value of _previous_shutter_height *before* it's updated for height.
         # So, compare the *calculated* `shutter_height_percent` with what was previously *stored*.
         height_calculated_different_from_previous = (
-                abs(shutter_height_percent - self._previous_shutter_height) > 0.001) if self._previous_shutter_height is not None else True
+                -0.001 < abs(shutter_height_percent - self._previous_shutter_height) > 0.001) if self._previous_shutter_height is not None else True
 
         angle_to_set_percent = self._should_output_be_updated(
             config_value=self._movement_restriction_angle,
@@ -820,10 +820,10 @@ class ShadowControlManager:
         )
 
         # --- Phase 5: Send commands if values actually changed (only if not initial run AND not locked) ---
-        send_height_command = abs(height_to_set_percent - self._previous_shutter_height) > 0.001 if self._previous_shutter_height is not None else True
+        send_height_command = -0.001 < abs(height_to_set_percent - self._previous_shutter_height) > 0.001 if self._previous_shutter_height is not None else True
 
         # Send angle command if angle changed OR if height changed significantly
-        send_angle_command = (abs(angle_to_set_percent - self._previous_shutter_angle) > 0.001 if self._previous_shutter_angle is not None else True) or height_calculated_different_from_previous
+        send_angle_command = (-0.001 < abs(angle_to_set_percent - self._previous_shutter_angle) > 0.001 if self._previous_shutter_angle is not None else True) or height_calculated_different_from_previous
 
         if self._enforce_position_update:
             _LOGGER.debug(f"{self._name}: Enforcing position update")
