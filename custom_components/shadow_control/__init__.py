@@ -831,7 +831,7 @@ class ShadowControlManager:
             send_angle_command = True
 
         # Height positioning
-        if send_height_command:
+        if send_height_command or self._enforce_position_update:
             if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
                 _LOGGER.info(f" {self._name}: Setting position to {shutter_height_percent:.1f}% (current: {self._previous_shutter_height}).")
                 try:
@@ -851,7 +851,7 @@ class ShadowControlManager:
                 f"{self._name}: Height '{height_to_set_percent:.2f}%' not sent, value was the same or restricted.")
 
         # Angle positioning
-        if send_angle_command:
+        if send_angle_command or self._enforce_position_update:
             if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
                 _LOGGER.info(f" {self._name}: Setting tilt position to {shutter_angle_percent:.1f}% (current: {self._previous_shutter_angle}).")
                 try:
