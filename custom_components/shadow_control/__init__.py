@@ -694,6 +694,8 @@ class ShadowControlManager:
                     f"{self._name}: State change from {self._current_shutter_state.name} to {new_shutter_state.name}")
                 self._current_shutter_state = new_shutter_state
                 self._update_extra_state_attributes()  # Attribute nach Zustandswechsel aktualisieren
+                _LOGGER.debug(f"{self._name}: Checking if there might be another change required")
+                await self._process_shutter_state()
         else:
             _LOGGER.debug(
                 f"{self._name}: No specific handler for current state or locked. Current lock state: {self._current_lock_state.name}")
