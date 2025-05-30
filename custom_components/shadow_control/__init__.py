@@ -485,6 +485,7 @@ class ShadowControlManager:
         Calculate and apply the new cover and tilt position for this specific cover.
         This is where your main Shadow Control logic resides.
         """
+        _LOGGER.debug(f"{self._name}: =====================================================================")
         _LOGGER.debug(f"{self._name}: Calculating and applying cover positions")
 
         self._update_input_values()
@@ -507,10 +508,10 @@ class ShadowControlManager:
 
                 # Hier können Sie spezifische Logik hinzufügen, basierend auf der entity_id
                 if entity_id == self._shadow_control_enabled_entity_id:
-                    _LOGGER.debug(f"{self._name}: Shadow control enable changed")
+                    _LOGGER.debug(f"{self._name}: Shadow control enable changed to {new_state.state}")
                     shadow_handling_was_disabled = new_state.state == "off"
                 elif entity_id == self._dawn_control_enabled_entity_id:
-                    _LOGGER.debug(f"{self._name}: Dawn control enable changed")
+                    _LOGGER.debug(f"{self._name}: Dawn control enable changed to {new_state.state}")
                     dawn_handling_was_disabled = new_state.state == "off"
                 elif entity_id == self._lock_integration_entity_id:
                     if new_state.state == "off" and not self._lock_integration_with_position:
