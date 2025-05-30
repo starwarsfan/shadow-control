@@ -269,6 +269,9 @@ class ShadowControlManager:
             ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING: self._handle_state_dawn_full_close_timer_running,
         }
 
+        # Interne Variablen
+        self._enforce_position_update: bool = False
+
         # Interne persistente Variablen
         # Werden beim Start aus den persistenten Attributen gelesen.
         self._current_shutter_state: ShutterState = ShutterState.NEUTRAL # Standardwert setzen
@@ -509,6 +512,14 @@ class ShadowControlManager:
                 elif entity_id == self._dawn_control_enabled_entity_id:
                     _LOGGER.debug(f"{self._name}: Dawn control enable changed")
                     dawn_handling_was_disabled = new_state.state == "off"
+                elif entity_id == self._lock_integration_entity_id:
+                    if new_state.state == "off" and not self._lock_integration_with_position:
+                        _LOGGER.debug(f"{self._name}: Simple lock was disabled and lock with position is already disabled, enforcing position update")
+                        self._enforce_position_update = True
+                elif entity_id == self._lock_integration_with_position_entity_id:
+                    if new_state.state == "off" and not self._lock_integration:
+                        _LOGGER.debug(f"{self._name}: Lock with position was disabled and simple lock already disabled, enforcing position update")
+                        self._enforce_position_update = True
             elif event_type == "time_changed":
                 _LOGGER.debug(f"{self._name}: Time changed event received")
             else:
@@ -525,6 +536,8 @@ class ShadowControlManager:
             await self._dawn_handling_was_disabled()
         else:
             await self._process_shutter_state()
+
+        self._enforce_position_update = False
 
     async def _check_if_facade_is_in_sun(self) -> bool:
         """Calculate if the sun illuminates the given facade."""
@@ -806,11 +819,15 @@ class ShadowControlManager:
         )
 
         # --- Phase 5: Send commands if values actually changed (only if not initial run AND not locked) ---
-
         send_height_command = abs(height_to_set_percent - self._previous_shutter_height) > 0.001 if self._previous_shutter_height is not None else True
 
         # Send angle command if angle changed OR if height changed significantly
         send_angle_command = (abs(angle_to_set_percent - self._previous_shutter_angle) > 0.001 if self._previous_shutter_angle is not None else True) or height_calculated_different_from_previous
+
+        if self._enforce_position_update:
+            _LOGGER.debug(f"{self._name}: Enforcing position update")
+            send_height_command = True
+            send_angle_command = True
 
         # Height positioning
         if send_height_command:
