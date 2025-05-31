@@ -114,3 +114,9 @@ class MovementRestricted(Enum):
     NO_RESTRICTION = "No restriction"
     ONLY_CLOSE = "Only close"
     ONLY_OPEN = "Only open"
+
+# --- Definition of configuration values, how to update position outputs ----
+class ShutterType(Enum):
+    """Enum for the possible shutter types."""
+    MODE1 = "mode1"
+    MODE2 = "mode2"
