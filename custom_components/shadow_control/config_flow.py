@@ -72,16 +72,16 @@ STEP_FACADE_SETTINGS_SCHEMA = vol.Schema({
     ),
     vol.Optional("facade_movement_restriction_height", default="No restriction"): selector.SelectSelector(
         selector.SelectSelectorConfig(options=[
-            "No restriction"
-            "Only close"
-            "Only open"
+            "No restriction",
+            "Only close",
+            "Only open",
         ])
     ),
     vol.Optional("facade_movement_restriction_angle", default="No restriction"): selector.SelectSelector(
         selector.SelectSelectorConfig(options=[
-            "No restriction"
-            "Only close"
-            "Only open"
+            "No restriction",
+            "Only close",
+            "Only open",
         ])
     ),
 })
