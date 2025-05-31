@@ -163,8 +163,9 @@
   "selector": {
     "facade_shutter_type": {
       "options": {
-        "mode1": "single direction (0% = closed / 100% = open)",
-        "mode2": "bi-directional (0% = closed / 50% = open / 100% = closed)"      }
+        "mode1": "single direction (vertical = closed / horizontal = open)",
+        "mode2": "bi-directional (vertical inside = closed / horizontal = open / vertical outside = closed)"
+      }
     }
   }
 }
