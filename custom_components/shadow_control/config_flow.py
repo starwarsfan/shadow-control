@@ -112,16 +112,16 @@ STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema({
     vol.Optional("lock_integration_with_position_entity_id"): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="input_boolean")
     ),
-    vol.Optional("lock_height_entity_id"): selector.EntitySelector(
+    vol.Optional("lock_height_entity_id"): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional("lock_angle_entity_id"): selector.EntitySelector(
+    vol.Optional("lock_angle_entity_id"): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional("modification_tolerance_height_entity_id"): selector.EntitySelector(
+    vol.Optional("modification_tolerance_height_entity_id"): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional("modification_tolerance_angle_entity_id"): selector.EntitySelector(
+    vol.Optional("modification_tolerance_angle_entity_id"): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
 })
