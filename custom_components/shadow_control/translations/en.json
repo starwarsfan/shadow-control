@@ -1,21 +1,63 @@
 {
-    "config": {
-        "step": {
-            "user": {
-                "description": "If you need help with the configuration have a look here: https://github.com/starwarsfan/shadow-control",
-                "data": {
-                    "username": "Username",
-                    "password": "Password"
-                }
-            }
+  "title": "Shadow Control",
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "name": "Instance name",
+          "target_cover_entity_id": "Cover to maintain"
         },
-        "error": {
-            "auth": "Username/Password is wrong.",
-            "connection": "Unable to connect to the server.",
-            "unknown": "Unknown error occurred."
-        },
-        "abort": {
-            "already_configured": "This entry is already configured."
+        "data_description": {
+          "name": "A descriptive and unique name for this Shadow Control (SC) instance",
+          "target_cover_entity_id": "Cover which should be handled by this Shadow Control (SC) instance"
         }
+      },
+      "facade_settings": {
+        "title": "Facade configuration",
+        "description": "Configure the details of the facade (or even the window), which should be handled by this SC instance",
+        "data": {
+          "facade_azimuth": "Facade azimuth",
+          "facade_offset_sun_in": "Sun start offset",
+          "facade_offset_sun_out": "Sun end offset",
+          "facade_elevation_sun_min": "Min sun elevation",
+          "facade_elevation_sun_max": "Max sun elevation",
+          "facade_slat_width": "Shutter slat width",
+          "facade_slat_distance": "Shutter slat distance"
+        },
+        "data_description": {
+          "facade_azimuth": "Azimuth of the facade in degrees in direction from the inside to the outside. Valid range: 0° to 359°",
+          "facade_offset_sun_in": "Angle from which the facade in comparison to the given azimuth, will be illuminated. Valid range: -90° to 0°",
+          "facade_offset_sun_out": "Angle up to which the facade in comparison to the given azimuth, will be illuminated. Valid range: 0° to 90°",
+          "facade_elevation_sun_min": "Min elevation of the sun, from which the facade will be illuminated. Valid range: 0° to 90°",
+          "facade_elevation_sun_max": "Max elevation of the sun, up to which the facade will be illuminated. Valid range: 0° to 90°",
+          "facade_slat_width": "Width of shutter slats in mm",
+          "facade_slat_distance": "Distance between shutter slats in mm"
+        }
+      },
+      "dynamic_inputs": {
+        "title": "Dynamic inputs",
+        "description": "Configure the dynamic inputs, which will be required to automate the given cover"
+      },
+      "shadow_settings": {
+        "title": "Configure shadow handling",
+        "description": "Configure how to handle brightness"
+      },
+      "dawn_settings": {
+        "title": "Configure dawn handling",
+        "description": "Configure how to handle dawn"
+      },
+      "options": {
+        "title": "Configurable options",
+        "description": "All configurable options of this SC instance"
+      }
+    },
+    "error": {
+      "auth": "Username/Password is wrong.",
+      "connection": "Unable to connect to the server.",
+      "unknown": "Unknown error occurred."
+    },
+    "abort": {
+      "already_configured": "This entry is already configured."
     }
+  }
 }

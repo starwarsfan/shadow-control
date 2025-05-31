@@ -1,0 +1,63 @@
+{
+  "title": "Shadow Control",
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "name": "Instanzname",
+          "target_cover_entity_id": "Behang-Entität"
+        },
+        "data_description": {
+          "name": "Eindeutiger Name dieser Shadow Control (SC) Instanz",
+          "target_cover_entity_id": "Behang, welcher mit dieser Shadow Control (SC) Instanz gehandhabt werden soll"
+        }
+      },
+      "facade_settings": {
+        "title": "Konfiguration Fassade",
+        "description": "Hier werden die Details der zu steuernden Fassade resp. des zu steuernden Fensters konfiguriert.",
+        "data": {
+          "facade_azimuth": "Azimut",
+          "facade_offset_sun_in": "Start Sonneneinfall",
+          "facade_offset_sun_out": "Ende Sonneneinfall",
+          "facade_elevation_sun_min": "Minimale Sonnenhöhe",
+          "facade_elevation_sun_max": "Maximale Sonnenhöhe",
+          "facade_slat_width": "Breite Raffstorelamellen",
+          "facade_slat_distance": "Abstand Raffstorelamellen"
+        },
+        "data_description": {
+          "facade_azimuth": "Azimuth der Fassade in Grad mit Blickrichtung von innen nach aussen. Gültiger Bereich: 0° bis 359°",
+          "facade_offset_sun_in": "Ab welchem Winkel ausgehend vom Azimut der Fassade scheint die Sonne auf die Fassade. Gültiger Bereich: -90° bis 0°",
+          "facade_offset_sun_out": "Bis zu welchem Winkel ausgehend vom Azimut der Fassade scheint die Sonne auf die Fassade. Gültiger Bereich: 0° bis 90°",
+          "facade_elevation_sun_min": "Minimale Höhe der Sonne in Grad (°), ab welcher die Sonne auf die Fassade scheint. Gültiger Bereich: 0° bis 90°",
+          "facade_elevation_sun_max": "Maximale Höhe der Sonne in Grad (°), bis zu welcher die Sonne auf die Fassade scheint. Gültiger Bereich: 0° bis 90°",
+          "facade_slat_width": "Breite der Raffstorelamellen in mm",
+          "facade_slat_distance": "Abstand der Raffstorelamellen zueinander in mm"
+        }
+      },
+      "dynamic_inputs": {
+        "title": "Dynamische Eingänge",
+        "description": "Konfiguration der dynamischen Eingänge für die automatische Steuerung der verbundenen Behang-Entität"
+      },
+      "shadow_settings": {
+        "title": "Beschattung konfigurieren",
+        "description": "Konfiguriere wie mit dem Lichteinfall auf der Fassade umgegangen werden soll"
+      },
+      "dawn_settings": {
+        "title": "Dämmerung konfigurieren",
+        "description": "Konfiguriere wie der Behang bei Dämmerung gesteuert werden soll"
+      },
+      "options": {
+        "title": "Konfigurierbare Optionen",
+        "description": "Alle konfigurierbaren Optionen dieser SC Instanz"
+      }
+    },
+    "error": {
+      "auth": "Username/Password is wrong.",
+      "connection": "Unable to connect to the server.",
+      "unknown": "Unknown error occurred."
+    },
+    "abort": {
+      "already_configured": "This entry is already configured."
+    }
+  }
+}
