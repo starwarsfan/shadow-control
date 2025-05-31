@@ -7,7 +7,7 @@
   "dependencies": [
     "knx", "sun"
   ],
-  "config_flow": false,
+  "config_flow": true,
   "documentation": "https://github.com/starwarsfan/shadow-control",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/starwarsfan/shadow-control/issues",
