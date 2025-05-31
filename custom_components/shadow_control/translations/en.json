@@ -22,7 +22,19 @@
           "facade_elevation_sun_min": "Min sun elevation",
           "facade_elevation_sun_max": "Max sun elevation",
           "facade_slat_width": "Shutter slat width",
-          "facade_slat_distance": "Shutter slat distance"
+          "facade_slat_distance": "Shutter slat distance",
+          "facade_slat_angle_offset": "Shutter angle offset",
+          "facade_slat_min_angle": "Min shutter angle",
+          "facade_shutter_stepping_height": "Height stepping",
+          "facade_shutter_stepping_angle": "Angle stepping",
+          "facade_shutter_type": "Shutter type",
+          "facade_light_strip_width": "Width of light strip",
+          "facade_shutter_height": "Overall shutter height",
+          "facade_neutral_pos_height": "Neutral position height",
+          "facade_neutral_pos_angle": "Neutral position angle",
+          "facade_movement_restriction_height": "Restrict height movement",
+          "facade_movement_restriction_angle": "Restrict angle movement",
+          "facade_update_lock_output": ""
         },
         "data_description": {
           "facade_azimuth": "Azimuth of the facade in degrees in direction from the inside to the outside. Valid range: 0° to 359°",
@@ -30,21 +42,109 @@
           "facade_offset_sun_out": "Angle up to which the facade in comparison to the given azimuth, will be illuminated. Valid range: 0° to 90°",
           "facade_elevation_sun_min": "Min elevation of the sun, from which the facade will be illuminated. Valid range: 0° to 90°",
           "facade_elevation_sun_max": "Max elevation of the sun, up to which the facade will be illuminated. Valid range: 0° to 90°",
-          "facade_slat_width": "Width of shutter slats in mm",
-          "facade_slat_distance": "Distance between shutter slats in mm"
+          "facade_slat_width": "Width of shutter slats in mm.",
+          "facade_slat_distance": "Distance between shutter slats in mm.",
+          "facade_slat_angle_offset": "Shutter angle offset in %, which will be added to the computed angle in case a correction is required. Default: 0",
+          "facade_slat_min_angle": "Min shadow slat angle. Slat position will be in the range of this value and 100%. Default: 0",
+          "facade_shutter_stepping_height": "Stepping of height positioning in % to prevent small steps, which could not be positioned by the used shutter. Default: 5",
+          "facade_shutter_stepping_angle": "Stepping of angle positioning in % to prevent small steps, which could not be positioned by the used shutter. Default: 5",
+          "facade_shutter_type": "Choose shutter type",
+          "facade_light_strip_width": "Width of light strip on the floor.",
+          "facade_shutter_height": "Overall height of window or door. Required to calculate light strip width from previous configuration option.",
+          "facade_neutral_pos_height": "Height of shutter in neutral position.",
+          "facade_neutral_pos_angle": "Angle of shutter in neutral position.",
+          "facade_movement_restriction_height": "Restrict height positioning to prevent redundant shutter movements e. g. between shadow and dawn.",
+          "facade_movement_restriction_angle": "Restrict angle positioning to prevent redundant shutter movements e. g. between shadow and dawn.",
+          "facade_update_lock_output": ""
         }
       },
       "dynamic_inputs": {
         "title": "Dynamic inputs",
-        "description": "Configure the dynamic inputs, which will be required to automate the given cover"
+        "description": "Configure the dynamic inputs, which will be required to automate the given cover",
+        "data": {
+          "brightness": "",
+          "brightness_dawn": "",
+          "sun_elevation": "",
+          "sun_azimuth": "",
+          "shutter_current_height": "",
+          "shutter_current_angle": "",
+          "lock_integration": "",
+          "lock_integration_with_position": "",
+          "lock_height": "",
+          "lock_angle": "",
+          "modification_tolerance_height": "",
+          "modification_tolerance_angle": ""
+        },
+        "data_description": {
+          "brightness": "",
+          "brightness_dawn": "",
+          "sun_elevation": "",
+          "sun_azimuth": "",
+          "shutter_current_height": "",
+          "shutter_current_angle": "",
+          "lock_integration": "",
+          "lock_integration_with_position": "",
+          "lock_height": "",
+          "lock_angle": "",
+          "modification_tolerance_height": "",
+          "modification_tolerance_angle": ""
+        }
       },
       "shadow_settings": {
         "title": "Configure shadow handling",
-        "description": "Configure how to handle brightness"
+        "description": "Configure how to handle brightness",
+        "data": {
+          "shadow_control_enabled": "",
+          "shadow_brightness_threshold": "",
+          "shadow_after_seconds": "",
+          "shadow_shutter_max_height": "",
+          "shadow_shutter_max_angle": "",
+          "shadow_shutter_look_through_seconds": "",
+          "shadow_shutter_open_seconds": "",
+          "shadow_shutter_look_through_angle": "",
+          "shadow_height_after_sun": "",
+          "shadow_angle_after_sun": ""
+        },
+        "data_description": {
+          "shadow_control_enabled": "",
+          "shadow_brightness_threshold": "",
+          "shadow_after_seconds": "",
+          "shadow_shutter_max_height": "",
+          "shadow_shutter_max_angle": "",
+          "shadow_shutter_look_through_seconds": "",
+          "shadow_shutter_open_seconds": "",
+          "shadow_shutter_look_through_angle": "",
+          "shadow_height_after_sun": "",
+          "shadow_angle_after_sun": ""
+        }
       },
       "dawn_settings": {
         "title": "Configure dawn handling",
-        "description": "Configure how to handle dawn"
+        "description": "Configure how to handle dawn",
+        "data": {
+          "dawn_control_enabled": "",
+          "dawn_brightness_threshold": "",
+          "dawn_after_seconds": "",
+          "dawn_shutter_max_height": "",
+          "dawn_shutter_max_angle": "",
+          "dawn_shutter_look_through_seconds": "",
+          "dawn_shutter_open_seconds": "",
+          "dawn_shutter_look_through_angle": "",
+          "dawn_height_after_dawn": "",
+          "dawn_angle_after_dawn": ""
+        },
+        "data_description": {
+          "dawn_control_enabled": "",
+          "dawn_brightness_threshold": "",
+          "dawn_after_seconds": "",
+          "dawn_shutter_max_height": "",
+          "dawn_shutter_max_angle": "",
+          "dawn_shutter_look_through_seconds": "",
+          "dawn_shutter_open_seconds": "",
+          "dawn_shutter_look_through_angle": "",
+          "dawn_height_after_dawn": "",
+          "dawn_angle_after_dawn": ""
+        }
       },
       "options": {
         "title": "Configurable options",
@@ -58,6 +158,13 @@
     },
     "abort": {
       "already_configured": "This entry is already configured."
+    }
+  },
+  "selector": {
+    "facade_shutter_type": {
+      "options": {
+        "mode1": "single direction (0% = closed / 100% = open)",
+        "mode2": "bi-directional (0% = closed / 50% = open / 100% = closed)"      }
     }
   }
 }

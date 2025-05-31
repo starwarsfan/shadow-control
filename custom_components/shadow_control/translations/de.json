@@ -22,7 +22,19 @@
           "facade_elevation_sun_min": "Minimale Sonnenhöhe",
           "facade_elevation_sun_max": "Maximale Sonnenhöhe",
           "facade_slat_width": "Breite Raffstorelamellen",
-          "facade_slat_distance": "Abstand Raffstorelamellen"
+          "facade_slat_distance": "Abstand Raffstorelamellen",
+          "facade_slat_angle_offset": "Lamellenwinkeloffset",
+          "facade_slat_min_angle": "Minimaler Lamellenwinkel",
+          "facade_shutter_stepping_height": "Höhenschrittweite",
+          "facade_shutter_stepping_angle": "Winkelschrittweite",
+          "facade_shutter_type": "Behangtyp",
+          "facade_light_strip_width": "Lichtstreifenbreite",
+          "facade_shutter_height": "Behang-Gesamthöhe",
+          "facade_neutral_pos_height": "Neutrale Höhe",
+          "facade_neutral_pos_angle": "Neutraler Winkel",
+          "facade_movement_restriction_height": "Höhenveränderung einschränken",
+          "facade_movement_restriction_angle": "Winkelveränderung einschränken",
+          "facade_update_lock_output": ""
         },
         "data_description": {
           "facade_azimuth": "Azimuth der Fassade in Grad mit Blickrichtung von innen nach aussen. Gültiger Bereich: 0° bis 359°",
@@ -30,21 +42,109 @@
           "facade_offset_sun_out": "Bis zu welchem Winkel ausgehend vom Azimut der Fassade scheint die Sonne auf die Fassade. Gültiger Bereich: 0° bis 90°",
           "facade_elevation_sun_min": "Minimale Höhe der Sonne in Grad (°), ab welcher die Sonne auf die Fassade scheint. Gültiger Bereich: 0° bis 90°",
           "facade_elevation_sun_max": "Maximale Höhe der Sonne in Grad (°), bis zu welcher die Sonne auf die Fassade scheint. Gültiger Bereich: 0° bis 90°",
-          "facade_slat_width": "Breite der Raffstorelamellen in mm",
-          "facade_slat_distance": "Abstand der Raffstorelamellen zueinander in mm"
+          "facade_slat_width": "Breite der Raffstorelamellen in mm.",
+          "facade_slat_distance": "Abstand der Raffstorelamellen zueinander in mm.",
+          "facade_slat_angle_offset": "Lamellenwinkeloffset in %. Dieser Wert wird zum berechneten %-Wert der Lamellenstellung im Beschattungsfall addiert und kann verwendet werden, um den errechneten Winkel falls notwendig zu korrigieren",
+          "facade_slat_min_angle": "Minimaler Winkel der Raffstore-Lamellen bei Beschattung in %. Lamellen werden im Beschattungsfall nur im Bereich von diesem Wert bis 100% bewegt. Default: 0",
+          "facade_shutter_stepping_height": "Schrittweite der Höhenverstellung in %, um kleine und damit nicht positionierbare Verstellungen auszugleichen. Default: 5",
+          "facade_shutter_stepping_angle": "Schrittweite der Lamellenverstellung in %, um kleine und damit nicht positionierbare Verstellungen auszugleichen. Default: 5",
+          "facade_shutter_type": "Typ des Behangs auswählen",
+          "facade_light_strip_width": "Breite eines Lichtstreifens auf dem Boden.",
+          "facade_shutter_height": "Gesamthöhe des Behangs resp. des Fensters bzw. der Tür. Wird für die Berechnung des Lichtstreifens aus der vorherigen Einstellung benötigt.",
+          "facade_neutral_pos_height": "Anzufahrende Höhe in Neutralposition.",
+          "facade_neutral_pos_angle": "Anzufahrender Winkel in Neutralposition.",
+          "facade_movement_restriction_height": "Einschränkung der Höhenpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
+          "facade_movement_restriction_angle": "Einschränkung der Winkelpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
+          "facade_update_lock_output": ""
         }
       },
       "dynamic_inputs": {
         "title": "Dynamische Eingänge",
-        "description": "Konfiguration der dynamischen Eingänge für die automatische Steuerung der verbundenen Behang-Entität"
+        "description": "Konfiguration der dynamischen Eingänge für die automatische Steuerung der verbundenen Behang-Entität",
+        "data": {
+          "brightness": "",
+          "brightness_dawn": "",
+          "sun_elevation": "",
+          "sun_azimuth": "",
+          "shutter_current_height": "",
+          "shutter_current_angle": "",
+          "lock_integration": "",
+          "lock_integration_with_position": "",
+          "lock_height": "",
+          "lock_angle": "",
+          "modification_tolerance_height": "",
+          "modification_tolerance_angle": ""
+        },
+        "data_description": {
+          "brightness": "",
+          "brightness_dawn": "",
+          "sun_elevation": "",
+          "sun_azimuth": "",
+          "shutter_current_height": "",
+          "shutter_current_angle": "",
+          "lock_integration": "",
+          "lock_integration_with_position": "",
+          "lock_height": "",
+          "lock_angle": "",
+          "modification_tolerance_height": "",
+          "modification_tolerance_angle": ""
+        }
       },
       "shadow_settings": {
         "title": "Beschattung konfigurieren",
-        "description": "Konfiguriere wie mit dem Lichteinfall auf der Fassade umgegangen werden soll"
+        "description": "Konfiguriere wie mit dem Lichteinfall auf der Fassade umgegangen werden soll",
+        "data": {
+          "shadow_control_enabled": "",
+          "shadow_brightness_threshold": "",
+          "shadow_after_seconds": "",
+          "shadow_shutter_max_height": "",
+          "shadow_shutter_max_angle": "",
+          "shadow_shutter_look_through_seconds": "",
+          "shadow_shutter_open_seconds": "",
+          "shadow_shutter_look_through_angle": "",
+          "shadow_height_after_sun": "",
+          "shadow_angle_after_sun": ""
+        },
+        "data_description": {
+          "shadow_control_enabled": "",
+          "shadow_brightness_threshold": "",
+          "shadow_after_seconds": "",
+          "shadow_shutter_max_height": "",
+          "shadow_shutter_max_angle": "",
+          "shadow_shutter_look_through_seconds": "",
+          "shadow_shutter_open_seconds": "",
+          "shadow_shutter_look_through_angle": "",
+          "shadow_height_after_sun": "",
+          "shadow_angle_after_sun": ""
+        }
       },
       "dawn_settings": {
         "title": "Dämmerung konfigurieren",
-        "description": "Konfiguriere wie der Behang bei Dämmerung gesteuert werden soll"
+        "description": "Konfiguriere wie der Behang bei Dämmerung gesteuert werden soll",
+        "data": {
+          "dawn_control_enabled": "",
+          "dawn_brightness_threshold": "",
+          "dawn_after_seconds": "",
+          "dawn_shutter_max_height": "",
+          "dawn_shutter_max_angle": "",
+          "dawn_shutter_look_through_seconds": "",
+          "dawn_shutter_open_seconds": "",
+          "dawn_shutter_look_through_angle": "",
+          "dawn_height_after_dawn": "",
+          "dawn_angle_after_dawn": ""
+        },
+        "data_description": {
+          "dawn_control_enabled": "",
+          "dawn_brightness_threshold": "",
+          "dawn_after_seconds": "",
+          "dawn_shutter_max_height": "",
+          "dawn_shutter_max_angle": "",
+          "dawn_shutter_look_through_seconds": "",
+          "dawn_shutter_open_seconds": "",
+          "dawn_shutter_look_through_angle": "",
+          "dawn_height_after_dawn": "",
+          "dawn_angle_after_dawn": ""
+        }
       },
       "options": {
         "title": "Konfigurierbare Optionen",
@@ -58,6 +158,14 @@
     },
     "abort": {
       "already_configured": "This entry is already configured."
+    }
+  },
+  "selector": {
+    "facade_shutter_type": {
+      "options": {
+        "mode1": "Einzelrichtung (0% = geschlossen / 100% = offen)",
+        "mode2": "Bidirektional (0% = geschlossen / 50% = offen / 100% = geschlossen)"
+      }
     }
   }
 }
