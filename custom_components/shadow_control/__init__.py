@@ -485,6 +485,7 @@ class ShadowControlManager:
         Calculate and apply the new cover and tilt position for this specific cover.
         This is where your main Shadow Control logic resides.
         """
+        _LOGGER.debug(f"{self._name}: =====================================================================")
         _LOGGER.debug(f"{self._name}: Calculating and applying cover positions")
 
         self._update_input_values()
@@ -507,10 +508,10 @@ class ShadowControlManager:
 
                 # Hier können Sie spezifische Logik hinzufügen, basierend auf der entity_id
                 if entity_id == self._shadow_control_enabled_entity_id:
-                    _LOGGER.debug(f"{self._name}: Shadow control enable changed")
+                    _LOGGER.debug(f"{self._name}: Shadow control enable changed to {new_state.state}")
                     shadow_handling_was_disabled = new_state.state == "off"
                 elif entity_id == self._dawn_control_enabled_entity_id:
-                    _LOGGER.debug(f"{self._name}: Dawn control enable changed")
+                    _LOGGER.debug(f"{self._name}: Dawn control enable changed to {new_state.state}")
                     dawn_handling_was_disabled = new_state.state == "off"
                 elif entity_id == self._lock_integration_entity_id:
                     if new_state.state == "off" and not self._lock_integration_with_position:
@@ -810,7 +811,7 @@ class ShadowControlManager:
         # We need the value of _previous_shutter_height *before* it's updated for height.
         # So, compare the *calculated* `shutter_height_percent` with what was previously *stored*.
         height_calculated_different_from_previous = (
-                abs(shutter_height_percent - self._previous_shutter_height) > 0.001) if self._previous_shutter_height is not None else True
+                -0.001 < abs(shutter_height_percent - self._previous_shutter_height) > 0.001) if self._previous_shutter_height is not None else True
 
         angle_to_set_percent = self._should_output_be_updated(
             config_value=self._movement_restriction_angle,
@@ -819,10 +820,10 @@ class ShadowControlManager:
         )
 
         # --- Phase 5: Send commands if values actually changed (only if not initial run AND not locked) ---
-        send_height_command = abs(height_to_set_percent - self._previous_shutter_height) > 0.001 if self._previous_shutter_height is not None else True
+        send_height_command = -0.001 < abs(height_to_set_percent - self._previous_shutter_height) > 0.001 if self._previous_shutter_height is not None else True
 
         # Send angle command if angle changed OR if height changed significantly
-        send_angle_command = (abs(angle_to_set_percent - self._previous_shutter_angle) > 0.001 if self._previous_shutter_angle is not None else True) or height_calculated_different_from_previous
+        send_angle_command = (-0.001 < abs(angle_to_set_percent - self._previous_shutter_angle) > 0.001 if self._previous_shutter_angle is not None else True) or height_calculated_different_from_previous
 
         if self._enforce_position_update:
             _LOGGER.debug(f"{self._name}: Enforcing position update")
@@ -830,7 +831,7 @@ class ShadowControlManager:
             send_angle_command = True
 
         # Height positioning
-        if send_height_command:
+        if send_height_command or self._enforce_position_update:
             if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
                 _LOGGER.info(f" {self._name}: Setting position to {shutter_height_percent:.1f}% (current: {self._previous_shutter_height}).")
                 try:
@@ -850,7 +851,7 @@ class ShadowControlManager:
                 f"{self._name}: Height '{height_to_set_percent:.2f}%' not sent, value was the same or restricted.")
 
         # Angle positioning
-        if send_angle_command:
+        if send_angle_command or self._enforce_position_update:
             if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
                 _LOGGER.info(f" {self._name}: Setting tilt position to {shutter_angle_percent:.1f}% (current: {self._previous_shutter_angle}).")
                 try:

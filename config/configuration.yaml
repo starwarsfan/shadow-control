@@ -17,40 +17,6 @@ logger:
   logs:
     custom_components.shadow_control: debug
 
-#template:
-#  - sensor:
-#      # Sensor für die berechnete Zielhöhe
-#      - name: "Shadow Control Zielhöhe"
-#        unique_id: shadow_control_target_height
-#        state: "{{ state_attr('cover.test_shadow_control', 'calculated_shutter_height') }}"
-#        unit_of_measurement: "%"
-#        state_class: measurement
-#        icon: mdi:ruler-vertical
-#
-#      # Sensor für den berechneten Zielwinkel
-#      - name: "Shadow Control Zielwinkel"
-#        unique_id: shadow_control_target_angle
-#        state: "{{ state_attr('cover.test_shadow_control', 'calculated_shutter_angle') }}"
-#        unit_of_measurement: "°"
-#        state_class: measurement
-#        icon: mdi:rotate-3d
-#
-#      # Sensor für den aktuellen Shutter Control Zustand
-#      - name: "Shadow Control Zustand"
-#        unique_id: shadow_control_current_state
-#        state: "{{ state_attr('cover.test_shadow_control', 'current_shutter_state') }}"
-#        icon: mdi:state-machine
-#
-#      # Sensor für den aktuellen Lock Zustand
-#      - name: "Shadow Control Sperr-Zustand"
-#        unique_id: shadow_control_lock_state
-#        state: "{{ state_attr('cover.test_shadow_control', 'current_lock_state') }}"
-#        icon: mdi:lock-open-check
-#
-#  - binary_sensor:
-#      - name: shadow_handling_activation
-#        state: "on"
-
 input_number:
   !include shadow_control/input_number.yaml
 
@@ -62,64 +28,65 @@ input_select:
 
 shadow_control:
   covers:
-  - name: "Büro Ost"
-    target_cover_entity_id: "cover.fenster_buro_ost"
+    - name: "SC Dummy"
+      #target_cover_entity_id: "cover.fenster_buro_ost"
+      target_cover_entity_id: "cover.sc_dummy"
 
-    # === Dynamische Eingänge (Test-Helfer) ===
-    brightness_entity_id: input_number.d01_brightness
-    brightness_dawn_entity_id: input_number.d02_brightness_dawn
-    sun_elevation_entity_id: input_number.d03_sun_elevation
-    sun_azimuth_entity_id: input_number.d04_sun_azimuth
-    shutter_current_height_entity_id: input_number.d05_shutter_current_height
-    shutter_current_angle_entity_id: input_number.d06_shutter_current_angle
-    lock_integration_entity_id: input_boolean.d07_lock_integration
-    lock_integration_with_position_entity_id: input_boolean.d08_lock_integration_with_position
-    lock_height_entity_id: input_number.d09_lock_height
-    lock_angle_entity_id: input_number.d10_lock_angle
-    modification_tolerance_height_entity_id: input_number.d11_modification_tolerance_height
-    modification_tolerance_angle_entity_id: input_number.d12_modification_tolerance_angle
+      # === Dynamische Eingänge (Test-Helfer) ===
+      brightness_entity_id: input_number.d01_brightness
+      brightness_dawn_entity_id: input_number.d02_brightness_dawn
+      sun_elevation_entity_id: input_number.d03_sun_elevation
+      sun_azimuth_entity_id: input_number.d04_sun_azimuth
+      shutter_current_height_entity_id: input_number.d05_shutter_current_height
+      shutter_current_angle_entity_id: input_number.d06_shutter_current_angle
+      lock_integration_entity_id: input_boolean.d07_lock_integration
+      lock_integration_with_position_entity_id: input_boolean.d08_lock_integration_with_position
+      lock_height_entity_id: input_number.d09_lock_height
+      lock_angle_entity_id: input_number.d10_lock_angle
+      modification_tolerance_height_entity_id: input_number.d11_modification_tolerance_height
+      modification_tolerance_angle_entity_id: input_number.d12_modification_tolerance_angle
 
-    # === Allgemeine Einstellungen (Test-Helfer) ===
-    facade_azimuth_entity_id: input_number.g01_azimuth_facade
-    facade_offset_sun_in_entity_id: input_number.g02_offset_sun_in
-    facade_offset_sun_out_entity_id: input_number.g03_offset_sun_out
-    facade_elevation_sun_min_entity_id: input_number.g04_elevation_sun_min
-    facade_elevation_sun_max_entity_id: input_number.g05_elevation_sun_max
-    facade_slat_width_entity_id: input_number.g06_slat_width
-    facade_slat_distance_entity_id: input_number.g07_slat_distance
-    facade_slat_angle_offset_entity_id: input_number.g08_angle_offset
-    facade_slat_min_angle_entity_id: input_number.g09_min_slat_angle
-    facade_shutter_stepping_height_entity_id: input_number.g10_stepping_height
-    facade_shutter_stepping_angle_entity_id: input_number.g11_stepping_angle
-    facade_shutter_type_entity_id: input_select.g12_shutter_type
-    facade_light_strip_width_entity_id: input_number.g13_light_bar_width
-    facade_shutter_height_entity_id: input_number.g14_shutter_height
-    facade_neutral_pos_height_entity_id: input_number.g15_neutral_pos_height
-    facade_neutral_pos_angle_entity_id: input_number.g16_neutral_pos_angle
-    facade_movement_restriction_height_entity_id: input_select.g17_movement_restriction_height
-    facade_movement_restriction_angle_entity_id: input_select.g18_movement_restriction_angle
-    facade_update_lock_output_entity_id: input_select.g19_update_lock_output
+      # === Allgemeine Einstellungen (Test-Helfer) ===
+      facade_azimuth_entity_id: input_number.g01_azimuth_facade
+      facade_offset_sun_in_entity_id: input_number.g02_offset_sun_in
+      facade_offset_sun_out_entity_id: input_number.g03_offset_sun_out
+      facade_elevation_sun_min_entity_id: input_number.g04_elevation_sun_min
+      facade_elevation_sun_max_entity_id: input_number.g05_elevation_sun_max
+      facade_slat_width_entity_id: input_number.g06_slat_width
+      facade_slat_distance_entity_id: input_number.g07_slat_distance
+      facade_slat_angle_offset_entity_id: input_number.g08_angle_offset
+      facade_slat_min_angle_entity_id: input_number.g09_min_slat_angle
+      facade_shutter_stepping_height_entity_id: input_number.g10_stepping_height
+      facade_shutter_stepping_angle_entity_id: input_number.g11_stepping_angle
+      facade_shutter_type_entity_id: input_select.g12_shutter_type
+      facade_light_strip_width_entity_id: input_number.g13_light_bar_width
+      facade_shutter_height_entity_id: input_number.g14_shutter_height
+      facade_neutral_pos_height_entity_id: input_number.g15_neutral_pos_height
+      facade_neutral_pos_angle_entity_id: input_number.g16_neutral_pos_angle
+      facade_movement_restriction_height_entity_id: input_select.g17_movement_restriction_height
+      facade_movement_restriction_angle_entity_id: input_select.g18_movement_restriction_angle
+      facade_update_lock_output_entity_id: input_select.g19_update_lock_output
 
-    # === Beschattungseinstellungen (Test-Helfer) ===
-    shadow_control_enabled_entity_id: input_boolean.s01_shadow_control_enabled
-    shadow_brightness_threshold_entity_id: input_number.s02_shadow_brightness_level
-    shadow_after_seconds_entity_id: input_number.s03_shadow_after_seconds
-    shadow_shutter_max_height_entity_id: input_number.s04_shadow_max_height
-    shadow_shutter_max_angle_entity_id: input_number.s05_shadow_max_angle
-    shadow_shutter_look_through_seconds_entity_id: input_number.s06_shadow_look_through_seconds
-    shadow_shutter_open_seconds_entity_id: input_number.s07_shadow_open_seconds
-    shadow_shutter_look_through_angle_entity_id: input_number.s08_shadow_look_through_angle
-    shadow_height_after_sun_entity_id: input_number.s09_after_shadow_height
-    shadow_angle_after_sun_entity_id: input_number.s10_after_shadow_angle
+      # === Beschattungseinstellungen (Test-Helfer) ===
+      shadow_control_enabled_entity_id: input_boolean.s01_shadow_control_enabled
+      shadow_brightness_threshold_entity_id: input_number.s02_shadow_brightness_level
+      shadow_after_seconds_entity_id: input_number.s03_shadow_after_seconds
+      shadow_shutter_max_height_entity_id: input_number.s04_shadow_max_height
+      shadow_shutter_max_angle_entity_id: input_number.s05_shadow_max_angle
+      shadow_shutter_look_through_seconds_entity_id: input_number.s06_shadow_look_through_seconds
+      shadow_shutter_open_seconds_entity_id: input_number.s07_shadow_open_seconds
+      shadow_shutter_look_through_angle_entity_id: input_number.s08_shadow_look_through_angle
+      shadow_height_after_sun_entity_id: input_number.s09_after_shadow_height
+      shadow_angle_after_sun_entity_id: input_number.s10_after_shadow_angle
 
-    # === Dämmerungseinstellungen (Test-Helfer) ===
-    dawn_control_enabled_entity_id: input_boolean.sd01_dawn_control_enabled
-    dawn_brightness_threshold_entity_id: input_number.sd02_dawn_brightness_level
-    dawn_after_seconds_entity_id: input_number.sd03_dawn_after_seconds
-    dawn_shutter_max_height_entity_id: input_number.sd04_dawn_max_height
-    dawn_shutter_max_angle_entity_id: input_number.sd05_dawn_max_angle
-    dawn_shutter_look_through_seconds_entity_id: input_number.sd06_dawn_look_through_seconds
-    dawn_shutter_open_seconds_entity_id: input_number.sd07_dawn_open_seconds
-    dawn_shutter_look_through_angle_entity_id: input_number.sd08_dawn_look_through_angle
-    dawn_height_after_dawn_entity_id: input_number.sd09_after_dawn_height
-    dawn_angle_after_dawn_entity_id: input_number.sd10_after_dawn_angle
+      # === Dämmerungseinstellungen (Test-Helfer) ===
+      dawn_control_enabled_entity_id: input_boolean.sd01_dawn_control_enabled
+      dawn_brightness_threshold_entity_id: input_number.sd02_dawn_brightness_level
+      dawn_after_seconds_entity_id: input_number.sd03_dawn_after_seconds
+      dawn_shutter_max_height_entity_id: input_number.sd04_dawn_max_height
+      dawn_shutter_max_angle_entity_id: input_number.sd05_dawn_max_angle
+      dawn_shutter_look_through_seconds_entity_id: input_number.sd06_dawn_look_through_seconds
+      dawn_shutter_open_seconds_entity_id: input_number.sd07_dawn_open_seconds
+      dawn_shutter_look_through_angle_entity_id: input_number.sd08_dawn_look_through_angle
+      dawn_height_after_dawn_entity_id: input_number.sd09_after_dawn_height
+      dawn_angle_after_dawn_entity_id: input_number.sd10_after_dawn_angle

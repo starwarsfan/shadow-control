@@ -7,7 +7,7 @@
     max: 100000
     step: 100
     mode: slider
-    initial: 1000
+    initial: 10000
   d02_brightness_dawn:
     #[e#6 trigger    =Helligkeit Daemmerung (Lux)                          ]
     name: "D02: Sun Brightness (dawn)"
