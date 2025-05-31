@@ -55,8 +55,8 @@ STEP_FACADE_SETTINGS_SCHEMA = vol.Schema({
     vol.Optional("facade_shutter_stepping_angle"): selector.NumberSelector(
         selector.NumberSelectorConfig(min=1, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional("facade_shutter_type", default="Venetian blind"): selector.SelectSelector(
-        selector.SelectSelectorConfig(options=["Venetian blind", "Roller shutter"])
+    vol.Optional("facade_shutter_type", default="0-90"): selector.SelectSelector(
+        selector.SelectSelectorConfig(options=["0-90", "0-180"])
     ),
     vol.Optional("facade_neutral_pos_height"): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
@@ -70,11 +70,19 @@ STEP_FACADE_SETTINGS_SCHEMA = vol.Schema({
     vol.Optional("facade_shutter_height"): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=3000, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional("facade_movement_restriction_height"): selector.NumberSelector(
-        selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
+    vol.Optional("facade_movement_restriction_height", default="No restriction"): selector.SelectSelector(
+        selector.SelectSelectorConfig(options=[
+            "No restriction"
+            "Only close"
+            "Only open"
+        ])
     ),
-    vol.Optional("facade_movement_restriction_angle"): selector.NumberSelector(
-        selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
+    vol.Optional("facade_movement_restriction_angle", default="No restriction"): selector.SelectSelector(
+        selector.SelectSelectorConfig(options=[
+            "No restriction"
+            "Only close"
+            "Only open"
+        ])
     ),
 })
 
