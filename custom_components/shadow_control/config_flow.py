@@ -55,8 +55,14 @@ STEP_FACADE_SETTINGS_SCHEMA = vol.Schema({
     vol.Optional("facade_shutter_stepping_angle"): selector.NumberSelector(
         selector.NumberSelectorConfig(min=1, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional("facade_shutter_type", default="0-90"): selector.SelectSelector(
-        selector.SelectSelectorConfig(options=["0-90", "0-180"])
+    vol.Optional("facade_shutter_type", default="mode1"): selector.SelectSelector(
+        selector.SelectSelectorConfig(
+            options=[
+                "mode1",
+                "mode2"
+            ],
+            translation_key="facade_shutter_type"
+        )
     ),
     vol.Optional("facade_neutral_pos_height"): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
@@ -355,8 +361,14 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Optional("facade_shutter_stepping_angle", default=1): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=1, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional("facade_shutter_type", default="Venetian blind"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=["Venetian blind", "Roller shutter"])
+            vol.Optional("facade_shutter_type", default="mode1"): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=[
+                        "mode1",
+                        "mode2"
+                    ],
+                    translation_key="facade_shutter_type"
+                )
             ),
             vol.Optional("facade_neutral_pos_height", default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)

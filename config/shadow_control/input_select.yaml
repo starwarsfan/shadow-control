@@ -8,9 +8,9 @@
     #[e#30           =Typ, Schwenkbereich (0/1)               #init=0      ]
     name: "G12: Shutter type"
     options:
-      - "0-90"
-      - "0-180"
-    initial: "0-90"
+      - "mode1"
+      - "mode2"
+    initial: "mode1"
   g17_movement_restriction_height:
     #[e#36           =Bwg Hoehe einschraenken (0/1/2)         #init=0      ]
     name: "G17: Move restriction height"
