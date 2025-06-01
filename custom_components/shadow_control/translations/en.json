@@ -31,9 +31,7 @@
           "facade_light_strip_width": "Width of light strip",
           "facade_shutter_height": "Overall shutter height",
           "facade_neutral_pos_height": "Neutral position height",
-          "facade_neutral_pos_angle": "Neutral position angle",
-          "facade_movement_restriction_height": "Restrict height movement",
-          "facade_movement_restriction_angle": "Restrict angle movement"
+          "facade_neutral_pos_angle": "Neutral position angle"
         },
         "data_description": {
           "facade_azimuth": "Azimuth of the facade in degrees in direction from the inside to the outside. Valid range: 0° to 359°",
@@ -51,9 +49,7 @@
           "facade_light_strip_width": "Width of light strip on the floor.",
           "facade_shutter_height": "Overall height of window or door. Required to calculate light strip width from previous configuration option.",
           "facade_neutral_pos_height": "Height of shutter in neutral position.",
-          "facade_neutral_pos_angle": "Angle of shutter in neutral position.",
-          "facade_movement_restriction_height": "Restrict height positioning to prevent redundant shutter movements e. g. between shadow and dawn.",
-          "facade_movement_restriction_angle": "Restrict angle positioning to prevent redundant shutter movements e. g. between shadow and dawn."
+          "facade_neutral_pos_angle": "Angle of shutter in neutral position."
         }
       },
       "dynamic_inputs": {
@@ -71,7 +67,9 @@
           "lock_height": "Enforced position height",
           "lock_angle": "Enforced position slat angle",
           "modification_tolerance_height": "Tolerance height modification",
-          "modification_tolerance_angle": "Tolerance slat angle modification"
+          "modification_tolerance_angle": "Tolerance slat angle modification",
+          "facade_movement_restriction_height": "Restrict height movement",
+          "facade_movement_restriction_angle": "Restrict angle movement"
         },
         "data_description": {
           "brightness": "Current brightness, usually from a weather station",
@@ -85,7 +83,9 @@
           "lock_height": "Enforced lock shutter height.",
           "lock_angle": "Enforced lock shutter slat angle.",
           "modification_tolerance_height": "Tolerance within no height modification will be performed.",
-          "modification_tolerance_angle": "Tolerance within no slat angle modification will performed."
+          "modification_tolerance_angle": "Tolerance within no slat angle modification will performed.",
+          "facade_movement_restriction_height": "Restrict height positioning to prevent redundant shutter movements e. g. between shadow and dawn.",
+          "facade_movement_restriction_angle": "Restrict angle positioning to prevent redundant shutter movements e. g. between shadow and dawn."
         }
       },
       "shadow_settings": {

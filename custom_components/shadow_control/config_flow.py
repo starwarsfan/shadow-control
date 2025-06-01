@@ -76,20 +76,6 @@ STEP_FACADE_SETTINGS_SCHEMA = vol.Schema({
     vol.Optional("facade_shutter_height"): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=3000, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional("facade_movement_restriction_height", default="No restriction"): selector.SelectSelector(
-        selector.SelectSelectorConfig(options=[
-            "No restriction",
-            "Only close",
-            "Only open",
-        ])
-    ),
-    vol.Optional("facade_movement_restriction_angle", default="No restriction"): selector.SelectSelector(
-        selector.SelectSelectorConfig(options=[
-            "No restriction",
-            "Only close",
-            "Only open",
-        ])
-    ),
 })
 
 # --- STEP 3: Dynamic settings ---
@@ -129,6 +115,20 @@ STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema({
     ),
     vol.Optional("modification_tolerance_angle_entity_id"): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
+    ),
+    vol.Optional("facade_movement_restriction_height", default="No restriction"): selector.SelectSelector(
+        selector.SelectSelectorConfig(options=[
+            "No restriction",
+            "Only close",
+            "Only open",
+        ])
+    ),
+    vol.Optional("facade_movement_restriction_angle", default="No restriction"): selector.SelectSelector(
+        selector.SelectSelectorConfig(options=[
+            "No restriction",
+            "Only close",
+            "Only open",
+        ])
     ),
 })
 
@@ -382,12 +382,6 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Optional("facade_shutter_height", default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=1000, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional("facade_movement_restriction_height", default=100): selector.NumberSelector(
-                selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
-            ),
-            vol.Optional("facade_movement_restriction_angle", default=100): selector.NumberSelector(
-                selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
-            ),
             vol.Optional("cover_supports_tilt", default=False): selector.BooleanSelector(),
 
             # STEP_DYNAMIC_INPUTS_SCHEMA
@@ -426,6 +420,12 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             ),
             vol.Optional("modification_tolerance_angle_entity_id"): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="input_number")
+            ),
+            vol.Optional("facade_movement_restriction_height", default=100): selector.NumberSelector(
+                selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
+            ),
+            vol.Optional("facade_movement_restriction_angle", default=100): selector.NumberSelector(
+                selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
 
             # STEP_SHADOW_SETTINGS_SCHEMA
