@@ -65,7 +65,6 @@ shadow_control:
       facade_neutral_pos_angle_entity_id: input_number.g16_neutral_pos_angle
       facade_movement_restriction_height_entity_id: input_select.g17_movement_restriction_height
       facade_movement_restriction_angle_entity_id: input_select.g18_movement_restriction_angle
-      facade_update_lock_output_entity_id: input_select.g19_update_lock_output
 
       # === Beschattungseinstellungen (Test-Helfer) ===
       shadow_control_enabled_entity_id: input_boolean.s01_shadow_control_enabled

@@ -44,7 +44,6 @@ class SCConfigurationInput(Enum):
     CONF_FACADE_NEUTRAL_POS_ANGLE_ENTITY_ID = "facade_neutral_pos_angle_entity_id"
     CONF_FACADE_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID = "facade_movement_restriction_height_entity_id"
     CONF_FACADE_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID = "facade_movement_restriction_angle_entity_id"
-    CONF_FACADE_UPDATE_LOCK_OUTPUT_ENTITY_ID = "facade_update_lock_output_entity_id"
 
 # === Beschattungseinstellungen (Test-Helfer) ===
 class SCShadowInput(Enum):

@@ -33,8 +33,7 @@
           "facade_neutral_pos_height": "Neutral position height",
           "facade_neutral_pos_angle": "Neutral position angle",
           "facade_movement_restriction_height": "Restrict height movement",
-          "facade_movement_restriction_angle": "Restrict angle movement",
-          "facade_update_lock_output": ""
+          "facade_movement_restriction_angle": "Restrict angle movement"
         },
         "data_description": {
           "facade_azimuth": "Azimuth of the facade in degrees in direction from the inside to the outside. Valid range: 0° to 359°",
@@ -54,8 +53,7 @@
           "facade_neutral_pos_height": "Height of shutter in neutral position.",
           "facade_neutral_pos_angle": "Angle of shutter in neutral position.",
           "facade_movement_restriction_height": "Restrict height positioning to prevent redundant shutter movements e. g. between shadow and dawn.",
-          "facade_movement_restriction_angle": "Restrict angle positioning to prevent redundant shutter movements e. g. between shadow and dawn.",
-          "facade_update_lock_output": ""
+          "facade_movement_restriction_angle": "Restrict angle positioning to prevent redundant shutter movements e. g. between shadow and dawn."
         }
       },
       "dynamic_inputs": {

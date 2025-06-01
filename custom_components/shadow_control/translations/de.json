@@ -33,8 +33,7 @@
           "facade_neutral_pos_height": "Neutrale Höhe",
           "facade_neutral_pos_angle": "Neutraler Winkel",
           "facade_movement_restriction_height": "Höhenveränderung einschränken",
-          "facade_movement_restriction_angle": "Winkelveränderung einschränken",
-          "facade_update_lock_output": ""
+          "facade_movement_restriction_angle": "Winkelveränderung einschränken"
         },
         "data_description": {
           "facade_azimuth": "Azimuth der Fassade in Grad mit Blickrichtung von innen nach aussen. Gültiger Bereich: 0° bis 359°",
@@ -54,8 +53,7 @@
           "facade_neutral_pos_height": "Anzufahrende Höhe in Neutralposition.",
           "facade_neutral_pos_angle": "Anzufahrender Winkel in Neutralposition.",
           "facade_movement_restriction_height": "Einschränkung der Höhenpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
-          "facade_movement_restriction_angle": "Einschränkung der Winkelpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
-          "facade_update_lock_output": ""
+          "facade_movement_restriction_angle": "Einschränkung der Winkelpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden."
         }
       },
       "dynamic_inputs": {

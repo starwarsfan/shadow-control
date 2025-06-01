@@ -388,7 +388,6 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Optional("facade_movement_restriction_angle", default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional("facade_update_lock_output", default=False): selector.BooleanSelector(),
             vol.Optional("cover_supports_tilt", default=False): selector.BooleanSelector(),
 
             # STEP_DYNAMIC_INPUTS_SCHEMA

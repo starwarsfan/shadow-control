@@ -55,7 +55,6 @@ from .const import (
     CONF_FACADE_NEUTRAL_POS_ANGLE_ENTITY_ID,
     CONF_FACADE_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID,
     CONF_FACADE_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID,
-    CONF_FACADE_UPDATE_LOCK_OUTPUT_ENTITY_ID,
 
     # === Beschattungseinstellungen (Test-Helfer) ===
     CONF_SHADOW_CONTROL_ENABLED_ENTITY_ID,
@@ -177,7 +176,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
         self._facade_neutral_pos_angle_entity_id = config.get(CONF_FACADE_NEUTRAL_POS_ANGLE_ENTITY_ID)
         self._facade_movement_restriction_height_entity_id = config.get(CONF_FACADE_MOVEMENT_RESTRICTION_HEIGHT_ENTITY_ID)
         self._facade_movement_restriction_angle_entity_id = config.get(CONF_FACADE_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID)
-        self._facade_update_lock_output_entity_id = config.get(CONF_FACADE_UPDATE_LOCK_OUTPUT_ENTITY_ID)
 
         # === Beschattungseinstellungen (Test-Helfer) ===
         self._shadow_control_enabled_entity_id = config.get(CONF_SHADOW_CONTROL_ENABLED_ENTITY_ID)
@@ -491,8 +489,6 @@ class ShadowControl(CoverEntity, RestoreEntity):
         else:
             _LOGGER.warning(f"{self._name}: Configuration of '{CONF_FACADE_MOVEMENT_RESTRICTION_ANGLE_ENTITY_ID}' missing. Using NO_RESTRICTION.")
             self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
-
-        self._update_lock_output = self._get_entity_string_state(self._facade_update_lock_output_entity_id)
 
         # === Beschattungseinstellungen ===
         self._shadow_control_enabled = self._get_entity_boolean_state(self._shadow_control_enabled_entity_id)
