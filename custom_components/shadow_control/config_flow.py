@@ -116,19 +116,25 @@ STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema({
     vol.Optional("modification_tolerance_angle_entity_id"): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional("facade_movement_restriction_height", default="No restriction"): selector.SelectSelector(
-        selector.SelectSelectorConfig(options=[
-            "No restriction",
-            "Only close",
-            "Only open",
-        ])
+    vol.Optional("facade_movement_restriction_height", default="no_restriction"): selector.SelectSelector(
+        selector.SelectSelectorConfig(
+            options=[
+                "no_restriction",
+                "only_close",
+                "only_open",
+            ],
+            translation_key="facade_movement_restriction"
+        )
     ),
-    vol.Optional("facade_movement_restriction_angle", default="No restriction"): selector.SelectSelector(
-        selector.SelectSelectorConfig(options=[
-            "No restriction",
-            "Only close",
-            "Only open",
-        ])
+    vol.Optional("facade_movement_restriction_angle", default="no_restriction"): selector.SelectSelector(
+        selector.SelectSelectorConfig(
+            options=[
+                "no_restriction",
+                "only_close",
+                "only_open",
+            ],
+            translation_key="facade_movement_restriction"
+        )
     ),
 })
 

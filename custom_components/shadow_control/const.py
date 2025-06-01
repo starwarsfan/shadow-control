@@ -110,9 +110,9 @@ class UpdateLockStateOutput(IntEnum):
 # --- Definition of configuration values, how to update position outputs ----
 class MovementRestricted(Enum):
     """Enum for the possible movement restrictions."""
-    NO_RESTRICTION = "No restriction"
-    ONLY_CLOSE = "Only close"
-    ONLY_OPEN = "Only open"
+    NO_RESTRICTION = "no_restriction"
+    ONLY_CLOSE = "only_close"
+    ONLY_OPEN = "only_open"
 
 # --- Definition of configuration values, how to update position outputs ----
 class ShutterType(Enum):

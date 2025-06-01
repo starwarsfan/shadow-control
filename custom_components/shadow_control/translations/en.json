@@ -164,6 +164,13 @@
         "mode1": "single direction (vertical = closed / horizontal = open)",
         "mode2": "bi-directional (vertical inside = closed / horizontal = open / vertical outside = closed)"
       }
+    },
+    "facade_movement_restriction": {
+      "options": {
+        "no_restriction": "No restriction",
+        "only_close": "Only close",
+        "only_open": "Only open"
+      }
     }
   }
 }

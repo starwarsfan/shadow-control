@@ -164,6 +164,13 @@
         "mode1": "Einzelrichtung (senkrecht = geschlossen / waagerecht = offen)",
         "mode2": "Bidirektional (senkrecht innen = geschlossen / waagerecht = offen / senkrecht aussen = geschlossen)"
       }
+    },
+    "facade_movement_restriction": {
+      "options": {
+        "no_restriction": "Keine Einschränkung",
+        "only_close": "Nur schliessen",
+        "only_open": "Nur öffnen"
+      }
     }
   }
 }
