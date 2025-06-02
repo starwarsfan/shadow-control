@@ -9,7 +9,7 @@ SC_CONF_COVERS = "covers" # Konstante für den 'covers' Schlüssel in der Konfig
 
 SC_CONF_NAME = "name"
 DEBUG_ENABLED = "debug_enabled"
-TARGET_COVER_ENTITY = "target_cover_entity"
+TARGET_COVER_ENTITY_ID = "target_cover_entity"
 
 # === Dynamische Eingänge (Test-Helfer) ===
 class SCDynamicInput(Enum):
@@ -86,10 +86,10 @@ class SCDawnInput(Enum):
     SHUTTER_OPEN_SECONDS_STATIC = "dawn_shutter_open_seconds_static"
     SHUTTER_LOOK_THROUGH_ANGLE_ENTITY = "dawn_shutter_look_through_angle_entity"
     SHUTTER_LOOK_THROUGH_ANGLE_STATIC = "dawn_shutter_look_through_angle_static"
-    HEIGHT_AFTER_ENTITY = "dawn_height_after_dawn_entity"
-    HEIGHT_AFTER_STATIC = "dawn_height_after_dawn_static"
-    ANGLE_AFTER_ENTITY = "dawn_angle_after_dawn_entity"
-    ANGLE_AFTER_STATIC = "dawn_angle_after_dawn_static"
+    HEIGHT_AFTER_DAWN_ENTITY = "dawn_height_after_dawn_entity"
+    HEIGHT_AFTER_DAWN_STATIC = "dawn_height_after_dawn_static"
+    ANGLE_AFTER_DAWN_ENTITY = "dawn_angle_after_dawn_entity"
+    ANGLE_AFTER_DAWN_STATIC = "dawn_angle_after_dawn_static"
 
 # --- Status Konstanten für die Behangsteuerung -----------------------------
 class ShutterState(IntEnum):

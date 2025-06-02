@@ -81,7 +81,7 @@ from .const import (
     ANGLE_AFTER_ENTITY,
 
     # Ausgang
-    TARGET_COVER_ENTITY,
+    TARGET_COVER_ENTITY_ID,
 
     # Enumerations
     ShutterState,
@@ -106,10 +106,10 @@ async def async_setup_platform(
     _LOGGER.debug(f"Configuration from YAML: {config}")
 
     name = config.get(NAME, DEFAULT_NAME)
-    target_cover_entity = config.get(TARGET_COVER_ENTITY)
+    target_cover_entity = config.get(TARGET_COVER_ENTITY_ID)
 
     if not target_cover_entity:
-        _LOGGER.error(f"[{name}]: Missing required configuration key '{TARGET_COVER_ENTITY}'")
+        _LOGGER.error(f"[{name}]: Missing required configuration key '{TARGET_COVER_ENTITY_ID}'")
         return # Wichtig: Hier sollte kein False zurückgegeben werden, Home Assistant erwartet nichts
                # nach dem Logging des Fehlers und Beenden der Funktion.
 

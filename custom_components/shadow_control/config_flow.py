@@ -7,7 +7,7 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 
 from .const import DOMAIN, SCFacadeConfig, \
-    SCDynamicInput, TARGET_COVER_ENTITY, SC_CONF_NAME, \
+    SCDynamicInput, TARGET_COVER_ENTITY_ID, SC_CONF_NAME, \
     SCShadowInput, SCDawnInput  # Annahme: DOMAIN ist in const.py definiert
 
 _LOGGER = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ STEP_GENERAL_DATA_SCHEMA = vol.Schema({
     vol.Required(SC_CONF_NAME): selector.TextSelector(
         selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
     ),
-    vol.Required(TARGET_COVER_ENTITY): selector.EntitySelector(
+    vol.Required(TARGET_COVER_ENTITY_ID): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="cover")
     ),
 })
@@ -265,17 +265,17 @@ STEP_DAWN_SETTINGS_SCHEMA = vol.Schema({
         selector.EntitySelectorConfig(domain="sensor")
     ),
     #
-    vol.Optional(SCDawnInput.HEIGHT_AFTER_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
-    vol.Optional(SCDawnInput.HEIGHT_AFTER_ENTITY.value): selector.EntitySelector(
+    vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="sensor")
     ),
     #
-    vol.Optional(SCDawnInput.ANGLE_AFTER_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
-    vol.Optional(SCDawnInput.ANGLE_AFTER_ENTITY.value): selector.EntitySelector(
+    vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="sensor")
     ),
 })
@@ -285,7 +285,6 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Shadow Control."""
 
     VERSION = 1
-    DOMAIN = DOMAIN
 
     # Used to store data in between the config flow steps
     _data = {}
@@ -295,7 +294,7 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         if user_input is not None:
-            target_cover_entity = user_input.get("target_cover_entity")
+            target_cover_entity = user_input.get(TARGET_COVER_ENTITY_ID)
 
             # Use unique id to prevent multiple usage of the same cover
             await self.async_set_unique_id(target_cover_entity)
@@ -646,17 +645,17 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 selector.EntitySelectorConfig(domain="sensor")
             ),
             #
-            vol.Optional(SCDawnInput.HEIGHT_AFTER_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
-            vol.Optional(SCDawnInput.HEIGHT_AFTER_ENTITY.value): selector.EntitySelector(
+            vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="sensor")
             ),
             #
-            vol.Optional(SCDawnInput.ANGLE_AFTER_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
-            vol.Optional(SCDawnInput.ANGLE_AFTER_ENTITY.value): selector.EntitySelector(
+            vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="sensor")
             ),
         })

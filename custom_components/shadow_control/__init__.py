@@ -28,13 +28,13 @@ from homeassistant.helpers.update_coordinator import ( # Für die Benachrichtigu
 
 from .const import SCDynamicInput, SCFacadeConfig, SCShadowInput, SCDawnInput, \
     MovementRestricted, LockState, ShutterState, DOMAIN, DOMAIN_DATA_MANAGERS, SC_CONF_COVERS, \
-    TARGET_COVER_ENTITY, SC_CONF_NAME
+    TARGET_COVER_ENTITY_ID, SC_CONF_NAME
 
 _LOGGER = logging.getLogger(__name__)
 
 SINGLE_COVER_CONFIG_SCHEMA = vol.Schema({
     vol.Required(SC_CONF_NAME): str, # Freundlicher Name für dieses spezifische Cover
-    vol.Required(TARGET_COVER_ENTITY): str,
+    vol.Required(TARGET_COVER_ENTITY_ID): str,
 
     # === Dynamische Eingänge (Mapped directly to your existing input_number/input_boolean entities) ===
     vol.Required(SCDynamicInput.BRIGHTNESS_ENTITY.value): str,
@@ -93,8 +93,8 @@ SINGLE_COVER_CONFIG_SCHEMA = vol.Schema({
     vol.Required(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value): str,
     vol.Required(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value): str,
     vol.Required(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value): str,
-    vol.Required(SCDawnInput.HEIGHT_AFTER_ENTITY.value): str,
-    vol.Required(SCDawnInput.ANGLE_AFTER_ENTITY.value): str,
+    vol.Required(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value): str,
+    vol.Required(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value): str,
 })
 
 # --- Schema für ein einzelnes Cover innerhalb der 'covers' Liste ---
@@ -191,7 +191,7 @@ class ShadowControlManager:
         self.hass = hass
         self._config = config
         self._name = config[SC_CONF_NAME]
-        self._target_cover_entity = config[TARGET_COVER_ENTITY]
+        self._target_cover_entity = config[TARGET_COVER_ENTITY_ID]
 
         # === Dynamische Eingänge (Test-Helfer) ===
         self._brightness_entity = config.get(SCDynamicInput.BRIGHTNESS_ENTITY.value)
@@ -248,8 +248,8 @@ class ShadowControlManager:
         self._dawn_shutter_look_through_seconds_entity = config.get(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value)
         self._dawn_shutter_open_seconds_entity = config.get(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value)
         self._dawn_shutter_look_through_angle_entity = config.get(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value)
-        self._dawn_height_after_dawn_entity = config.get(SCDawnInput.HEIGHT_AFTER_ENTITY.value)
-        self._dawn_angle_after_dawn_entity = config.get(SCDawnInput.ANGLE_AFTER_ENTITY.value)
+        self._dawn_height_after_dawn_entity = config.get(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value)
+        self._dawn_angle_after_dawn_entity = config.get(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value)
 
         # Define dictionary with all state handlers
         self._state_handlers: dict[ShutterState, Callable[[], Awaitable[ShutterState]]] = {
