@@ -361,47 +361,47 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # Helligkeitsschwelle
             if not user_input.get(SCShadowInput.BRIGHTNESS_THRESHOLD_STATIC.value) and \
                     not user_input.get(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value):
-                errors[SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value] = "shadow_brightness_threshold_missing"
+                errors[SCShadowInput.BRIGHTNESS_THRESHOLD_STATIC.value] = "shadow_brightness_threshold_missing"
 
             # Nach X Sekunden
             if not user_input.get(SCShadowInput.AFTER_SECONDS_STATIC.value) and \
                     not user_input.get(SCShadowInput.AFTER_SECONDS_ENTITY.value):
-                errors[SCShadowInput.AFTER_SECONDS_ENTITY.value] = "shadow_after_seconds_missing"
+                errors[SCShadowInput.AFTER_SECONDS_STATIC.value] = "shadow_after_seconds_missing"
 
             # SHUTTER_MAX_HEIGHT
             if not user_input.get(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value) and \
                     not user_input.get(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value):
-                errors[SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value] = "shadow_shutter_max_height_missing"
+                errors[SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value] = "shadow_shutter_max_height_missing"
 
             # SHUTTER_MAX_ANGLE
             if not user_input.get(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value) and \
                     not user_input.get(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value):
-                errors[SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value] = "shadow_shutter_max_angle_missing"
+                errors[SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value] = "shadow_shutter_max_angle_missing"
 
             # SHUTTER_LOOK_THROUGH_SECONDS
             if not user_input.get(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value) and \
                     not user_input.get(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value):
-                errors[SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value] = "shadow_look_through_seconds_missing"
+                errors[SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value] = "shadow_look_through_seconds_missing"
 
             # SHUTTER_OPEN_SECONDS
             if not user_input.get(SCShadowInput.SHUTTER_OPEN_SECONDS_STATIC.value) and \
                     not user_input.get(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value):
-                errors[SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value] = "shadow_open_seconds_missing"
+                errors[SCShadowInput.SHUTTER_OPEN_SECONDS_STATIC.value] = "shadow_open_seconds_missing"
 
             # SHUTTER_LOOK_THROUGH_ANGLE
             if not user_input.get(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value) and \
                     not user_input.get(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value):
-                errors[SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value] = "shadow_look_through_angle_missing"
+                errors[SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value] = "shadow_look_through_angle_missing"
 
             # HEIGHT_AFTER_SUN
             if not user_input.get(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value) and \
                     not user_input.get(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value):
-                errors[SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value] = "shadow_height_after_sun_missing"
+                errors[SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value] = "shadow_height_after_sun_missing"
 
             # ANGLE_AFTER_SUN
             if not user_input.get(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value) and \
                     not user_input.get(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value):
-                errors[SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value] = "shadow_angle_after_sun_missing"
+                errors[SCShadowInput.ANGLE_AFTER_SUN_STATIC.value] = "shadow_angle_after_sun_missing"
 
 
             if not errors: # Nur wenn keine Fehler, dann aktualisieren und weiter
@@ -426,47 +426,47 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # Validierung für BRIGHTNESS_THRESHOLD (Dawn)
             if not user_input.get(SCDawnInput.BRIGHTNESS_THRESHOLD_STATIC.value) and \
                     not user_input.get(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value):
-                errors[SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value] = "dawn_brightness_threshold_missing"
+                errors[SCDawnInput.BRIGHTNESS_THRESHOLD_STATIC.value] = "dawn_brightness_threshold_missing"
 
             # Validierung für AFTER_SECONDS (Dawn)
             if not user_input.get(SCDawnInput.AFTER_SECONDS_STATIC.value) and \
                     not user_input.get(SCDawnInput.AFTER_SECONDS_ENTITY.value):
-                errors[SCDawnInput.AFTER_SECONDS_ENTITY.value] = "dawn_after_seconds_missing"
+                errors[SCDawnInput.AFTER_SECONDS_STATIC.value] = "dawn_after_seconds_missing"
 
             # SHUTTER_MAX_HEIGHT (Dawn)
             if not user_input.get(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value) and \
                     not user_input.get(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value):
-                errors[SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value] = "dawn_shutter_max_height_missing"
+                errors[SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value] = "dawn_shutter_max_height_missing"
 
             # SHUTTER_MAX_ANGLE (Dawn)
             if not user_input.get(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value) and \
                     not user_input.get(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value):
-                errors[SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value] = "dawn_shutter_max_angle_missing"
+                errors[SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value] = "dawn_shutter_max_angle_missing"
 
             # SHUTTER_LOOK_THROUGH_SECONDS (Dawn)
             if not user_input.get(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value) and \
                     not user_input.get(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value):
-                errors[SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value] = "dawn_look_through_seconds_missing"
+                errors[SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value] = "dawn_look_through_seconds_missing"
 
             # SHUTTER_OPEN_SECONDS (Dawn)
             if not user_input.get(SCDawnInput.SHUTTER_OPEN_SECONDS_STATIC.value) and \
                     not user_input.get(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value):
-                errors[SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value] = "dawn_open_seconds_missing"
+                errors[SCDawnInput.SHUTTER_OPEN_SECONDS_STATIC.value] = "dawn_open_seconds_missing"
 
             # SHUTTER_LOOK_THROUGH_ANGLE (Dawn)
             if not user_input.get(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value) and \
                     not user_input.get(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value):
-                errors[SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value] = "dawn_look_through_angle_missing"
+                errors[SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value] = "dawn_look_through_angle_missing"
 
             # HEIGHT_AFTER_DAWN (Dawn)
             if not user_input.get(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value) and \
                     not user_input.get(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value):
-                errors[SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value] = "dawn_height_after_dawn_missing"
+                errors[SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value] = "dawn_height_after_dawn_missing"
 
             # ANGLE_AFTER_DAWN (Dawn)
             if not user_input.get(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value) and \
                     not user_input.get(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value):
-                errors[SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value] = "dawn_angle_after_dawn_missing"
+                errors[SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value] = "dawn_angle_after_dawn_missing"
 
             if not errors: # Nur wenn keine Fehler, dann aktualisieren und weiter
                 self._data.update(user_input)
