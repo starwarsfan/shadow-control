@@ -114,6 +114,17 @@
           "shadow_shutter_look_through_angle": "Lamellenwinkel für Durchsichtstellung.",
           "shadow_height_after_sun": "Nach Beschattung anzufahrende Behanghöhe.",
           "shadow_angle_after_sun": "Nach Beschattung anzufahrender Lamellenwinkel."
+        },
+        "error": {
+          "shadow_brightness_threshold_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Helligkeitsschwelle der Beschattung an.",
+          "shadow_after_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Verzögerung nach Auslösen der Beschattung an.",
+          "shadow_shutter_max_height_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die maximale Behanghöhe bei Beschattung an.",
+          "shadow_shutter_max_angle_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den maximalen Lamellenwinkel bei Beschattung an.",
+          "shadow_look_through_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Durchblick-Dauer nach Beschattung an.",
+          "shadow_open_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Dauer bis zum Öffnen nach der Durchblick-Position an.",
+          "shadow_look_through_angle_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Durchblick-Winkel der Beschattung an.",
+          "shadow_height_after_sun_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Höhe nach Beschattung an.",
+          "shadow_angle_after_sun_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Winkel nach Beschattung an."
         }
       },
       "dawn_settings": {
@@ -142,6 +153,17 @@
           "dawn_shutter_look_through_angle": "Lamellenwinkel für Durchsichtstellung.",
           "dawn_height_after_dawn": "Nach Dämmerung anzufahrende Behanghöhe.",
           "dawn_angle_after_dawn": "Nach Dämmerung anzufahrender Lamellenwinkel."
+        },
+        "error": {
+          "dawn_brightness_threshold_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Helligkeitsschwelle der Dämmerungssteuerung an.",
+          "dawn_after_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Verzögerung nach Auslösen der Dämmerungssteuerung an.",
+          "dawn_shutter_max_height_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die maximale Behanghöhe der Dämmerungssteuerung an.",
+          "dawn_shutter_max_angle_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den maximalen Lamellenwinkel der Dämmerungssteuerung an.",
+          "dawn_look_through_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Dauer der Durchblick-Position nach Dämmerungsposition an.",
+          "dawn_open_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Dauer bis zum Öffnen des Behangs nach der Durchblick-Position an.",
+          "dawn_look_through_angle_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Durchblick-Winkel der Dämmerungssteuerung an.",
+          "dawn_height_after_dawn_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Höhe nach dem Öffnen an.",
+          "dawn_angle_after_dawn_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Winkel nach dem Öffnen an."
         }
       },
       "options": {
