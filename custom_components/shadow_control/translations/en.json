@@ -115,7 +115,7 @@
         "data_description": {
           "shadow_control_enabled_entity": "De-/Activate shadow handling.",
           "shadow_brightness_threshold_entity": "Brightness threshold which must be passed to start shadow handling (by entity).",
-          "shadow_brightness_threshold_satic": "Brightness threshold which must be passed to start shadow handling (static).",
+          "shadow_brightness_threshold_static": "Brightness threshold which must be passed to start shadow handling (static).",
           "shadow_after_seconds_entity": "Time in seconds to close shutter after passing brightness threshold (by entity).",
           "shadow_after_seconds_static": "Time in seconds to close shutter after passing brightness threshold (static).",
           "shadow_shutter_max_height_entity": "Shutter max height at shadow position (by entity).",
