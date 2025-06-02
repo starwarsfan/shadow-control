@@ -5,11 +5,11 @@
       "user": {
         "data": {
           "name": "Instanzname",
-          "target_cover_entity_id": "Behang-Entität"
+          "target_cover_entity": "Behang-Entität"
         },
         "data_description": {
           "name": "Eindeutiger Name dieser Shadow Control (SC) Instanz",
-          "target_cover_entity_id": "Behang, welcher mit dieser Shadow Control (SC) Instanz gehandhabt werden soll"
+          "target_cover_entity": "Behang, welcher mit dieser Shadow Control (SC) Instanz gehandhabt werden soll"
         }
       },
       "facade_settings": {
@@ -31,7 +31,9 @@
           "facade_light_strip_width": "Lichtstreifenbreite",
           "facade_shutter_height": "Behang-Gesamthöhe",
           "facade_neutral_pos_height": "Neutrale Höhe",
-          "facade_neutral_pos_angle": "Neutraler Winkel"
+          "facade_neutral_pos_angle": "Neutraler Winkel",
+          "facade_modification_tolerance_height": "Toleranz Höhenänderung",
+          "facade_modification_tolerance_angle": "Toleranz Lamellenwinkeländerung"
         },
         "data_description": {
           "facade_azimuth": "Azimuth der Fassade in Grad mit Blickrichtung von innen nach aussen. Gültiger Bereich: 0° bis 359°",
@@ -49,7 +51,9 @@
           "facade_light_strip_width": "Breite eines Lichtstreifens auf dem Boden.",
           "facade_shutter_height": "Gesamthöhe des Behangs resp. des Fensters bzw. der Tür. Wird für die Berechnung des Lichtstreifens aus der vorherigen Einstellung benötigt.",
           "facade_neutral_pos_height": "Anzufahrende Höhe in Neutralposition.",
-          "facade_neutral_pos_angle": "Anzufahrender Winkel in Neutralposition."
+          "facade_neutral_pos_angle": "Anzufahrender Winkel in Neutralposition.",
+          "facade_modification_tolerance_height": "Toleranzbereich, in dem keine Höhenanpassung erfolgt.",
+          "facade_modification_tolerance_angle": "Toleranzbereich, in dem keine Lamellenwinkelanpassung erfolgt."
         }
       },
       "dynamic_inputs": {
@@ -66,10 +70,8 @@
           "lock_integration_with_position": "Integration mit Zwangsposition sperren",
           "lock_height": "Zwangsposition Höhe",
           "lock_angle": "Zwangsposition Lamellenwinkel",
-          "modification_tolerance_height": "Toleranz Höhenänderung",
-          "modification_tolerance_angle": "Toleranz Lamellenwinkeländerung",
-          "facade_movement_restriction_height": "Höhenveränderung einschränken",
-          "facade_movement_restriction_angle": "Winkelveränderung einschränken"
+          "movement_restriction_height": "Höhenveränderung einschränken",
+          "movement_restriction_angle": "Winkelveränderung einschränken"
         },
         "data_description": {
           "brightness": "Aktuelle Helligkeit, üblicherweise von einer Wetterstation.",
@@ -82,10 +84,8 @@
           "lock_integration_with_position": "Sperren der gesamten Integration mit Anfahren einer Zwangsposition",
           "lock_height": "Anzufahrende Höhe bei Zwangsposition",
           "lock_angle": "Anzufahrender Lamellenwinkel bei Zwangsposition",
-          "modification_tolerance_height": "Toleranzbereich, in dem keine Höhenanpassung erfolgt.",
-          "modification_tolerance_angle": "Toleranzbereich, in dem keine Lamellenwinkelanpassung erfolgt.",
-          "facade_movement_restriction_height": "Einschränkung der Höhenpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
-          "facade_movement_restriction_angle": "Einschränkung der Winkelpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden."
+          "movement_restriction_height": "Einschränkung der Höhenpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
+          "movement_restriction_angle": "Einschränkung der Winkelpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden."
         }
       },
       "shadow_settings": {
