@@ -132,17 +132,6 @@
           "shadow_height_after_sun_static": "Nach Beschattung anzufahrende Behanghöhe (statisch).",
           "shadow_angle_after_sun_entity": "Nach Beschattung anzufahrender Lamellenwinkel (via Entität).",
           "shadow_angle_after_sun_static": "Nach Beschattung anzufahrender Lamellenwinkel (statisch)."
-        },
-        "error": {
-          "shadow_brightness_threshold_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Helligkeitsschwelle der Beschattung an.",
-          "shadow_after_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Verzögerung nach Auslösen der Beschattung an.",
-          "shadow_shutter_max_height_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die maximale Behanghöhe bei Beschattung an.",
-          "shadow_shutter_max_angle_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den maximalen Lamellenwinkel bei Beschattung an.",
-          "shadow_look_through_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Durchblick-Dauer nach Beschattung an.",
-          "shadow_open_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Dauer bis zum Öffnen nach der Durchblick-Position an.",
-          "shadow_look_through_angle_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Durchblick-Winkel der Beschattung an.",
-          "shadow_height_after_sun_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Höhe nach Beschattung an.",
-          "shadow_angle_after_sun_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Winkel nach Beschattung an."
         }
       },
       "dawn_settings": {
@@ -189,17 +178,6 @@
           "dawn_height_after_dawn_static": "Nach Dämmerung anzufahrende Behanghöhe (statisch).",
           "dawn_angle_after_dawn_entity": "Nach Dämmerung anzufahrender Lamellenwinkel (via Entität).",
           "dawn_angle_after_dawn_static": "Nach Dämmerung anzufahrender Lamellenwinkel (statisch)."
-        },
-        "error": {
-          "dawn_brightness_threshold_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Helligkeitsschwelle der Dämmerungssteuerung an.",
-          "dawn_after_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Verzögerung nach Auslösen der Dämmerungssteuerung an.",
-          "dawn_shutter_max_height_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die maximale Behanghöhe der Dämmerungssteuerung an.",
-          "dawn_shutter_max_angle_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den maximalen Lamellenwinkel der Dämmerungssteuerung an.",
-          "dawn_look_through_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Dauer der Durchblick-Position nach Dämmerungsposition an.",
-          "dawn_open_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Dauer bis zum Öffnen des Behangs nach der Durchblick-Position an.",
-          "dawn_look_through_angle_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Durchblick-Winkel der Dämmerungssteuerung an.",
-          "dawn_height_after_dawn_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Höhe nach dem Öffnen an.",
-          "dawn_angle_after_dawn_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Winkel nach dem Öffnen an."
         }
       },
       "options": {
@@ -210,7 +188,25 @@
     "error": {
       "auth": "Username/Password is wrong.",
       "connection": "Unable to connect to the server.",
-      "unknown": "Unknown error occurred."
+      "unknown": "Unknown error occurred.",
+      "shadow_brightness_threshold_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Helligkeitsschwelle der Beschattung an.",
+      "shadow_after_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Verzögerung nach Auslösen der Beschattung an.",
+      "shadow_shutter_max_height_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die maximale Behanghöhe bei Beschattung an.",
+      "shadow_shutter_max_angle_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den maximalen Lamellenwinkel bei Beschattung an.",
+      "shadow_look_through_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Durchblick-Dauer nach Beschattung an.",
+      "shadow_open_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Dauer bis zum Öffnen nach der Durchblick-Position an.",
+      "shadow_look_through_angle_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Durchblick-Winkel der Beschattung an.",
+      "shadow_height_after_sun_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Höhe nach Beschattung an.",
+      "shadow_angle_after_sun_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Winkel nach Beschattung an.",
+      "dawn_brightness_threshold_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Helligkeitsschwelle der Dämmerungssteuerung an.",
+      "dawn_after_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Verzögerung nach Auslösen der Dämmerungssteuerung an.",
+      "dawn_shutter_max_height_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die maximale Behanghöhe der Dämmerungssteuerung an.",
+      "dawn_shutter_max_angle_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den maximalen Lamellenwinkel der Dämmerungssteuerung an.",
+      "dawn_look_through_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Dauer der Durchblick-Position nach Dämmerungsposition an.",
+      "dawn_open_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Dauer bis zum Öffnen des Behangs nach der Durchblick-Position an.",
+      "dawn_look_through_angle_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Durchblick-Winkel der Dämmerungssteuerung an.",
+      "dawn_height_after_dawn_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Höhe nach dem Öffnen an.",
+      "dawn_angle_after_dawn_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Winkel nach dem Öffnen an."
     },
     "abort": {
       "already_configured": "This entry is already configured."

@@ -132,17 +132,6 @@
           "shadow_height_after_sun_static": "Height after shadow (static).",
           "shadow_angle_after_sun_entity": "Slat angle after shadow (by entity).",
           "shadow_angle_after_sun_static": "Slat angle after shadow (static)."
-        },
-        "error": {
-          "shadow_brightness_threshold_missing": "Please use a static value or a entity for the brightness threshold of shadow control.",
-          "shadow_after_seconds_missing": "Please use a static value or a entity for the timeout after triggered shadow position.",
-          "shadow_shutter_max_height_missing": "Please use a static value or a entity for the max shutter height at shadow position.",
-          "shadow_shutter_max_angle_missing": "Please use a static value or a entity for the max shutter slat angle at shadow position.",
-          "shadow_look_through_seconds_missing": "Please use a static value or a entity for the timeout of look-through position after shadow position.",
-          "shadow_open_seconds_missing": "Please use a static value or a entity for the timeout until open after look-through position.",
-          "shadow_look_through_angle_missing": "Please use a static value or a entity for look-through shutter slat angle.",
-          "shadow_height_after_sun_missing": "Please use a static value or a entity for the shutter height after shadow position.",
-          "shadow_angle_after_sun_missing": "Please use a static value or a entity for the shutter slat angle after shadow position."
         }
       },
       "dawn_settings": {
@@ -189,17 +178,6 @@
           "dawn_height_after_sun_static": "Height after dawn (static).",
           "dawn_angle_after_sun_entity": "Slat angle after dawn (by entity).",
           "dawn_angle_after_sun_static": "Slat angle after dawn (static)."
-        },
-        "error": {
-          "dawn_brightness_threshold_missing": "Please use a static value or a entity for the brightness threshold of dawn control.",
-          "dawn_after_seconds_missing": "Please use a static value or a entity for the timeout after triggered dawn position.",
-          "dawn_shutter_max_height_missing": "Please use a static value or a entity for the max shutter height at dawn position.",
-          "dawn_shutter_max_angle_missing": "Please use a static value or a entity for the max shutter slat angle at dawn position.",
-          "dawn_look_through_seconds_missing": "Please use a static value or a entity for the timeout of look-through position after dawn position.",
-          "dawn_open_seconds_missing": "Please use a static value or a entity for the timeout until open after look-through position.",
-          "dawn_look_through_angle_missing": "Please use a static value or a entity for look-through shutter slat angle.",
-          "dawn_height_after_sun_missing": "Please use a static value or a entity for the shutter height after dawn position.",
-          "dawn_angle_after_sun_missing": "Please use a static value or a entity for the shutter slat angle after dawn position."
         }
       },
       "options": {
@@ -210,7 +188,25 @@
     "error": {
       "auth": "Username/Password is wrong.",
       "connection": "Unable to connect to the server.",
-      "unknown": "Unknown error occurred."
+      "unknown": "Unknown error occurred.",
+      "shadow_brightness_threshold_missing": "Please use a static value or a entity for the brightness threshold of shadow control.",
+      "shadow_after_seconds_missing": "Please use a static value or a entity for the timeout after triggered shadow position.",
+      "shadow_shutter_max_height_missing": "Please use a static value or a entity for the max shutter height at shadow position.",
+      "shadow_shutter_max_angle_missing": "Please use a static value or a entity for the max shutter slat angle at shadow position.",
+      "shadow_look_through_seconds_missing": "Please use a static value or a entity for the timeout of look-through position after shadow position.",
+      "shadow_open_seconds_missing": "Please use a static value or a entity for the timeout until open after look-through position.",
+      "shadow_look_through_angle_missing": "Please use a static value or a entity for look-through shutter slat angle.",
+      "shadow_height_after_sun_missing": "Please use a static value or a entity for the shutter height after shadow position.",
+      "shadow_angle_after_sun_missing": "Please use a static value or a entity for the shutter slat angle after shadow position.",
+      "dawn_brightness_threshold_missing": "Please use a static value or a entity for the brightness threshold of dawn control.",
+      "dawn_after_seconds_missing": "Please use a static value or a entity for the timeout after triggered dawn position.",
+      "dawn_shutter_max_height_missing": "Please use a static value or a entity for the max shutter height at dawn position.",
+      "dawn_shutter_max_angle_missing": "Please use a static value or a entity for the max shutter slat angle at dawn position.",
+      "dawn_look_through_seconds_missing": "Please use a static value or a entity for the timeout of look-through position after dawn position.",
+      "dawn_open_seconds_missing": "Please use a static value or a entity for the timeout until open after look-through position.",
+      "dawn_look_through_angle_missing": "Please use a static value or a entity for look-through shutter slat angle.",
+      "dawn_height_after_sun_missing": "Please use a static value or a entity for the shutter height after dawn position.",
+      "dawn_angle_after_sun_missing": "Please use a static value or a entity for the shutter slat angle after dawn position."
     },
     "abort": {
       "already_configured": "This entry is already configured."
