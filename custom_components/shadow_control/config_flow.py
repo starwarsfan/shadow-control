@@ -356,7 +356,16 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle shadow control settings (Step 4)."""
         errors = {}
 
+        # Initialisiere alle Daten, die an das Schema übergeben werden sollen,
+        # mit den bereits bekannten Werten aus self._data
+        # Dies ist der Basiswert, der dann von user_input überschrieben wird
+        suggested_values = self._data.copy()
+
         if user_input is not None:
+            # Führe die aktuellen Benutzereingaben mit den bereits bekannten Werten zusammen.
+            # user_input überschreibt dabei alle gleichen Schlüssel in suggested_values.
+            suggested_values.update(user_input)
+
             # Validierungen für "entweder/oder" Paare
             # Helligkeitsschwelle
             if not user_input.get(SCShadowInput.BRIGHTNESS_THRESHOLD_STATIC.value) and \
@@ -413,7 +422,7 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="shadow_settings",
             data_schema=self.add_suggested_values_to_schema(
                 STEP_SHADOW_SETTINGS_SCHEMA,
-                self._data # Vorausfüllen mit bereits bekannten Werten
+                suggested_values # Vorausfüllen mit bereits bekannten Werten
             ),
             errors=errors,
         )
@@ -422,7 +431,16 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle dawn control settings (Step 5 - Final)."""
         errors = {}
 
+        # Initialisiere alle Daten, die an das Schema übergeben werden sollen,
+        # mit den bereits bekannten Werten aus self._data
+        # Dies ist der Basiswert, der dann von user_input überschrieben wird
+        suggested_values = self._data.copy()
+
         if user_input is not None:
+            # Führe die aktuellen Benutzereingaben mit den bereits bekannten Werten zusammen.
+            # user_input überschreibt dabei alle gleichen Schlüssel in suggested_values.
+            suggested_values.update(user_input)
+
             # Validierung für BRIGHTNESS_THRESHOLD (Dawn)
             if not user_input.get(SCDawnInput.BRIGHTNESS_THRESHOLD_STATIC.value) and \
                     not user_input.get(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value):
@@ -480,7 +498,7 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="dawn_settings",
             data_schema=self.add_suggested_values_to_schema(
                 STEP_DAWN_SETTINGS_SCHEMA,
-                self._data # Vorausfüllen mit bereits bekannten Werten
+                suggested_values # Vorausfüllen mit bereits bekannten Werten
             ),
             errors=errors,
         )
