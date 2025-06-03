@@ -802,19 +802,18 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         })
 
         if user_input is None:
-            # Fill options form with current values of ConfigEntry.
-            # Options have precedence before initial data.
-            current_options = {**self.config_entry.data, **self.config_entry.options}
-
-            # Use default values at optional fields
-            for key, schema_item in OPTIONS_COMBINED_SCHEMA.schema.items():
-                if isinstance(schema_item, vol.Optional) and key not in current_options:
-                    current_options[key] = schema_item.default
+            current_data = {**self.config_entry.data, **self.config_entry.options}
+            form_data = {}
+            for key, schema_item in OPTIONS_SCHEMA.schema.items():
+                if key in current_data:
+                    form_data[key] = current_data[key]
+                elif isinstance(schema_item, vol.Optional) and schema_item.default is not vol.UNDEFINED:
+                    form_data[key] = schema_item.default
 
             return self.async_show_form(
                 step_id="options",
                 data_schema=self.add_suggested_values_to_schema(
-                    OPTIONS_COMBINED_SCHEMA, current_options
+                    OPTIONS_SCHEMA, form_data
                 ),
                 errors=errors,
             )
@@ -823,10 +822,25 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_show_form(
                 step_id="options",
                 data_schema=self.add_suggested_values_to_schema(
-                    OPTIONS_COMBINED_SCHEMA, user_input
+                    OPTIONS_SCHEMA, user_input
                 ),
                 errors=errors,
             )
 
-        # Save updated options within ConfigEntry
-        return self.async_create_entry(title="", data=user_input)
+        # HIER IST DIE WICHTIGSTE ÄNDERUNG:
+        # Anstatt self.config_entry.options = user_input,
+        # verwendest du async_update_entry.
+        self.hass.config_entries.async_update_entry(
+            self.config_entry, options=user_input
+        )
+
+        # Das Neuladen der Integration durch async_reload ist hier korrekt.
+        # Es stellt sicher, dass deine Integration die neuen Optionen liest und verwendet.
+        self.hass.async_create_task(
+            self.hass.config_entries.async_reload(self.config_entry.entry_id)
+        )
+
+        # Beendet den Options-Flow
+        # Ein leeres data{} ist hier korrekt, da die Optionen separat über options=user_input
+        # im async_update_entry gespeichert wurden.
+        return self.async_create_entry(title="", data={})
