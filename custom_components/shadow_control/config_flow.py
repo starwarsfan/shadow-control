@@ -24,37 +24,37 @@ STEP_GENERAL_DATA_SCHEMA = vol.Schema({
 
 # --- STEP 2: General settings (facade, cover type, ...) ---
 STEP_FACADE_SETTINGS_SCHEMA = vol.Schema({
-    vol.Required(SCFacadeConfig.AZIMUTH_STATIC.value): selector.NumberSelector(
+    vol.Required(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=359, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value): selector.NumberSelector(
+    vol.Required(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value, default=-90): selector.NumberSelector(
         selector.NumberSelectorConfig(min=-90, max=0, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value): selector.NumberSelector(
+    vol.Required(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value, default=90): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value): selector.NumberSelector(
+    vol.Required(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value): selector.NumberSelector(
+    vol.Required(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value, default=90): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.SLAT_WIDTH_STATIC.value): selector.NumberSelector(
+    vol.Required(SCFacadeConfig.SLAT_WIDTH_STATIC.value, default=95): selector.NumberSelector(
         selector.NumberSelectorConfig(min=20, max=150, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.SLAT_DISTANCE_STATIC.value): selector.NumberSelector(
-        selector.NumberSelectorConfig(min=19, max=150, step=1, mode=selector.NumberSelectorMode.BOX)
+    vol.Required(SCFacadeConfig.SLAT_DISTANCE_STATIC.value, default=67): selector.NumberSelector(
+        selector.NumberSelectorConfig(min=20, max=150, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
     vol.Required(SCFacadeConfig.SLAT_ANGLE_OFFSET_STATIC.value): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=10, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value): selector.NumberSelector(
+    vol.Required(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value): selector.NumberSelector(
+    vol.Required(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=10): selector.NumberSelector(
         selector.NumberSelectorConfig(min=1, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value): selector.NumberSelector(
+    vol.Required(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, default=10): selector.NumberSelector(
         selector.NumberSelectorConfig(min=1, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
     vol.Required(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, default="mode1"): selector.SelectSelector(
@@ -72,16 +72,16 @@ STEP_FACADE_SETTINGS_SCHEMA = vol.Schema({
     vol.Optional(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=3000, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
 })
@@ -160,14 +160,14 @@ STEP_SHADOW_SETTINGS_SCHEMA = vol.Schema({
         selector.EntitySelectorConfig(domain="sensor")
     ),
     # -----------------------------------------------------------------------
-    vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="sensor")
     ),
     # -----------------------------------------------------------------------
-    vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value, default=100): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value): selector.EntitySelector(
@@ -188,21 +188,21 @@ STEP_SHADOW_SETTINGS_SCHEMA = vol.Schema({
         selector.EntitySelectorConfig(domain="sensor")
     ),
     # -----------------------------------------------------------------------
-    vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="sensor")
     ),
     # -----------------------------------------------------------------------
-    vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="sensor")
     ),
     # -----------------------------------------------------------------------
-    vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value): selector.EntitySelector(
@@ -230,14 +230,14 @@ STEP_DAWN_SETTINGS_SCHEMA = vol.Schema({
         selector.EntitySelectorConfig(domain="sensor")
     ),
     # -----------------------------------------------------------------------
-    vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="sensor")
     ),
     # -----------------------------------------------------------------------
-    vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value, default=100): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value): selector.EntitySelector(
@@ -258,21 +258,21 @@ STEP_DAWN_SETTINGS_SCHEMA = vol.Schema({
         selector.EntitySelectorConfig(domain="sensor")
     ),
     # -----------------------------------------------------------------------
-    vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="sensor")
     ),
     # -----------------------------------------------------------------------
-    vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="sensor")
     ),
     # -----------------------------------------------------------------------
-    vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value): selector.NumberSelector(
+    vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value): selector.EntitySelector(
@@ -548,37 +548,37 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         # Should contain all fields which the user should be able to modify.
         OPTIONS_SCHEMA = vol.Schema({
             # STEP_FACADE_SETTINGS_SCHEMA
-            vol.Required(SCFacadeConfig.AZIMUTH_STATIC.value): selector.NumberSelector(
+            vol.Required(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=359, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Required(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value): selector.NumberSelector(
+            vol.Required(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value, default=-90): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=-90, max=0, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Required(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value): selector.NumberSelector(
+            vol.Required(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value, default=90): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Required(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value): selector.NumberSelector(
+            vol.Required(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Required(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value): selector.NumberSelector(
+            vol.Required(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value, default=90): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Required(SCFacadeConfig.SLAT_WIDTH_STATIC.value): selector.NumberSelector(
+            vol.Required(SCFacadeConfig.SLAT_WIDTH_STATIC.value, default=95): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=20, max=150, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Required(SCFacadeConfig.SLAT_DISTANCE_STATIC.value): selector.NumberSelector(
-                selector.NumberSelectorConfig(min=19, max=150, step=1, mode=selector.NumberSelectorMode.BOX)
+            vol.Required(SCFacadeConfig.SLAT_DISTANCE_STATIC.value, default=67): selector.NumberSelector(
+                selector.NumberSelectorConfig(min=20, max=150, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Required(SCFacadeConfig.SLAT_ANGLE_OFFSET_STATIC.value): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=10, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Required(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value): selector.NumberSelector(
+            vol.Required(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Required(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value): selector.NumberSelector(
+            vol.Required(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=10): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=1, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Required(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value): selector.NumberSelector(
+            vol.Required(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, default=10): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=1, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Required(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, default="mode1"): selector.SelectSelector(
@@ -596,16 +596,16 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
             vol.Optional(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=3000, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
 
@@ -682,14 +682,14 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                 selector.EntitySelectorConfig(domain="sensor")
             ),
             # -----------------------------------------------------------------------
-            vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="sensor")
             ),
             # -----------------------------------------------------------------------
-            vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value, default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value): selector.EntitySelector(
@@ -710,21 +710,21 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                 selector.EntitySelectorConfig(domain="sensor")
             ),
             # -----------------------------------------------------------------------
-            vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="sensor")
             ),
             # -----------------------------------------------------------------------
-            vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="sensor")
             ),
             # -----------------------------------------------------------------------
-            vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value): selector.EntitySelector(
@@ -751,14 +751,14 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                 selector.EntitySelectorConfig(domain="sensor")
             ),
             # -----------------------------------------------------------------------
-            vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="sensor")
             ),
             # -----------------------------------------------------------------------
-            vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value, default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value): selector.EntitySelector(
@@ -779,21 +779,21 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                 selector.EntitySelectorConfig(domain="sensor")
             ),
             # -----------------------------------------------------------------------
-            vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="sensor")
             ),
             # -----------------------------------------------------------------------
-            vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="sensor")
             ),
             # -----------------------------------------------------------------------
-            vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value): selector.NumberSelector(
+            vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value): selector.EntitySelector(
