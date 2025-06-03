@@ -151,11 +151,13 @@ class ShadowControlManager:
     def __init__(
             self,
             hass: HomeAssistant,
-            config: Dict[str, Any], # Jetzt bekommt der Manager die komplette Konfig für SEIN Cover
+            config: Mapping[str, Any],
+            entry_id: str
     ) -> None:
         self.hass = hass
         self._config = config
         self._name = config[SC_CONF_NAME]
+        self._entry_id = entry_id
         self._target_cover_entity = config[TARGET_COVER_ENTITY_ID]
 
         # === Dynamische Eingänge (Test-Helfer) ===
