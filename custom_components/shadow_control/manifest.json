@@ -11,5 +11,6 @@
   "documentation": "https://github.com/starwarsfan/shadow-control",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/starwarsfan/shadow-control/issues",
-  "version": "0.1.0"
+  "version": "0.1.0",
+  "icon": "mdi:blinds-horizontal"
 }
