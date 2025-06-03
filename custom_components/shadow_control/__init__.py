@@ -5,10 +5,11 @@ import math
 
 import voluptuous as vol
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Callable, Awaitable
+from typing import Any, Dict, List, Optional, Callable, Awaitable, Mapping
 
 from homeassistant.components.cover import CoverEntityFeature
 from homeassistant.components.sensor import SensorEntity # Für die Basisklasse Sensor
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_SUPPORTED_FEATURES,
     STATE_ON, STATE_OFF,
@@ -26,9 +27,20 @@ from homeassistant.helpers.update_coordinator import ( # Für die Benachrichtigu
     UpdateFailed,
 )
 
-from .const import SCDynamicInput, SCFacadeConfig, SCShadowInput, SCDawnInput, \
-    MovementRestricted, LockState, ShutterState, DOMAIN, DOMAIN_DATA_MANAGERS, SC_CONF_COVERS, \
-    TARGET_COVER_ENTITY_ID, SC_CONF_NAME
+from .const import (
+    DOMAIN,
+    DOMAIN_DATA_MANAGERS,
+    LockState,
+    MovementRestricted,
+    SCFacadeConfig,
+    SCDynamicInput,
+    SCShadowInput,
+    SCDawnInput,
+    ShutterState,
+    SC_CONF_COVERS,
+    SC_CONF_NAME,
+    TARGET_COVER_ENTITY_ID
+)
 
 _LOGGER = logging.getLogger(__name__)
 
