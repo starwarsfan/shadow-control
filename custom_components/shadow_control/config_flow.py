@@ -89,22 +89,22 @@ STEP_FACADE_SETTINGS_SCHEMA = vol.Schema({
 # --- STEP 3: Dynamic settings ---
 STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema({
     vol.Required(SCDynamicInput.BRIGHTNESS_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor", device_class="illuminance")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor", device_class="illuminance")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     vol.Required(SCDynamicInput.SUN_ELEVATION_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     vol.Required(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     vol.Optional(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     vol.Optional(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="input_boolean")
@@ -150,63 +150,63 @@ STEP_SHADOW_SETTINGS_SCHEMA = vol.Schema({
         selector.NumberSelectorConfig(min=0, max=300000, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
     vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCShadowInput.AFTER_SECONDS_STATIC.value): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
     vol.Optional(SCShadowInput.AFTER_SECONDS_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value, default=100): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
     vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCShadowInput.SHUTTER_OPEN_SECONDS_STATIC.value): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
     vol.Optional(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
 })
 
@@ -220,63 +220,63 @@ STEP_DAWN_SETTINGS_SCHEMA = vol.Schema({
         selector.NumberSelectorConfig(min=0, max=10000, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
     vol.Optional(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCDawnInput.AFTER_SECONDS_STATIC.value): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
     vol.Optional(SCDawnInput.AFTER_SECONDS_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value, default=100): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
     vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCDawnInput.SHUTTER_OPEN_SECONDS_STATIC.value): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
     vol.Optional(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     # -----------------------------------------------------------------------
     vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
     ),
     vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="sensor")
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
 })
 
@@ -611,22 +611,22 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
             # STEP_DYNAMIC_INPUTS_SCHEMA
             vol.Required(SCDynamicInput.BRIGHTNESS_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor", device_class="illuminance")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor", device_class="illuminance")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             vol.Required(SCDynamicInput.SUN_ELEVATION_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             vol.Required(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             vol.Optional(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             vol.Optional(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="input_boolean")
@@ -672,63 +672,63 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                 selector.NumberSelectorConfig(min=0, max=300000, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Required(SCShadowInput.AFTER_SECONDS_STATIC.value): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCShadowInput.AFTER_SECONDS_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value, default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Required(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Required(SCShadowInput.SHUTTER_OPEN_SECONDS_STATIC.value): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
 
             # ===============================================================
@@ -741,63 +741,63 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                 selector.NumberSelectorConfig(min=0, max=10000, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Required(SCDawnInput.AFTER_SECONDS_STATIC.value): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCDawnInput.AFTER_SECONDS_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value, default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Required(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Required(SCDawnInput.SHUTTER_OPEN_SECONDS_STATIC.value): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
         })
 
