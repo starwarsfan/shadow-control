@@ -2,18 +2,20 @@
 
 import logging
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-from homeassistant.components.sensor import SensorEntity # <-- WICHTIG: Für die Basisklasse
-from homeassistant.helpers.entity import DeviceInfo # <-- WICHTIG: Für Gerätedefinitionen
-from homeassistant.helpers.dispatcher import async_dispatcher_connect # <-- WICHTIG: Für Updates
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, AddEntitiesCallback # Add AddEntitiesCallback
+from homeassistant.components.sensor import SensorEntity
+from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
+
+# New import for ConfigEntry
+from homeassistant.config_entries import ConfigEntry
 
 # Importieren Sie Konstanten und Klassen aus Ihrer Hauptintegration (__init__.py)
-# Der Punkt vor dem Namen bedeutet "aus dem aktuellen Paket/Ordner"
-from . import DOMAIN, DOMAIN_DATA_MANAGERS
-# Wenn ShadowControlManager in einer separaten Datei liegt, z.B. shadow_control_manager.py:
-# from .shadow_control_manager import ShadowControlManager
-# Andernfalls: importieren Sie es direkt aus dem Paket, wenn es in __init__.py definiert ist:
-# from . import ShadowControlManager # <- NUR WENN Manager in __init__.py ist
+from .const import DOMAIN # Assuming DOMAIN is in const.py now
+# You will get the manager directly from hass.data[DOMAIN][entry.entry_id] in async_setup_entry
+# No need to import DOMAIN_DATA_MANAGERS here if you store managers by entry_id directly.
+# Assuming ShadowControlManager is defined in __init__.py for simplicity, otherwise import it from its file.
+from . import ShadowControlManager # <- Assuming ShadowControlManager is in __init__.py
 
 _LOGGER = logging.getLogger(__name__)
 
