@@ -137,7 +137,6 @@ class ShadowControlSensor(SensorEntity):
             name=manager._name,
             model="Shadow Control",
             manufacturer="Yves Schumann",
-            configuration_url=f"/config/integrations/integration/{DOMAIN}",
         )
 
     @property
@@ -157,22 +156,6 @@ class ShadowControlSensor(SensorEntity):
             # Assuming _current_lock_state is an Enum. You might want its value.
             return self._manager._current_lock_state.value if hasattr(self._manager._current_lock_state, 'value') else self._manager._current_lock_state
         return None
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return the device info for this sensor."""
-        # This links the sensor to a "device" in Home Assistant
-        # and allows grouping in the UI.
-        # It's crucial for device-centric management in HA.
-        return DeviceInfo(
-            identifiers={(DOMAIN, self._manager._name)}, # Unique identifier for the "device" (the manager/cover instance)
-            name=f"{self._manager._name} Shadow Control",
-            manufacturer="Your Company", # Replace this
-            model="Manager for Cover Control",
-            # entry_type=DeviceEntryType.SERVICE, # Optional: Can the device itself offer services?
-            # It's a good idea to link it to the config entry for proper device management in the UI
-            configuration_url=f"/config/integrations/integration/{DOMAIN}", # Link to your integration page
-        )
 
     async def async_added_to_hass(self) -> None:
         """Run when this entity has been added to Home Assistant."""
