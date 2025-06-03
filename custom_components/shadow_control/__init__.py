@@ -50,63 +50,99 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the Shadow Control integration."""
     _LOGGER.debug(f"[{DOMAIN}] async_setup called.")
 
-    if DOMAIN not in config:
-        _LOGGER.warning(f"[{DOMAIN}] No configuration found for {DOMAIN}.")
-        return False
+    # Dies ist der Platzhalter für Ihre Integrationsdaten in hass.data.
+    # Hier speichern Sie später Dinge wie Ihre ShadowControlManager-Instanzen.
+    # Wichtig: hass.data[DOMAIN] wird ein Dictionary sein, das ConfigEntry IDs zu Manager-Listen mappt,
+    # da Sie möglicherweise mehrere Config-Flow-Instanzen Ihrer Integration hinzufügen können.
+    hass.data.setdefault(DOMAIN, {})
 
-    domain_config = config[DOMAIN]
-    managers_list = []
+    # Wenn Sie KEINE YAML-Konfiguration mehr unterstützen wollen, können Sie den Rest der YAML-Logik entfernen.
+    # Wenn Sie YAML-Konfigurationen noch verarbeiten wollen (z.B. für einen Übergangszeitraum),
+    # dann würde diese Logik hier bleiben, aber Sie müssten sicherstellen,
+    # dass sie nicht mit den ConfigEntry-basierten Setups kollidiert.
+    # Für eine reine Config-Flow-Integration können Sie diesen Teil vereinfachen.
 
-    if SC_CONF_COVERS in domain_config and isinstance(domain_config[SC_CONF_COVERS], list):
-        for cover_config in domain_config[SC_CONF_COVERS]:
-            _LOGGER.debug(f"[{DOMAIN}] Setting up manager for cover: {cover_config['name']}")
-            manager = ShadowControlManager(hass, cover_config) # Hier muss ShadowControlManager verfügbar sein
-            managers_list.append(manager)
-            manager.register_listeners()
-    else:
-        _LOGGER.warning(f"[{DOMAIN}] No '{SC_CONF_COVERS}' section found or it's not a list in the configuration. No covers will be managed.")
-        # Decide if this should return False (fatal) or True (proceed without covers)
-        # For now, let's assume it should continue if no covers are defined, but warn.
+    # Beispiel: Wenn Sie alte YAML-Konfigurationen in ConfigEntrys migrieren möchten,
+    # würde die Logik dafür HIER in async_setup stehen.
+    # (Dies ist ein komplexerer Schritt und nicht direkt Teil dieses Umbaus,
+    # aber wichtig für den Übergang von YAML zu UI-Config).
 
-    # Speichern Sie die Liste der Manager in hass.data. Dies ist entscheidend!
-    # sensor.py wird über hass.data auf diese Manager zugreifen.
-    hass.data.setdefault(DOMAIN, {})[DOMAIN_DATA_MANAGERS] = managers_list
+    _LOGGER.info(f"[{DOMAIN}] Integration 'Shadow Control' base setup complete.")
+    return True
 
-    # JETZT laden wir die 'sensor'-Plattform Ihrer Integration.
-    # Dies wird dazu führen, dass die `async_setup_platform`-Funktion in Ihrer `sensor.py` aufgerufen wird.
-    # Wir übergeben die `domain_config[COVERS]` als `discovery_info` an `sensor.py`,
-    # falls sensor.py spezifische Konfigurationsdetails für die Sensoren benötigt.
-    # Der letzte Parameter (`config`) ist der vollständige Home Assistant Konfigurations-Dict.
-    hass.async_create_task(
-        discovery.async_load_platform(
-            hass,              # Das fehlende 'hass' Objekt am Anfang
-            "sensor",          # Die Plattform, die geladen werden soll (sensor.py)
-            DOMAIN,            # Die Domain Ihrer Integration (shadow_control)
-            {SC_CONF_COVERS: domain_config[SC_CONF_COVERS]}, # Die Konfiguration für sensor.py (discovery_info)
-            config             # Der vollständige Home Assistant Konfigurations-Dict (hass_config)
+# Der Einstiegspunkt für die Einrichtung über einen ConfigEntry (vom Config Flow)
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up Your Integration from a config entry."""
+    _LOGGER.debug(f"[{DOMAIN}] Setting up Your Integration from config entry: {entry.entry_id}")
+
+    # Die Konfigurationsdaten für DIESEN speziellen ConfigEntry sind in entry.data
+    # In Ihrem Fall ist entry.data ein Dictionary, das die gesamte Konfiguration für *ein* Cover enthält,
+    # da Ihr Config Flow pro Cover ausgeführt wird.
+    # Wenn Sie im Config Flow eine Liste von Covers sammeln würden,
+    # müssten Sie entry.data[SC_CONF_COVERS] iterieren.
+    # Da Ihr Config Flow wahrscheinlich EIN Cover pro Flow-Instanz konfiguriert:
+    cover_config = entry.data
+
+    _LOGGER.debug(f"[{DOMAIN}] Config entry data for {entry.entry_id}: {cover_config}")
+
+    # Erstellen Sie eine Instanz Ihres ShadowControlManager für dieses Cover
+    # und speichern Sie sie in hass.data unter der entry_id
+    manager = ShadowControlManager(hass, cover_config, entry.entry_id)
+    hass.data[DOMAIN][entry.entry_id] = {
+        "manager": manager, # Speichern Sie den Manager selbst
+        # "coordinator": coordinator, # Wenn Sie einen Coordinator hätten, würden Sie ihn hier speichern
+        # Weitere Daten, die Sie später benötigen könnten, können hier gespeichert werden
+    }
+
+    # Registrieren Sie die Listener des Managers
+    manager.register_listeners()
+
+    # Registrieren Sie den Listener für das Home Assistant Started Event für diesen Manager.
+    # Wichtig: Dieser Listener muss jetzt spezifisch für JEDEN Manager registriert werden,
+    # nicht einmal global wie zuvor.
+    entry.async_on_unload(
+        hass.bus.async_listen_once(
+            EVENT_HOMEASSISTANT_STARTED,
+            manager.async_hass_started # Rufen Sie die Methode des Managers auf
         )
     )
 
-    # --------------------------------------------------------------------------
-    # Die _async_hass_started_all_managers Funktion bleibt eine INNERE Funktion
-    # --------------------------------------------------------------------------
-    async def _async_hass_started_all_managers(event: Event) -> None:
-        """Called when Home Assistant has finished starting up."""
-        _LOGGER.debug(f"[{DOMAIN}] Home Assistant started event received. Triggering initial run for all managers.")
+    # Laden Sie die Plattformen Ihrer Integration, die auf diesen ConfigEntry angewiesen sind.
+    # Dies ist der Ort, an dem Sie z.B. Ihre Sensor-Entitäten über die Plattform "sensor" laden.
+    # Sie müssen in Ihrer `sensor.py` eine `async_setup_entry` Funktion haben.
+    # Wenn Sie nur einen Sensor pro Manager haben, könnten Sie das so machen:
+    # await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
+    # Falls Sie weitere Plattformen (z.B. switch) haben, fügen Sie diese ebenfalls hinzu.
 
-        if DOMAIN in hass.data and DOMAIN_DATA_MANAGERS in hass.data[DOMAIN]:
-            for manager in hass.data[DOMAIN][DOMAIN_DATA_MANAGERS]:
-                await manager._async_handle_input_change(None)
-        else:
-            _LOGGER.warning(f"[{DOMAIN}] No managers found in hass.data during Home Assistant startup event.")
+    _LOGGER.info(f"[{DOMAIN}] Integration '{entry.title}' successfully set up from config entry.")
+    return True
 
-    # Registrieren Sie den Listener für das Home Assistant Started Event
-    hass.bus.async_listen_once(
-        EVENT_HOMEASSISTANT_STARTED,
-        _async_hass_started_all_managers
-    )
+# Der Einstiegspunkt für das Entladen eines ConfigEntry
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
+    _LOGGER.debug(f"[{DOMAIN}] Unloading config entry: {entry.entry_id}")
 
-    _LOGGER.info(f" [{DOMAIN}] Integration 'Shadow Control' successfully set up. Configured {len(managers_list)} covers.")
+    # Entladen Sie alle Plattformen, die Sie zuvor geladen haben.
+    # Beispiel: Wenn Sie Sensoren geladen haben:
+    # unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor"])
+
+    # Bereinigen Sie die Listener und Ressourcen des Managers
+    if entry.entry_id in hass.data.get(DOMAIN, {}):
+        manager = hass.data[DOMAIN][entry.entry_id].get("manager")
+        if manager:
+            manager.unregister_listeners() # Stellen Sie sicher, dass Sie eine unregister_listeners-Methode haben!
+            # Wenn Sie einen Coordinator hatten, würden Sie ihn hier stoppen/bereinigen
+
+        # Entfernen Sie die Daten aus hass.data
+        hass.data[DOMAIN].pop(entry.entry_id)
+        _LOGGER.debug(f"[{DOMAIN}] Cleaned up data for entry: {entry.entry_id}")
+
+    # Prüfen, ob noch Instanzen Ihrer Integration aktiv sind.
+    # Optional: Wenn keine Manager mehr übrig sind, können Sie hass.data[DOMAIN] löschen.
+    # if not hass.data[DOMAIN]:
+    #     hass.data.pop(DOMAIN)
+
+    # Signalisiert Home Assistant, dass das Entladen erfolgreich war.
     return True
 
 class ShadowControlManager:
