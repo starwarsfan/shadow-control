@@ -2,7 +2,8 @@
 
 import logging
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, AddEntitiesCallback # Add AddEntitiesCallback
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
@@ -53,6 +54,8 @@ _LOGGER = logging.getLogger(__name__)
 #         async_add_entities(entities_to_add, True)
 #         _LOGGER.info(f"[{DOMAIN}] Successfully added {len(entities_to_add)} Shadow Control sensor entities.")
 
+# custom_components/shadow_control/sensor.py
+
 async def async_setup_entry(
         hass: HomeAssistant,
         entry: ConfigEntry, # ConfigEntry object directly passed
@@ -66,17 +69,21 @@ async def async_setup_entry(
     manager_data = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     if not manager_data or "manager" not in manager_data:
         _LOGGER.error(f"[{DOMAIN}] No Shadow Control manager found for config entry {entry.entry_id}. Cannot set up sensors.")
-        return False
+        # Wichtig: Wenn ein Fehler auftritt, sollte die Funktion False zurückgeben,
+        # damit Home Assistant weiß, dass die Einrichtung fehlgeschlagen ist.
+        return False # <-- Füge diesen Return-Wert hinzu bei Fehler
 
     manager = manager_data["manager"] # Get the manager instance
 
     _LOGGER.debug(f"[{DOMAIN}] Creating sensors for manager: {manager._name} (from entry {entry.entry_id})")
 
     entities_to_add = [
-        ShadowControlSensor(manager, "target_height"),
-        ShadowControlSensor(manager, "target_angle"),
-        ShadowControlSensor(manager, "current_state"),
-        ShadowControlSensor(manager, "lock_state"),
+        # Passen Sie den Konstruktor des ShadowControlSensor an,
+        # um die entry.entry_id als separates Argument zu übergeben.
+        ShadowControlSensor(manager, entry.entry_id, "target_height"),
+        ShadowControlSensor(manager, entry.entry_id, "target_angle"),
+        ShadowControlSensor(manager, entry.entry_id, "current_state"),
+        ShadowControlSensor(manager, entry.entry_id, "lock_state"),
         # Add any other sensors you want to expose here
     ]
 
@@ -86,13 +93,18 @@ async def async_setup_entry(
     else:
         _LOGGER.warning(f"[{DOMAIN}] No sensor entities created for manager '{manager._name}'.")
 
+    # Wenn alles erfolgreich war, gibt die async_setup_entry normalerweise True zurück,
+    # auch wenn der Rückgabetyp None ist (für Plattformen). Die Abwesenheit eines Fehlers reicht aus.
+    # Sie können es auch explizit mit `return True` abschließen, wenn Sie möchten.
+
 # Die ShadowControlSensor Klasse definiert, wie Ihr Sensor funktioniert und seine Daten abruft.
 class ShadowControlSensor(SensorEntity):
     """Represents a Shadow Control sensor."""
 
-    def __init__(self, manager, sensor_type):
+    def __init__(self, manager: ShadowControlManager, entry_id: str, sensor_type: str) -> None: # <--- HIER ÄNDERN
         """Initialize the sensor."""
         self._manager = manager
+        self._entry_id = entry_id
         self._sensor_type = sensor_type
 
         # Unique ID must be stable and globally unique across HA
@@ -100,7 +112,7 @@ class ShadowControlSensor(SensorEntity):
         # It's good practice to base unique_id on entry_id as well for full uniqueness guarantee
         # self._attr_unique_id = f"{DOMAIN}_{self._manager._name.lower().replace(' ', '_')}_{sensor_type}_{self._manager.hass.config_entries.async_get_entry(self._manager._config['name']).entry_id}" # Adjusted for better uniqueness based on entry_id
         # Alternatively, if manager has access to its own entry_id:
-        self._attr_unique_id = f"{DOMAIN}_{self._manager.entry_id}_{sensor_type}"
+        self._attr_unique_id = f"{DOMAIN}_{self._entry_id}_{sensor_type}" # <--- HIER ÄNDERN
 
         # Use the name from the config entry for the device/entity name
         self._attr_name = f"{manager._name} Shadow Control {sensor_type.replace('_', ' ').title()}"
@@ -118,6 +130,15 @@ class ShadowControlSensor(SensorEntity):
             self._attr_icon = "mdi:state-machine"
         elif sensor_type == "lock_state":
             self._attr_icon = "mdi:lock-open-check"
+
+        # Verknüpfung mit dem Device (wichtig für die UI-Darstellung)
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, self._entry_id)},
+            name=manager._name,
+            model="Shadow Control",
+            manufacturer="Yves Schumann",
+            configuration_url=f"/config/integrations/integration/{DOMAIN}",
+        )
 
     @property
     def native_value(self):
