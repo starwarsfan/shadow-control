@@ -2,7 +2,7 @@ import logging
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 
@@ -521,17 +521,32 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    # --- OPTIONS FLOW (Modification of existing configuration) ---
-    # Used if "Options" button at the integration card was clicked.
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        """Get the options flow for this handler."""
+        return ShadowControlOptionsFlowHandler(config_entry)
+
+class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
+    """Handles options flow for the component."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
+        # self._data = dict(config_entry.data) # optional: create a mutable copy if you intend to modify it
+        # self._options = dict(config_entry.options) # optional: create a mutable copy
+
+    async def async_step_init(self, user_input=None) -> FlowResult:
+        """Manage the options."""
+        return await self.async_step_options(user_input) # Einfach an async_step_options weiterleiten
+
     async def async_step_options(self, user_input=None) -> FlowResult:
         """Handle the options flow for editing an existing entry."""
         errors = {}
 
         # Combined schema for options flow
         # Should contain all fields which the user should be able to modify.
-        OPTIONS_COMBINED_SCHEMA = vol.Schema({
-            # Without 'name' and '' because these fields define the unique id.
-
+        OPTIONS_SCHEMA = vol.Schema({
             # STEP_FACADE_SETTINGS_SCHEMA
             vol.Required(SCFacadeConfig.AZIMUTH_STATIC.value): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=359, step=1, mode=selector.NumberSelectorMode.BOX)

@@ -80,15 +80,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # da Ihr Config Flow pro Cover ausgeführt wird.
     # Wenn Sie im Config Flow eine Liste von Covers sammeln würden,
     # müssten Sie entry.data[SC_CONF_COVERS] iterieren.
-    # Da Ihr Config Flow wahrscheinlich EIN Cover pro Flow-Instanz konfiguriert:
-    cover_config = entry.data
+    # Kombinieren Sie die initialen Daten mit den Optionen.
+    # Optionen überschreiben die Daten, wenn ein Schlüssel in beiden existiert.
+    combined_config = {**entry.data, **entry.options} # <--- HIER IST DER SCHLÜSSEL!
 
-    _LOGGER.debug(f"[{DOMAIN}] Config entry data for {entry.entry_id}: {cover_config}")
+    _LOGGER.debug(f"[{DOMAIN}] Config entry data for {entry.entry_id}: {combined_config}")
 
     # Erstellen Sie eine Instanz Ihres ShadowControlManager für dieses Cover
     # und speichern Sie sie in hass.data unter der entry_id
-    manager = ShadowControlManager(hass, cover_config, entry.entry_id)
-    hass.data[DOMAIN][entry.entry_id] = {
+    manager = ShadowControlManager(hass, combined_config, entry.entry_id)
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
         "manager": manager, # Speichern Sie den Manager selbst
         # "coordinator": coordinator, # Wenn Sie einen Coordinator hätten, würden Sie ihn hier speichern
         # Weitere Daten, die Sie später benötigen könnten, können hier gespeichert werden
@@ -107,12 +108,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
     )
 
-    # Laden Sie die Plattformen Ihrer Integration, die auf diesen ConfigEntry angewiesen sind.
-    # Dies ist der Ort, an dem Sie z.B. Ihre Sensor-Entitäten über die Plattform "sensor" laden.
-    # Sie müssen in Ihrer `sensor.py` eine `async_setup_entry` Funktion haben.
-    # Wenn Sie nur einen Sensor pro Manager haben, könnten Sie das so machen:
-    # await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
-    # Falls Sie weitere Plattformen (z.B. switch) haben, fügen Sie diese ebenfalls hinzu.
+    await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
 
     _LOGGER.info(f"[{DOMAIN}] Integration '{entry.title}' successfully set up from config entry.")
     return True
@@ -122,28 +118,17 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     _LOGGER.debug(f"[{DOMAIN}] Unloading config entry: {entry.entry_id}")
 
-    # Entladen Sie alle Plattformen, die Sie zuvor geladen haben.
-    # Beispiel: Wenn Sie Sensoren geladen haben:
-    # unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor"])
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor"])
+    if unload_ok:
+        manager_data = hass.data[DOMAIN].pop(entry.entry_id, None)
+        if manager_data and "manager" in manager_data:
+            manager = manager_data["manager"]
+            manager.unregister_listeners() # Stellen Sie sicher, dass dies alle Listener entfernt
+            _LOGGER.debug(f"[{DOMAIN}] Manager for '{manager._name}' unregistered listeners and removed.")
+        else:
+            _LOGGER.warning(f"[{DOMAIN}] No manager found for entry '{entry.entry_id}' during unload.")
 
-    # Bereinigen Sie die Listener und Ressourcen des Managers
-    if entry.entry_id in hass.data.get(DOMAIN, {}):
-        manager = hass.data[DOMAIN][entry.entry_id].get("manager")
-        if manager:
-            manager.unregister_listeners() # Stellen Sie sicher, dass Sie eine unregister_listeners-Methode haben!
-            # Wenn Sie einen Coordinator hatten, würden Sie ihn hier stoppen/bereinigen
-
-        # Entfernen Sie die Daten aus hass.data
-        hass.data[DOMAIN].pop(entry.entry_id)
-        _LOGGER.debug(f"[{DOMAIN}] Cleaned up data for entry: {entry.entry_id}")
-
-    # Prüfen, ob noch Instanzen Ihrer Integration aktiv sind.
-    # Optional: Wenn keine Manager mehr übrig sind, können Sie hass.data[DOMAIN] löschen.
-    # if not hass.data[DOMAIN]:
-    #     hass.data.pop(DOMAIN)
-
-    # Signalisiert Home Assistant, dass das Entladen erfolgreich war.
-    return True
+    return unload_ok
 
 class ShadowControlManager:
     """Manages the Shadow Control logic for a single cover."""
