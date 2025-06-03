@@ -294,6 +294,12 @@ class ShadowControlManager:
 
         _LOGGER.debug(f"{self._name}: All relevant state listeners registered")
 
+    def unregister_listeners(self) -> None:
+        """Unregister all listeners for this manager."""
+        _LOGGER.debug(f"{self._name}: Unregistering listeners")
+        for unsub_func in self._listeners:
+            unsub_func()
+        self._listeners = [] # Cleanup list
 
     async def async_hass_started(self, event: Event) -> None:
         """Handle Home Assistant start event for this specific manager."""
