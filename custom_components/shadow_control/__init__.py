@@ -5,6 +5,7 @@ import math
 
 import voluptuous as vol
 from datetime import datetime, timedelta, timezone
+from enum import Enum
 from typing import Any, Dict, List, Optional, Callable, Awaitable, Mapping
 
 from homeassistant.components.cover import CoverEntityFeature
@@ -45,6 +46,8 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+PLATFORMS = ["sensor"]
+
 # Der Setup-Einstiegspunkt. Dieser wird bei JEDEM Start von Home Assistant aufgerufen.
 # Er ist NICHT spezifisch für Config Entries.
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -74,62 +77,103 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 # Der Einstiegspunkt für die Einrichtung über einen ConfigEntry (vom Config Flow)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Your Integration from a config entry."""
-    _LOGGER.debug(f"[{DOMAIN}] Setting up Your Integration from config entry: {entry.entry_id}")
+    _LOGGER.debug(f"[{DOMAIN}] Setting up Your Integration from config entry: {entry.entry_id}: {entry.data}")
 
-    # Die Konfigurationsdaten für DIESEN speziellen ConfigEntry sind in entry.data
-    # In Ihrem Fall ist entry.data ein Dictionary, das die gesamte Konfiguration für *ein* Cover enthält,
-    # da Ihr Config Flow pro Cover ausgeführt wird.
-    # Wenn Sie im Config Flow eine Liste von Covers sammeln würden,
-    # müssten Sie entry.data[SC_CONF_COVERS] iterieren.
-    # Kombinieren Sie die initialen Daten mit den Optionen.
-    # Optionen überschreiben die Daten, wenn ein Schlüssel in beiden existiert.
-    combined_config = {**entry.data, **entry.options} # <--- HIER IST DER SCHLÜSSEL!
+    # Speichere den Manager in hass.data, damit Sensoren und andere Komponenten darauf zugreifen können.
+    # Verwende entry.entry_id als Schlüssel, um mehrere Instanzen zu unterstützen.
+    if DOMAIN_DATA_MANAGERS not in hass.data:
+        hass.data[DOMAIN_DATA_MANAGERS] = {}
 
-    _LOGGER.debug(f"[{DOMAIN}] Config entry data for {entry.entry_id}: {combined_config}")
+    manager = ShadowControlManager(hass, entry.options, entry.entry_id)
+    hass.data[DOMAIN_DATA_MANAGERS][entry.entry_id] = manager
 
-    # Erstellen Sie eine Instanz Ihres ShadowControlManager für dieses Cover
-    # und speichern Sie sie in hass.data unter der entry_id
-    manager = ShadowControlManager(hass, combined_config, entry.entry_id)
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
-        "manager": manager, # Speichern Sie den Manager selbst
-        # "coordinator": coordinator, # Wenn Sie einen Coordinator hätten, würden Sie ihn hier speichern
-        # Weitere Daten, die Sie später benötigen könnten, können hier gespeichert werden
-    }
-
-    # Registrieren Sie die Listener des Managers
-    manager.register_listeners()
-
-    # Registrieren Sie den Listener für das Home Assistant Started Event für diesen Manager.
-    # Wichtig: Dieser Listener muss jetzt spezifisch für JEDEN Manager registriert werden,
-    # nicht einmal global wie zuvor.
-    entry.async_on_unload(
-        hass.bus.async_listen_once(
-            EVENT_HOMEASSISTANT_STARTED,
-            manager.async_hass_started # Rufen Sie die Methode des Managers auf
+    # Set up platforms (e.g., sensors)
+    for platform in PLATFORMS:
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
         )
-    )
+    _LOGGER.info(f"[{DOMAIN}] Integration '{entry.options[SC_CONF_NAME]}' successfully set up from config entry.")
 
-    await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
+    # Füge den Listener für die Aktualisierung der Optionen hinzu
+    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
-    _LOGGER.info(f"[{DOMAIN}] Integration '{entry.title}' successfully set up from config entry.")
+    # Initialer Start des Managers
+    await manager.async_start()
+
     return True
 
 # Der Einstiegspunkt für das Entladen eines ConfigEntry
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    _LOGGER.debug(f"[{DOMAIN}] Unloading config entry: {entry.entry_id}")
+    _LOGGER.debug(f"[{DOMAIN}] async_unload_entry called for {entry.entry_id}")
 
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor"])
-    if unload_ok:
-        manager_data = hass.data[DOMAIN].pop(entry.entry_id, None)
-        if manager_data and "manager" in manager_data:
-            manager = manager_data["manager"]
-            manager.unregister_listeners() # Stellen Sie sicher, dass dies alle Listener entfernt
-            _LOGGER.debug(f"[{DOMAIN}] Manager for '{manager._name}' unregistered listeners and removed.")
-        else:
-            _LOGGER.warning(f"[{DOMAIN}] No manager found for entry '{entry.entry_id}' during unload.")
+    manager: ShadowControlManager = hass.data[DOMAIN].pop(entry.entry_id)
+    if manager:
+        await manager.async_stop() # DIESE ZEILE ÄNDERN / ENTKOMMENTIEREN (Zeile 128)
 
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     return unload_ok
+
+async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry):
+    """Handle options update."""
+    _LOGGER.debug(f"[{DOMAIN}] Options update listener triggered for entry: {entry.entry_id}")
+    # Hier muss die Logik implementiert werden, um die Manager-Instanz mit neuen Optionen zu aktualisieren.
+    # Am einfachsten ist es, die Integration neu zu laden, was async_unload_entry und dann async_setup_entry aufruft.
+    # Dies ist in config_flow.py bereits implementiert mit async_reload.
+    # Hier könnten wir nur sicherstellen, dass die Manager-Instanz tatsächlich aktualisiert wird,
+    # falls async_reload nicht vollständig die gewünschte Wirkung hat (was es aber sollte).
+    await hass.config_entries.async_reload(entry.entry_id)
+
+# Dummy-Definitionen für die Konfigurationsklassen, falls sie nicht in Ihrer `__init__.py` definiert sind.
+# Wenn sie in einer separaten Datei (z.B. `config_classes.py`) definiert sind, stellen Sie sicher, dass sie korrekt importiert werden.
+# Ansonsten fügen Sie diese (oder Ihre tatsächliche Definition) über Ihrer ShadowControlManager-Klasse hinzu.
+
+class SCFacadeConfiguration:
+    def __init__(self):
+        self.azimuth: float = 0.0
+        self.offset_sun_in: float = 0.0
+        self.offset_sun_out: float = 0.0
+        self.elevation_sun_min: float = 0.0
+        self.elevation_sun_max: float = 0.0
+        self.slat_width: float = 0.0
+        self.slat_distance: float = 0.0
+        self.slat_angle_offset: float = 0.0
+        self.slat_min_angle: float = 0.0
+        self.shutter_stepping_height: float = 0.0
+        self.shutter_stepping_angle: float = 0.0
+        self.shutter_type: ShutterType = ShutterType.MODE1
+        self.light_strip_width: float = 0.0
+        self.shutter_height: float = 0.0
+        self.neutral_pos_height: float = 0.0
+        self.neutral_pos_angle: float = 0.0
+        self.modification_tolerance_height: float = 0.0
+        self.modification_tolerance_angle: float = 0.0
+
+class SCShadowControlConfig:
+    def __init__(self):
+        self.enabled: bool = False
+        self.brightness_threshold: float = 0.0
+        self.after_seconds: float = 0.0
+        self.shutter_max_height: float = 0.0
+        self.shutter_max_angle: float = 0.0
+        self.shutter_look_through_seconds: float = 0.0
+        self.shutter_open_seconds: float = 0.0
+        self.shutter_look_through_angle: float = 0.0
+        self.height_after_sun: float = 0.0
+        self.angle_after_sun: float = 0.0
+
+class SCDawnControlConfig:
+    def __init__(self):
+        self.enabled: bool = False
+        self.brightness_threshold: float = 0.0
+        self.after_seconds: float = 0.0
+        self.shutter_max_height: float = 0.0
+        self.shutter_max_angle: float = 0.0
+        self.shutter_look_through_seconds: float = 0.0
+        self.shutter_open_seconds: float = 0.0
+        self.shutter_look_through_angle: float = 0.0
+        self.height_after_dawn: float = 0.0
+        self.angle_after_dawn: float = 0.0
 
 class ShadowControlManager:
     """Manages the Shadow Control logic for a single cover."""
@@ -146,7 +190,18 @@ class ShadowControlManager:
         self._entry_id = entry_id
         self._target_cover_entity_id = config[TARGET_COVER_ENTITY_ID]
 
-        # === Dynamische Eingänge (Test-Helfer) ===
+        # WICHTIG: Setzen Sie _options auf _config, damit die Helper-Funktionen funktionieren
+        self._options = config
+
+        self._unsub_callbacks: list[Callable[[], None]] = [] # NEUE ZEILE HIER (Nach Zeile 203)
+
+        # Initialisieren Sie Ihre Konfigurationsobjekte
+        self._facade_config = SCFacadeConfiguration()
+        self._shadow_config = SCShadowControlConfig()
+        self._dawn_config = SCDawnControlConfig()
+
+        # === Dynamische Eingänge (Test-Helfer) - diese speichern weiterhin die Entity-IDs/statischen Werte
+        # ... (Ihre bestehenden _entity Zuweisungen bleiben hier erhalten)
         self._brightness_entity = config.get(SCDynamicInput.BRIGHTNESS_ENTITY.value)
         self._brightness_dawn_entity = config.get(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value)
         self._sun_elevation_entity = config.get(SCDynamicInput.SUN_ELEVATION_ENTITY.value)
@@ -204,6 +259,22 @@ class ShadowControlManager:
         self._dawn_height_after_dawn_entity = config.get(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value)
         self._dawn_angle_after_dawn_entity = config.get(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value)
 
+        # Hier kommen die tatsächlich gelesenen (und typisierten) Werte der Entitäten/Konfiguration
+        self._input_brightness: float = 0.0
+        self._input_brightness_dawn: float = -1.0
+        self._input_sun_elevation: float = 0.0
+        self._input_sun_azimuth: float = 0.0
+        self._input_shutter_current_height: float = 0.0
+        self._input_shutter_current_angle: float = 0.0
+        self._input_lock_integration: bool = False
+        self._input_lock_integration_with_position: bool = False
+        self._input_lock_height: float = 0.0
+        self._input_lock_angle: float = 0.0
+        self._input_movement_restriction_height: MovementRestricted = MovementRestricted.NO_RESTRICTION
+        self._input_movement_restriction_angle: MovementRestricted = MovementRestricted.NO_RESTRICTION
+        self._shadow_control_enabled: bool = False
+        self._dawn_control_enabled: bool = False
+
         # Define dictionary with all state handlers
         self._state_handlers: dict[ShutterState, Callable[[], Awaitable[ShutterState]]] = {
             ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING: self._handle_state_shadow_full_close_timer_running,
@@ -238,47 +309,89 @@ class ShadowControlManager:
         self._is_producing_shadow: bool = False # Neuer interner Zustand für ProduceShadow
         self._next_modification_timestamp: datetime | None = None
 
+        # Variablen für die Erkennung externer Modifikationen
+        self._last_known_height: float | None = None
+        self._last_known_angle: float | None = None
+        self._is_external_modification_detected: bool = False
+        self._external_modification_timestamp: datetime | None = None
+
+        # Variablen für den Neuberechnungs-Timer
+        self._recalculation_timer_start_time: datetime | None = None
+        self._recalculation_timer_duration_seconds: float | None = None
+
         self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
         self._recalculation_timer: Callable[[], None] | None = None # Zum Speichern des Callbacks für den geplanten Timer
 
         _LOGGER.debug(f"{self._name}: Manager initialized for target: {self._target_cover_entity_id}.")
 
-    def register_listeners(self) -> None:
-        """Register listeners for relevant state changes for this specific cover."""
-        _LOGGER.debug(f"{self._name}: Registering listeners")
+    async def async_start(self) -> None:
+        """
+        Startet den ShadowControlManager: Registriert Listener und führt die initiale Berechnung durch.
+        Diese Methode wird nach der Instanziierung des Managers aufgerufen.
+        """
+        _LOGGER.debug(f"{self._name}: Starting manager lifecycle...")
+        self._async_register_listeners() # Ruft die Methode zum Registrieren der Listener auf
+        await self._async_calculate_and_apply_cover_position(None) # Führt die initiale Positionsberechnung aus
+        _LOGGER.debug(f"{self._name}: Manager lifecycle started.")
 
-        # Liste aller Entitäten, auf deren Änderungen dieser Manager reagieren soll
-        # Dies sind die Entitäten aus Ihrer config, deren Zustand die Logik beeinflusst
-        relevant_entities = [
-            self._brightness_entity,
-            self._brightness_dawn_entity,
-            self._sun_elevation_entity,
-            self._sun_azimuth_entity,
-            self._lock_integration_entity,
-            self._lock_integration_with_position_entity,
-            self._shadow_control_enabled_entity,
-            self._dawn_control_enabled_entity
-        ]
+    def _async_register_listeners(self) -> None: # NEUE METHODE HIER EINFÜGEN (ab Zeile 515)
+        """Registriert Listener für Zustandsänderungen relevanter Entitäten."""
+        _LOGGER.debug(f"{self._name}: Registering listeners...")
 
-        # Filtern Sie None-Werte heraus (falls ein optionaler Parameter nicht gesetzt ist,
-        # oder wenn Sie versehentlich einen Platzhalter eingefügt haben, der None ist)
-        unique_relevant_entities = list(set(eid for eid in relevant_entities if eid))
-
-        self._listeners.append(
-            async_track_state_change_event(
-                self.hass,
-                unique_relevant_entities,
-                self._async_handle_input_change, # EINE zentrale Methode für alle Änderungen
+        # Listener für Home Assistant Start-Ereignis, um die initiale Berechnung auszulösen
+        self._unsub_callbacks.append(
+            self.hass.bus.async_listen_once(
+                EVENT_HOMEASSISTANT_STARTED, self._async_home_assistant_started
             )
         )
 
-        # Optional: Wenn Sie eine zeitbasierte Aktualisierung für jedes Cover möchten
-        # self._listeners.append(
-        #     async_track_time_change(self.hass, self._async_handle_input_change,
-        #                             minute=None, second=0)
-        # )
+        # Registriert Zustandsänderungs-Listener für dynamische Eingaben
+        tracked_inputs = []
+        # Entities from SCDynamicInput and other relevant config inputs that trigger recalculation
+        for conf_key_enum in [
+            SCDynamicInput.BRIGHTNESS_ENTITY,
+            SCDynamicInput.BRIGHTNESS_DAWN_ENTITY,
+            SCDynamicInput.SUN_ELEVATION_ENTITY,
+            SCDynamicInput.SUN_AZIMUTH_ENTITY,
+            SCDynamicInput.LOCK_HEIGHT_ENTITY,
+            SCDynamicInput.LOCK_ANGLE_ENTITY,
+            SCShadowInput.SHADOW_CONTROL_ENABLED_ENTITY,
+            SCDawnInput.DAWN_CONTROL_ENABLED_ENTITY,
+        ]:
+            entity_id = self._config.get(conf_key_enum.value)
+            if entity_id: # Check if entity_id is not empty or None
+                tracked_inputs.append(entity_id)
 
-        _LOGGER.debug(f"{self._name}: All relevant state listeners registered")
+        # Handle movement restriction entities separately as they have a 'no_restriction' value
+        if self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value) and \
+                self._config[SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value] != "no_restriction":
+            tracked_inputs.append(self._config[SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value])
+        if self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value) and \
+                self._config[SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value] != "no_restriction":
+            tracked_inputs.append(self._config[SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value])
+
+
+        if tracked_inputs:
+            _LOGGER.debug(f"{self._name}: Tracking input entities: {tracked_inputs}")
+            self._unsub_callbacks.append(
+                async_track_state_change_event(
+                    self.hass, tracked_inputs, self._async_state_change_listener
+                )
+            )
+
+        # Listener für Zustandsänderungen des Ziel-Cover-Entität, um externe Änderungen zu erkennen
+        # This listener is crucial to detect manual adjustments of the cover
+        if self._target_cover_entity_id:
+            _LOGGER.debug(f"{self._name}: Tracking target cover entity: {self._target_cover_entity_id}")
+            self._unsub_callbacks.append(
+                async_track_state_change_event(
+                    self.hass,
+                    self._target_cover_entity_id,
+                    self._async_target_cover_entity_state_change_listener
+                )
+            )
+
+        _LOGGER.debug(f"{self._name}: Listeners registered.")
 
     def unregister_listeners(self) -> None:
         """Unregister all listeners for this manager."""
@@ -286,6 +399,12 @@ class ShadowControlManager:
         for unsub_func in self._listeners:
             unsub_func()
         self._listeners = [] # Cleanup list
+
+    async def _async_home_assistant_started(self, event: Event) -> None: # NEUE METHODE HIER EINFÜGEN (ca. Zeile 560)
+        """Callback für den Start von Home Assistant."""
+        _LOGGER.debug(f"{self._name}: Home Assistant started event received. Performing initial calculation.")
+        # Löst die initiale Berechnung aus, nachdem HA vollständig gestartet ist
+        await self._async_calculate_and_apply_cover_position(None)
 
     async def async_hass_started(self, event: Event) -> None:
         """Handle Home Assistant start event for this specific manager."""
@@ -295,139 +414,172 @@ class ShadowControlManager:
         # Initialberechnung beim Start
         await self._async_calculate_and_apply_cover_position(None)
 
-    def _update_input_values(self) -> None:
-        """
-        Aktualisiert alle relevanten Eingangs- und Konfigurationswerte
-        aus Home Assistant und speichert sie in Instanzvariablen.
-        """
+    async def async_stop(self) -> None: # NEUE METHODE HIER EINFÜGEN (ab Zeile 668)
+        """Stoppt den ShadowControlManager: Meldet Listener ab und bricht Timer ab."""
+        _LOGGER.debug(f"{self._name}: Stopping manager lifecycle...")
+        # Jeglichen laufenden Timer abbrechen
+        if self._recalculation_timer:
+            self._recalculation_timer() # Ruft die Abbrechen-Funktion des Timers auf
+            self._recalculation_timer = None
+            _LOGGER.debug(f"{self._name}: Recalculation timer cancelled.")
+
+        # Alle registrierten Callbacks abmelden
+        for unsub_callback in self._unsub_callbacks:
+            unsub_callback()
+        self._unsub_callbacks.clear()
+        _LOGGER.debug(f"{self._name}: Listeners unregistered.")
+
+        _LOGGER.debug(f"{self._name}: Manager lifecycle stopped.")
+
+    async def _update_input_values(self, event: Event | None = None) -> None:
+        """Update all relevant input values from configuration or Home Assistant states."""
         _LOGGER.debug(f"{self._name}: Updating all input values")
 
-        # === Dynamische Eingänge (Sensor-Werte) ===
-        self._brightness = self._get_entity_numeric_state(SCDynamicInput.BRIGHTNESS_ENTITY.value, float, default_value=10000.0)
-        self._brightness_dawn = self._get_entity_numeric_state(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value, float, default_value=-1.0)
-        self._sun_elevation = self._get_entity_numeric_state(SCDynamicInput.SUN_ELEVATION_ENTITY.value, float, default_value=45.0)
-        self._sun_azimuth = self._get_entity_numeric_state(SCDynamicInput.SUN_AZIMUTH_ENTITY.value, float, default_value=180.0)
-        self._shutter_current_height = self._get_entity_numeric_state(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value, float, default_value=0.0)
-        self._shutter_current_angle = self._get_entity_numeric_state(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value, float, default_value=0.0)
-        self._lock_integration = self._get_entity_boolean_state(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, default_value=False)
-        self._lock_integration_with_position = self._get_entity_boolean_state(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, default_value=False)
-        self._lock_height = self._get_entity_numeric_state(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, float, default_value=0.0)
-        self._lock_angle = self._get_entity_numeric_state(SCDynamicInput.LOCK_ANGLE_ENTITY.value, float, default_value=0.0)
+        # Facade Configuration (static values)
+        self._facade_config.azimuth = self._get_static_value(SCFacadeConfig.AZIMUTH_STATIC.value, 180.0, float)
+        self._facade_config.offset_sun_in = self._get_static_value(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value, -90.0, float)
+        self._facade_config.offset_sun_out = self._get_static_value(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value, 90.0, float)
+        self._facade_config.elevation_sun_min = self._get_static_value(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value, 0.0, float)
+        self._facade_config.elevation_sun_max = self._get_static_value(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value, 90.0, float)
+        self._facade_config.slat_width = self._get_static_value(SCFacadeConfig.SLAT_WIDTH_STATIC.value, 95.0, float)
+        self._facade_config.slat_distance = self._get_static_value(SCFacadeConfig.SLAT_DISTANCE_STATIC.value, 67.0, float)
+        self._facade_config.slat_angle_offset = self._get_static_value(SCFacadeConfig.SLAT_ANGLE_OFFSET_STATIC.value, 0.0, float)
+        self._facade_config.slat_min_angle = self._get_static_value(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value, 0.0, float)
+        self._facade_config.shutter_stepping_height = self._get_static_value(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, 10.0, float)
+        self._facade_config.shutter_stepping_angle = self._get_static_value(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, 10.0, float)
+        # For shutter_type_static, it's a string from a selector. Convert it to ShutterType enum.
+        shutter_type_str = self._get_static_value(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, "mode1", str)
+        try:
+            self._facade_config.shutter_type = ShutterType[shutter_type_str.upper()]
+        except KeyError:
+            _LOGGER.warning(f"{self._name}: Invalid shutter type '{shutter_type_str}' configured. Using default 'mode1'.")
+            self._facade_config.shutter_type = ShutterType.MODE1
 
-        # === Allgemeine Einstellungen ===
-        self._azimuth_facade = float(self._config.get(SCFacadeConfig.AZIMUTH_STATIC.value, 180.0))
-        self._offset_sun_in = float(self._config.get(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value, -90.0))
-        self._offset_sun_out = float(self._config.get(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value, 90.0))
-        self._elevation_sun_min = float(self._config.get(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value, 0.0))
-        self._elevation_sun_max = float(self._config.get(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value, 90.0))
-        self._slat_width = float(self._config.get(SCFacadeConfig.SLAT_WIDTH_STATIC.value, 95.0))
-        self._slat_distance = float(self._config.get(SCFacadeConfig.SLAT_DISTANCE_STATIC.value, 67.0))
-        self._slat_angle_offset = float(self._config.get(SCFacadeConfig.SLAT_ANGLE_OFFSET_STATIC.value, 0.0))
-        self._slat_min_angle = float(self._config.get(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value, 0.0))
-        self._shutter_stepping_height = float(self._config.get(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, 10.0))
-        self._shutter_stepping_angle = float(self._config.get(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, 10.0))
-        self._shutter_type = self._config.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value)
-        self._light_strip_width = float(self._config.get(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value, 0.0))
-        self._shutter_height = float(self._config.get(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value, 1000.0))
-        self._neutral_pos_height = float(self._config.get(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, 0.0))
-        self._neutral_pos_angle = float(self._config.get(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, 0.0))
-        self._modification_tolerance_height = float(self._get_entity_numeric_state(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, float, 0.0))
-        self._modification_tolerance_angle = float(self._get_entity_numeric_state(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, float, 0.0))
+        self._facade_config.light_strip_width = self._get_static_value(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value, 0.0, float)
+        self._facade_config.shutter_height = self._get_static_value(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value, 1000.0, float)
+        self._facade_config.neutral_pos_height = self._get_static_value(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, 0.0, float)
+        self._facade_config.neutral_pos_angle = self._get_static_value(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, 0.0, float)
+        self._facade_config.modification_tolerance_height = self._get_static_value(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, 0.0, float)
+        self._facade_config.modification_tolerance_angle = self._get_static_value(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, 0.0, float)
 
-        # -------------------------------------------
-        # Movement restriction to enumeration mapping
-        #self._movement_restriction_height = self._get_entity_string_state(self._movement_restriction_height_entity)
-        height_restriction_entity = self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value)
-        if height_restriction_entity:
-            state_obj = self.hass.states.get(height_restriction_entity)
-            if state_obj and state_obj.state:
-                # Suchen Sie den Enum-Member, dessen Wert (value) dem input_select String entspricht
-                for restriction_type in MovementRestricted:
-                    if restriction_type.value == state_obj.state:
-                        self._movement_restriction_height = restriction_type
-                        _LOGGER.debug(f"{self._name}: Movement restriction for height set ({self._movement_restriction_height.name}, value: {state_obj.state})")
-                        break
-                else: # Wenn die Schleife ohne break beendet wird (Wert nicht gefunden)
-                    _LOGGER.warning(f"{self._name}: Unknown option for {height_restriction_entity}: '{state_obj.state}'. Using NO_RESTRICTION.")
-                    self._movement_restriction_height = MovementRestricted.NO_RESTRICTION
-            else:
-                _LOGGER.warning(f"{self._name}: Value of {height_restriction_entity} not available or empty. Using NO_RESTRICTION.")
-                self._movement_restriction_height = MovementRestricted.NO_RESTRICTION
-        else:
-            _LOGGER.warning(f"{self._name}: Configuration of '{SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value}' missing. Using NO_RESTRICTION.")
-            self._movement_restriction_height = MovementRestricted.NO_RESTRICTION
-        #self._movement_restriction_angle = self._get_entity_string_state(self._movement_restriction_angle_entity)
-        angle_restriction_entity = self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value)
-        if angle_restriction_entity:
-            state_obj = self.hass.states.get(angle_restriction_entity)
-            if state_obj and state_obj.state:
-                for restriction_type in MovementRestricted:
-                    if restriction_type.value == state_obj.state:
-                        self._movement_restriction_angle = restriction_type
-                        _LOGGER.debug(f"{self._name}: Movement restriction for angle set {self._movement_restriction_angle.name}, value: {state_obj.state})")
-                        break
-                else:
-                    _LOGGER.warning(f"{self._name}: Unknown option for {angle_restriction_entity}: '{state_obj.state}'. Using NO_RESTRICTION.")
-                    self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
-            else:
-                _LOGGER.warning(f"{self._name}: Value of {angle_restriction_entity} not available or empty. Using NO_RESTRICTION.")
-                self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
-        else:
-            _LOGGER.warning(f"{self._name}: Configuration of '{SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value}' missing. Using NO_RESTRICTION.")
-            self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
+        # Dynamic Inputs (entity states or static values)
+        self._input_brightness = self._get_entity_state_value(SCDynamicInput.BRIGHTNESS_ENTITY.value, 0.0, float)
+        self._input_brightness_dawn = self._get_entity_state_value(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value, -1.0, float)
+        self._input_sun_elevation = self._get_entity_state_value(SCDynamicInput.SUN_ELEVATION_ENTITY.value, 0.0, float)
+        self._input_sun_azimuth = self._get_entity_state_value(SCDynamicInput.SUN_AZIMUTH_ENTITY.value, 0.0, float)
+        self._input_shutter_current_height = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value, 0.0, float)
+        self._input_shutter_current_angle = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value, 0.0, float)
 
-        # === Beschattungseinstellungen ===
-        self._shadow_control_enabled = self._get_entity_boolean_state(SCShadowInput.CONTROL_ENABLED_ENTITY.value, default_value=True)
-        self._shadow_brightness_level = self._get_entity_numeric_state(self._shadow_brightness_threshold_entity, float)
-        self._shadow_after_seconds = self._get_entity_numeric_state(self._shadow_after_seconds_entity, float)
-        self._shadow_max_height = self._get_entity_numeric_state(self._shadow_shutter_max_height_entity, float)
-        self._shadow_max_angle = self._get_entity_numeric_state(self._shadow_shutter_max_angle_entity, float)
-        self._shadow_look_through_seconds = self._get_entity_numeric_state(self._shadow_shutter_look_through_seconds_entity, float)
-        self._shadow_open_seconds = self._get_entity_numeric_state(self._shadow_shutter_open_seconds_entity, float)
-        self._shadow_look_through_angle = self._get_entity_numeric_state(self._shadow_shutter_look_through_angle_entity, float)
-        self._after_shadow_height = self._get_entity_numeric_state(self._shadow_height_after_sun_entity, float)
-        self._after_shadow_angle = self._get_entity_numeric_state(self._shadow_angle_after_sun_entity, float)
+        self._input_lock_integration = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, False, bool)
+        self._input_lock_integration_with_position = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, False, bool)
 
-        # === Dämmerungseinstellungen ===
-        self._dawn_control_enabled = self._get_entity_boolean_state(SCDawnInput.CONTROL_ENABLED_ENTITY.value, default_value=True)
-        self._dawn_brightness_level = self._get_entity_numeric_state(self._dawn_brightness_threshold_entity, float)
-        self._dawn_after_seconds = self._get_entity_numeric_state(self._dawn_after_seconds_entity, float)
-        self._dawn_max_height = self._get_entity_numeric_state(self._dawn_shutter_max_height_entity, float)
-        self._dawn_max_angle = self._get_entity_numeric_state(self._dawn_shutter_max_angle_entity, float)
-        self._dawn_look_through_seconds = self._get_entity_numeric_state(self._dawn_shutter_look_through_seconds_entity, float)
-        self._dawn_open_seconds = self._get_entity_numeric_state(self._dawn_shutter_open_seconds_entity, float)
-        self._dawn_look_through_angle = self._get_entity_numeric_state(self._dawn_shutter_look_through_angle_entity, float)
-        self._after_dawn_height = self._get_entity_numeric_state(self._dawn_height_after_dawn_entity, float)
-        self._after_dawn_angle = self._get_entity_numeric_state(self._dawn_angle_after_dawn_entity, float)
+        # Here, lock_height_entity and lock_angle_entity can be static defaults (0.0) or actual entity IDs.
+        # Check if the stored value is an entity ID (string) or a static number.
+        lock_height_config_value = self._options.get(SCDynamicInput.LOCK_HEIGHT_ENTITY.value)
+        if isinstance(lock_height_config_value, (int, float)):
+            self._input_lock_height = lock_height_config_value
+        else: # Assume it's an entity ID if not a number
+            self._input_lock_height = self._get_entity_state_value(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, 0.0, float)
 
-        _LOGGER.debug(
-            f"{self._name}: Updated values (part of): "
-            f"Brightness={self._brightness}, "
-            f"Elevation={self._sun_elevation}, "
-            f"ShadowEnabled={self._shadow_control_enabled}"
+        lock_angle_config_value = self._options.get(SCDynamicInput.LOCK_ANGLE_ENTITY.value)
+        if isinstance(lock_angle_config_value, (int, float)):
+            self._input_lock_angle = lock_angle_config_value
+        else: # Assume it's an entity ID if not a number
+            self._input_lock_angle = self._get_entity_state_value(SCDynamicInput.LOCK_ANGLE_ENTITY.value, 0.0, float)
+
+
+        # Movement restrictions (Enum values)
+        self._input_movement_restriction_height = self._get_enum_value(
+            SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value,
+            MovementRestricted,
+            MovementRestricted.NO_RESTRICTION
+        )
+        self._input_movement_restriction_angle = self._get_enum_value(
+            SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value,
+            MovementRestricted,
+            MovementRestricted.NO_RESTRICTION
         )
 
-        # === Priorisierung des internen LockState ===
-        # Wenn LOCK_INTEGRATION_WITH_POSITION_ENTITY (höchste Priorität) "on" ist
-        if self._lock_integration_with_position:
-            self._current_lock_state = LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
-            _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__LOCKED_MANUALLY_WITH_FORCED_POSITION due to '{self._lock_integration_with_position_entity}' being ON.")
-        # Wenn LOCK_INTEGRATION_ENTITY "on" ist (und die höhere Priorität nicht greift)
-        elif self._lock_integration:
-            self._current_lock_state = LockState.LOCKED_MANUALLY
-            _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__LOCKED_MANUALLY due to '{self._lock_integration_entity}' being ON.")
-        # Ansonsten bleibt es UNLOCKED (oder ein anderer Standardwert, den Sie festgelegt haben)
+        # Shadow Control Inputs
+        self._shadow_control_enabled = self._get_entity_state_value(SCShadowInput.CONTROL_ENABLED_ENTITY.value, False, bool)
 
-        # Optional: Weitere LockStates wie LOCKSTATE__LOCKED_BY_EXTERNAL_MODIFICATION
-        # elif self._is_external_modification_detected: # Pseudo-Variable
-        #    self._current_lock_state = LockState.LOCKSTATE__LOCKED_BY_EXTERNAL_MODIFICATION
-        #    _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__LOCKED_BY_EXTERNAL_MODIFICATION.")
+        # Shadow Brightness Threshold
+        shadow_brightness_threshold_static = self._get_static_value(SCShadowInput.BRIGHTNESS_THRESHOLD_STATIC.value, 50000.0, float, log_warning=False)
+        self._shadow_brightness_threshold = self._get_entity_state_value(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value, shadow_brightness_threshold_static, float)
 
-        else:
-            # Standardmässig ist der Zustand ungesperrt
-            self._current_lock_state = LockState.UNLOCKED
-            _LOGGER.debug(f"{self._name}: LockState set to LOCKSTATE__UNLOCKED due to '{self._lock_integration_entity}' and '{self._lock_integration_with_position_entity}' being OFF.")
+        # Shadow After Seconds
+        shadow_after_seconds_static = self._get_static_value(SCShadowInput.AFTER_SECONDS_STATIC.value, 15.0, float, log_warning=False)
+        self._shadow_after_seconds = self._get_entity_state_value(SCShadowInput.AFTER_SECONDS_ENTITY.value, shadow_after_seconds_static, float)
 
+        # Shadow Shutter Max Height
+        shadow_shutter_max_height_static = self._get_static_value(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value, 100.0, float, log_warning=False)
+        self._shadow_shutter_max_height = self._get_entity_state_value(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value, shadow_shutter_max_height_static, float)
+
+        # Shadow Shutter Max Angle
+        shadow_shutter_max_angle_static = self._get_static_value(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value, 100.0, float, log_warning=False)
+        self._shadow_shutter_max_angle = self._get_entity_state_value(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value, shadow_shutter_max_angle_static, float)
+
+        # Shadow Shutter Look Through Seconds
+        shadow_shutter_look_through_seconds_static = self._get_static_value(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, 15.0, float, log_warning=False)
+        self._shadow_shutter_look_through_seconds = self._get_entity_state_value(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, shadow_shutter_look_through_seconds_static, float)
+
+        # Shadow Shutter Open Seconds
+        shadow_shutter_open_seconds_static = self._get_static_value(SCShadowInput.SHUTTER_OPEN_SECONDS_STATIC.value, 15.0, float, log_warning=False)
+        self._shadow_shutter_open_seconds = self._get_entity_state_value(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value, shadow_shutter_open_seconds_static, float)
+
+        # Shadow Shutter Look Through Angle
+        shadow_shutter_look_through_angle_static = self._get_static_value(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, 0.0, float, log_warning=False)
+        self._shadow_shutter_look_through_angle = self._get_entity_state_value(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value, shadow_shutter_look_through_angle_static, float)
+
+        # Shadow Height After Sun
+        shadow_height_after_sun_static = self._get_static_value(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value, 0.0, float, log_warning=False)
+        self._shadow_height_after_sun = self._get_entity_state_value(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value, shadow_height_after_sun_static, float)
+
+        # Shadow Angle After Sun
+        shadow_angle_after_sun_static = self._get_static_value(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value, 0.0, float, log_warning=False)
+        self._shadow_angle_after_sun = self._get_entity_state_value(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value, shadow_angle_after_sun_static, float)
+
+
+        # Dawn Control Inputs
+        self._dawn_control_enabled = self._get_entity_state_value(SCDawnInput.CONTROL_ENABLED_ENTITY.value, False, bool)
+
+        # Dawn Brightness Threshold
+        dawn_brightness_threshold_static = self._get_static_value(SCDawnInput.BRIGHTNESS_THRESHOLD_STATIC.value, 500.0, float, log_warning=False)
+        self._dawn_brightness_threshold = self._get_entity_state_value(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value, dawn_brightness_threshold_static, float)
+
+        # Dawn After Seconds
+        dawn_after_seconds_static = self._get_static_value(SCDawnInput.AFTER_SECONDS_STATIC.value, 15.0, float, log_warning=False)
+        self._dawn_after_seconds = self._get_entity_state_value(SCDawnInput.AFTER_SECONDS_ENTITY.value, dawn_after_seconds_static, float)
+
+        # Dawn Shutter Max Height
+        dawn_shutter_max_height_static = self._get_static_value(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value, 100.0, float, log_warning=False)
+        self._dawn_shutter_max_height = self._get_entity_state_value(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value, dawn_shutter_max_height_static, float)
+
+        # Dawn Shutter Max Angle
+        dawn_shutter_max_angle_static = self._get_static_value(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value, 100.0, float, log_warning=False)
+        self._dawn_shutter_max_angle = self._get_entity_state_value(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value, dawn_shutter_max_angle_static, float)
+
+        # Dawn Shutter Look Through Seconds
+        dawn_shutter_look_through_seconds_static = self._get_static_value(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, 15.0, float, log_warning=False)
+        self._dawn_shutter_look_through_seconds = self._get_entity_state_value(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, dawn_shutter_look_through_seconds_static, float)
+
+        # Dawn Shutter Open Seconds
+        dawn_shutter_open_seconds_static = self._get_static_value(SCDawnInput.SHUTTER_OPEN_SECONDS_STATIC.value, 15.0, float, log_warning=False)
+        self._dawn_shutter_open_seconds = self._get_entity_state_value(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value, dawn_shutter_open_seconds_static, float)
+
+        # Dawn Shutter Look Through Angle
+        dawn_shutter_look_through_angle_static = self._get_static_value(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, 0.0, float, log_warning=False)
+        self._dawn_shutter_look_through_angle = self._get_entity_state_value(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value, dawn_shutter_look_through_angle_static, float)
+
+        # Dawn Height After Dawn
+        dawn_height_after_dawn_static = self._get_static_value(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value, 0.0, float, log_warning=False)
+        self._dawn_height_after_dawn = self._get_entity_state_value(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value, dawn_height_after_dawn_static, float)
+
+        # Dawn Angle After Dawn
+        dawn_angle_after_dawn_static = self._get_static_value(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value, 0.0, float, log_warning=False)
+        self._dawn_angle_after_dawn = self._get_entity_state_value(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value, dawn_angle_after_dawn_static, float)
+
+        _LOGGER.debug(f"{self._name}: Updated values (part of): Brightness={self._input_brightness}, Elevation={self._input_sun_elevation}, ShadowEnabled={self._shadow_control_enabled}")
 
     @callback
     async def _async_handle_input_change(self, event: Event | None) -> None:
@@ -444,7 +596,7 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: =====================================================================")
         _LOGGER.debug(f"{self._name}: Calculating and applying cover positions")
 
-        self._update_input_values()
+        await self._update_input_values()
 
         shadow_handling_was_disabled = False
         dawn_handling_was_disabled = False
@@ -477,6 +629,9 @@ class ShadowControlManager:
                     if new_state.state == "off" and not self._lock_integration:
                         _LOGGER.debug(f"{self._name}: Lock with position was disabled and simple lock already disabled, enforcing position update")
                         self._enforce_position_update = True
+                    else:
+                        _LOGGER.debug(f"{self._name}: Lock with position enabled, enforcing position update")
+                        self._enforce_position_update = True
             elif event_type == "time_changed":
                 _LOGGER.debug(f"{self._name}: Time changed event received")
             else:
@@ -484,7 +639,7 @@ class ShadowControlManager:
         else:
             _LOGGER.debug(f"{self._name}: No specific event data (likely initial run or manual trigger)")
 
-        self._check_if_position_changed_externally(self._shutter_current_height, self._shutter_current_angle)
+        self._check_if_position_changed_externally(self._input_shutter_current_height, self._input_shutter_current_angle)
         await self._check_if_facade_is_in_sun()
 
         if shadow_handling_was_disabled:
@@ -731,6 +886,42 @@ class ShadowControlManager:
             # This prepares for a smooth transition when unlocked.
             self._previous_shutter_height = shutter_height_percent
             self._previous_shutter_angle = shutter_angle_percent
+
+            # if self._enforce_position_update:
+            #     entity_id = self._target_cover_entity_id
+            #     current_cover_state: State | None = self.hass.states.get(entity_id)
+            #
+            #     if not current_cover_state:
+            #         _LOGGER.warning(f"{self._name}: Target cover entity '{entity_id}' not found. Cannot send commands.")
+            #     else:
+            #         shutter_height_percent = self._lock_height_entity_id
+            #         shutter_angle_percent = self._lock_angle_entity_id
+            #         _LOGGER.info(
+            #         f" {self._name}: Integration set to locked with forced position, setting position to {shutter_height_percent:.1f}%/{shutter_angle_percent:.1f}%")
+            #         try:
+            #             await self.hass.services.async_call(
+            #                 "cover",
+            #                 "set_cover_position",
+            #                 {"entity_id": entity_id, "position": 100 - shutter_height_percent},
+            #                 blocking=False
+            #             )
+            #         except Exception as e:
+            #             _LOGGER.error(f"{self._name}: Failed to set position: {e}")
+            #         try:
+            #             await self.hass.services.async_call(
+            #                 "cover",
+            #                 "set_cover_tilt_position",
+            #                 {"entity_id": entity_id, "tilt_position": 100 - shutter_angle_percent},
+            #                 blocking=False
+            #             )
+            #         except Exception as e:
+            #             _LOGGER.error(f"{self._name}: Failed to set tilt position: {e}")
+            # else:
+            #     _LOGGER.info(
+            #         f"{self._name}: Integration is locked ({self._current_lock_state.name}). "
+            #         f"Calculations are running, but physical outputs are skipped."
+            #     )
+
             self._update_extra_state_attributes()
             return  # Exit here, nothing else to do
 
@@ -1833,6 +2024,75 @@ class ShadowControlManager:
         if state:
             return state.state
         return None
+
+    # In ShadowControlManager (ca. Zeile 1876, oder wo die Helfer beginnen)
+
+    # Diese Funktionen helfen, Werte aus der Konfiguration zu lesen
+    # Sie sollten direkt aus self._options.get() lesen und dann umwandeln.
+
+    def _get_static_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
+        """Gets a static value directly from options, with type conversion and default."""
+        value = self._options.get(key)
+        if value is None:
+            if log_warning:
+                _LOGGER.debug(f"{self._name}: Static key '{key}' not found in options. Using default: {default}")
+            return default
+        try:
+            if expected_type == bool: # For boolean selectors (if any static boolean values existed)
+                return bool(value)
+            return expected_type(value)
+        except (ValueError, TypeError):
+            if log_warning:
+                _LOGGER.warning(f"{self._name}: Static value for key '{key}' ('{value}') cannot be converted to {expected_type}. Using default: {default}")
+            return default
+
+    def _get_entity_state_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
+        """Gets a dynamic value from an entity state, with type conversion and default."""
+        entity_id = self._options.get(key) # This will be the string entity_id or None
+
+        if entity_id is None or not isinstance(entity_id, str) or entity_id == '':
+            if log_warning:
+                _LOGGER.debug(f"{self._name}: No valid entity_id configured for key '{key}' ('{entity_id}'). Using default: {default}")
+            return default
+
+        state = self.hass.states.get(entity_id)
+
+        if state is None or state.state in ['unavailable', 'unknown', 'none']: # 'none' can happen for input_number if not set
+            if log_warning:
+                _LOGGER.debug(f"{self._name}: Entity '{entity_id}' for key '{key}' is unavailable or unknown. Using default: {default}")
+            return default
+
+        try:
+            if expected_type == bool:
+                return state.state == STATE_ON
+            elif expected_type == int:
+                return int(float(state.state)) # Handle cases where state might be "10.0"
+            elif expected_type == float:
+                return float(state.state)
+            # For other types, direct conversion might be risky or need specific handling
+            return expected_type(state.state)
+        except (ValueError, TypeError):
+            if log_warning:
+                _LOGGER.warning(f"{self._name}: State of entity '{entity_id}' for key '{key}' ('{state.state}') cannot be converted to {expected_type}. Using default: {default}")
+            return default
+
+    def _get_enum_value(self, key: str, enum_class: type, default_enum_member: Enum, log_warning: bool = True) -> Enum:
+        """Gets an enum member from a string value stored in options."""
+        value_str = self._options.get(key)
+
+        if value_str is None or not isinstance(value_str, str) or value_str == '':
+            if log_warning:
+                _LOGGER.debug(f"{self._name}: Enum key '{key}' not found or empty in options. Using default: {default_enum_member.name}")
+            return default_enum_member
+
+        try:
+            # Assuming the stored string matches the enum member's name (e.g., "NO_RESTRICTION" or "no_restriction")
+            # Convert to upper case to match enum member names
+            return enum_class[value_str.upper()]
+        except KeyError:
+            if log_warning:
+                _LOGGER.warning(f"{self._name}: Value '{value_str}' for enum key '{key}' is not a valid {enum_class.__name__} member. Using default: {default_enum_member.name}")
+            return default_enum_member
 
     def _get_entity_numeric_state(self, config_key: str, target_type: type, default_value: Any = None) -> Any:
         """
