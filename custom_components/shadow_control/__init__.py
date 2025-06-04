@@ -130,20 +130,20 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry):
 
 class SCFacadeConfiguration:
     def __init__(self):
-        self.azimuth: float = 0.0
-        self.offset_sun_in: float = 0.0
-        self.offset_sun_out: float = 0.0
+        self.azimuth: float = 180.0
+        self.offset_sun_in: float = -90.0
+        self.offset_sun_out: float = 90.0
         self.elevation_sun_min: float = 0.0
-        self.elevation_sun_max: float = 0.0
-        self.slat_width: float = 0.0
-        self.slat_distance: float = 0.0
+        self.elevation_sun_max: float = 90.0
+        self.slat_width: float = 95.0
+        self.slat_distance: float = 67.0
         self.slat_angle_offset: float = 0.0
         self.slat_min_angle: float = 0.0
-        self.shutter_stepping_height: float = 0.0
-        self.shutter_stepping_angle: float = 0.0
+        self.shutter_stepping_height: float = 10.0
+        self.shutter_stepping_angle: float = 10.0
         self.shutter_type: ShutterType = ShutterType.MODE1
         self.light_strip_width: float = 0.0
-        self.shutter_height: float = 0.0
+        self.shutter_height: float = 1000.0
         self.neutral_pos_height: float = 0.0
         self.neutral_pos_angle: float = 0.0
         self.modification_tolerance_height: float = 0.0
@@ -151,26 +151,26 @@ class SCFacadeConfiguration:
 
 class SCShadowControlConfig:
     def __init__(self):
-        self.enabled: bool = False
-        self.brightness_threshold: float = 0.0
-        self.after_seconds: float = 0.0
-        self.shutter_max_height: float = 0.0
-        self.shutter_max_angle: float = 0.0
-        self.shutter_look_through_seconds: float = 0.0
-        self.shutter_open_seconds: float = 0.0
+        self.enabled: bool = True
+        self.brightness_threshold: float = 50000.0
+        self.after_seconds: float = 15.0
+        self.shutter_max_height: float = 100.0
+        self.shutter_max_angle: float = 100.0
+        self.shutter_look_through_seconds: float = 15.0
+        self.shutter_open_seconds: float = 15.0
         self.shutter_look_through_angle: float = 0.0
         self.height_after_sun: float = 0.0
         self.angle_after_sun: float = 0.0
 
 class SCDawnControlConfig:
     def __init__(self):
-        self.enabled: bool = False
-        self.brightness_threshold: float = 0.0
-        self.after_seconds: float = 0.0
-        self.shutter_max_height: float = 0.0
-        self.shutter_max_angle: float = 0.0
-        self.shutter_look_through_seconds: float = 0.0
-        self.shutter_open_seconds: float = 0.0
+        self.enabled: bool = True
+        self.brightness_threshold: float = 500.0
+        self.after_seconds: float = 15.0
+        self.shutter_max_height: float = 100.0
+        self.shutter_max_angle: float = 100.0
+        self.shutter_look_through_seconds: float = 15.0
+        self.shutter_open_seconds: float = 15.0
         self.shutter_look_through_angle: float = 0.0
         self.height_after_dawn: float = 0.0
         self.angle_after_dawn: float = 0.0
@@ -195,10 +195,23 @@ class ShadowControlManager:
 
         self._unsub_callbacks: list[Callable[[], None]] = [] # NEUE ZEILE HIER (Nach Zeile 203)
 
-        # Initialisieren Sie Ihre Konfigurationsobjekte
         self._facade_config = SCFacadeConfiguration()
         self._shadow_config = SCShadowControlConfig()
         self._dawn_config = SCDawnControlConfig()
+
+        # Dynamic Inputs (entity states or static values)
+        self._input_brightness: float = 5000.0
+        self._input_brightness_dawn: float = -1.0
+        self._input_sun_elevation: float = 45.0
+        self._input_sun_azimuth: float = 180.0
+        self._input_shutter_current_height: float = 0.0
+        self._input_shutter_current_angle: float = 0.0
+        self._input_lock_integration: bool = False
+        self._input_lock_integration_with_position: bool = False
+        self._input_lock_height: float = 0.0
+        self._input_lock_angle: float = 0.0
+        self._input_movement_restriction_height: float = 100.0
+        self._input_movement_restriction_angle: float = 100.0
 
         # === Dynamische Eingänge (Test-Helfer) - diese speichern weiterhin die Entity-IDs/statischen Werte
         # ... (Ihre bestehenden _entity Zuweisungen bleiben hier erhalten)
@@ -258,22 +271,6 @@ class ShadowControlManager:
         self._dawn_shutter_look_through_angle_entity = config.get(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value)
         self._dawn_height_after_dawn_entity = config.get(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value)
         self._dawn_angle_after_dawn_entity = config.get(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value)
-
-        # Hier kommen die tatsächlich gelesenen (und typisierten) Werte der Entitäten/Konfiguration
-        self._input_brightness: float = 0.0
-        self._input_brightness_dawn: float = -1.0
-        self._input_sun_elevation: float = 0.0
-        self._input_sun_azimuth: float = 0.0
-        self._input_shutter_current_height: float = 0.0
-        self._input_shutter_current_angle: float = 0.0
-        self._input_lock_integration: bool = False
-        self._input_lock_integration_with_position: bool = False
-        self._input_lock_height: float = 0.0
-        self._input_lock_angle: float = 0.0
-        self._input_movement_restriction_height: MovementRestricted = MovementRestricted.NO_RESTRICTION
-        self._input_movement_restriction_angle: MovementRestricted = MovementRestricted.NO_RESTRICTION
-        self._shadow_control_enabled: bool = False
-        self._dawn_control_enabled: bool = False
 
         # Define dictionary with all state handlers
         self._state_handlers: dict[ShutterState, Callable[[], Awaitable[ShutterState]]] = {
@@ -565,85 +562,85 @@ class ShadowControlManager:
         )
 
         # Shadow Control Inputs
-        self._shadow_control_enabled = self._get_entity_state_value(SCShadowInput.CONTROL_ENABLED_ENTITY.value, False, bool)
+        self._shadow_config._shadow_control_enabled = self._get_entity_state_value(SCShadowInput.CONTROL_ENABLED_ENTITY.value, False, bool)
 
         # Shadow Brightness Threshold
         shadow_brightness_threshold_static = self._get_static_value(SCShadowInput.BRIGHTNESS_THRESHOLD_STATIC.value, 50000.0, float, log_warning=False)
-        self._shadow_brightness_threshold = self._get_entity_state_value(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value, shadow_brightness_threshold_static, float)
+        self._shadow_config._shadow_brightness_threshold = self._get_entity_state_value(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value, shadow_brightness_threshold_static, float)
 
         # Shadow After Seconds
         shadow_after_seconds_static = self._get_static_value(SCShadowInput.AFTER_SECONDS_STATIC.value, 15.0, float, log_warning=False)
-        self._shadow_after_seconds = self._get_entity_state_value(SCShadowInput.AFTER_SECONDS_ENTITY.value, shadow_after_seconds_static, float)
+        self._shadow_config._shadow_after_seconds = self._get_entity_state_value(SCShadowInput.AFTER_SECONDS_ENTITY.value, shadow_after_seconds_static, float)
 
         # Shadow Shutter Max Height
         shadow_shutter_max_height_static = self._get_static_value(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value, 100.0, float, log_warning=False)
-        self._shadow_shutter_max_height = self._get_entity_state_value(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value, shadow_shutter_max_height_static, float)
+        self._shadow_config._shadow_shutter_max_height = self._get_entity_state_value(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value, shadow_shutter_max_height_static, float)
 
         # Shadow Shutter Max Angle
         shadow_shutter_max_angle_static = self._get_static_value(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value, 100.0, float, log_warning=False)
-        self._shadow_shutter_max_angle = self._get_entity_state_value(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value, shadow_shutter_max_angle_static, float)
+        self._shadow_config._shadow_shutter_max_angle = self._get_entity_state_value(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value, shadow_shutter_max_angle_static, float)
 
         # Shadow Shutter Look Through Seconds
         shadow_shutter_look_through_seconds_static = self._get_static_value(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, 15.0, float, log_warning=False)
-        self._shadow_shutter_look_through_seconds = self._get_entity_state_value(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, shadow_shutter_look_through_seconds_static, float)
+        self._shadow_config._shadow_shutter_look_through_seconds = self._get_entity_state_value(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, shadow_shutter_look_through_seconds_static, float)
 
         # Shadow Shutter Open Seconds
         shadow_shutter_open_seconds_static = self._get_static_value(SCShadowInput.SHUTTER_OPEN_SECONDS_STATIC.value, 15.0, float, log_warning=False)
-        self._shadow_shutter_open_seconds = self._get_entity_state_value(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value, shadow_shutter_open_seconds_static, float)
+        self._shadow_config._shadow_shutter_open_seconds = self._get_entity_state_value(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value, shadow_shutter_open_seconds_static, float)
 
         # Shadow Shutter Look Through Angle
         shadow_shutter_look_through_angle_static = self._get_static_value(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, 0.0, float, log_warning=False)
-        self._shadow_shutter_look_through_angle = self._get_entity_state_value(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value, shadow_shutter_look_through_angle_static, float)
+        self._shadow_config._shadow_shutter_look_through_angle = self._get_entity_state_value(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value, shadow_shutter_look_through_angle_static, float)
 
         # Shadow Height After Sun
         shadow_height_after_sun_static = self._get_static_value(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value, 0.0, float, log_warning=False)
-        self._shadow_height_after_sun = self._get_entity_state_value(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value, shadow_height_after_sun_static, float)
+        self._shadow_config._shadow_height_after_sun = self._get_entity_state_value(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value, shadow_height_after_sun_static, float)
 
         # Shadow Angle After Sun
         shadow_angle_after_sun_static = self._get_static_value(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value, 0.0, float, log_warning=False)
-        self._shadow_angle_after_sun = self._get_entity_state_value(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value, shadow_angle_after_sun_static, float)
+        self._shadow_config._shadow_angle_after_sun = self._get_entity_state_value(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value, shadow_angle_after_sun_static, float)
 
 
         # Dawn Control Inputs
-        self._dawn_control_enabled = self._get_entity_state_value(SCDawnInput.CONTROL_ENABLED_ENTITY.value, False, bool)
+        self._dawn_config._dawn_control_enabled = self._get_entity_state_value(SCDawnInput.CONTROL_ENABLED_ENTITY.value, False, bool)
 
         # Dawn Brightness Threshold
         dawn_brightness_threshold_static = self._get_static_value(SCDawnInput.BRIGHTNESS_THRESHOLD_STATIC.value, 500.0, float, log_warning=False)
-        self._dawn_brightness_threshold = self._get_entity_state_value(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value, dawn_brightness_threshold_static, float)
+        self._dawn_config._dawn_brightness_threshold = self._get_entity_state_value(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value, dawn_brightness_threshold_static, float)
 
         # Dawn After Seconds
         dawn_after_seconds_static = self._get_static_value(SCDawnInput.AFTER_SECONDS_STATIC.value, 15.0, float, log_warning=False)
-        self._dawn_after_seconds = self._get_entity_state_value(SCDawnInput.AFTER_SECONDS_ENTITY.value, dawn_after_seconds_static, float)
+        self._dawn_config._dawn_after_seconds = self._get_entity_state_value(SCDawnInput.AFTER_SECONDS_ENTITY.value, dawn_after_seconds_static, float)
 
         # Dawn Shutter Max Height
         dawn_shutter_max_height_static = self._get_static_value(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value, 100.0, float, log_warning=False)
-        self._dawn_shutter_max_height = self._get_entity_state_value(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value, dawn_shutter_max_height_static, float)
+        self._dawn_config._dawn_shutter_max_height = self._get_entity_state_value(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value, dawn_shutter_max_height_static, float)
 
         # Dawn Shutter Max Angle
         dawn_shutter_max_angle_static = self._get_static_value(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value, 100.0, float, log_warning=False)
-        self._dawn_shutter_max_angle = self._get_entity_state_value(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value, dawn_shutter_max_angle_static, float)
+        self._dawn_config._dawn_shutter_max_angle = self._get_entity_state_value(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value, dawn_shutter_max_angle_static, float)
 
         # Dawn Shutter Look Through Seconds
         dawn_shutter_look_through_seconds_static = self._get_static_value(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, 15.0, float, log_warning=False)
-        self._dawn_shutter_look_through_seconds = self._get_entity_state_value(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, dawn_shutter_look_through_seconds_static, float)
+        self._dawn_config._dawn_shutter_look_through_seconds = self._get_entity_state_value(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, dawn_shutter_look_through_seconds_static, float)
 
         # Dawn Shutter Open Seconds
         dawn_shutter_open_seconds_static = self._get_static_value(SCDawnInput.SHUTTER_OPEN_SECONDS_STATIC.value, 15.0, float, log_warning=False)
-        self._dawn_shutter_open_seconds = self._get_entity_state_value(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value, dawn_shutter_open_seconds_static, float)
+        self._dawn_config._dawn_shutter_open_seconds = self._get_entity_state_value(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value, dawn_shutter_open_seconds_static, float)
 
         # Dawn Shutter Look Through Angle
         dawn_shutter_look_through_angle_static = self._get_static_value(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, 0.0, float, log_warning=False)
-        self._dawn_shutter_look_through_angle = self._get_entity_state_value(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value, dawn_shutter_look_through_angle_static, float)
+        self._dawn_config._dawn_shutter_look_through_angle = self._get_entity_state_value(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value, dawn_shutter_look_through_angle_static, float)
 
         # Dawn Height After Dawn
         dawn_height_after_dawn_static = self._get_static_value(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value, 0.0, float, log_warning=False)
-        self._dawn_height_after_dawn = self._get_entity_state_value(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value, dawn_height_after_dawn_static, float)
+        self._dawn_config._dawn_height_after_dawn = self._get_entity_state_value(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value, dawn_height_after_dawn_static, float)
 
         # Dawn Angle After Dawn
         dawn_angle_after_dawn_static = self._get_static_value(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value, 0.0, float, log_warning=False)
-        self._dawn_angle_after_dawn = self._get_entity_state_value(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value, dawn_angle_after_dawn_static, float)
+        self._dawn_config._dawn_angle_after_dawn = self._get_entity_state_value(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value, dawn_angle_after_dawn_static, float)
 
-        _LOGGER.debug(f"{self._name}: Updated values (part of): Brightness={self._input_brightness}, Elevation={self._input_sun_elevation}, ShadowEnabled={self._shadow_control_enabled}")
+        _LOGGER.debug(f"{self._name}: Updated values (part of): Brightness={self._input_brightness}, Elevation={self._input_sun_elevation}, ShadowEnabled={self._shadow_config._shadow_control_enabled}")
 
     @callback
     async def _async_handle_input_change(self, event: Event | None) -> None:
@@ -679,10 +676,10 @@ class ShadowControlManager:
                 _LOGGER.debug(f"{self._name}:   New state: {new_state.state if new_state else 'None'}")
 
                 # Hier können Sie spezifische Logik hinzufügen, basierend auf der entity
-                if entity == self._shadow_control_enabled_entity:
+                if entity == self._shadow_config._shadow_control_enabled_entity:
                     _LOGGER.debug(f"{self._name}: Shadow control enable changed to {new_state.state}")
                     shadow_handling_was_disabled = new_state.state == "off"
-                elif entity == self._dawn_control_enabled_entity:
+                elif entity == self._dawn_config._dawn_control_enabled_entity:
                     _LOGGER.debug(f"{self._name}: Dawn control enable changed to {new_state.state}")
                     dawn_handling_was_disabled = new_state.state == "off"
                 elif entity == self._lock_integration_entity:
@@ -707,9 +704,9 @@ class ShadowControlManager:
         await self._check_if_facade_is_in_sun()
 
         if shadow_handling_was_disabled:
-            await self._shadow_handling_was_disabled()
+            await self._shadow_config._shadow_handling_was_disabled()
         elif dawn_handling_was_disabled:
-            await self._dawn_handling_was_disabled()
+            await self._dawn_config._dawn_handling_was_disabled()
         else:
             await self._process_shutter_state()
 
@@ -1102,7 +1099,7 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Starting calculation of shutter height")
 
         width_of_light_strip = self._light_strip_width
-        shadow_max_height_percent = self._shadow_max_height
+        shadow_max_height_percent = self._shadow_config._shadow_max_height
         elevation = self._sun_elevation
         shutter_overall_height = self._shutter_height
 
@@ -1202,7 +1199,7 @@ class ShadowControlManager:
         shutter_slat_distance = self._slat_distance
         shutter_angle_offset = self._slat_angle_offset
         min_shutter_angle_percent = self._slat_min_angle
-        max_shutter_angle_percent = self._shadow_max_angle
+        max_shutter_angle_percent = self._shadow_config._shadow_max_angle
         shutter_type_str = self._shutter_type  # String "90_degree_slats" or "180_degree_slats"
 
         # Der effektive Elevationswinkel kommt aus der Instanzvariable, die von _check_if_facade_is_in_sun gesetzt wird
@@ -1335,7 +1332,7 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Handle SHADOW_FULL_CLOSE_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._brightness
-            shadow_threshold_close = self._shadow_brightness_level
+            shadow_threshold_close = self._shadow_config._shadow_brightness_level
             if (
                     current_brightness is not None
                     and shadow_threshold_close is not None
@@ -1389,8 +1386,8 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Handle SHADOW_FULL_CLOSED")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self._shadow_brightness_level
-            shadow_open_slat_delay = self._shadow_look_through_seconds
+            shadow_threshold_close = self._shadow_config._shadow_brightness_level
+            shadow_open_slat_delay = self._shadow_config._shadow_look_through_seconds
             if (
                     current_brightness is not None
                     and shadow_threshold_close is not None
@@ -1438,8 +1435,8 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Handle SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self._shadow_brightness_level
-            shadow_open_slat_angle = self._shadow_look_through_angle
+            shadow_threshold_close = self._shadow_config._shadow_brightness_level
+            shadow_open_slat_angle = self._shadow_config._shadow_look_through_angle
             if (
                     current_brightness is not None
                     and shadow_threshold_close is not None
@@ -1493,8 +1490,8 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Handle SHADOW_HORIZONTAL_NEUTRAL")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self._shadow_brightness_level
-            shadow_open_shutter_delay = self._shadow_open_seconds
+            shadow_threshold_close = self._shadow_config._shadow_brightness_level
+            shadow_open_shutter_delay = self._shadow_config._shadow_open_seconds
             if (
                     current_brightness is not None
                     and shadow_threshold_close is not None
@@ -1548,7 +1545,7 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Handle SHADOW_NEUTRAL_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self._shadow_brightness_level
+            shadow_threshold_close = self._shadow_config._shadow_brightness_level
             height_after_shadow = self._after_shadow_height
             angle_after_shadow = self._after_shadow_angle
             if (
@@ -1605,12 +1602,12 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Handle SHADOW_NEUTRAL")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self._shadow_brightness_level
-            dawn_handling_active = self._dawn_control_enabled
+            shadow_threshold_close = self._shadow_config._shadow_brightness_level
+            dawn_handling_active = self._dawn_config._dawn_control_enabled
             dawn_brightness = self._get_current_dawn_brightness()
-            dawn_threshold_close = self._dawn_brightness_level
-            shadow_close_delay = self._shadow_after_seconds
-            dawn_close_delay = self._dawn_after_seconds
+            dawn_threshold_close = self._dawn_config._dawn_brightness_level
+            shadow_close_delay = self._shadow_config._shadow_after_seconds
+            dawn_close_delay = self._dawn_config._dawn_after_seconds
             height_after_shadow = self._after_shadow_height
             angle_after_shadow = self._after_shadow_angle
 
@@ -1648,8 +1645,8 @@ class ShadowControlManager:
 
         if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
-            dawn_threshold_close = self._dawn_brightness_level
-            dawn_close_delay = self._dawn_after_seconds
+            dawn_threshold_close = self._dawn_config._dawn_brightness_level
+            dawn_close_delay = self._dawn_config._dawn_after_seconds
             if (
                     dawn_brightness is not None
                     and dawn_threshold_close is not None
@@ -1682,8 +1679,8 @@ class ShadowControlManager:
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             _LOGGER.debug(f"{self._name}: self._check_if_facade_is_in_sun and self._is_shadow_handling_activated")
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self._shadow_brightness_level
-            shadow_close_delay = self._shadow_after_seconds
+            shadow_threshold_close = self._shadow_config._shadow_brightness_level
+            shadow_close_delay = self._shadow_config._shadow_after_seconds
             if (
                     current_brightness is not None
                     and shadow_threshold_close is not None
@@ -1696,8 +1693,8 @@ class ShadowControlManager:
 
         if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
-            dawn_threshold_close = self._dawn_brightness_level
-            dawn_close_delay = self._dawn_after_seconds
+            dawn_threshold_close = self._dawn_config._dawn_brightness_level
+            dawn_close_delay = self._dawn_config._dawn_after_seconds
             if (
                     dawn_brightness is not None
                     and dawn_threshold_close is not None
@@ -1727,13 +1724,13 @@ class ShadowControlManager:
         current_brightness = self._get_current_brightness()
 
         shadow_handling_active = await self._is_shadow_control_enabled()
-        shadow_threshold_close = self._shadow_brightness_level
-        shadow_close_delay = self._shadow_after_seconds
+        shadow_threshold_close = self._shadow_config._shadow_brightness_level
+        shadow_close_delay = self._shadow_config._shadow_after_seconds
 
         dawn_handling_active = await self._is_dawn_control_enabled()
         dawn_brightness = self._get_current_dawn_brightness()
-        dawn_threshold_close = self._dawn_brightness_level
-        dawn_close_delay = self._dawn_after_seconds
+        dawn_threshold_close = self._dawn_config._dawn_brightness_level
+        dawn_close_delay = self._dawn_config._dawn_after_seconds
         height_after_dawn = self._after_dawn_height
         angle_after_dawn = self._after_dawn_angle
 
@@ -1806,9 +1803,9 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Handle DAWN_NEUTRAL_TIMER_RUNNING")
         if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
-            dawn_threshold_close = self._dawn_brightness_level
-            dawn_height = self._dawn_max_height
-            dawn_open_slat_angle = self._dawn_look_through_angle
+            dawn_threshold_close = self._dawn_config._dawn_brightness_level
+            dawn_height = self._dawn_config._dawn_max_height
+            dawn_open_slat_angle = self._dawn_config._dawn_look_through_angle
 
             if (
                     dawn_brightness is not None
@@ -1861,10 +1858,10 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Handle DAWN_HORIZONTAL_NEUTRAL")
         if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
-            dawn_threshold_close = self._dawn_brightness_level
-            dawn_height = self._dawn_max_height
-            dawn_open_slat_angle = self._dawn_look_through_angle
-            dawn_open_shutter_delay = self._dawn_open_seconds
+            dawn_threshold_close = self._dawn_config._dawn_brightness_level
+            dawn_height = self._dawn_config._dawn_max_height
+            dawn_open_slat_angle = self._dawn_config._dawn_look_through_angle
+            dawn_open_shutter_delay = self._dawn_config._dawn_open_seconds
 
             if (
                     dawn_brightness is not None
@@ -1914,9 +1911,9 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Handle DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING")
         if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
-            dawn_threshold_close = self._dawn_brightness_level
-            dawn_height = self._dawn_max_height
-            dawn_open_slat_angle = self._dawn_look_through_angle
+            dawn_threshold_close = self._dawn_config._dawn_brightness_level
+            dawn_height = self._dawn_config._dawn_max_height
+            dawn_open_slat_angle = self._dawn_config._dawn_look_through_angle
             if (
                     dawn_brightness is not None
                     and dawn_threshold_close is not None
@@ -1968,10 +1965,10 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Handle DAWN_FULL_CLOSED")
         if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
-            dawn_threshold_close = self._dawn_brightness_level
-            dawn_height = self._dawn_max_height
-            dawn_open_slat_delay = self._dawn_look_through_seconds
-            dawn_angle = self._dawn_max_angle
+            dawn_threshold_close = self._dawn_config._dawn_brightness_level
+            dawn_height = self._dawn_config._dawn_max_height
+            dawn_open_slat_delay = self._dawn_config._dawn_look_through_seconds
+            dawn_angle = self._dawn_config._dawn_max_angle
             if (
                     dawn_brightness is not None
                     and dawn_threshold_close is not None
@@ -2019,9 +2016,9 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Handle DAWN_FULL_CLOSE_TIMER_RUNNING")
         if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
-            dawn_threshold_close = self._dawn_brightness_level
-            dawn_height = self._dawn_max_height
-            dawn_angle = self._dawn_max_angle
+            dawn_threshold_close = self._dawn_config._dawn_brightness_level
+            dawn_height = self._dawn_config._dawn_max_height
+            dawn_angle = self._dawn_config._dawn_max_angle
             if (
                     dawn_brightness is not None
                     and dawn_threshold_close is not None
@@ -2072,11 +2069,11 @@ class ShadowControlManager:
 
     async def _is_shadow_control_enabled(self) -> bool:
         """Check if shadow handling is activated."""
-        return self._shadow_control_enabled
+        return self._shadow_config._shadow_control_enabled
 
     async def _is_dawn_control_enabled(self) -> bool:
         """Check if dawn handling is activated."""
-        return self._dawn_control_enabled
+        return self._dawn_config._dawn_control_enabled
 
     # =======================================================================
     # Entity state helper functions
