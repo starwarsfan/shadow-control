@@ -37,6 +37,7 @@ from .const import (
     SCShadowInput,
     SCDawnInput,
     ShutterState,
+    ShutterType,
     SC_CONF_COVERS,
     SC_CONF_NAME,
     TARGET_COVER_ENTITY_ID
@@ -302,36 +303,36 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Updating all input values")
 
         # === Dynamische Eingänge (Sensor-Werte) ===
-        self._brightness = self._get_entity_numeric_state(self._brightness_entity, float)
-        self._brightness_dawn = self._get_entity_numeric_state(self._brightness_dawn_entity, float)
-        self._sun_elevation = self._get_entity_numeric_state(self._sun_elevation_entity, float)
-        self._sun_azimuth = self._get_entity_numeric_state(self._sun_azimuth_entity, float)
-        self._shutter_current_height = self._get_entity_numeric_state(self._shutter_current_height_entity, float)
-        self._shutter_current_angle = self._get_entity_numeric_state(self._shutter_current_angle_entity, float)
-        self._lock_integration = self._get_entity_boolean_state(self._lock_integration_entity)
-        self._lock_integration_with_position = self._get_entity_boolean_state(self._lock_integration_with_position_entity)
-        self._lock_height = self._get_entity_numeric_state(self._lock_height_entity, float)
-        self._lock_angle = self._get_entity_numeric_state(self._lock_angle_entity, float)
-        self._modification_tolerance_height = self._get_entity_numeric_state(self._modification_tolerance_height_entity, float)
-        self._modification_tolerance_angle = self._get_entity_numeric_state(self._modification_tolerance_angle_entity, float)
+        self._brightness = self._get_entity_numeric_state(SCDynamicInput.BRIGHTNESS_ENTITY.value, float, default_value=10000.0)
+        self._brightness_dawn = self._get_entity_numeric_state(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value, float, default_value=-1.0)
+        self._sun_elevation = self._get_entity_numeric_state(SCDynamicInput.SUN_ELEVATION_ENTITY.value, float, default_value=45.0)
+        self._sun_azimuth = self._get_entity_numeric_state(SCDynamicInput.SUN_AZIMUTH_ENTITY.value, float, default_value=180.0)
+        self._shutter_current_height = self._get_entity_numeric_state(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value, float, default_value=0.0)
+        self._shutter_current_angle = self._get_entity_numeric_state(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value, float, default_value=0.0)
+        self._lock_integration = self._get_entity_boolean_state(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, default_value=False)
+        self._lock_integration_with_position = self._get_entity_boolean_state(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, default_value=False)
+        self._lock_height = self._get_entity_numeric_state(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, float, default_value=0.0)
+        self._lock_angle = self._get_entity_numeric_state(SCDynamicInput.LOCK_ANGLE_ENTITY.value, float, default_value=0.0)
 
         # === Allgemeine Einstellungen ===
-        self._azimuth_facade = self._get_entity_numeric_state(self._facade_azimuth_entity, float)
-        self._offset_sun_in = self._get_entity_numeric_state(self._facade_offset_sun_in_entity, float)
-        self._offset_sun_out = self._get_entity_numeric_state(self._facade_offset_sun_out_entity, float)
-        self._elevation_sun_min = self._get_entity_numeric_state(self._facade_elevation_sun_min_entity, float)
-        self._elevation_sun_max = self._get_entity_numeric_state(self._facade_elevation_sun_max_entity, float)
-        self._slat_width = self._get_entity_numeric_state(self._facade_slat_width_entity, float)
-        self._slat_distance = self._get_entity_numeric_state(self._facade_slat_distance_entity, float)
-        self._angle_offset = self._get_entity_numeric_state(self._facade_slat_angle_offset_entity, float)
-        self._min_slat_angle = self._get_entity_numeric_state(self._facade_slat_min_angle_entity, float)
-        self._stepping_height = self._get_entity_numeric_state(self._facade_shutter_stepping_height_entity, float)
-        self._stepping_angle = self._get_entity_numeric_state(self._facade_shutter_stepping_angle_entity, float)
-        self._shutter_type = self._get_entity_string_state(self._facade_shutter_type_entity)
-        self._light_bar_width = self._get_entity_numeric_state(self._facade_light_strip_width_entity, float)
-        self._shutter_height = self._get_entity_numeric_state(self._facade_shutter_height_entity, float)
-        self._neutral_pos_height = self._get_entity_numeric_state(self._facade_neutral_pos_height_entity, float)
-        self._neutral_pos_angle = self._get_entity_numeric_state(self._facade_neutral_pos_angle_entity, float)
+        self._azimuth_facade = float(self._config.get(SCFacadeConfig.AZIMUTH_STATIC.value, 180.0))
+        self._offset_sun_in = float(self._config.get(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value, -90.0))
+        self._offset_sun_out = float(self._config.get(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value, 90.0))
+        self._elevation_sun_min = float(self._config.get(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value, 0.0))
+        self._elevation_sun_max = float(self._config.get(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value, 90.0))
+        self._slat_width = float(self._config.get(SCFacadeConfig.SLAT_WIDTH_STATIC.value, 95.0))
+        self._slat_distance = float(self._config.get(SCFacadeConfig.SLAT_DISTANCE_STATIC.value, 67.0))
+        self._slat_angle_offset = float(self._config.get(SCFacadeConfig.SLAT_ANGLE_OFFSET_STATIC.value, 0.0))
+        self._slat_min_angle = float(self._config.get(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value, 0.0))
+        self._shutter_stepping_height = float(self._config.get(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, 10.0))
+        self._shutter_stepping_angle = float(self._config.get(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, 10.0))
+        self._shutter_type = self._config.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value)
+        self._light_strip_width = float(self._config.get(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value, 0.0))
+        self._shutter_height = float(self._config.get(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value, 1000.0))
+        self._neutral_pos_height = float(self._config.get(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, 0.0))
+        self._neutral_pos_angle = float(self._config.get(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, 0.0))
+        self._modification_tolerance_height = float(self._get_entity_numeric_state(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, float, 0.0))
+        self._modification_tolerance_angle = float(self._get_entity_numeric_state(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, float, 0.0))
 
         # -------------------------------------------
         # Movement restriction to enumeration mapping
@@ -376,7 +377,7 @@ class ShadowControlManager:
             self._movement_restriction_angle = MovementRestricted.NO_RESTRICTION
 
         # === Beschattungseinstellungen ===
-        self._shadow_control_enabled = self._get_entity_boolean_state(self._shadow_control_enabled_entity)
+        self._shadow_control_enabled = self._get_entity_boolean_state(SCShadowInput.CONTROL_ENABLED_ENTITY.value, default_value=True)
         self._shadow_brightness_level = self._get_entity_numeric_state(self._shadow_brightness_threshold_entity, float)
         self._shadow_after_seconds = self._get_entity_numeric_state(self._shadow_after_seconds_entity, float)
         self._shadow_max_height = self._get_entity_numeric_state(self._shadow_shutter_max_height_entity, float)
@@ -388,7 +389,7 @@ class ShadowControlManager:
         self._after_shadow_angle = self._get_entity_numeric_state(self._shadow_angle_after_sun_entity, float)
 
         # === Dämmerungseinstellungen ===
-        self._dawn_control_enabled = self._get_entity_boolean_state(self._dawn_control_enabled_entity)
+        self._dawn_control_enabled = self._get_entity_boolean_state(SCDawnInput.CONTROL_ENABLED_ENTITY.value, default_value=True)
         self._dawn_brightness_level = self._get_entity_numeric_state(self._dawn_brightness_threshold_entity, float)
         self._dawn_after_seconds = self._get_entity_numeric_state(self._dawn_after_seconds_entity, float)
         self._dawn_max_height = self._get_entity_numeric_state(self._dawn_shutter_max_height_entity, float)
@@ -845,7 +846,7 @@ class ShadowControlManager:
         """
         _LOGGER.debug(f"{self._name}: Starting calculation of shutter height")
 
-        width_of_light_strip = self._light_bar_width
+        width_of_light_strip = self._light_strip_width
         shadow_max_height_percent = self._shadow_max_height
         elevation = self._sun_elevation
         shutter_overall_height = self._shutter_height
@@ -906,7 +907,7 @@ class ShadowControlManager:
         Passt die Rollladenhöhe an die konfigurierte minimale Schrittweite an.
         Entspricht der PHP-Funktion LB_LBSID_handleShutterHeightStepping.
         """
-        shutter_stepping_percent = self._stepping_height
+        shutter_stepping_percent = self._shutter_stepping_height
 
         if shutter_stepping_percent is None:
             _LOGGER.warning(
@@ -944,8 +945,8 @@ class ShadowControlManager:
         azimuth = self._sun_azimuth  # For logging
         given_shutter_slat_width = self._slat_width
         shutter_slat_distance = self._slat_distance
-        shutter_angle_offset = self._angle_offset
-        min_shutter_angle_percent = self._min_slat_angle
+        shutter_angle_offset = self._slat_angle_offset
+        min_shutter_angle_percent = self._slat_min_angle
         max_shutter_angle_percent = self._shadow_max_angle
         shutter_type_str = self._shutter_type  # String "90_degree_slats" or "180_degree_slats"
 
@@ -1046,7 +1047,7 @@ class ShadowControlManager:
         _LOGGER.debug(
             f"{self._name}: Computing shutter angle stepping for {calculated_angle_percent}%")
 
-        shutter_stepping_percent = self._stepping_angle
+        shutter_stepping_percent = self._shutter_stepping_angle
 
         if shutter_stepping_percent is None:
             _LOGGER.warning(
@@ -1833,39 +1834,58 @@ class ShadowControlManager:
             return state.state
         return None
 
-    def _get_entity_numeric_state(self, entity_id: str | None, target_type: type, default_value: Any = None) -> Any:
+    def _get_entity_numeric_state(self, config_key: str, target_type: type, default_value: Any = None) -> Any:
         """
-        Gibt den numerischen Zustand einer Entität zurück oder einen Standardwert,
-        wenn die Entität nicht existiert, ihr Zustand nicht verfügbar ist oder nicht konvertiert werden kann.
+        Gibt den numerischen Zustand einer Entität zurück, die durch einen Konfigurationsschlüssel identifiziert wird,
+        oder einen Standardwert, wenn die Entität nicht existiert, ihr Zustand nicht verfügbar ist
+        oder nicht konvertiert werden kann.
         """
-        if not entity_id: # <-- WICHTIG: Prüfung auf None/leeren String
-            _LOGGER.warning(f"{self._name}: Missing entity id for numeric value (None/Empty). Using default {default_value}")
+        # 1. Hole die tatsächliche entity_id aus der Konfiguration
+        #    Der Parameter 'config_key' ist jetzt z.B. SCDynamicInput.BRIGHTNESS_ENTITY.value (also ein String wie "brightness_entity")
+        entity_id_from_config = self._config.get(config_key)
+
+        # 2. Prüfe auf leere oder ungültige Entitäts-ID aus der Konfiguration
+        if not entity_id_from_config or entity_id_from_config in ["no_entity_selected", "no_restriction"]:
+            _LOGGER.debug(f"{self._name}: No valid entity_id configured for key '{config_key}' ('{entity_id_from_config}'). Using default {default_value}")
             return default_value
 
-        state_obj = self.hass.states.get(entity_id)
+        # 3. Hole den Zustand der Entität aus Home Assistant
+        state_obj = self.hass.states.get(entity_id_from_config)
         if not state_obj or state_obj.state in ['unknown', 'unavailable', 'none', None]:
-            _LOGGER.debug(f"{self._name}: State of '{entity_id}' not available or invalid ('{state_obj.state if state_obj else 'None'}'). Using default {default_value}")
+            _LOGGER.debug(f"{self._name}: State of '{entity_id_from_config}' (for key '{config_key}') not available or invalid ('{state_obj.state if state_obj else 'None'}'). Using default {default_value}")
             return default_value
+
+        # 4. Konvertiere den Zustand
         try:
             return target_type(state_obj.state)
         except (ValueError, TypeError):
-            _LOGGER.warning(f"{self._name}: Unable to convert '{state_obj.state}' of '{entity_id}' into {target_type.__name__}. Using default {default_value}")
+            _LOGGER.warning(f"{self._name}: Unable to convert state '{state_obj.state}' of '{entity_id_from_config}' into {target_type.__name__} (for key '{config_key}'). Using default {default_value}")
             return default_value
 
-    def _get_entity_boolean_state(self, entity_id: str | None, default_value: bool = False) -> bool:
+    def _get_entity_boolean_state(self, config_key: str, default_value: bool = False) -> bool:
         """
-        Gibt den booleschen Zustand einer Entität zurück oder einen Standardwert,
-        wenn die Entität nicht existiert, ihr Zustand nicht verfügbar ist oder nicht konvertiert werden kann.
+        Gibt den booleschen Zustand einer Entität zurück, die durch einen Konfigurationsschlüssel identifiziert wird,
+        oder einen Standardwert, wenn die Entität nicht existiert, ihr Zustand nicht verfügbar ist
+        oder nicht konvertiert werden kann.
         """
-        if not entity_id: # <-- WICHTIG: Prüfung auf None/leeren String
-            _LOGGER.warning(f"{self._name}: Missing entity id for boolean value (None/Empty). Using default {default_value}")
+        # 1. Hole die tatsächliche entity_id aus der Konfiguration
+        #    'config_key' ist hier z.B. SCDynamicInput.LOCK_INTEGRATION_ENTITY.value
+        entity_id_from_config = self._config.get(config_key)
+
+        # 2. Prüfe auf leere, ungültige oder "no_entity_selected" Entitäts-ID aus der Konfiguration
+        if not entity_id_from_config or entity_id_from_config in ["no_entity_selected", "no_restriction"]:
+            _LOGGER.debug(f"{self._name}: No valid entity_id configured for boolean key '{config_key}' ('{entity_id_from_config}'). Using default {default_value}")
             return default_value
 
-        state_obj = self.hass.states.get(entity_id)
+        # 3. Hole den Zustand der Entität aus Home Assistant
+        state_obj = self.hass.states.get(entity_id_from_config)
         if not state_obj or state_obj.state in ['unknown', 'unavailable', 'none', None]:
-            _LOGGER.debug(f"{self._name}: State of '{entity_id}' not available or invalid ('{state_obj.state if state_obj else 'None'}'). Using default {default_value}")
+            _LOGGER.debug(f"{self._name}: State of '{entity_id_from_config}' (for key '{config_key}') not available or invalid ('{state_obj.state if state_obj else 'None'}'). Using default {default_value}")
             return default_value
-        return state_obj.state.lower() == 'on' # HA States sind oft 'on'/'off' Strings
+
+        # 4. Konvertiere den Zustand in einen Booleschen Wert
+        #    HA States sind oft 'on'/'off' Strings für Booleans
+        return state_obj.state.lower() == 'on'
 
     def _get_entity_string_state(self, entity_id: str | None, default_value: str | None = None) -> str | None:
         """
@@ -1892,8 +1912,8 @@ class ShadowControlManager:
         # Stellen Sie sicher, dass _facade_slat_min_angle_entity und _facade_slat_angle_offset_entity
         # in __init__ korrekt initialisiert sind und über _get_entity_numeric_state gelesen werden.
 
-        min_slat_angle = self._min_slat_angle  # Dieser Wert sollte jetzt über _update_input_values gesetzt sein
-        angle_offset = self._angle_offset  # Dieser Wert sollte jetzt über _update_input_values gesetzt sein
+        min_slat_angle = self._slat_min_angle  # Dieser Wert sollte jetzt über _update_input_values gesetzt sein
+        angle_offset = self._slat_angle_offset  # Dieser Wert sollte jetzt über _update_input_values gesetzt sein
 
         # Sicherheitsprüfung für None-Werte, falls _update_input_values noch nicht durchlief oder Fehler hatte
         if min_slat_angle is None or angle_offset is None:
