@@ -143,7 +143,7 @@ class ShadowControlManager:
         self._config = config
         self._name = config[SC_CONF_NAME]
         self._entry_id = entry_id
-        self._target_cover_entity = config[TARGET_COVER_ENTITY_ID]
+        self._target_cover_entity_id = config[TARGET_COVER_ENTITY_ID]
 
         # === Dynamische Eingänge (Test-Helfer) ===
         self._brightness_entity = config.get(SCDynamicInput.BRIGHTNESS_ENTITY.value)
@@ -240,7 +240,7 @@ class ShadowControlManager:
         self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
         self._recalculation_timer: Callable[[], None] | None = None # Zum Speichern des Callbacks für den geplanten Timer
 
-        _LOGGER.debug(f"{self._name}: Manager initialized for target: {self._target_cover_entity}.")
+        _LOGGER.debug(f"{self._name}: Manager initialized for target: {self._target_cover_entity_id}.")
 
     def register_listeners(self) -> None:
         """Register listeners for relevant state changes for this specific cover."""
@@ -731,10 +731,10 @@ class ShadowControlManager:
             self._previous_shutter_height = shutter_height_percent
             self._previous_shutter_angle = shutter_angle_percent
             self._update_extra_state_attributes()
-            return  # Exit here, no physical output while locked
+            return  # Exit here, nothing else to do
 
         # --- Phase 4: Apply stepping and output restriction logic (only if not initial run AND not locked) ---
-        entity = self._target_cover_entity
+        entity = self._target_cover_entity_id
         current_cover_state: State | None = self.hass.states.get(entity)
 
         if not current_cover_state:

@@ -294,10 +294,10 @@ class ShadowControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         if user_input is not None:
-            target_cover_entity = user_input.get(TARGET_COVER_ENTITY_ID)
+            target_cover_entity_id = user_input.get(TARGET_COVER_ENTITY_ID)
 
             # Use unique id to prevent multiple usage of the same cover
-            await self.async_set_unique_id(target_cover_entity)
+            await self.async_set_unique_id(target_cover_entity_id)
             self._abort_if_unique_id_configured()
 
             self._data.update(user_input)

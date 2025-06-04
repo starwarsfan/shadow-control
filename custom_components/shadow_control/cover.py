@@ -106,9 +106,9 @@ async def async_setup_platform(
     _LOGGER.debug(f"Configuration from YAML: {config}")
 
     name = config.get(NAME, DEFAULT_NAME)
-    target_cover_entity = config.get(TARGET_COVER_ENTITY_ID)
+    target_cover_entity_id = config.get(TARGET_COVER_ENTITY_ID)
 
-    if not target_cover_entity:
+    if not target_cover_entity_id:
         _LOGGER.error(f"[{name}]: Missing required configuration key '{TARGET_COVER_ENTITY_ID}'")
         return # Wichtig: Hier sollte kein False zurückgegeben werden, Home Assistant erwartet nichts
                # nach dem Logging des Fehlers und Beenden der Funktion.
@@ -117,7 +117,7 @@ async def async_setup_platform(
     # Die 'config' enthält alle Parameter, die Sie in der configuration.yaml
     # unter 'shadow_control:' definiert haben.
     # Wir übergeben 'config' direkt an den Konstruktor.
-    async_add_entities([ShadowControl(hass, config, target_cover_entity)])
+    async_add_entities([ShadowControl(hass, config, target_cover_entity_id)])
 
 class ShadowControl(CoverEntity, RestoreEntity):
     """Representation of a Shadow Control cover."""
