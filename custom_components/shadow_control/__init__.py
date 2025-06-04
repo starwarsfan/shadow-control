@@ -355,8 +355,8 @@ class ShadowControlManager:
             SCDynamicInput.SUN_AZIMUTH_ENTITY,
             SCDynamicInput.LOCK_HEIGHT_ENTITY,
             SCDynamicInput.LOCK_ANGLE_ENTITY,
-            SCShadowInput.SHADOW_CONTROL_ENABLED_ENTITY,
-            SCDawnInput.DAWN_CONTROL_ENABLED_ENTITY,
+            SCShadowInput.CONTROL_ENABLED_ENTITY,
+            SCDawnInput.CONTROL_ENABLED_ENTITY,
         ]:
             entity_id = self._config.get(conf_key_enum.value)
             if entity_id: # Check if entity_id is not empty or None
@@ -392,6 +392,70 @@ class ShadowControlManager:
             )
 
         _LOGGER.debug(f"{self._name}: Listeners registered.")
+
+    async def _async_state_change_listener(self, event: Event) -> None: # NEUE METHODE HIER EINFÜGEN (ca. Zeile 565)
+        """Callback für Zustandsänderungen der überwachten Eingangs-Entitäten."""
+        entity_id = event.data.get("entity_id")
+        old_state = event.data.get("old_state")
+        new_state = event.data.get("new_state")
+
+        _LOGGER.debug(
+            f"{self._name}: State change detected for {entity_id}. "
+            f"Old state: {old_state.state if old_state else 'None'}, "
+            f"New state: {new_state.state if new_state else 'None'}."
+        )
+
+        # Überprüfen, ob sich der Wert tatsächlich geändert hat
+        if old_state is None or new_state is None or old_state.state != new_state.state:
+            # Löst die Neuberechnung aus
+            _LOGGER.debug(f"{self._name}: Input entity '{entity_id}' changed. Triggering recalculation.")
+            await self._async_calculate_and_apply_cover_position(None)
+        else:
+            _LOGGER.debug(f"{self._name}: State change for {entity_id} detected, but value did not change. No recalculation triggered.")
+
+    async def _async_target_cover_entity_state_change_listener(self, event: Event) -> None: # NEUE METHODE HIER EINFÜGEN (ca. Zeile 610)
+        """Callback für Zustandsänderungen der Ziel-Cover-Entität (manuelle Steuerung)."""
+        entity_id = event.data.get("entity_id")
+        old_state: Optional[State] = event.data.get("old_state")
+        new_state: Optional[State] = event.data.get("new_state")
+
+        _LOGGER.debug(
+            f"{self._name}: Target cover state change detected for {entity_id}. "
+            f"Old state: {old_state.state if old_state else 'None'}, "
+            f"New state: {new_state.state if new_state else 'None'}."
+        )
+
+        # Überprüfen, ob sich der Wert der Position tatsächlich geändert hat.
+        # Wir sind primär an height und current_tilt (angle) interessiert.
+        old_current_height = old_state.attributes.get("current_position") if old_state else None
+        new_current_height = new_state.attributes.get("current_position") if new_state else None
+        old_current_angle = old_state.attributes.get("current_tilt") if old_state else None
+        new_current_angle = new_state.attributes.get("current_tilt") if new_state else None
+
+        # Wir müssen auch den Fall berücksichtigen, dass das Rollo offen oder geschlossen ist
+        # und der Status sich ändert (z.B. von "opening" zu "open").
+        # Hier ist es besser, auf eine Änderung von height oder angle zu prüfen,
+        # da der state (open/closed/opening/closing) sich auch ohne manuelle Interaktion ändern kann.
+
+        # Nur fortfahren, wenn sich die Höhe oder der Winkel geändert hat
+        # und der Manager nicht selbst die Änderung verursacht hat (z.B. durch async_set_cover_position)
+        if (old_current_height != new_current_height or old_current_angle != new_current_angle):
+            # Prüfen, ob die Änderung nicht von uns selbst kam
+            if self._next_modification_timestamp and (
+                    (datetime.now(timezone.utc) - self._next_modification_timestamp).total_seconds() < 5 # Weniger als 5 Sekunden seit unserer letzten Änderung
+            ):
+                _LOGGER.debug(f"{self._name}: Cover state change detected, but appears to be self-initiated. Skipping lock state update.")
+                self._next_modification_timestamp = None # Reset for next external change
+                return
+
+            _LOGGER.debug(f"{self._name}: External change detected on target cover '{entity_id}'. Updating lock state.")
+            # Setzt den LockState auf MANUALLY_LOCKED
+            # TODO: Hier müsste die Logik für den LockState hin. Z.B. manager.update_lock_state(LockState.LOCKED_BY_EXTERNAL_MODIFICATION)
+            # await self._async_update_lock_state_from_external_modification() # Beispiel für eine zu implementierende Methode
+            pass # Platzhalter für die Implementierung der Lock-State-Logik
+
+        else:
+            _LOGGER.debug(f"{self._name}: Target cover state change detected, but height/angle did not change or no external modification.")
 
     def unregister_listeners(self) -> None:
         """Unregister all listeners for this manager."""
