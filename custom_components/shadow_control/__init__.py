@@ -793,7 +793,7 @@ class ShadowControlManager:
                     await self.hass.services.async_call(
                         "cover",
                         "set_cover_position",
-                        {"entity": entity, "position": 100 - shutter_height_percent},
+                        {"entity_id": entity, "position": 100 - shutter_height_percent},
                         blocking=False
                     )
                 except Exception as e:
