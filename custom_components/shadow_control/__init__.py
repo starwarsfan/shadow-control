@@ -1302,7 +1302,7 @@ class ShadowControlManager:
         _LOGGER.debug(
             f"{self._name}: Computing shutter angle stepping for {calculated_angle_percent}%")
 
-        shutter_stepping_percent = self._shutter_stepping_angle
+        shutter_stepping_percent = self._facade_config.shutter_stepping_angle
 
         if shutter_stepping_percent is None:
             _LOGGER.warning(
@@ -1682,7 +1682,7 @@ class ShadowControlManager:
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             _LOGGER.debug(f"{self._name}: self._check_if_facade_is_in_sun and self._is_shadow_handling_activated")
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self._shadow_config._shadow_brightness_level
+            shadow_threshold_close = self._shadow_config.brightness_threshold
             shadow_close_delay = self._shadow_config.after_seconds
             if (
                     current_brightness is not None
