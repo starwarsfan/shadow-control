@@ -1237,7 +1237,7 @@ class ShadowControlManager:
         shutter_angle_offset = self._facade_config.slat_angle_offset
         min_shutter_angle_percent = self._facade_config.slat_min_angle
         max_shutter_angle_percent = self._shadow_config.shutter_max_angle
-        shutter_type_str = self._facade_config.shutter_type  # String "90_degree_slats" or "180_degree_slats"
+        shutter_type = self._facade_config.shutter_type  # String "90_degree_slats" or "180_degree_slats"
 
         # Der effektive Elevationswinkel kommt aus der Instanzvariable, die von _check_if_facade_is_in_sun gesetzt wird
         effective_elevation = self._effective_elevation
@@ -1246,7 +1246,7 @@ class ShadowControlManager:
                 elevation is None or azimuth is None
                 or given_shutter_slat_width is None or shutter_slat_distance is None
                 or shutter_angle_offset is None or min_shutter_angle_percent is None
-                or max_shutter_angle_percent is None or shutter_type_str is None
+                or max_shutter_angle_percent is None or shutter_type is None
                 or effective_elevation is None
         ):
             _LOGGER.warning(
@@ -1254,7 +1254,7 @@ class ShadowControlManager:
                 f"elevation={elevation}, azimuth={azimuth}, "
                 f"slat_width={given_shutter_slat_width}, slat_distance={shutter_slat_distance}, "
                 f"angle_offset={shutter_angle_offset}, min_angle={min_shutter_angle_percent}, "
-                f"max_angle={max_shutter_angle_percent}, shutter_type={shutter_type_str}, "
+                f"max_angle={max_shutter_angle_percent}, shutter_type={shutter_type}, "
                 f"effective_elevation={effective_elevation}. Returning 0.0")
             return 0.0  # Standardwert bei fehlenden Daten
 
@@ -1290,13 +1290,13 @@ class ShadowControlManager:
                       f"{effective_elevation}°/{shutter_angle_degrees}° (without stepping and offset)")
 
         shutter_angle_percent: float
-        if shutter_type_str == "90_degree_slats":
+        if shutter_type == ShutterType.MODE1:
             shutter_angle_percent = shutter_angle_degrees / 0.9
-        elif shutter_type_str == "180_degree_slats":
+        elif shutter_type == ShutterType.MODE2:
             shutter_angle_percent = shutter_angle_degrees / 1.8 + 50
         else:
             _LOGGER.warning(
-                f"{self._name}: Unknown shutter type '{shutter_type_str}'. Using default (90°)")
+                f"{self._name}: Unknown shutter type '{shutter_type}'. Using default (mode1, 90°)")
             shutter_angle_percent = shutter_angle_degrees / 0.9  # Standardverhalten
 
         # Sicherstellen, dass der Winkel nicht negativ wird
