@@ -1200,8 +1200,8 @@ class ShadowControlManager:
 
         if shutter_stepping_percent is None:
             _LOGGER.warning(
-                f"{self._name}: 'self._stepping_height' is None. Using 0 (no stepping).")
-            shutter_stepping_percent = 0.0  # Standardwert, wenn nicht konfiguriert
+                f"{self._name}: 'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle {calculated_height_percent}%")
+            return calculated_height_percent
 
         # Only apply stepping if the stepping value is not zero and height is not already a multiple
         if shutter_stepping_percent != 0:
@@ -1340,7 +1340,7 @@ class ShadowControlManager:
 
         if shutter_stepping_percent is None:
             _LOGGER.warning(
-                f"{self._name}: 'stepping_angle' is None. Stepping can't be computed, returning initial angle {calculated_angle_percent}%")
+                f"{self._name}: 'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle {calculated_angle_percent}%")
             return calculated_angle_percent
 
         # Die PHP-Logik in Python:
@@ -1353,11 +1353,15 @@ class ShadowControlManager:
             if remainder != 0:
                 adjusted_angle = calculated_angle_percent + shutter_stepping_percent - remainder
                 _LOGGER.debug(
-                    f"{self._name}: Applied stepping of {calculated_angle_percent}% to resulting {adjusted_angle}%. Stepping width: {shutter_stepping_percent}%.")
+                    f"{self._name}: Adjusting shutter height from {calculated_angle_percent:.2f}% "
+                    f"to {adjusted_angle:.2f}% (stepping: {shutter_stepping_percent:.2f}%)."
+                )
                 return adjusted_angle
 
         _LOGGER.debug(
-            f"{self._name}: No stepping necessary or stepping value is 0. Returning initial angle {calculated_angle_percent}%")
+            f"{self._name}: Shutter height {calculated_angle_percent:.2f}% "
+            f"fits stepping or stepping is 0. No adjustment."
+        )
         return calculated_angle_percent
 
     # #######################################################################
