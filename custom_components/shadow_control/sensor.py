@@ -7,84 +7,40 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-
-# New import for ConfigEntry
 from homeassistant.config_entries import ConfigEntry
 
 # Importieren Sie Konstanten und Klassen aus Ihrer Hauptintegration (__init__.py)
-from .const import DOMAIN # Assuming DOMAIN is in const.py now
-# You will get the manager directly from hass.data[DOMAIN][entry.entry_id] in async_setup_entry
-# No need to import DOMAIN_DATA_MANAGERS here if you store managers by entry_id directly.
-# Assuming ShadowControlManager is defined in __init__.py for simplicity, otherwise import it from its file.
-from . import ShadowControlManager # <- Assuming ShadowControlManager is in __init__.py
+from .const import DOMAIN, DOMAIN_DATA_MANAGERS
+from . import ShadowControlManager
 
 _LOGGER = logging.getLogger(__name__)
 
-# # Diese Funktion wird von Home Assistant aufgerufen, wenn Ihre Sensor-Plattform geladen wird.
-# async def async_setup_platform(
-#         hass: HomeAssistant,
-#         config: ConfigType, # Dies ist der Home Assistant globale config Dict
-#         async_add_entities, # Callback-Funktion zum Hinzufügen von Entitäten
-#         discovery_info: DiscoveryInfoType = None, # Die Daten, die von async_load_platform übergeben wurden
-# ) -> None:
-#     """Set up the Shadow Control sensor platform."""
-#     _LOGGER.debug(f"[{DOMAIN}] Setting up sensor platform.")
-#
-#     if discovery_info is None:
-#         _LOGGER.error(f"[{DOMAIN}] No discovery info for sensor platform. Cannot set up sensors.")
-#         return False # Oder True, je nachdem wie kritisch das ist
-#
-#     # Holen Sie sich die Liste der Manager, die in __init__.py in hass.data gespeichert wurden
-#     managers = hass.data.get(DOMAIN, {}).get(DOMAIN_DATA_MANAGERS)
-#     if not managers:
-#         _LOGGER.warning(f"[{DOMAIN}] No Shadow Control managers found in hass.data to create sensors for.")
-#         return False
-#
-#     entities_to_add = []
-#     for manager in managers:
-#         _LOGGER.debug(f"[{DOMAIN}] Creating sensors for manager: {manager._name}")
-#         entities_to_add.append(ShadowControlSensor(manager, "target_height"))
-#         entities_to_add.append(ShadowControlSensor(manager, "target_angle"))
-#         entities_to_add.append(ShadowControlSensor(manager, "current_state"))
-#         entities_to_add.append(ShadowControlSensor(manager, "lock_state"))
-#
-#     if entities_to_add:
-#         # Fügen Sie die erstellten Sensoren zu Home Assistant hinzu.
-#         # True bedeutet, dass der Status der Entitäten sofort aktualisiert werden soll.
-#         async_add_entities(entities_to_add, True)
-#         _LOGGER.info(f"[{DOMAIN}] Successfully added {len(entities_to_add)} Shadow Control sensor entities.")
-
-# custom_components/shadow_control/sensor.py
-
 async def async_setup_entry(
         hass: HomeAssistant,
-        entry: ConfigEntry, # ConfigEntry object directly passed
-        async_add_entities: AddEntitiesCallback, # Renamed from async_add_entities to follow HA guidelines
-) -> None:
+        config_entry: ConfigEntry, # Besser 'config_entry' für Konsistenz mit HA-Beispielen
+        async_add_entities: AddEntitiesCallback,
+) -> None: # Plattform-Setup-Funktionen geben typischerweise None zurück
     """Set up the Shadow Control sensor platform from a config entry."""
-    _LOGGER.debug(f"[{DOMAIN}] Setting up sensor platform from config entry: {entry.entry_id}")
+    _LOGGER.debug(f"[{DOMAIN}] Setting up sensor platform from config entry: {config_entry.entry_id}")
 
-    # Retrieve the specific manager instance associated with this config entry
-    # This assumes you stored it under hass.data[DOMAIN][entry.entry_id]["manager"] in __init__.py
-    manager_data = hass.data.get(DOMAIN, {}).get(entry.entry_id)
-    if not manager_data or "manager" not in manager_data:
-        _LOGGER.error(f"[{DOMAIN}] No Shadow Control manager found for config entry {entry.entry_id}. Cannot set up sensors.")
-        # Wichtig: Wenn ein Fehler auftritt, sollte die Funktion False zurückgeben,
-        # damit Home Assistant weiß, dass die Einrichtung fehlgeschlagen ist.
-        return False # <-- Füge diesen Return-Wert hinzu bei Fehler
+    # !!! KORREKTUR !!!
+    # Der Manager wird unter hass.data[DOMAIN_DATA_MANAGERS][config_entry.entry_id] gespeichert.
+    # Wir rufen ihn direkt ab und erwarten, dass er die Manager-Instanz ist.
+    manager: ShadowControlManager | None = hass.data.get(DOMAIN_DATA_MANAGERS, {}).get(config_entry.entry_id)
 
-    manager = manager_data["manager"] # Get the manager instance
+    if manager is None:
+        _LOGGER.error(f"[{DOMAIN}] No Shadow Control manager found for config entry {config_entry.entry_id}. Cannot set up sensors.")
+        return # Auf Fehler None zurückgeben, wie es für Plattform-Setups üblich ist.
 
-    _LOGGER.debug(f"[{DOMAIN}] Creating sensors for manager: {manager._name} (from entry {entry.entry_id})")
+    _LOGGER.debug(f"[{DOMAIN}] Creating sensors for manager: {manager._name} (from entry {config_entry.entry_id})")
 
     entities_to_add = [
-        # Passen Sie den Konstruktor des ShadowControlSensor an,
-        # um die entry.entry_id als separates Argument zu übergeben.
-        ShadowControlSensor(manager, entry.entry_id, "target_height"),
-        ShadowControlSensor(manager, entry.entry_id, "target_angle"),
-        ShadowControlSensor(manager, entry.entry_id, "current_state"),
-        ShadowControlSensor(manager, entry.entry_id, "lock_state"),
-        # Add any other sensors you want to expose here
+        # Der Konstruktor des ShadowControlSensor braucht den Manager und die config_entry.entry_id.
+        ShadowControlSensor(manager, config_entry.entry_id, "target_height"),
+        ShadowControlSensor(manager, config_entry.entry_id, "target_angle"),
+        ShadowControlSensor(manager, config_entry.entry_id, "current_state"),
+        ShadowControlSensor(manager, config_entry.entry_id, "lock_state"),
+        # Weitere Sensoren können hier hinzugefügt werden
     ]
 
     if entities_to_add:

@@ -76,29 +76,49 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 # Der Einstiegspunkt für die Einrichtung über einen ConfigEntry (vom Config Flow)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Your Integration from a config entry."""
-    _LOGGER.debug(f"[{DOMAIN}] Setting up Your Integration from config entry: {entry.entry_id}: {entry.data}")
+    """Set up Shadow Control from a config entry."""
+    _LOGGER.debug(f"[{DOMAIN}] Setting up Shadow Control from config entry: {entry.entry_id}: {entry.data}")
 
-    # Speichere den Manager in hass.data, damit Sensoren und andere Komponenten darauf zugreifen können.
-    # Verwende entry.entry_id als Schlüssel, um mehrere Instanzen zu unterstützen.
+    # Hier können Sie Ihre Manager-Instanz auf Basis von entry.data und entry.options erstellen.
+    # Wichtig: Der Name des Managers muss hier passend extrahiert werden.
+    # Sie haben 'entry.options[SC_CONF_NAME]' im INFO-Log, also nehme ich an,
+    # der Manager-Name kommt aus den Optionen.
+    manager_name = entry.options.get(SC_CONF_NAME) # Oder entry.data.get(SC_CONF_NAME) - prüfen Sie, wo der Name wirklich ist.
+    # ... und die target_cover_entity_id kommt aus entry.data
+    target_cover_entity_id = entry.data.get(TARGET_COVER_ENTITY_ID)
+
+    if not target_cover_entity_id:
+        _LOGGER.error(f"[{manager_name}] No target cover entity ID configured for {entry.entry_id}.")
+        return False
+
+    manager = ShadowControlManager(
+        hass,
+        manager_name, # Manager-Name aus options oder data
+        target_cover_entity_id,
+        entry.options # options an den Manager weitergeben
+    )
+
+    # !!! KORREKTUR 1: Speicher den Manager sofort nach der Instanziierung !!!
+    # Dadurch ist er verfügbar, wenn die Plattformen versuchen, ihn abzurufen.
     if DOMAIN_DATA_MANAGERS not in hass.data:
         hass.data[DOMAIN_DATA_MANAGERS] = {}
-
-    manager = ShadowControlManager(hass, entry.options, entry.entry_id)
     hass.data[DOMAIN_DATA_MANAGERS][entry.entry_id] = manager
+    _LOGGER.debug(f"[{manager_name}] Shadow Control manager stored for entry {entry.entry_id} in {DOMAIN_DATA_MANAGERS}.")
 
-    # Set up platforms (e.g., sensors)
-    for platform in PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-        )
-    _LOGGER.info(f"[{DOMAIN}] Integration '{entry.options[SC_CONF_NAME]}' successfully set up from config entry.")
+
+    # Initialer Start des Managers
+    # Diese async-Methode sollte nun aufgerufen werden, da der Manager bereits gespeichert ist
+    await manager.async_start() # Bisher war dies nach dem Laden der Plattformen
+
+    # !!! KORREKTUR 2: Plattformen laden mit 'await' und einmalig mit der gesamten Liste !!!
+    # Damit wartet async_setup_entry, bis alle Plattformen erfolgreich geladen wurden.
+    # 'PLATFORMS' sollte eine Liste von Strings sein (z.B. ["sensor", "binary_sensor"]).
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     # Füge den Listener für die Aktualisierung der Optionen hinzu
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
-    # Initialer Start des Managers
-    await manager.async_start()
+    _LOGGER.info(f"[{DOMAIN}] Integration '{manager_name}' successfully set up from config entry.") # Verwende manager_name statt entry.options[SC_CONF_NAME]
 
     return True
 
