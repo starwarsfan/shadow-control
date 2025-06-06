@@ -928,8 +928,8 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: New shutter state after processing: {self._current_shutter_state.name} ({self._current_shutter_state.value})")
 
     def _check_if_position_changed_externally(self, current_height, current_angle):
-        #_LOGGER.debug(f"{self._name}: Checking if position changed externally. Current height: {current_height}, Current angle: {current_angle}")
-        _LOGGER.debug(f"{self._name}: Check for external shutter modification -> TBD")
+        # Replace functionality with _async_target_cover_entity_state_change_listener
+        #_LOGGER.debug(f"{self._name}: Check for external shutter modification -> TBD")
         pass
 
     async def _position_shutter(
