@@ -56,9 +56,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     # Dies ist der Platzhalter für Ihre Integrationsdaten in 'hass.data'.
     # Hier speichern Sie später Dinge wie Ihre ShadowControlManager-Instanzen.
-    # Wichtig: hass.data[DOMAIN] wird ein Dictionary sein, das ConfigEntry IDs zu Manager-Listen mappt,
+    # Wichtig: hass.data[DOMAIN_DATA_MANAGERS] wird ein Dictionary sein, das ConfigEntry IDs zu Manager-Instanzen mappt,
     # da Sie möglicherweise mehrere Config-Flow-Instanzen Ihrer Integration hinzufügen können.
-    hass.data.setdefault(DOMAIN, {})
+    hass.data.setdefault(DOMAIN_DATA_MANAGERS, {}) # Stellen Sie sicher, dass DOMAIN_DATA_MANAGERS verwendet wird
 
     # Wenn Sie KEINE YAML-Konfiguration mehr unterstützen wollen, können Sie den Rest der YAML-Logik entfernen.
     # Wenn Sie YAML-Konfigurationen noch verarbeiten wollen (z.B. für einen Übergangszeitraum),
@@ -66,82 +66,86 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     # dass sie nicht mit den ConfigEntry-basierten Setups kollidiert.
     # Für eine reine Config-Flow-Integration können Sie diesen Teil vereinfachen.
 
-    # Beispiel: Wenn Sie alte YAML-Konfigurationen in ConfigEntrys migrieren möchten,
-    # würde die Logik dafür HIER in async_setup stehen.
-    # (Dies ist ein komplexerer Schritt und nicht direkt Teil dieses Umbaus,
-    # aber wichtig für den Übergang von YAML zu UI-Config).
-
     _LOGGER.info(f"[{DOMAIN}] Integration 'Shadow Control' base setup complete.")
     return True
 
 # Der Einstiegspunkt für die Einrichtung über einen ConfigEntry (vom Config Flow)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Shadow Control from a config entry."""
-    _LOGGER.debug(f"[{DOMAIN}] Setting up Shadow Control from config entry: {entry.entry_id}: {entry.data}")
+    # Erweitertes Debug-Log, um den Inhalt von entry.data und entry.options zu sehen
+    _LOGGER.debug(f"[{DOMAIN}] Setting up Shadow Control from config entry: {entry.entry_id}: data={entry.data}, options={entry.options}")
 
-    # Hier können Sie Ihre Manager-Instanz auf Basis von entry.data und entry.options erstellen.
-    # Wichtig: Der Name des Managers muss hier passend extrahiert werden.
-    # Sie haben 'entry.options[SC_CONF_NAME]' im INFO-Log, also nehme ich an,
-    # der Manager-Name kommt aus den Optionen.
-    manager_name = entry.options.get(SC_CONF_NAME) # Oder entry.data.get(SC_CONF_NAME) - prüfen Sie, wo der Name wirklich ist.
-    # ... und die target_cover_entity_id kommt aus entry.data
-    target_cover_entity_id = entry.data.get(TARGET_COVER_ENTITY_ID)
+    # Kombiniere entry.data und entry.options zu einem einzigen Konfigurations-Dictionary.
+    # entry.data enthält die initialen Setup-Daten (z.B. Name, target_cover_entity)
+    # entry.options enthält die über den Options-Flow konfigurierbaren Daten.
+    # Optionen überschreiben Daten, wenn die Schlüssel identisch sind, was in der Regel das gewünschte Verhalten ist.
+    config_data = dict(entry.data)
+    config_data.update(entry.options)
 
-    if not target_cover_entity_id:
-        _LOGGER.error(f"[{manager_name}] No target cover entity ID configured for {entry.entry_id}.")
+    # Überprüfe die kritischen Werte, die jetzt aus dem kombinierten config_data kommen
+    manager_name = config_data.get(SC_CONF_NAME)
+    target_cover_entity_id = config_data.get(TARGET_COVER_ENTITY_ID)
+
+    if not manager_name:
+        _LOGGER.error(f"[{DOMAIN}] No manager name found in config for entry {entry.entry_id}.")
         return False
 
+    if not target_cover_entity_id:
+        _LOGGER.error(f"[{manager_name}] No target cover entity ID found in config for entry {entry.entry_id}.")
+        return False
+
+    # Übergabe des kombinierten Konfigurations-Dictionarys an den ShadowControlManager
     manager = ShadowControlManager(
         hass,
-        manager_name, # Manager-Name aus options oder data
-        target_cover_entity_id,
-        entry.options # options an den Manager weitergeben
+        config_data, # Das ist der Schlüssel: Übergabe des kombinierten Dicts
+        entry.entry_id
     )
 
-    # !!! KORREKTUR 1: Speicher den Manager sofort nach der Instanziierung !!!
-    # Dadurch ist er verfügbar, wenn die Plattformen versuchen, ihn abzurufen.
-    if DOMAIN_DATA_MANAGERS not in hass.data:
-        hass.data[DOMAIN_DATA_MANAGERS] = {}
+    # Speichere den Manager in hass.data, damit Sensoren und andere Komponenten darauf zugreifen können.
+    # Verwende DOMAIN_DATA_MANAGERS als Schlüssel, um mehrere Instanzen zu unterstützen.
+    # (Diese Zeile war bereits korrekt aus vorherigen Iterationen)
     hass.data[DOMAIN_DATA_MANAGERS][entry.entry_id] = manager
     _LOGGER.debug(f"[{manager_name}] Shadow Control manager stored for entry {entry.entry_id} in {DOMAIN_DATA_MANAGERS}.")
 
-
     # Initialer Start des Managers
-    # Diese async-Methode sollte nun aufgerufen werden, da der Manager bereits gespeichert ist
-    await manager.async_start() # Bisher war dies nach dem Laden der Plattformen
+    await manager.async_start()
 
-    # !!! KORREKTUR 2: Plattformen laden mit 'await' und einmalig mit der gesamten Liste !!!
-    # Damit wartet async_setup_entry, bis alle Plattformen erfolgreich geladen wurden.
-    # 'PLATFORMS' sollte eine Liste von Strings sein (z.B. ["sensor", "binary_sensor"]).
+    # Lade die Plattformen (z.B. Sensoren) mit await und der gesamten PLATFORMS-Liste
+    # (Diese Zeile war bereits korrekt aus vorherigen Iterationen)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     # Füge den Listener für die Aktualisierung der Optionen hinzu
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
-    _LOGGER.info(f"[{DOMAIN}] Integration '{manager_name}' successfully set up from config entry.") # Verwende manager_name statt entry.options[SC_CONF_NAME]
-
+    _LOGGER.info(f"[{DOMAIN}] Integration '{manager_name}' successfully set up from config entry.")
     return True
 
 # Der Einstiegspunkt für das Entladen eines ConfigEntry
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    _LOGGER.debug(f"[{DOMAIN}] async_unload_entry called for {entry.entry_id}")
+    _LOGGER.debug(f"[{DOMAIN}] Unloading Shadow Control integration for entry: {entry.entry_id}")
 
-    manager: ShadowControlManager = hass.data[DOMAIN].pop(entry.entry_id)
-    if manager:
-        await manager.async_stop() # DIESE ZEILE ÄNDERN / ENTKOMMENTIEREN (Zeile 128)
-
+    # Entlade die Plattformen
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+    if unload_ok:
+        # Manager Instanz beenden (falls eine Stop-Methode existiert)
+        manager: "ShadowControlManager" = hass.data[DOMAIN_DATA_MANAGERS].pop(entry.entry_id, None)
+        if manager:
+            await manager.async_stop() # Stellen Sie sicher, dass Ihr Manager eine async_stop Methode hat
+
+        _LOGGER.info(f"[{DOMAIN}] Shadow Control integration for entry {entry.entry_id} successfully unloaded.")
+    else:
+        _LOGGER.error(f"[{DOMAIN}] Failed to unload platforms for entry {entry.entry_id}.")
+
     return unload_ok
 
-async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry):
+# Die Hilfsmethode für den Update-Listener sollte unverändert bleiben, falls sie existiert:
+async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle options update."""
-    _LOGGER.debug(f"[{DOMAIN}] Options update listener triggered for entry: {entry.entry_id}")
-    # Hier muss die Logik implementiert werden, um die Manager-Instanz mit neuen Optionen zu aktualisieren.
-    # Am einfachsten ist es, die Integration neu zu laden, was async_unload_entry und dann async_setup_entry aufruft.
-    # Dies ist in config_flow.py bereits implementiert mit async_reload.
-    # Hier könnten wir nur sicherstellen, dass die Manager-Instanz tatsächlich aktualisiert wird,
-    # falls async_reload nicht vollständig die gewünschte Wirkung hat (was es aber sollte).
+    # Dies wird aufgerufen, wenn der Benutzer Optionen über den Options-Flow ändert.
+    # Hier können Sie die Integration neu laden oder den Manager entsprechend aktualisieren.
+    _LOGGER.debug(f"[{DOMAIN}] Options update listener triggered for entry {entry.entry_id}.")
     await hass.config_entries.async_reload(entry.entry_id)
 
 # Dummy-Definitionen für die Konfigurationsklassen, falls sie nicht in Ihrer `__init__.py` definiert sind.
@@ -216,14 +220,24 @@ class ShadowControlManager:
     def __init__(
             self,
             hass: HomeAssistant,
-            config: Mapping[str, Any],
+            config: dict[str, Any],
             entry_id: str
-    ) -> None:
+    ):
         self.hass = hass
         self._config = config
-        self._name = config[SC_CONF_NAME]
         self._entry_id = entry_id
+
+        self._name = config[SC_CONF_NAME]
         self._target_cover_entity_id = config[TARGET_COVER_ENTITY_ID]
+
+        # Überprüfen auf kritische fehlende Werte (obwohl dies bereits in async_setup_entry geprüft wird)
+        if not self._name:
+            _LOGGER.warning(f"Manager init: Manager name is missing in config for entry {entry_id}. Using fallback.")
+            self._name = f"Unnamed Shadow Control ({entry_id})"
+        if not self._target_cover_entity_id:
+            _LOGGER.error(f"Manager init: Target cover entity ID is missing in config for entry {entry_id}. This is critical.")
+            # Sie könnten hier eine Ausnahme auslösen, wenn dies ein nicht behebbarer Fehler ist
+            raise ValueError(f"Target cover entity ID missing for entry {entry_id}")
 
         # WICHTIG: Setzen Sie _options auf _config, damit die Helper-Funktionen funktionieren
         self._options = config
