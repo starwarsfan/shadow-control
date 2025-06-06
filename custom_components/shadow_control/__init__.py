@@ -564,8 +564,8 @@ class ShadowControlManager:
         self._dynamic_config.brightness_dawn = self._get_entity_state_value(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value, -1.0, float)
         self._dynamic_config.sun_elevation = self._get_entity_state_value(SCDynamicInput.SUN_ELEVATION_ENTITY.value, 0.0, float)
         self._dynamic_config.sun_azimuth = self._get_entity_state_value(SCDynamicInput.SUN_AZIMUTH_ENTITY.value, 0.0, float)
-        self._dynamic_config.shutter_current_height = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value, 0.0, float)
-        self._dynamic_config.shutter_current_angle = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value, 0.0, float)
+        self._dynamic_config.shutter_current_height = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value, -1.0, float)
+        self._dynamic_config.shutter_current_angle = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value, -1.0, float)
 
         self._dynamic_config.lock_integration = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, False, bool)
         self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, False, bool)
