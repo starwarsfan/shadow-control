@@ -487,7 +487,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                 self.hass.async_create_task(
                     self.hass.config_entries.async_reload(self.config_entry.entry_id)
                 )
-                return self.async_create_entry(title="")
+                return self.async_create_entry(title="", data={})
             except vol.Invalid as exc:
                 _LOGGER.error("Validation error during options flow final step: %s", exc)
                 for error in exc.errors:
