@@ -2115,22 +2115,6 @@ class ShadowControlManager:
         """Check if dawn handling is activated."""
         return self._dawn_config.enabled
 
-    # =======================================================================
-    # Entity state helper functions
-    def _get_state_value(self, entity_id: str | None) -> str | None:
-        """Helper to get the state of an entity."""
-        if not entity_id:
-            return None
-        state = self.hass.states.get(entity_id)
-        if state:
-            return state.state
-        return None
-
-    # In ShadowControlManager (ca. Zeile 1876, oder wo die Helfer beginnen)
-
-    # Diese Funktionen helfen, Werte aus der Konfiguration zu lesen
-    # Sie sollten direkt aus self._options.get() lesen und dann umwandeln.
-
     def _get_static_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
         """Gets a static value directly from options, with type conversion and default."""
         value = self._options.get(key)
