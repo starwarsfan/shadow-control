@@ -2179,21 +2179,6 @@ class ShadowControlManager:
                 _LOGGER.warning(f"{self._name}: Value '{value_str}' for enum key '{key}' is not a valid {enum_class.__name__} member. Using default: {default_enum_member.name}")
             return default_enum_member
 
-    def _get_entity_string_state(self, entity_id: str | None, default_value: str | None = None) -> str | None:
-        """
-        Gibt den String-Zustand einer Entität zurück oder einen Standardwert,
-        wenn die Entität nicht existiert oder ihr Zustand nicht verfügbar ist.
-        """
-        if not entity_id: # <-- WICHTIG: Prüfung auf None/leeren String
-            _LOGGER.warning(f"{self._name}: Missing entity id for string value (None/Empty). Using default {default_value}")
-            return default_value
-
-        state_obj = self.hass.states.get(entity_id)
-        if not state_obj or state_obj.state in ['unknown', 'unavailable', 'none', None]:
-            _LOGGER.debug(f"{self._name}: State of '{entity_id}' not available or invalid ('{state_obj.state if state_obj else 'None'}'). Using default {default_value}")
-            return default_value
-        return str(state_obj.state)
-
     def _convert_shutter_angle_percent_to_degrees(self, angle_percent: float) -> float:
         """
         Konvertiert den Jalousienwinkel von Prozent (0-100) in Grad.
