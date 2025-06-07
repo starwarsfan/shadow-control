@@ -2179,34 +2179,6 @@ class ShadowControlManager:
                 _LOGGER.warning(f"{self._name}: Value '{value_str}' for enum key '{key}' is not a valid {enum_class.__name__} member. Using default: {default_enum_member.name}")
             return default_enum_member
 
-    def _get_entity_numeric_state(self, config_key: str, target_type: type, default_value: Any = None) -> Any:
-        """
-        Gibt den numerischen Zustand einer Entität zurück, die durch einen Konfigurationsschlüssel identifiziert wird,
-        oder einen Standardwert, wenn die Entität nicht existiert, ihr Zustand nicht verfügbar ist
-        oder nicht konvertiert werden kann.
-        """
-        # 1. Hole die tatsächliche entity_id aus der Konfiguration
-        #    Der Parameter 'config_key' ist jetzt z.B. SCDynamicInput.BRIGHTNESS_ENTITY.value (also ein String wie "brightness_entity")
-        entity_id_from_config = self._config.get(config_key)
-
-        # 2. Prüfe auf leere oder ungültige Entitäts-ID aus der Konfiguration
-        if not entity_id_from_config or entity_id_from_config in ["no_entity_selected", "no_restriction"]:
-            _LOGGER.debug(f"{self._name}: No valid entity_id configured for key '{config_key}' ('{entity_id_from_config}'). Using default {default_value}")
-            return default_value
-
-        # 3. Hole den Zustand der Entität aus Home Assistant
-        state_obj = self.hass.states.get(entity_id_from_config)
-        if not state_obj or state_obj.state in ['unknown', 'unavailable', 'none', None]:
-            _LOGGER.debug(f"{self._name}: State of '{entity_id_from_config}' (for key '{config_key}') not available or invalid ('{state_obj.state if state_obj else 'None'}'). Using default {default_value}")
-            return default_value
-
-        # 4. Konvertiere den Zustand
-        try:
-            return target_type(state_obj.state)
-        except (ValueError, TypeError):
-            _LOGGER.warning(f"{self._name}: Unable to convert state '{state_obj.state}' of '{entity_id_from_config}' into {target_type.__name__} (for key '{config_key}'). Using default {default_value}")
-            return default_value
-
     def _get_entity_boolean_state(self, config_key: str, default_value: bool = False) -> bool:
         """
         Gibt den booleschen Zustand einer Entität zurück, die durch einen Konfigurationsschlüssel identifiziert wird,
