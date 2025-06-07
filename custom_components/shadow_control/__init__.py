@@ -504,24 +504,27 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Unregistering listeners")
         for unsub_func in self._listeners:
             unsub_func()
-        self._listeners = [] # Cleanup list
+        self._listeners = []
 
-    async def _async_home_assistant_started(self, event: Event) -> None: # NEUE METHODE HIER EINFÜGEN (ca. Zeile 560)
-        """Callback für den Start von Home Assistant."""
+    async def _async_home_assistant_started(self, event: Event) -> None:
+        """
+        Callback for start of Home Assistant.
+        """
         _LOGGER.debug(f"{self._name}: Home Assistant started event received. Performing initial calculation.")
-        # Löst die initiale Berechnung aus, nachdem HA vollständig gestartet ist
         await self._async_calculate_and_apply_cover_position(None)
 
     async def async_stop(self) -> None: # NEUE METHODE HIER EINFÜGEN (ab Zeile 668)
-        """Stoppt den ShadowControlManager: Meldet Listener ab und bricht Timer ab."""
+        """
+        Stop ShadowControlManager:
+        - Remove listeners
+        - Stop timer
+        """
         _LOGGER.debug(f"{self._name}: Stopping manager lifecycle...")
-        # Jeglichen laufenden Timer abbrechen
         if self._recalculation_timer:
-            self._recalculation_timer() # Ruft die Abbrechen-Funktion des Timers auf
+            self._recalculation_timer()
             self._recalculation_timer = None
             _LOGGER.debug(f"{self._name}: Recalculation timer cancelled.")
 
-        # Alle registrierten Callbacks abmelden
         for unsub_callback in self._unsub_callbacks:
             unsub_callback()
         self._unsub_callbacks.clear()
@@ -530,7 +533,9 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Manager lifecycle stopped.")
 
     async def _update_input_values(self, event: Event | None = None) -> None:
-        """Update all relevant input values from configuration or Home Assistant states."""
+        """
+        Update all relevant input values from configuration or Home Assistant states.
+        """
         _LOGGER.debug(f"{self._name}: Updating all input values")
 
         # Facade Configuration (static values)
@@ -545,6 +550,7 @@ class ShadowControlManager:
         self._facade_config.slat_min_angle = self._get_static_value(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value, 0.0, float)
         self._facade_config.shutter_stepping_height = self._get_static_value(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, 10.0, float)
         self._facade_config.shutter_stepping_angle = self._get_static_value(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, 10.0, float)
+
         # For shutter_type_static, it's a string from a selector. Convert it to ShutterType enum.
         shutter_type_str = self._get_static_value(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, "mode1", str)
         try:
@@ -685,7 +691,9 @@ class ShadowControlManager:
 
     @callback
     async def _async_handle_input_change(self, event: Event | None) -> None:
-        """Handle changes to any relevant input entity for this specific cover."""
+        """
+        Handle changes to any relevant input entity for this specific cover.
+        """
         _LOGGER.debug(f"{self._name}: Input change detected. Event: {event}")
 
         await self._async_calculate_and_apply_cover_position(event)
@@ -703,7 +711,7 @@ class ShadowControlManager:
         shadow_handling_was_disabled = False
         dawn_handling_was_disabled = False
         
-        if event: # Prüfen, ob es sich um ein tatsächliches Event handelt (nicht None, wie beim Initial-Run)
+        if event: # Check for real event (not None like at the initial run)
             event_type = event.event_type
             event_data = event.data
 
@@ -716,7 +724,6 @@ class ShadowControlManager:
                 _LOGGER.debug(f"{self._name}:   Old state: {old_state.state if old_state else 'None'}")
                 _LOGGER.debug(f"{self._name}:   New state: {new_state.state if new_state else 'None'}")
 
-                # Hier können Sie spezifische Logik hinzufügen, basierend auf der entity
                 if entity == SCShadowInput.CONTROL_ENABLED_ENTITY:
                     _LOGGER.debug(f"{self._name}: Shadow control enable changed to {new_state.state}")
                     shadow_handling_was_disabled = new_state.state == "off"
@@ -754,10 +761,11 @@ class ShadowControlManager:
         self._enforce_position_update = False
 
     async def _check_if_facade_is_in_sun(self) -> bool:
-        """Calculate if the sun illuminates the given facade."""
+        """
+        Calculate if the sun illuminates the given facade.
+        """
         _LOGGER.debug(f"{self._name}: Checking if facade is in sun")
 
-        # Die Werte wurden bereits in _update_input_values als float abgerufen.
         sun_current_azimuth = self._dynamic_config.sun_azimuth
         sun_current_elevation = self._dynamic_config.sun_elevation
         facade_azimuth = self._facade_config.azimuth
@@ -825,9 +833,10 @@ class ShadowControlManager:
         return self._dynamic_config.brightness
 
     async def _calculate_effective_elevation(self) -> float | None:
-        """Berechnet die effektive Elevation der Sonne relativ zur Fassade."""
+        """
+        Calculate effective elevation in relation to the facade.
+        """
 
-        # Die Werte wurden bereits in _update_input_values als float abgerufen.
         sun_current_azimuth = self._dynamic_config.sun_azimuth
         sun_current_elevation = self._dynamic_config.sun_elevation
         facade_azimuth = self._facade_config.azimuth
@@ -842,7 +851,7 @@ class ShadowControlManager:
             virtual_depth = math.cos(math.radians(abs(sun_current_azimuth - facade_azimuth)))
             virtual_height = math.tan(math.radians(sun_current_elevation))
 
-            # Vermeide Division durch Null, falls virtual_depth sehr klein ist
+            # Prevent division by zero if virtual_depth if very small
             if abs(virtual_depth) < 1e-9:
                 effective_elevation = 90.0 if virtual_height > 0 else -90.0
             else:
@@ -857,10 +866,11 @@ class ShadowControlManager:
             _LOGGER.debug(f"{self._name}: Unable to compute effective elevation: Division by zero")
             return None
 
-    # =======================================================================
-    # Persistente Werte
+    # Persistent values
     def _update_extra_state_attributes(self) -> None:
-        """Helper to update the extra_state_attributes dictionary."""
+        """
+        Helper to update the extra_state_attributes dictionary.
+        """
         self._attr_extra_state_attributes = {
             "current_shutter_state": self._current_shutter_state,
             "calculated_shutter_height": self._calculated_shutter_height,
@@ -882,7 +892,7 @@ class ShadowControlManager:
                 _LOGGER.debug(f"{self._name}: Shadow handling was disabled, position shutter at neutral height")
                 self._cancel_recalculation_timer()
                 self._current_shutter_state = ShutterState.NEUTRAL
-                self._update_extra_state_attributes()  # Attribute nach Zustandswechsel aktualisieren
+                self._update_extra_state_attributes()
             case ShutterState.NEUTRAL:
                 _LOGGER.debug(f"{self._name}: Shadow handling was disabled, but shutter already at neutral height. Nothing to do")
             case _:
@@ -900,7 +910,7 @@ class ShadowControlManager:
                 _LOGGER.debug(f"{self._name}: Dawn handling was disabled, position shutter at neutral height")
                 self._cancel_recalculation_timer()
                 self._current_shutter_state = ShutterState.NEUTRAL
-                self._update_extra_state_attributes()  # Attribute nach Zustandswechsel aktualisieren
+                self._update_extra_state_attributes()
             case ShutterState.NEUTRAL:
                 _LOGGER.debug(f"{self._name}: Dawn handling was disabled, but shutter already at neutral height. Nothing to do")
             case _:
@@ -908,8 +918,8 @@ class ShadowControlManager:
 
     async def _process_shutter_state(self) -> None:
         """
-        Verarbeitet den aktuellen Behangzustand und ruft die entsprechende Handler-Funktion auf.
-        Die Handler-Funktionen müssen den neuen ShutterState zurückgeben.
+        Process current shutter state and call corresponding handler functions.
+        Handler functions must return the new shutter state.
         """
         _LOGGER.debug(f"{self._name}: Current shutter state (before processing): {self._current_shutter_state.name} ({self._current_shutter_state.value})")
 
@@ -922,14 +932,14 @@ class ShadowControlManager:
                 _LOGGER.debug(
                     f"{self._name}: State change from {self._current_shutter_state.name} to {new_shutter_state.name}")
                 self._current_shutter_state = new_shutter_state
-                self._update_extra_state_attributes()  # Attribute nach Zustandswechsel aktualisieren
+                self._update_extra_state_attributes()
                 _LOGGER.debug(f"{self._name}: Checking if there might be another change required")
                 await self._process_shutter_state()
         else:
             _LOGGER.debug(
                 f"{self._name}: No specific handler for current state or locked. Current lock state: {self._current_lock_state.name}")
             self._cancel_recalculation_timer()
-            self._update_extra_state_attributes()  # Auch hier Attribute aktualisieren, falls sich durch Sperrung etwas ändert
+            self._update_extra_state_attributes()
 
         _LOGGER.debug(f"{self._name}: New shutter state after processing: {self._current_shutter_state.name} ({self._current_shutter_state.value})")
 
@@ -945,7 +955,9 @@ class ShadowControlManager:
             shadow_position: bool,
             stop_timer: bool
     ) -> None:
-        """Helper to send commands to the target cover."""
+        """
+        Helper to send commands to the cover, which is maintained by this ShadowControlManager instance.
+        """
         _LOGGER.debug(
             f"{self._name}: Starting _position_shutter with target height {shutter_height_percent:.2f}% "
             f"and angle {shutter_angle_percent:.2f}% (is_initial_run: {self._is_initial_run}, "
@@ -975,7 +987,7 @@ class ShadowControlManager:
             self._is_initial_run = False  # Initial run completed
 
             self._update_extra_state_attributes()
-            return  # Exit here, as no physical output should happen on initial run
+            return  # Exit here, as no physical output should happen on the initial run
 
         # --- Phase 3: Check for Lock State BEFORE applying stepping/should_output_be_updated and sending commands ---
         # This ensures that calculations still happen, but outputs are skipped.
@@ -1039,7 +1051,6 @@ class ShadowControlManager:
 
         supported_features = current_cover_state.attributes.get(ATTR_SUPPORTED_FEATURES, 0)
 
-        # Hier die korrekten Dienstnamen verwenden
         has_pos_service = self.hass.services.has_service("cover", "set_cover_position")
         has_tilt_service = self.hass.services.has_service("cover", "set_cover_tilt_position")
 
@@ -1073,7 +1084,7 @@ class ShadowControlManager:
         # --- Phase 5: Send commands if values actually changed (only if not initial run AND not locked) ---
         send_height_command = -0.001 < abs(height_to_set_percent - self._previous_shutter_height) > 0.001 if self._previous_shutter_height is not None else True
 
-        # Send angle command if angle changed OR if height changed significantly
+        # Send angle command if the angle changed OR if height changed significantly
         send_angle_command = (-0.001 < abs(angle_to_set_percent - self._previous_shutter_angle) > 0.001 if self._previous_shutter_angle is not None else True) or height_calculated_different_from_previous
 
         if self._enforce_position_update:
@@ -1128,9 +1139,8 @@ class ShadowControlManager:
 
     def _calculate_shutter_height(self) -> float:
         """
-        Berechnet die Zielhöhe des Rolladens basierend auf Sonnenstand und
-        Konfiguration für den Beschattungsbereich.
-        Gibt die berechnete Höhe in Prozent (0-100) zurück.
+        Calculate shutter height based on sun position and shadow area configuration.
+        Returns height in percent (0-100).
         """
         _LOGGER.debug(f"{self._name}: Starting calculation of shutter height")
 
@@ -1153,18 +1163,18 @@ class ShadowControlManager:
                 f"shutter_overall_height={shutter_overall_height}, "
                 f"shadow_max_height_percent={shadow_max_height_percent}. "
                 f"Using initial default value of {shutter_height_to_set_percent}%")
-            return shutter_height_to_set_percent  # Oder ein anderer Standard/Fehlerwert
+            return shutter_height_to_set_percent
 
         if width_of_light_strip != 0:
-            # PHP's deg2rad entspricht math.radians
-            # PHP's tan entspricht math.tan
+            # PHP's deg2rad equates to math.radians
+            # PHP's tan equates math.tan
             shutter_height_from_bottom_raw = width_of_light_strip * math.tan(
                 math.radians(elevation))
 
-            # PHP's round ist in der Regel kaufmännisch runden (0.5 aufrunden).
-            # Python's round() rundet zur nächsten geraden Zahl bei .5 (banker's rounding).
-            # Für kaufmännisches Runden müsste man math.floor(x + 0.5) verwenden oder Decimal.
-            # Für Rollladenpositionen ist der Unterschied meist unerheblich, daher bleiben wir bei round().
+            # PHP's round is usually 'trading round' (round up 0.5).
+            # Python's round() rounds to next even number at 0.5 ('bankers rounding').
+            # For traders round one would need to use math.floor(x + 0.5) or decimal.
+            # For the shutter position, the difference would be minimal, so we're using round().
             shutter_height_to_set = round(shutter_height_from_bottom_raw)
 
             # PHP: 100 - round($shutterHeightToSet * 100 / $shutterOverallHeight);
@@ -1192,8 +1202,7 @@ class ShadowControlManager:
 
     def _handle_shutter_height_stepping(self, calculated_height_percent: float) -> float:
         """
-        Passt die Rollladenhöhe an die konfigurierte minimale Schrittweite an.
-        Entspricht der PHP-Funktion LB_LBSID_handleShutterHeightStepping.
+        Modify shutter height according to configured minimal stepping.
         """
         shutter_stepping_percent = self._facade_config.shutter_stepping_height
 
@@ -1202,11 +1211,10 @@ class ShadowControlManager:
                 f"{self._name}: 'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle {calculated_height_percent}%")
             return calculated_height_percent
 
-        # Only apply stepping if the stepping value is not zero and height is not already a multiple
+        # Only apply stepping if the stepping value is not zero and height is not yet a multiple of the stepping
         if shutter_stepping_percent != 0:
             remainder = calculated_height_percent % shutter_stepping_percent
             if remainder != 0:
-                # The PHP logic seems to round up to the next full step.
                 # Example: 10% stepping, current height 23%. remainder = 3.
                 # 23 + 10 - 3 = 30. (Rounds up to the next full step).
                 adjusted_height = calculated_height_percent + shutter_stepping_percent - remainder
@@ -1226,6 +1234,8 @@ class ShadowControlManager:
         """
         Berechnet den Zielwinkel der Lamellen, um Sonneneinstrahlung zu verhindern.
         Gibt den berechneten Winkel in Prozent (0-100) zurück.
+        Calculate shutter slat angle to prevent sun light within the room.
+        Returns angle in percent (0-100).
         """
         _LOGGER.debug(f"{self._name}: Starting calculation of shutter angle")
 
@@ -1255,7 +1265,7 @@ class ShadowControlManager:
                 f"angle_offset={shutter_angle_offset}, min_angle={min_shutter_angle_percent}, "
                 f"max_angle={max_shutter_angle_percent}, shutter_type={shutter_type}, "
                 f"effective_elevation={effective_elevation}. Returning 0.0")
-            return 0.0  # Standardwert bei fehlenden Daten
+            return 0.0  # Default if values missing
 
         # ==============================
         # Math based on oblique triangle
@@ -1298,11 +1308,11 @@ class ShadowControlManager:
                 f"{self._name}: Unknown shutter type '{shutter_type}'. Using default (mode1, 90°)")
             shutter_angle_percent = shutter_angle_degrees / 0.9  # Standardverhalten
 
-        # Sicherstellen, dass der Winkel nicht negativ wird
+        # Make sure, the angle will not be lower than 0
         if shutter_angle_percent < 0:
             shutter_angle_percent = 0.0
 
-        # Runden vor dem Stepping, wie im PHP-Code
+        # Round before stepping
         shutter_angle_percent_rounded_for_stepping = round(shutter_angle_percent)
 
         shutter_angle_percent_with_stepping = self._handle_shutter_angle_stepping(
@@ -1321,16 +1331,16 @@ class ShadowControlManager:
         else:
             final_shutter_angle_percent = shutter_angle_percent_with_stepping
 
-        # Endgültiges Runden des finalen Winkels
+        # Round final angle
         final_shutter_angle_percent = round(final_shutter_angle_percent)
 
         _LOGGER.debug(
             f"{self._name}: Resulting shutter angle with offset and stepping: {final_shutter_angle_percent}%")
-        return float(final_shutter_angle_percent)  # Sicherstellen, dass es ein Float zurückgibt
+        return float(final_shutter_angle_percent)
 
     def _handle_shutter_angle_stepping(self, calculated_angle_percent: float) -> float:
         """
-        Passt den berechneten Lamellenwinkel an das vorgegebene Stepping an.
+        Modify shutter angle according to configured minimal stepping.
         """
         _LOGGER.debug(
             f"{self._name}: Computing shutter angle stepping for {calculated_angle_percent}%")
@@ -1342,7 +1352,7 @@ class ShadowControlManager:
                 f"{self._name}: 'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle {calculated_angle_percent}%")
             return calculated_angle_percent
 
-        # Die PHP-Logik in Python:
+        # PHP logic in Python:
         # if ($shutterSteppingPercent != 0 && ($shutterAnglePercent % $shutterSteppingPercent) != 0) {
         #    $shutterAnglePercent = $shutterAnglePercent + $shutterSteppingPercent - ($shutterAnglePercent % $shutterSteppingPercent);
         # }
@@ -1364,7 +1374,7 @@ class ShadowControlManager:
         return calculated_angle_percent
 
     # #######################################################################
-    # State handling starting here
+    # State handling starts here
     #
     # =======================================================================
     # State SHADOW_FULL_CLOSE_TIMER_RUNNING
@@ -1416,7 +1426,6 @@ class ShadowControlManager:
                 _LOGGER.warning(f"{self._name}: State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
                 return ShutterState.NEUTRAL
 
-        # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
         _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name}): Staying at previous position.")
         return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
 
@@ -1465,7 +1474,6 @@ class ShadowControlManager:
                 _LOGGER.warning(f"{self._name}: State {ShutterState.SHADOW_FULL_CLOSED} ({ShutterState.SHADOW_FULL_CLOSED.name}): Neutral height or angle not configured, moving to state {ShutterState.NEUTRAL}")
                 return ShutterState.NEUTRAL
 
-        # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
         _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_FULL_CLOSED} ({ShutterState.SHADOW_FULL_CLOSED.name}): Staying at previous position")
         return ShutterState.SHADOW_FULL_CLOSED
 
@@ -1520,7 +1528,6 @@ class ShadowControlManager:
                 _LOGGER.warning(f"{self._name}: State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
                 return ShutterState.NEUTRAL
 
-        # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
         _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Staying at previous position")
         return ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
@@ -1575,7 +1582,6 @@ class ShadowControlManager:
                 _LOGGER.warning(f"{self._name}: State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
                 return ShutterState.NEUTRAL
 
-        # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
         _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name}): Staying at previous position")
         return ShutterState.SHADOW_HORIZONTAL_NEUTRAL
 
@@ -1632,7 +1638,6 @@ class ShadowControlManager:
                 _LOGGER.warning(f"{self._name}: State {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
                 return ShutterState.NEUTRAL
 
-        # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
         _LOGGER.debug(f"{self._name}: State {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name}): Staying at previous position")
         return ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING
 
@@ -1888,7 +1893,6 @@ class ShadowControlManager:
                 _LOGGER.warning(f"{self._name}: State {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
                 return ShutterState.NEUTRAL
 
-        # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
         _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name}): Staying at previous position")
         return ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
 
@@ -1941,7 +1945,6 @@ class ShadowControlManager:
                 _LOGGER.warning(f"{self._name}: State {ShutterState.DAWN_HORIZONTAL_NEUTRAL} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
                 return ShutterState.NEUTRAL
 
-        # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
         _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_HORIZONTAL_NEUTRAL} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL.name}): Staying at previous position")
         return ShutterState.DAWN_HORIZONTAL_NEUTRAL
 
@@ -1995,7 +1998,6 @@ class ShadowControlManager:
                 _LOGGER.warning(f"{self._name}: State {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
                 return ShutterState.NEUTRAL
 
-        # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
         _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Staying at previous position")
         return ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
@@ -2046,7 +2048,6 @@ class ShadowControlManager:
                 _LOGGER.warning(f"{self._name}: State {ShutterState.DAWN_FULL_CLOSED} ({ShutterState.DAWN_FULL_CLOSED.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
                 return ShutterState.NEUTRAL
 
-        # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
         _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_FULL_CLOSED} ({ShutterState.DAWN_FULL_CLOSED.name}): Staying at previous position")
         return ShutterState.DAWN_FULL_CLOSED
 
@@ -2100,7 +2101,6 @@ class ShadowControlManager:
                 _LOGGER.warning(f"{self._name}: State {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
                 return ShutterState.NEUTRAL
 
-        # Entsprechung zu LB_LBSID_positionShutterWithPreviousValues
         _LOGGER.debug(f"{self._name}: State {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name}): Staying at previous position")
         return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
 
@@ -2108,15 +2108,21 @@ class ShadowControlManager:
     # #######################################################################
 
     async def _is_shadow_control_enabled(self) -> bool:
-        """Check if shadow handling is activated."""
+        """
+        Check if shadow handling is activated.
+        """
         return self._shadow_config.enabled
 
     async def _is_dawn_control_enabled(self) -> bool:
-        """Check if dawn handling is activated."""
+        """
+        Check if dawn handling is activated.
+        """
         return self._dawn_config.enabled
 
     def _get_static_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
-        """Gets a static value directly from options, with type conversion and default."""
+        """
+        Gets a static value directly from options, with type conversion and default.
+        """
         value = self._options.get(key)
         if value is None:
             if log_warning:
@@ -2132,7 +2138,9 @@ class ShadowControlManager:
             return default
 
     def _get_entity_state_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
-        """Gets a dynamic value from an entity state, with type conversion and default."""
+        """
+        Gets a dynamic value from an entity state, with type conversion and default.
+        """
         entity_id = self._options.get(key) # This will be the string entity_id or None
 
         if entity_id is None or not isinstance(entity_id, str) or entity_id == '':
@@ -2162,7 +2170,9 @@ class ShadowControlManager:
             return default
 
     def _get_enum_value(self, key: str, enum_class: type, default_enum_member: Enum, log_warning: bool = True) -> Enum:
-        """Gets an enum member from a string value stored in options."""
+        """
+        Gets an enum member from a string value stored in options.
+        """
         value_str = self._options.get(key)
 
         if value_str is None or not isinstance(value_str, str) or value_str == '':
@@ -2181,57 +2191,23 @@ class ShadowControlManager:
 
     def _convert_shutter_angle_percent_to_degrees(self, angle_percent: float) -> float:
         """
-        Konvertiert den Jalousienwinkel von Prozent (0-100) in Grad.
-        0% = 0 Grad (Lamellen offen)
-        100% = 90 Grad (Lamellen geschlossen)
-        Kann auch auf mehr als 90 Grad gehen, wenn im Enum entsprechend definiert.
+        Convert shutter slat angle from percent to degrees.
+        0% = 0 degrees (Slats open)
+        100% = 90 degrees (Slats closed)
+        Could be higher than 90° depending on shutter type.
         """
-        # Stellen Sie sicher, dass _facade_slat_min_angle_entity und _facade_slat_angle_offset_entity
-        # in __init__ korrekt initialisiert sind und über _get_entity_numeric_state gelesen werden.
-
         min_slat_angle = self._facade_config.slat_min_angle
         angle_offset = self._facade_config.slat_angle_offset
 
-        # Sicherheitsprüfung für None-Werte, falls _update_input_values noch nicht durchlief oder Fehler hatte
         if min_slat_angle is None or angle_offset is None:
             _LOGGER.warning(
                 f"{self._name}: _convert_shutter_angle_percent_to_degrees: min_slat_angle ({min_slat_angle}) or angle_offset ({angle_offset}) is None. Using default values (0, 0)")
             min_slat_angle = 0.0
             angle_offset = 0.0
 
-        # Die Umrechnungsformel
-        # Annahme: 0% ist offen (min_slat_angle) und 100% ist geschlossen (90 Grad + offset)
-        # Ihre KNX-Doku oder LBS-Logik kann hier abweichen.
-        # Wenn 0% = 0 Grad und 100% = 90 Grad Standard ist, dann ist es einfach angle_percent * 0.9.
-        # Wenn 0% auf min_slat_angle mappt und 100% auf (90 + angle_offset) Grad:
+        calculated_degrees = angle_percent * 0.9  # Convert 0-100% into 0-90 degrees
 
-        # Beispiel basierend auf typischer 0-100% zu 0-90° Konvertierung für Lamellen:
-        # 0% = Lamellen horizontal (oft 0 Grad)
-        # 100% = Lamellen vertikal (oft 90 Grad)
-
-        # Wenn Sie eine variable 'max_angle' haben oder Ihre Logik anders ist, passen Sie dies an.
-        # Basierend auf der PHP-LBS, wo 100% = 90 Grad ist (plus Offset/MinSlatAngle)
-        # Beispiel: Wenn 0% = min_slat_angle und 100% = (90 + angle_offset)
-        # angle_range = (90 + angle_offset) - min_slat_angle
-        # return min_slat_angle + (angle_percent / 100.0) * angle_range
-
-        # Für eine einfachere 0-100% zu 0-90° (oder 0-max_angle) mapping:
-        # Gehen wir davon aus, dass 100% einem Winkel von (90 + angle_offset) Grad entspricht
-        # und 0% dem min_slat_angle.
-
-        # PHP-Beispiel aus dem LBS-Code (angenommen):
-        # Angle in degrees = $shutterAnglePercent * 0.9; // 0-90 Grad
-        # Angle in degrees = $angleInDegrees + $offset; // Plus Offset
-        # Angle in degrees = max($minSlatAngle, $angleInDegrees); // Minimum Lamellenwinkel
-
-        # Basierend auf der typischen KNX-Welt, wo 0% Lamellen offen sind, 100% Lamellen geschlossen (90 Grad)
-        # und dann noch ein Min-Winkel und Offset hinzukommt:
-
-        calculated_degrees = angle_percent * 0.9  # Konvertiert 0-100% in 0-90 Grad
-
-        # Anwenden des Winkels-Offsets und des Minimum-Lamellenwinkels
-        # Die Reihenfolge dieser Operationen ist wichtig und hängt von der Logik Ihrer originalen LBS ab.
-        # Typischerweise wird der Offset addiert und dann ein Minimum angewendet.
+        # Handle angle offset and minimal shutter slat angle
         calculated_degrees += angle_offset
         calculated_degrees = max(min_slat_angle, calculated_degrees)
 
@@ -2243,31 +2219,22 @@ class ShadowControlManager:
     def _should_output_be_updated(self, config_value: MovementRestricted, new_value: float,
                                   previous_value: float | None) -> float:
         """
-        Abhängig vom übergebenen Konfigurationswert, gibt den vorherigen oder den neuen Wert zurück.
-        Neuer Wert wird zurückgegeben, wenn:
-        - config_value ist 'ONLY_DOWN' und neuer Wert ist größer als vorheriger Wert oder
-        - config_value ist 'ONLY_UP' und neuer Wert ist kleiner als vorheriger Ausgabewert oder
-        - config_value ist 'NO_RESTRICTION' oder etwas anderes.
-        Alle anderen Fälle geben den vorherigen Wert zurück.
-
-        Entspricht der PHP-Funktion LB_LBSID_shouldOutputBeUpdated.
+        Check if the output should be updated, depending on given MovementRestricted configuration
+        New value will be returned if:
+        - config_value is 'ONLY_DOWN' and new value is higher than previous value or
+        - config_value is 'ONLY_UP' and new value is lower than previous value or
+        - config_value is 'NO_RESTRICTION' oder everything else.
+        All other cases will return the previous value.
         """
-        # Annahme: LB_LBSID_INTERNAL__doUpdatePositionOutputs ist in Python über
-        # die Zustandsmaschine und die _current_lock_state Logik abgedeckt.
-        # Hier geht es nur um die reine Bewegungsbeschränkung.
-
-        # Falls previous_value noch None ist (z.B. beim Initiallauf),
-        # sollte der new_value immer zurückgegeben werden, da es noch keinen "previous" gibt.
         if previous_value is None:
+            # Return None if there's no previous value (like on the initial run)
             # _LOGGER.debug(
             #     f"{self._name}: _should_output_be_updated: previous_value is None. Returning new value ({new_value})")
             return new_value
 
-        # Überprüfen Sie, ob sich der Wert überhaupt geändert hat,
-        # bevor Sie die komplexere Logik anwenden.
-        # Eine kleine Toleranz kann hier sinnvoll sein, um unnötige Bewegungen zu vermeiden.
-        # Home Assistant filtert oft schon, aber eine explizite Prüfung ist gut.
-        if abs(new_value - previous_value) < 0.001:  # Kleine Toleranz für Floating Point Vergleiche
+        # Check if the value was changed at all
+        # by using a small tolerance to prevent redundant movements.
+        if abs(new_value - previous_value) < 0.001:
             # _LOGGER.debug(
             #     f"{self._name}: _should_output_be_updated: new_value ({new_value}) is nearly identical to previous_value ({previous_value}). Returning previous_value")
             return previous_value
@@ -2298,25 +2265,22 @@ class ShadowControlManager:
             #     f"{self._name}: _should_output_be_updated: NO_RESTRICTION -> Returning new_value ({new_value})")
             return new_value
         else:
-            # Für alle anderen (unbekannten) config_values, geben wir den previous_value zurück
-            # oder den new_value, je nachdem, wie Sie die "default" in PHP interpretieren.
-            # Die PHP "default" ist "return $newValue;", also lassen wir das auch hier so.
             # _LOGGER.warning(
             #     f"{self._name}: _should_output_be_updated: Unknown value '{config_value.name}'. Returning new_value ({new_value})")
             return new_value
 
     async def _start_recalculation_timer(self, delay_seconds: float) -> None:
         """
-        Startet einen Timer, der nach 'delay_seconds' eine Neuberechnung auslöst.
-        Bestehende Timer werden vorher abgebrochen.
+        Start timer, which triggers a recalculation after 'delay_seconds'.
+        Existing timers will be stopped before.
         """
-        self._cancel_recalculation_timer()  # Immer erst den alten Timer abbrechen
+        self._cancel_recalculation_timer()
 
         if delay_seconds <= 0:
             _LOGGER.debug(
                 f"{self._name}: Timer delay is <= 0 ({delay_seconds}s). Trigger immediate recalculation")
             await self._async_calculate_and_apply_cover_position(None)
-            # Wenn sofortige Neuberechnung, gibt es keinen zukünftigen Timer.
+            # At immediate recalculation, there is no new timer
             self._next_modification_timestamp = None
             return
 
@@ -2345,7 +2309,7 @@ class ShadowControlManager:
         """
         if self._recalculation_timer:
             _LOGGER.debug(f"{self._name}: Canceling recalculation timer")
-            self._recalculation_timer()  # Aufruf des Handles bricht den Timer ab
+            self._recalculation_timer()
             self._recalculation_timer = None
 
         # Reset timer tracking variables
@@ -2372,7 +2336,7 @@ class ShadowControlManager:
         if self._recalculation_timer and self._recalculation_timer_start_time and self._recalculation_timer_duration_seconds is not None:
             elapsed_time = (datetime.now(timezone.utc) - self._recalculation_timer_start_time).total_seconds()
             remaining_time = self._recalculation_timer_duration_seconds - elapsed_time
-            return max(0.0, remaining_time) # Stelle sicher, dass es nicht negativ ist
+            return max(0.0, remaining_time) # Only positive values
         return None
 
     def _is_timer_finished(self) -> bool:
