@@ -306,6 +306,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             self.config_data.update(user_input)
+            _LOGGER.debug(f"[ConfigFlow] After general_settings, config_data: {self.config_data}") # NEU: Debug-Log
             # Proceed to the next step
             return await self.async_step_facade_settings()
 
@@ -321,6 +322,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             self.config_data.update(self._clean_number_inputs(user_input))
+            _LOGGER.debug(f"[ConfigFlow] After facade_settings, config_data: {self.config_data}") # NEU: Debug-Log
             return await self.async_step_dynamic_inputs()
 
         return self.async_show_form(
@@ -335,6 +337,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             self.config_data.update(self._clean_number_inputs(user_input))
+            _LOGGER.debug(f"[ConfigFlow] After dynamic_inputs, config_data: {self.config_data}") # NEU: Debug-Log
             return await self.async_step_shadow_settings()
 
         return self.async_show_form(
@@ -349,6 +352,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             self.config_data.update(self._clean_number_inputs(user_input))
+            _LOGGER.debug(f"[ConfigFlow] After shadow_settings, config_data: {self.config_data}") # NEU: Debug-Log
             return await self.async_step_dawn_settings()
 
         return self.async_show_form(
@@ -363,6 +367,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             self.config_data.update(self._clean_number_inputs(user_input))
+            _LOGGER.debug(f"[ConfigFlow] After dawn_settings, config_data: {self.config_data}") # NEU: Debug-Log
             _LOGGER.debug(f"Final config data before creation: {self.config_data}")
 
             try:
@@ -481,13 +486,14 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                 # Validate the entire options configuration using the combined schema
                 validated_options = FULL_CONFIG_SCHEMA(self.options_data)
                 _LOGGER.debug(f"Validated options data: {validated_options}")
-                self.hass.config_entries.async_update_entry(
-                    self.config_entry, options=validated_options
-                )
-                self.hass.async_create_task(
-                    self.hass.config_entries.async_reload(self.config_entry.entry_id)
-                )
-                return self.async_create_entry(title="", data={})
+
+                # In einem Optionsfluss wird 'async_create_entry' mit den aktualisierten Daten
+                # verwendet, um die Optionen des *bestehenden* Eintrags zu speichern und
+                # den Home Assistant Kern zu informieren, dass eine Aktualisierung erfolgt ist.
+                # Home Assistant wird den Eintrag dann bei Bedarf automatisch neu laden.
+                # Der manuelle Aufruf von async_update_entry und async_reload ist nicht nötig.
+                return self.async_create_entry(title="", data=validated_options)
+
             except vol.Invalid as exc:
                 _LOGGER.error("Validation error during options flow final step: %s", exc)
                 for error in exc.errors:
