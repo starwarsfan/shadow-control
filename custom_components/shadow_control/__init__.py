@@ -2179,31 +2179,6 @@ class ShadowControlManager:
                 _LOGGER.warning(f"{self._name}: Value '{value_str}' for enum key '{key}' is not a valid {enum_class.__name__} member. Using default: {default_enum_member.name}")
             return default_enum_member
 
-    def _get_entity_boolean_state(self, config_key: str, default_value: bool = False) -> bool:
-        """
-        Gibt den booleschen Zustand einer Entität zurück, die durch einen Konfigurationsschlüssel identifiziert wird,
-        oder einen Standardwert, wenn die Entität nicht existiert, ihr Zustand nicht verfügbar ist
-        oder nicht konvertiert werden kann.
-        """
-        # 1. Hole die tatsächliche entity_id aus der Konfiguration
-        #    'config_key' ist hier z.B. SCDynamicInput.LOCK_INTEGRATION_ENTITY.value
-        entity_id_from_config = self._config.get(config_key)
-
-        # 2. Prüfe auf leere, ungültige oder "no_entity_selected" Entitäts-ID aus der Konfiguration
-        if not entity_id_from_config or entity_id_from_config in ["no_entity_selected", "no_restriction"]:
-            _LOGGER.debug(f"{self._name}: No valid entity_id configured for boolean key '{config_key}' ('{entity_id_from_config}'). Using default {default_value}")
-            return default_value
-
-        # 3. Hole den Zustand der Entität aus Home Assistant
-        state_obj = self.hass.states.get(entity_id_from_config)
-        if not state_obj or state_obj.state in ['unknown', 'unavailable', 'none', None]:
-            _LOGGER.debug(f"{self._name}: State of '{entity_id_from_config}' (for key '{config_key}') not available or invalid ('{state_obj.state if state_obj else 'None'}'). Using default {default_value}")
-            return default_value
-
-        # 4. Konvertiere den Zustand in einen Booleschen Wert
-        #    HA States sind oft 'on'/'off' Strings für Booleans
-        return state_obj.state.lower() == 'on'
-
     def _get_entity_string_state(self, entity_id: str | None, default_value: str | None = None) -> str | None:
         """
         Gibt den String-Zustand einer Entität zurück oder einen Standardwert,
