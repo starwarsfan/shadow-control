@@ -1126,13 +1126,6 @@ class ShadowControlManager:
 
         _LOGGER.debug(f"{self._name}: _position_shutter finished.")
 
-    async def async_unload(self) -> bool:
-        """Clean up when the integration is unloaded."""
-        _LOGGER.debug(f"{self._name}: Unloading Shadow Control")
-        for listener in self._listeners:
-            listener() # Remove event listener
-        return True
-
     def _calculate_shutter_height(self) -> float:
         """
         Berechnet die Zielhöhe des Rolladens basierend auf Sonnenstand und
