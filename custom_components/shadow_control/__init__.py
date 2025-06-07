@@ -512,14 +512,6 @@ class ShadowControlManager:
         # Löst die initiale Berechnung aus, nachdem HA vollständig gestartet ist
         await self._async_calculate_and_apply_cover_position(None)
 
-    async def async_hass_started(self, event: Event) -> None:
-        """Handle Home Assistant start event for this specific manager."""
-        _LOGGER.info(f" {self._name}: Home Assistant has started. Initializing Shadow Control")
-        # Hier können Sie den initialen Zustand abrufen und die erste Berechnung ausführen
-
-        # Initialberechnung beim Start
-        await self._async_calculate_and_apply_cover_position(None)
-
     async def async_stop(self) -> None: # NEUE METHODE HIER EINFÜGEN (ab Zeile 668)
         """Stoppt den ShadowControlManager: Meldet Listener ab und bricht Timer ab."""
         _LOGGER.debug(f"{self._name}: Stopping manager lifecycle...")
