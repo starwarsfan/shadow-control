@@ -1673,7 +1673,7 @@ class ShadowControlManager:
             shadow_close_delay = self._shadow_config.after_seconds
             dawn_close_delay = self._dawn_config.after_seconds
             height_after_shadow = self._shadow_config.height_after_sun
-            angle_after_shadow = self._shadow_config.height_after_sun
+            angle_after_shadow = self._shadow_config.angle_after_sun
 
             if (
                     current_brightness is not None
