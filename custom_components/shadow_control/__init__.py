@@ -698,7 +698,12 @@ class ShadowControlManager:
         dawn_angle_after_dawn_static = self._get_static_value(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value, 0.0, float, log_warning=False)
         self._dawn_config.angle_after_dawn = self._get_entity_state_value(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value, dawn_angle_after_dawn_static, float)
 
-        _LOGGER.debug(f"{self._name}: Updated values (part of): Brightness={self._dynamic_config.brightness}, Elevation={self._dynamic_config.sun_elevation}, ShadowEnabled={self._shadow_config.enabled}")
+        _LOGGER.debug(f"{self._name}: Updated values:\n"
+                      f"{_format_config_object_for_logging(self._facade_config, 'Facade config: ')},\n"
+                      f"{_format_config_object_for_logging(self._dynamic_config, 'Dynamic config: ')},\n"
+                      f"{_format_config_object_for_logging(self._shadow_config, 'Shadow config: ')},\n"
+                      f"{_format_config_object_for_logging(self._dawn_config, 'Dawn config: ')}"
+                      )
 
     @callback
     async def _async_handle_input_change(self, event: Event | None) -> None:
@@ -2486,3 +2491,23 @@ class ShadowControlManager:
         Prüft, ob ein Neuberechnungs-Timer aktiv ist.
         """
         return self._recalculation_timer is None
+
+# Helper for dynamic log output
+def _format_config_object_for_logging(obj, prefix: str = "") -> str:
+    """
+    Format the public attributes of a given configuration object into one string
+    """
+    if not obj:
+        return f"{prefix}None"
+
+    parts = []
+    # `vars(obj)` returns a dictionary of __dict__ attributes of a given object
+    for attr, value in vars(obj).items():
+        # Skip 'private' attributes, which start with an underscore
+        if not attr.startswith('_'):
+            parts.append(f"{attr}={value}")
+
+    if not parts:
+        return f"{prefix}No attributes to log found."
+
+    return f"{prefix}{', '.join(parts)}"
