@@ -75,19 +75,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Erweitertes Debug-Log, um den Inhalt von entry.data und entry.options zu sehen
     _LOGGER.debug(f"[{DOMAIN}] Setting up Shadow Control from config entry: {entry.entry_id}: data={entry.data}, options={entry.options}")
 
-    # Kombiniere entry.data und entry.options zu einem einzigen Konfigurations-Dictionary.
-    # entry.data enthält die initialen Setup-Daten (z.B. Name, target_cover_entity)
-    # entry.options enthält die über den Options-Flow konfigurierbaren Daten.
-    # Optionen überschreiben Daten, wenn die Schlüssel identisch sind, was in der Regel das gewünschte Verhalten ist.
-    config_data = dict(entry.data)
-    config_data.update(entry.options)
+    # **WICHTIG:** Die Log-Ausgabe 'data={}, options={}' während des Neuladens deutet darauf hin,
+    # dass das ConfigEntry-Objekt in diesem Moment möglicherweise keine Daten enthält. Dies ist ungewöhnlich.
+    # Wir müssen den Manager-Namen und die Konfigurationsdaten so robust wie möglich abrufen.
 
-    # Überprüfe die kritischen Werte, die jetzt aus dem kombinierten config_data kommen
-    manager_name = config_data.get(SC_CONF_NAME)
+    # Manager-Name: Der Titel des Eintrags ist der zuverlässigste Weg, den Namen zu erhalten,
+    # da er bei der Erstellung des Eintrags immer als 'title' gesetzt wird.
+    manager_name = entry.title
+
+    # Kombiniere entry.data und entry.options für die eigentliche Konfiguration des Managers.
+    # Optionen überschreiben Daten, wenn die Schlüssel identisch sind.
+    config_data = {**entry.data, **entry.options}
+
+    # Kritische Prüfung: Wenn 'entry.data' und 'entry.options' leer sind (wie im Log gezeigt),
+    # wird 'config_data' ebenfalls leer sein. Der Manager kann ohne Konfiguration nicht funktionieren.
+    if not config_data:
+        _LOGGER.error(f"[{manager_name}] Config data (entry.data + entry.options) is empty for entry {entry.entry_id} during setup/reload. This means no configuration could be loaded.")
+        return False # Scheitern, da der Manager ohne Konfiguration nicht funktionieren kann.
+
+    # Die kritischen Werte, die jetzt aus dem kombinierten config_data kommen
+    # manager_name wird bereits oben über entry.title gesetzt.
     target_cover_entity_id = config_data.get(TARGET_COVER_ENTITY_ID)
 
-    if not manager_name:
-        _LOGGER.error(f"[{DOMAIN}] No manager name found in config for entry {entry.entry_id}.")
+    if not manager_name: # Dieser Check sollte jetzt redundant sein, da entry.title immer existieren sollte.
+        _LOGGER.error(f"[{DOMAIN}] No manager name found (entry.title was empty) for entry {entry.entry_id}. This should not happen and indicates a deeper problem.")
         return False
 
     if not target_cover_entity_id:
@@ -102,16 +113,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     # Speichere den Manager in hass.data, damit Sensoren und andere Komponenten darauf zugreifen können.
-    # Verwende DOMAIN_DATA_MANAGERS als Schlüssel, um mehrere Instanzen zu unterstützen.
-    # (Diese Zeile war bereits korrekt aus vorherigen Iterationen)
+    # (Stellen Sie sicher, dass DOMAIN_DATA_MANAGERS als Dict initialisiert ist, falls es noch nicht existiert)
+    if DOMAIN_DATA_MANAGERS not in hass.data:
+        hass.data[DOMAIN_DATA_MANAGERS] = {}
     hass.data[DOMAIN_DATA_MANAGERS][entry.entry_id] = manager
     _LOGGER.debug(f"[{manager_name}] Shadow Control manager stored for entry {entry.entry_id} in {DOMAIN_DATA_MANAGERS}.")
 
     # Initialer Start des Managers
     await manager.async_start()
 
-    # Lade die Plattformen (z.B. Sensoren) mit await und der gesamten PLATFORMS-Liste
-    # (Diese Zeile war bereits korrekt aus vorherigen Iterationen)
+    # Lade die Plattformen (z.B. Sensoren)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     # Füge den Listener für die Aktualisierung der Optionen hinzu
