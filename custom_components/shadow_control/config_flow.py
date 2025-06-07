@@ -15,10 +15,10 @@ _LOGGER = logging.getLogger(__name__)
 
 # --- STEP 1: Name, cover entity  ---
 STEP_GENERAL_DATA_SCHEMA = vol.Schema({
-    vol.Required(SC_CONF_NAME): selector.TextSelector(
+    vol.Optional(SC_CONF_NAME, default=""): selector.TextSelector(
         selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
     ),
-    vol.Required(TARGET_COVER_ENTITY_ID): selector.EntitySelector(
+    vol.Optional(TARGET_COVER_ENTITY_ID): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="cover")
     ),
 })
@@ -304,16 +304,63 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle the initial step."""
         errors: dict[str, str] = {}
 
+        # Initialize data for the form, using user_input if available, else empty for initial display
+        # This ensures fields are pre-filled if the form is redisplayed due to errors
+        form_data = user_input if user_input is not None else {}
+
         if user_input is not None:
-            self.config_data.update(user_input)
-            _LOGGER.debug(f"[ConfigFlow] After general_settings, config_data: {self.config_data}") # NEU: Debug-Log
-            # Proceed to the next step
-            return await self.async_step_facade_settings()
+            _LOGGER.debug(f"[ConfigFlow] Received user_input: {user_input}")
+
+            # Manual validation of input fields to provide possible error messages
+            # for each field at once and not step by step.
+            if not user_input.get(SC_CONF_NAME):
+                errors[SC_CONF_NAME] = "name" # Error code from within strings.json
+
+            if not user_input.get(TARGET_COVER_ENTITY_ID):
+                errors[TARGET_COVER_ENTITY_ID] = "target_cover_entity" # Error code from within strings.json
+
+            # If configuration errors found, show the config form again
+            if errors:
+                return self.async_show_form(
+                    step_id="user",
+                    data_schema=self.add_suggested_values_to_schema(STEP_GENERAL_DATA_SCHEMA, form_data),
+                    errors=errors,
+                )
+
+            # All fine, now perform voluptuous validation
+            try:
+                validated_user_input = STEP_GENERAL_DATA_SCHEMA(user_input)
+
+                # Additional entity validation
+                if validated_user_input.get(TARGET_COVER_ENTITY_ID): # Nur prüfen, wenn ein Wert vorhanden ist
+                    target_entity = self.hass.states.get(validated_user_input[TARGET_COVER_ENTITY_ID])
+                    if not target_entity or target_entity.domain != "cover":
+                        errors[TARGET_COVER_ENTITY_ID] = "invalid_entity"
+                        return self.async_show_form(step_id="user", data_schema=self.add_suggested_values_to_schema(STEP_GENERAL_DATA_SCHEMA, form_data), errors=errors)
+
+
+                self.config_data.update(validated_user_input)
+                _LOGGER.debug(f"[ConfigFlow] After general_settings, config_data: {self.config_data}")
+
+                return await self.async_step_facade_settings()
+
+            except vol.Invalid as exc:
+                _LOGGER.error("Validation error during user step (voluptuous): %s", exc)
+                for error in exc.errors:
+                    field_key = str(error.path[0]) if error.path else "base"
+                    errors[field_key] = "general_input_error"
+
+                    # Catched voluptuous error, show the input form again
+                return self.async_show_form(
+                    step_id="user",
+                    data_schema=self.add_suggested_values_to_schema(STEP_GENERAL_DATA_SCHEMA, form_data), # <--- Hier 'form_data' verwenden
+                    errors=errors,
+                )
 
         return self.async_show_form(
             step_id="user",
-            data_schema=STEP_GENERAL_DATA_SCHEMA,
-            errors=errors,
+            data_schema=STEP_GENERAL_DATA_SCHEMA, # Hier kein suggested_values, da noch keine Eingaben
+            errors=errors, # Bleibt leer beim initialen Aufruf
         )
 
     async def async_step_facade_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
