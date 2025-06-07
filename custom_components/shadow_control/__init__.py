@@ -9,7 +9,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Callable, Awaitable, Mapping
 
 from homeassistant.components.cover import CoverEntityFeature
-from homeassistant.components.sensor import SensorEntity # Für die Basisklasse Sensor
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_SUPPORTED_FEATURES,
@@ -19,10 +19,10 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, callback, Event, State
 from homeassistant.helpers import discovery
 from homeassistant.helpers.dispatcher import async_dispatcher_send
-from homeassistant.helpers.entity import DeviceInfo # Für Gerätedefinitionen (optional, aber gut)
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.event import async_track_state_change_event, async_track_time_change, async_call_later
 from homeassistant.helpers.typing import ConfigType
-from homeassistant.helpers.update_coordinator import ( # Für die Benachrichtigung von Sensoren über Updates
+from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
     UpdateFailed,
@@ -48,56 +48,46 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["sensor"]
 
-# Der Setup-Einstiegspunkt. Dieser wird bei JEDEM Start von Home Assistant aufgerufen.
-# Er ist NICHT spezifisch für Config Entries.
+# Setup entry point, which is called at every start of Home Assistant.
+# Not specific for config entries.
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up the Shadow Control integration."""
+    """
+    Set up the Shadow Control integration.
+    """
     _LOGGER.debug(f"[{DOMAIN}] async_setup called.")
 
-    # Dies ist der Platzhalter für Ihre Integrationsdaten in 'hass.data'.
-    # Hier speichern Sie später Dinge wie Ihre ShadowControlManager-Instanzen.
-    # Wichtig: hass.data[DOMAIN_DATA_MANAGERS] wird ein Dictionary sein, das ConfigEntry IDs zu Manager-Instanzen mappt,
-    # da Sie möglicherweise mehrere Config-Flow-Instanzen Ihrer Integration hinzufügen können.
-    hass.data.setdefault(DOMAIN_DATA_MANAGERS, {}) # Stellen Sie sicher, dass DOMAIN_DATA_MANAGERS verwendet wird
-
-    # Wenn Sie KEINE YAML-Konfiguration mehr unterstützen wollen, können Sie den Rest der YAML-Logik entfernen.
-    # Wenn Sie YAML-Konfigurationen noch verarbeiten wollen (z.B. für einen Übergangszeitraum),
-    # dann würde diese Logik hier bleiben, aber Sie müssten sicherstellen,
-    # dass sie nicht mit den ConfigEntry-basierten Setups kollidiert.
-    # Für eine reine Config-Flow-Integration können Sie diesen Teil vereinfachen.
+    # Placeholder for all data of this integration within 'hass.data'.
+    # Will be used to store things like the ShadowControlManager instances.
+    # hass.data[DOMAIN_DATA_MANAGERS] will be a dictionary to map ConfigEntry IDs to manager instances.
+    hass.data.setdefault(DOMAIN_DATA_MANAGERS, {})
 
     _LOGGER.info(f"[{DOMAIN}] Integration 'Shadow Control' base setup complete.")
     return True
 
-# Der Einstiegspunkt für die Einrichtung über einen ConfigEntry (vom Config Flow)
+# Entry point for setup using ConfigEntry (via ConfigFlow)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Shadow Control from a config entry."""
-    # Erweitertes Debug-Log, um den Inhalt von entry.data und entry.options zu sehen
+    """
+    Set up Shadow Control from a config entry.
+    """
     _LOGGER.debug(f"[{DOMAIN}] Setting up Shadow Control from config entry: {entry.entry_id}: data={entry.data}, options={entry.options}")
 
-    # **WICHTIG:** Die Log-Ausgabe 'data={}, options={}' während des Neuladens deutet darauf hin,
-    # dass das ConfigEntry-Objekt in diesem Moment möglicherweise keine Daten enthält. Dies ist ungewöhnlich.
-    # Wir müssen den Manager-Namen und die Konfigurationsdaten so robust wie möglich abrufen.
-
-    # Manager-Name: Der Titel des Eintrags ist der zuverlässigste Weg, den Namen zu erhalten,
-    # da er bei der Erstellung des Eintrags immer als 'title' gesetzt wird.
+    # Most reliable way to store the 'name',
+    # as it will be set as 'title' during creation of an entry.
     manager_name = entry.title
 
-    # Kombiniere entry.data und entry.options für die eigentliche Konfiguration des Managers.
-    # Optionen überschreiben Daten, wenn die Schlüssel identisch sind.
+    # Combined entry-data and entry.options for the configuration of the manager.
+    # 'Options' overwrite 'data', if their key is identical.
     config_data = {**entry.data, **entry.options}
 
-    # Kritische Prüfung: Wenn 'entry.data' und 'entry.options' leer sind (wie im Log gezeigt),
-    # wird 'config_data' ebenfalls leer sein. Der Manager kann ohne Konfiguration nicht funktionieren.
+    # The manager can't work without a configuration.
     if not config_data:
         _LOGGER.error(f"[{manager_name}] Config data (entry.data + entry.options) is empty for entry {entry.entry_id} during setup/reload. This means no configuration could be loaded.")
-        return False # Scheitern, da der Manager ohne Konfiguration nicht funktionieren kann.
+        return False
 
-    # Die kritischen Werte, die jetzt aus dem kombinierten config_data kommen
-    # manager_name wird bereits oben über entry.title gesetzt.
+    # The cover to handle with this integration
     target_cover_entity_id = config_data.get(TARGET_COVER_ENTITY_ID)
 
-    if not manager_name: # Dieser Check sollte jetzt redundant sein, da entry.title immer existieren sollte.
+    if not manager_name:
         _LOGGER.error(f"[{DOMAIN}] No manager name found (entry.title was empty) for entry {entry.entry_id}. This should not happen and indicates a deeper problem.")
         return False
 
@@ -105,45 +95,46 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error(f"[{manager_name}] No target cover entity ID found in config for entry {entry.entry_id}.")
         return False
 
-    # Übergabe des kombinierten Konfigurations-Dictionarys an den ShadowControlManager
+    # Hand over the combined configuration dictionary to the ShadowControlManager
     manager = ShadowControlManager(
         hass,
-        config_data, # Das ist der Schlüssel: Übergabe des kombinierten Dicts
+        config_data,
         entry.entry_id
     )
 
-    # Speichere den Manager in hass.data, damit Sensoren und andere Komponenten darauf zugreifen können.
-    # (Stellen Sie sicher, dass DOMAIN_DATA_MANAGERS als Dict initialisiert ist, falls es noch nicht existiert)
+    # Store manager within 'hass.data' to let sensors and other components access it.
     if DOMAIN_DATA_MANAGERS not in hass.data:
         hass.data[DOMAIN_DATA_MANAGERS] = {}
     hass.data[DOMAIN_DATA_MANAGERS][entry.entry_id] = manager
     _LOGGER.debug(f"[{manager_name}] Shadow Control manager stored for entry {entry.entry_id} in {DOMAIN_DATA_MANAGERS}.")
 
-    # Initialer Start des Managers
+    # Initial start of the manager
     await manager.async_start()
 
-    # Lade die Plattformen (z.B. Sensoren)
+    # Load platforms (like sensors)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    # Füge den Listener für die Aktualisierung der Optionen hinzu
+    # Add listeners for update of input values and integration trigger
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     _LOGGER.info(f"[{DOMAIN}] Integration '{manager_name}' successfully set up from config entry.")
     return True
 
-# Der Einstiegspunkt für das Entladen eines ConfigEntry
+# Entry point to unload a ConfigEntry
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload a config entry."""
+    """
+    Unload a config entry.
+    """
     _LOGGER.debug(f"[{DOMAIN}] Unloading Shadow Control integration for entry: {entry.entry_id}")
 
-    # Entlade die Plattformen
+    # Unload platforms
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok:
-        # Manager Instanz beenden (falls eine Stop-Methode existiert)
+        # Stop manager instance
         manager: "ShadowControlManager" = hass.data[DOMAIN_DATA_MANAGERS].pop(entry.entry_id, None)
         if manager:
-            await manager.async_stop() # Stellen Sie sicher, dass Ihr Manager eine async_stop Methode hat
+            await manager.async_stop()
 
         _LOGGER.info(f"[{DOMAIN}] Shadow Control integration for entry {entry.entry_id} successfully unloaded.")
     else:
@@ -151,17 +142,13 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     return unload_ok
 
-# Die Hilfsmethode für den Update-Listener sollte unverändert bleiben, falls sie existiert:
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Handle options update."""
-    # Dies wird aufgerufen, wenn der Benutzer Optionen über den Options-Flow ändert.
-    # Hier können Sie die Integration neu laden oder den Manager entsprechend aktualisieren.
+    """
+    Handle options update.
+    Will be called if the user modifies the configuration using the OptionsFlow.
+    """
     _LOGGER.debug(f"[{DOMAIN}] Options update listener triggered for entry {entry.entry_id}.")
     await hass.config_entries.async_reload(entry.entry_id)
-
-# Dummy-Definitionen für die Konfigurationsklassen, falls sie nicht in Ihrer `__init__.py` definiert sind.
-# Wenn sie in einer separaten Datei (z.B. `config_classes.py`) definiert sind, stellen Sie sicher, dass sie korrekt importiert werden.
-# Ansonsten fügen Sie diese (oder Ihre tatsächliche Definition) über Ihrer ShadowControlManager-Klasse hinzu.
 
 class SCDynamicInputConfiguration:
     def __init__(self):
@@ -226,7 +213,9 @@ class SCDawnControlConfig:
         self.angle_after_dawn: float = 0.0
 
 class ShadowControlManager:
-    """Manages the Shadow Control logic for a single cover."""
+    """
+    Manages the Shadow Control logic for a single cover.
+    """
 
     def __init__(
             self,
@@ -241,26 +230,25 @@ class ShadowControlManager:
         self._name = config[SC_CONF_NAME]
         self._target_cover_entity_id = config[TARGET_COVER_ENTITY_ID]
 
-        # Überprüfen auf kritische fehlende Werte (obwohl dies bereits in async_setup_entry geprüft wird)
+        # Check if critical values are missing, even if this might be done within async_setup_entry
         if not self._name:
             _LOGGER.warning(f"Manager init: Manager name is missing in config for entry {entry_id}. Using fallback.")
             self._name = f"Unnamed Shadow Control ({entry_id})"
         if not self._target_cover_entity_id:
             _LOGGER.error(f"Manager init: Target cover entity ID is missing in config for entry {entry_id}. This is critical.")
-            # Sie könnten hier eine Ausnahme auslösen, wenn dies ein nicht behebbarer Fehler ist
             raise ValueError(f"Target cover entity ID missing for entry {entry_id}")
 
-        # WICHTIG: Setzen Sie _options auf _config, damit die Helper-Funktionen funktionieren
         self._options = config
 
-        self._unsub_callbacks: list[Callable[[], None]] = [] # NEUE ZEILE HIER (Nach Zeile 203)
+        self._unsub_callbacks: list[Callable[[], None]] = []
 
+        # Initialize configuration with default values
         self._dynamic_config = SCDynamicInputConfiguration()
         self._facade_config = SCFacadeConfiguration()
         self._shadow_config = SCShadowControlConfig()
         self._dawn_config = SCDawnControlConfig()
 
-        # === Dynamische Eingänge
+        # === Get dynamic configuration inputs
         self._dynamic_config.brightness = config.get(SCDynamicInput.BRIGHTNESS_ENTITY.value)
         self._dynamic_config.brightness_dawn = config.get(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value)
         self._dynamic_config.sun_elevation = config.get(SCDynamicInput.SUN_ELEVATION_ENTITY.value)
@@ -274,7 +262,7 @@ class ShadowControlManager:
         self._dynamic_config.movement_restriction_height = config.get(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value)
         self._dynamic_config.movement_restriction_angle = config.get(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value)
 
-        # === Allgemeine Einstellungen (Test-Helfer) ===
+        # === Get general facade configuration
         self._facade_config.azimuth = config.get(SCFacadeConfig.AZIMUTH_STATIC.value)
         self._facade_config.offset_sun_in = config.get(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value)
         self._facade_config.offset_sun_out = config.get(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value)
@@ -294,7 +282,7 @@ class ShadowControlManager:
         self._facade_config.modification_tolerance_height = config.get(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value)
         self._facade_config.modification_tolerance_angle = config.get(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value)
 
-        # === Beschattungseinstellungen (Test-Helfer) ===
+        # === Get shadow configuration
         self._shadow_config.enabled = config.get(SCShadowInput.CONTROL_ENABLED_ENTITY.value)
         self._shadow_config.brightness_threshold = config.get(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value)
         self._shadow_config.after_seconds = config.get(SCShadowInput.AFTER_SECONDS_ENTITY.value)
@@ -306,7 +294,7 @@ class ShadowControlManager:
         self._shadow_config.height_after_sun = config.get(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value)
         self._shadow_config.angle_after_sun = config.get(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value)
 
-        # === Dämmerungseinstellungen (Test-Helfer) ===
+        # === Get dawn configuration
         self._dawn_config.enabled = config.get(SCDawnInput.CONTROL_ENABLED_ENTITY.value)
         self._dawn_config.brightness_threshold = config.get(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value)
         self._dawn_config.after_seconds = config.get(SCDawnInput.AFTER_SECONDS_ENTITY.value)
@@ -335,59 +323,55 @@ class ShadowControlManager:
             ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING: self._handle_state_dawn_full_close_timer_running,
         }
 
-        # Interne Variablen
+        # Member vars
         self._enforce_position_update: bool = False
 
-        # Interne persistente Variablen
-        # Werden beim Start aus den persistenten Attributen gelesen.
-        self._current_shutter_state: ShutterState = ShutterState.NEUTRAL # Standardwert setzen
-        self._current_lock_state: LockState = LockState.UNLOCKED # Standardwert setzen
+        # Persistant vars
+        self._current_shutter_state: ShutterState = ShutterState.NEUTRAL
+        self._current_lock_state: LockState = LockState.UNLOCKED
         self._calculated_shutter_height: float = 0.0
         self._calculated_shutter_angle: float = 0.0
         self._calculated_shutter_angle_degrees: float | None = None
         self._effective_elevation: float | None = None
         self._previous_shutter_height: float | None = None
         self._previous_shutter_angle: float | None = None
-        self._is_initial_run: bool = True # Flag für den initialen Lauf
-        self._is_producing_shadow: bool = False # Neuer interner Zustand für ProduceShadow
+        self._is_initial_run: bool = True # Flag for initial integration run
+        self._is_producing_shadow: bool = False
         self._next_modification_timestamp: datetime | None = None
 
-        # Variablen für die Erkennung externer Modifikationen
         self._last_known_height: float | None = None
         self._last_known_angle: float | None = None
         self._is_external_modification_detected: bool = False
         self._external_modification_timestamp: datetime | None = None
 
-        # Variablen für den Neuberechnungs-Timer
         self._recalculation_timer_start_time: datetime | None = None
         self._recalculation_timer_duration_seconds: float | None = None
 
-        self._listeners: list[Callable[[], None]] = [] # Liste zum Speichern der Listener
-        self._recalculation_timer: Callable[[], None] | None = None # Zum Speichern des Callbacks für den geplanten Timer
+        self._listeners: list[Callable[[], None]] = []
+        self._recalculation_timer: Callable[[], None] | None = None
 
         _LOGGER.debug(f"{self._name}: Manager initialized for target: {self._target_cover_entity_id}.")
 
     async def async_start(self) -> None:
         """
-        Startet den ShadowControlManager: Registriert Listener und führt die initiale Berechnung durch.
-        Diese Methode wird nach der Instanziierung des Managers aufgerufen.
+        Start ShadowControlManager:
+        - Register listeners
+        - Trigger initial calculation
+        Will be called after instantiation of the manager.
         """
         _LOGGER.debug(f"{self._name}: Starting manager lifecycle...")
-        self._async_register_listeners() # Ruft die Methode zum Registrieren der Listener auf
-        await self._async_calculate_and_apply_cover_position(None) # Führt die initiale Positionsberechnung aus
+        self._async_register_listeners()
+        await self._async_calculate_and_apply_cover_position(None)
         _LOGGER.debug(f"{self._name}: Manager lifecycle started.")
 
     def _async_register_listeners(self) -> None:
-        """Registriert Listener für Zustandsänderungen relevanter Entitäten."""
+        """
+        Register listener for state changes of relevant entities.
+        """
         _LOGGER.debug(f"{self._name}: Registering listeners...")
 
-        # Listener für Home Assistant Start-Ereignis:
-        # Dieser Listener muss NICHT in self._unsub_callbacks aufgenommen werden,
-        # da async_listen_once ihn nach dem Feuern selbst entfernt.
-        #
-        # Wichtig: Wenn die Integration neu geladen wird (z.B. über den Optionen-Flow),
-        # ist Home Assistant bereits gestartet. In diesem Fall rufen wir die Logik von
-        # _async_home_assistant_started direkt auf.
+        # If integration is re-loaded (e.g. by OptionsFlow), Home Assistant is already running.
+        # In this case, call logic of _async_home_assistant_started directly.
         if not self.hass.is_running:
             _LOGGER.debug(f"{self._name}: Home Assistant not yet running, registering startup listener.")
             self.hass.bus.async_listen_once(
@@ -395,13 +379,11 @@ class ShadowControlManager:
             )
         else:
             _LOGGER.debug(f"{self._name}: Home Assistant already running, executing startup logic directly.")
-            # Da _async_home_assistant_started eine async-Methode ist und wir uns nicht in einem awaitable Kontext
-            # innerhalb dieser Funktion befinden, verwenden wir hass.async_create_task.
-            # Übergeben Sie None als Event-Daten, da bei direktem Aufruf kein Event-Objekt vorhanden ist.
+            # As _async_home_assistant_started is a async method and we're not within an awaitable context
+            # within this function, we use hass.async_create_task with 'None' as event object. At a direct
+            # call there is no event object available.
             self.hass.async_create_task(self._async_home_assistant_started(None))
 
-        # Registriert Zustandsänderungs-Listener für dynamische Eingänge,
-        # welche eine Neuberechnung auslösen
         tracked_inputs = []
         # Entities from SCDynamicInput and other relevant config inputs that trigger recalculation
         for conf_key_enum in [
@@ -416,7 +398,7 @@ class ShadowControlManager:
         ]:
             # False positive "Expected type 'str' (matched generic type '_KT'), got '() -> Any | () -> Any | () -> Any' instead"
             entity_id = self._config.get(conf_key_enum.value)
-            if entity_id: # Check if entity_id is not empty or None
+            if entity_id:
                 tracked_inputs.append(entity_id)
 
         # Handle movement restriction entities separately as they have a 'no_restriction' value
@@ -435,8 +417,8 @@ class ShadowControlManager:
                 )
             )
 
-        # Listener für Zustandsänderungen der Ziel-Cover-Entität, um externe Änderungen zu erkennen
-        # Dieser Listener ist entscheidend, um manuelle Anpassungen des Rollladens zu erkennen
+        # Listener of state changes at the handled cover entity to register external changes.
+        # Important to recognize manual modification!
         if self._target_cover_entity_id:
             _LOGGER.debug(f"{self._name}: Tracking target cover entity: {self._target_cover_entity_id}")
             self._unsub_callbacks.append(
@@ -450,7 +432,9 @@ class ShadowControlManager:
         _LOGGER.debug(f"{self._name}: Listeners registered.")
 
     async def _async_state_change_listener(self, event: Event) -> None: # NEUE METHODE HIER EINFÜGEN (ca. Zeile 565)
-        """Callback für Zustandsänderungen der überwachten Eingangs-Entitäten."""
+        """
+        Callback for state changes of monitored entities.
+        """
         entity_id = event.data.get("entity_id")
         old_state = event.data.get("old_state")
         new_state = event.data.get("new_state")
@@ -461,16 +445,17 @@ class ShadowControlManager:
             f"New state: {new_state.state if new_state else 'None'}."
         )
 
-        # Überprüfen, ob sich der Wert tatsächlich geändert hat
+        # Check if state really was changed
         if old_state is None or new_state is None or old_state.state != new_state.state:
-            # Löst die Neuberechnung aus
             _LOGGER.debug(f"{self._name}: Input entity '{entity_id}' changed. Triggering recalculation.")
             await self._async_calculate_and_apply_cover_position(None)
         else:
             _LOGGER.debug(f"{self._name}: State change for {entity_id} detected, but value did not change. No recalculation triggered.")
 
     async def _async_target_cover_entity_state_change_listener(self, event: Event) -> None: # NEUE METHODE HIER EINFÜGEN (ca. Zeile 610)
-        """Callback für Zustandsänderungen der Ziel-Cover-Entität (manuelle Steuerung)."""
+        """
+        Callback for state changes of handled cover entity.
+        """
         entity_id = event.data.get("entity_id")
         old_state: Optional[State] = event.data.get("old_state")
         new_state: Optional[State] = event.data.get("new_state")
@@ -481,8 +466,7 @@ class ShadowControlManager:
             f"New state: {new_state.state if new_state else 'None'}."
         )
 
-        # Überprüfen, ob sich der Wert der Position tatsächlich geändert hat.
-        # Wir sind primär an height und current_tilt (angle) interessiert.
+        # Check if state really was changed
         old_current_height = old_state.attributes.get("current_position") if old_state else None
         new_current_height = new_state.attributes.get("current_position") if new_state else None
         old_current_angle = old_state.attributes.get("current_tilt") if old_state else None
@@ -496,25 +480,27 @@ class ShadowControlManager:
         # Nur fortfahren, wenn sich die Höhe oder der Winkel geändert hat
         # und der Manager nicht selbst die Änderung verursacht hat (z.B. durch async_set_cover_position)
         if old_current_height != new_current_height or old_current_angle != new_current_angle:
-            # Prüfen, ob die Änderung nicht von uns selbst kam
+            # Check if modification was triggerd by the ShadowControlManager himself
             if self._next_modification_timestamp and (
-                    (datetime.now(timezone.utc) - self._next_modification_timestamp).total_seconds() < 5 # Weniger als 5 Sekunden seit unserer letzten Änderung
+                    (datetime.now(timezone.utc) - self._next_modification_timestamp).total_seconds() < 5 # Less than 5 seconds since last change
             ):
                 _LOGGER.debug(f"{self._name}: Cover state change detected, but appears to be self-initiated. Skipping lock state update.")
                 self._next_modification_timestamp = None # Reset for next external change
                 return
 
-            _LOGGER.debug(f"{self._name}: External change detected on target cover '{entity_id}'. Updating lock state.")
-            # Setzt den LockState auf MANUALLY_LOCKED
-            # TODO: Hier müsste die Logik für den LockState hin. Z.B. manager.update_lock_state(LockState.LOCKED_BY_EXTERNAL_MODIFICATION)
-            # await self._async_update_lock_state_from_external_modification() # Beispiel für eine zu implementierende Methode
-            pass # Platzhalter für die Implementierung der Lock-State-Logik
+            _LOGGER.debug(f"{self._name}: External change detected on target cover '{entity_id}'. (Updating lock state not implemented yet)")
+
+            # TODO: Implement logic for LockState handling e.g. manager.update_lock_state(LockState.LOCKED_BY_EXTERNAL_MODIFICATION)
+
+            pass
 
         else:
             _LOGGER.debug(f"{self._name}: Target cover state change detected, but height/angle did not change or no external modification.")
 
     def unregister_listeners(self) -> None:
-        """Unregister all listeners for this manager."""
+        """
+        Unregister all listeners for this manager.
+        """
         _LOGGER.debug(f"{self._name}: Unregistering listeners")
         for unsub_func in self._listeners:
             unsub_func()
@@ -2453,7 +2439,9 @@ class ShadowControlManager:
         self._update_extra_state_attributes()
 
     def _cancel_recalculation_timer(self) -> None:
-        """Bricht einen laufenden Neuberechnungs-Timer ab."""
+        """
+        Cancel running timer.
+        """
         if self._recalculation_timer:
             _LOGGER.debug(f"{self._name}: Canceling recalculation timer")
             self._recalculation_timer()  # Aufruf des Handles bricht den Timer ab
@@ -2466,11 +2454,11 @@ class ShadowControlManager:
 
     async def _async_timer_callback(self, now) -> None:
         """
-        Dieser Callback wird vom Home Assistant Scheduler aufgerufen, wenn der Timer abläuft.
-        'now' ist das aktuelle Zeitpunkt-Objekt, das von async_call_later übergeben wird.
+        Callback which will be called by the Home Assistant scheduler, if timer is running out.
+        Parameter 'now' is the object with the current point in time, which will be returned by async_call_later.
         """
         _LOGGER.debug(f"{self._name}: Recalculation timer finished, triggering recalculation")
-        # Variablen zurücksetzen, da der Timer abgelaufen ist
+        # Reset vars, as timer is finished
         self._recalculation_timer = None
         self._recalculation_timer_start_time = None
         self._recalculation_timer_duration_seconds = None
@@ -2478,7 +2466,7 @@ class ShadowControlManager:
 
     def get_remaining_timer_seconds(self) -> float | None:
         """
-        Gibt die verbleibende Zeit des Timers in Sekunden zurück, oder None, wenn kein Timer läuft.
+        Return remaining time of running timer or None if no timer is running.
         """
         if self._recalculation_timer and self._recalculation_timer_start_time and self._recalculation_timer_duration_seconds is not None:
             elapsed_time = (datetime.now(timezone.utc) - self._recalculation_timer_start_time).total_seconds()
@@ -2488,7 +2476,7 @@ class ShadowControlManager:
 
     def _is_timer_finished(self) -> bool:
         """
-        Prüft, ob ein Neuberechnungs-Timer aktiv ist.
+        Check if a recalculation timer is running.
         """
         return self._recalculation_timer is None
 
