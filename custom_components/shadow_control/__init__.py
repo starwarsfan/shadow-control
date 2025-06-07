@@ -377,18 +377,31 @@ class ShadowControlManager:
         await self._async_calculate_and_apply_cover_position(None) # Führt die initiale Positionsberechnung aus
         _LOGGER.debug(f"{self._name}: Manager lifecycle started.")
 
-    def _async_register_listeners(self) -> None: # NEUE METHODE HIER EINFÜGEN (ab Zeile 515)
+    def _async_register_listeners(self) -> None:
         """Registriert Listener für Zustandsänderungen relevanter Entitäten."""
         _LOGGER.debug(f"{self._name}: Registering listeners...")
 
-        # Listener für Home Assistant Start-Ereignis, um die initiale Berechnung auszulösen
-        self._unsub_callbacks.append(
+        # Listener für Home Assistant Start-Ereignis:
+        # Dieser Listener muss NICHT in self._unsub_callbacks aufgenommen werden,
+        # da async_listen_once ihn nach dem Feuern selbst entfernt.
+        #
+        # Wichtig: Wenn die Integration neu geladen wird (z.B. über den Optionen-Flow),
+        # ist Home Assistant bereits gestartet. In diesem Fall rufen wir die Logik von
+        # _async_home_assistant_started direkt auf.
+        if not self.hass.is_running:
+            _LOGGER.debug(f"{self._name}: Home Assistant not yet running, registering startup listener.")
             self.hass.bus.async_listen_once(
                 EVENT_HOMEASSISTANT_STARTED, self._async_home_assistant_started
             )
-        )
+        else:
+            _LOGGER.debug(f"{self._name}: Home Assistant already running, executing startup logic directly.")
+            # Da _async_home_assistant_started eine async-Methode ist und wir uns nicht in einem awaitable Kontext
+            # innerhalb dieser Funktion befinden, verwenden wir hass.async_create_task.
+            # Übergeben Sie None als Event-Daten, da bei direktem Aufruf kein Event-Objekt vorhanden ist.
+            self.hass.async_create_task(self._async_home_assistant_started(None))
 
-        # Registriert Zustandsänderungs-Listener für dynamische Eingaben
+        # Registriert Zustandsänderungs-Listener für dynamische Eingänge,
+        # welche eine Neuberechnung auslösen
         tracked_inputs = []
         # Entities from SCDynamicInput and other relevant config inputs that trigger recalculation
         for conf_key_enum in [
@@ -414,7 +427,6 @@ class ShadowControlManager:
                 self._config[SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value] != "no_restriction":
             tracked_inputs.append(self._config[SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value])
 
-
         if tracked_inputs:
             _LOGGER.debug(f"{self._name}: Tracking input entities: {tracked_inputs}")
             self._unsub_callbacks.append(
@@ -423,8 +435,8 @@ class ShadowControlManager:
                 )
             )
 
-        # Listener für Zustandsänderungen des Ziel-Cover-Entität, um externe Änderungen zu erkennen
-        # This listener is crucial to detect manual adjustments of the cover
+        # Listener für Zustandsänderungen der Ziel-Cover-Entität, um externe Änderungen zu erkennen
+        # Dieser Listener ist entscheidend, um manuelle Anpassungen des Rollladens zu erkennen
         if self._target_cover_entity_id:
             _LOGGER.debug(f"{self._name}: Tracking target cover entity: {self._target_cover_entity_id}")
             self._unsub_callbacks.append(
