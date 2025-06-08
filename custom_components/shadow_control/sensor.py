@@ -9,7 +9,6 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.config_entries import ConfigEntry
 
-# Importieren Sie Konstanten und Klassen aus Ihrer Hauptintegration (__init__.py)
 from .const import DOMAIN, DOMAIN_DATA_MANAGERS
 from . import ShadowControlManager
 
@@ -17,30 +16,27 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(
         hass: HomeAssistant,
-        config_entry: ConfigEntry, # Besser 'config_entry' für Konsistenz mit HA-Beispielen
+        config_entry: ConfigEntry,
         async_add_entities: AddEntitiesCallback,
-) -> None: # Plattform-Setup-Funktionen geben typischerweise None zurück
-    """Set up the Shadow Control sensor platform from a config entry."""
+) -> None:
+    """
+    Set up the Shadow Control sensor platform from a config entry.
+    """
     _LOGGER.debug(f"[{DOMAIN}] Setting up sensor platform from config entry: {config_entry.entry_id}")
 
-    # !!! KORREKTUR !!!
-    # Der Manager wird unter hass.data[DOMAIN_DATA_MANAGERS][config_entry.entry_id] gespeichert.
-    # Wir rufen ihn direkt ab und erwarten, dass er die Manager-Instanz ist.
     manager: ShadowControlManager | None = hass.data.get(DOMAIN_DATA_MANAGERS, {}).get(config_entry.entry_id)
 
     if manager is None:
         _LOGGER.error(f"[{DOMAIN}] No Shadow Control manager found for config entry {config_entry.entry_id}. Cannot set up sensors.")
-        return # Auf Fehler None zurückgeben, wie es für Plattform-Setups üblich ist.
+        return
 
     _LOGGER.debug(f"[{DOMAIN}] Creating sensors for manager: {manager._name} (from entry {config_entry.entry_id})")
 
     entities_to_add = [
-        # Der Konstruktor des ShadowControlSensor braucht den Manager und die config_entry.entry_id.
         ShadowControlSensor(manager, config_entry.entry_id, "target_height"),
         ShadowControlSensor(manager, config_entry.entry_id, "target_angle"),
         ShadowControlSensor(manager, config_entry.entry_id, "current_state"),
         ShadowControlSensor(manager, config_entry.entry_id, "lock_state"),
-        # Weitere Sensoren können hier hinzugefügt werden
     ]
 
     if entities_to_add:
@@ -49,16 +45,15 @@ async def async_setup_entry(
     else:
         _LOGGER.warning(f"[{DOMAIN}] No sensor entities created for manager '{manager._name}'.")
 
-    # Wenn alles erfolgreich war, gibt die async_setup_entry normalerweise True zurück,
-    # auch wenn der Rückgabetyp None ist (für Plattformen). Die Abwesenheit eines Fehlers reicht aus.
-    # Sie können es auch explizit mit `return True` abschließen, wenn Sie möchten.
-
-# Die ShadowControlSensor Klasse definiert, wie Ihr Sensor funktioniert und seine Daten abruft.
 class ShadowControlSensor(SensorEntity):
-    """Represents a Shadow Control sensor."""
+    """
+    Represents a Shadow Control sensor.
+    """
 
     def __init__(self, manager: ShadowControlManager, entry_id: str, sensor_type: str) -> None: # <--- HIER ÄNDERN
-        """Initialize the sensor."""
+        """
+        Initialize the sensor.
+        """
         self._manager = manager
         self._entry_id = entry_id
         self._sensor_type = sensor_type
@@ -87,7 +82,7 @@ class ShadowControlSensor(SensorEntity):
         elif sensor_type == "lock_state":
             self._attr_icon = "mdi:lock-open-check"
 
-        # Verknüpfung mit dem Device (wichtig für die UI-Darstellung)
+        # Connect with device (important for UI)
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, self._entry_id)},
             name=manager._name,
@@ -97,7 +92,9 @@ class ShadowControlSensor(SensorEntity):
 
     @property
     def native_value(self):
-        """Return the state of the sensor from the manager."""
+        """
+        Return the state of the sensor from the manager.
+        """
         # Access the internal values of the manager.
         # Make sure your manager updates these attributes (`_calculated_shutter_height`, etc.)
         # and calls the dispatcher signal when they change.
@@ -106,15 +103,17 @@ class ShadowControlSensor(SensorEntity):
         elif self._sensor_type == "target_angle":
             return self._manager._calculated_shutter_angle
         elif self._sensor_type == "current_state":
-            # Assuming _current_shutter_state is an Enum. You might want its value.
+            # Assuming _current_shutter_state is an Enum.
             return self._manager._current_shutter_state.value if hasattr(self._manager._current_shutter_state, 'value') else self._manager._current_shutter_state
         elif self._sensor_type == "lock_state":
-            # Assuming _current_lock_state is an Enum. You might want its value.
+            # Assuming _current_lock_state is an Enum.
             return self._manager._current_lock_state.value if hasattr(self._manager._current_lock_state, 'value') else self._manager._current_lock_state
         return None
 
     async def async_added_to_hass(self) -> None:
-        """Run when this entity has been added to Home Assistant."""
+        """
+        Run when this entity has been added to Home Assistant.
+        """
         # Register a Dispatcher listener here to receive updates.
         # The manager must then send this signal when its data is updated.
         # The signal name must exactly match what the manager sends.
