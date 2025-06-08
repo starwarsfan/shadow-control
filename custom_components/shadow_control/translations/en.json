@@ -92,7 +92,8 @@
         "title": "Configure shadow handling",
         "description": "Configure how to handle brightness",
         "data": {
-          "shadow_control_enabled_entity": "Activate shadow handling",
+          "shadow_control_enabled_entity": "Activate shadow handling entity",
+          "shadow_control_enabled_static": "Permanently activate shadow handling",
           "shadow_brightness_threshold_entity": "Brightness threshold (by entity)",
           "shadow_brightness_threshold_static": "Brightness threshold (static)",
           "shadow_after_seconds_entity": "Close after x seconds (by entity)",
@@ -113,7 +114,8 @@
           "shadow_angle_after_sun_static": "Angle after shadow (static)"
         },
         "data_description": {
-          "shadow_control_enabled_entity": "De-/Activate shadow handling.",
+          "shadow_control_enabled_entity": "De-/Activate shadow handling entity.",
+          "shadow_control_enabled_static": "Permanently de-/activate shadow handling.",
           "shadow_brightness_threshold_entity": "Brightness threshold which must be passed to start shadow handling (by entity).",
           "shadow_brightness_threshold_static": "Brightness threshold which must be passed to start shadow handling (static).",
           "shadow_after_seconds_entity": "Time in seconds to close shutter after passing brightness threshold (by entity).",
@@ -138,7 +140,8 @@
         "title": "Configure dawn handling",
         "description": "Configure how to handle dawn",
         "data": {
-          "dawn_control_enabled_entity": "Activate dawn handling",
+          "dawn_control_enabled_entity": "Activate dawn handling entity",
+          "dawn_control_enabled_static": "Permanently activate dawn handling",
           "dawn_brightness_threshold_entity": "Brightness threshold",
           "dawn_brightness_threshold_static": "Brightness threshold",
           "dawn_after_seconds_entity": "Close after x seconds",
@@ -159,7 +162,8 @@
           "dawn_angle_after_sun_static": "Angle after dawn"
         },
         "data_description": {
-          "dawn_control_enabled_entity": "De-/Activate dawn handling.",
+          "dawn_control_enabled_entity": "De-/Activate dawn handling (by entity).",
+          "dawn_control_enabled_static": "Permanently de-/activate dawn handling.",
           "dawn_brightness_threshold_entity": "Brightness threshold which must be undercut to start dawn handling (by entity).",
           "dawn_brightness_threshold_static": "Brightness threshold which must be undercut to start dawn handling (static).",
           "dawn_after_seconds_entity": "Time in seconds to open shutter after passing brightness threshold (by entity).",

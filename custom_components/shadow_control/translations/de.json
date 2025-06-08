@@ -92,7 +92,8 @@
         "title": "Beschattung konfigurieren",
         "description": "Konfiguriere wie mit dem Lichteinfall auf der Fassade umgegangen werden soll",
         "data": {
-          "shadow_control_enabled_entity": "Beschattungssteuerung aktivieren",
+          "shadow_control_enabled_entity": "Beschattungssteuerung aktivieren (via Entität)",
+          "shadow_control_enabled_static": "Beschattungssteuerung aktivieren (statisch)",
           "shadow_brightness_threshold_entity": "Helligkeitsschwellwert (via Entität)",
           "shadow_brightness_threshold_static": "Helligkeitsschwellwert (statisch)",
           "shadow_after_seconds_entity": "Schliessen nach x Sekunden (via Entität)",
@@ -113,7 +114,8 @@
           "shadow_angle_after_sun_static": "Winkel nach Beschattung (statisch)"
         },
         "data_description": {
-          "shadow_control_enabled_entity": "De-/Aktivieren der Beschattungssteuerung.",
+          "shadow_control_enabled_entity": "De-/Aktivieren der Beschattungssteuerung (via Entität).",
+          "shadow_control_enabled_static": "Dauerhaftes de-/aktivieren der Beschattungssteuerung.",
           "shadow_brightness_threshold_entity": "Schwellwert, nach dessen überschreiten die Beschattung ausgelöst wird (via Entität).",
           "shadow_brightness_threshold_static": "Schwellwert, nach dessen überschreiten die Beschattung ausgelöst wird (statisch).",
           "shadow_after_seconds_entity": "Zeit in Sekunden nach überschreiten des Helligkeitsschwellwerts, nach welcher der Behang geschlossen wird (via Entität).",
@@ -138,7 +140,8 @@
         "title": "Dämmerung konfigurieren",
         "description": "Konfiguriere wie der Behang bei Dämmerung gesteuert werden soll",
         "data": {
-          "dawn_control_enabled_entity": "Dämmerungssteuerung aktivieren",
+          "dawn_control_enabled_entity": "Dämmerungssteuerung aktivieren (via Entität)",
+          "dawn_control_enabled_static": "Dämmerungssteuerung aktivieren (statisch)",
           "dawn_brightness_threshold_entity": "Dämmerungsschwellwert",
           "dawn_brightness_threshold_static": "Dämmerungsschwellwert",
           "dawn_after_seconds_entity": "Schliessen nach x Sekunden",
@@ -159,7 +162,8 @@
           "dawn_angle_after_dawn_static": "Winkel nach Dämmerung"
         },
         "data_description": {
-          "dawn_control_enabled_entity": "De-/Aktivieren der Dämmerungssteuerung.",
+          "dawn_control_enabled_entity": "De-/Aktivieren der Dämmerungssteuerung (via Entität).",
+          "dawn_control_enabled_static": "Dauerhaftes de-/aktivieren der Dämmerungssteuerung.",
           "dawn_brightness_threshold_entity": "Schwellwert, nach dessen unterschreiten die Dämmerungsposition angefahren wird (via Entität).",
           "dawn_brightness_threshold_static": "Schwellwert, nach dessen unterschreiten die Dämmerungsposition angefahren wird (statisch).",
           "dawn_after_seconds_entity": "Zeit in Sekunden nach überschreiten des Helligkeitsschwellwerts, nach welcher der Behang geöffnet wird (via Entität).",

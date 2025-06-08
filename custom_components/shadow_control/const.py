@@ -50,6 +50,7 @@ class SCFacadeConfig(Enum):
 # === Beschattungseinstellungen (Test-Helfer) ===
 class SCShadowInput(Enum):
     CONTROL_ENABLED_ENTITY = "shadow_control_enabled_entity"
+    CONTROL_ENABLED_STATIC = "shadow_control_enabled_static"
     BRIGHTNESS_THRESHOLD_ENTITY = "shadow_brightness_threshold_entity"
     BRIGHTNESS_THRESHOLD_STATIC = "shadow_brightness_threshold_static"
     AFTER_SECONDS_ENTITY = "shadow_after_seconds_entity"
@@ -72,6 +73,7 @@ class SCShadowInput(Enum):
 # === Dämmerungseinstellungen (Test-Helfer) ===
 class SCDawnInput(Enum):
     CONTROL_ENABLED_ENTITY = "dawn_control_enabled_entity"
+    CONTROL_ENABLED_STATIC = "dawn_control_enabled_static"
     BRIGHTNESS_THRESHOLD_ENTITY = "dawn_brightness_threshold_entity"
     BRIGHTNESS_THRESHOLD_STATIC = "dawn_brightness_threshold_static"
     AFTER_SECONDS_ENTITY = "dawn_after_seconds_entity"

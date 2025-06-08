@@ -604,7 +604,8 @@ class ShadowControlManager:
         )
 
         # Shadow Control Inputs
-        self._shadow_config.enabled = self._get_entity_state_value(SCShadowInput.CONTROL_ENABLED_ENTITY.value, False, bool)
+        shadow_control_enabled_static = self._get_static_value(SCShadowInput.CONTROL_ENABLED_STATIC.value, True, bool, log_warning=False)
+        self._shadow_config.enabled = self._get_entity_state_value(SCShadowInput.CONTROL_ENABLED_ENTITY.value, shadow_control_enabled_static, bool)
 
         # Shadow Brightness Threshold
         shadow_brightness_threshold_static = self._get_static_value(SCShadowInput.BRIGHTNESS_THRESHOLD_STATIC.value, 50000.0, float, log_warning=False)
@@ -644,7 +645,8 @@ class ShadowControlManager:
 
 
         # Dawn Control Inputs
-        self._dawn_config.enabled = self._get_entity_state_value(SCDawnInput.CONTROL_ENABLED_ENTITY.value, False, bool)
+        dawn_control_enabled_static = self._get_static_value(SCDawnInput.CONTROL_ENABLED_STATIC.value, True, bool, log_warning=False)
+        self._dawn_config.enabled = self._get_entity_state_value(SCDawnInput.CONTROL_ENABLED_ENTITY.value, dawn_control_enabled_static, bool)
 
         # Dawn Brightness Threshold
         dawn_brightness_threshold_static = self._get_static_value(SCDawnInput.BRIGHTNESS_THRESHOLD_STATIC.value, 500.0, float, log_warning=False)

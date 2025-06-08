@@ -143,7 +143,8 @@ STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema({
 
 # --- STEP 4: Shadow settings ---
 STEP_SHADOW_SETTINGS_SCHEMA = vol.Schema({
-    vol.Required(SCShadowInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
+    vol.Optional(SCShadowInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
+    vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="input_boolean")
     ),
     # -----------------------------------------------------------------------
@@ -213,7 +214,8 @@ STEP_SHADOW_SETTINGS_SCHEMA = vol.Schema({
 
 # --- STEP 5: Dawn settings ---
 STEP_DAWN_SETTINGS_SCHEMA = vol.Schema({
-    vol.Required(SCDawnInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
+    vol.Optional(SCDawnInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
+    vol.Optional(SCDawnInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="input_boolean")
     ),
     # -----------------------------------------------------------------------
