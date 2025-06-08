@@ -549,61 +549,61 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         self.options_data = dict(self.config_entry.options) # Start with current options
 
         # Redirect to the first specific options step
-        return await self.async_step_general_data_options()
+        return await self.async_step_user(user_input)
 
-    async def async_step_general_data_options(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle general data options."""
         errors: dict[str, str] = {}
         if user_input is not None:
             self.options_data.update(user_input)
-            return await self.async_step_facade_settings_options()
+            return await self.async_step_facade_settings()
 
         return self.async_show_form(
-            step_id="general_data_options",
+            step_id="user",
             data_schema=self.add_suggested_values_to_schema(STEP_GENERAL_DATA_SCHEMA, self.options_data),
             errors=errors,
         )
 
-    async def async_step_facade_settings_options(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_facade_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle facade settings options."""
         errors: dict[str, str] = {}
         if user_input is not None:
             self.options_data.update(self._clean_number_inputs(user_input))
-            return await self.async_step_dynamic_inputs_options()
+            return await self.async_step_dynamic_inputs()
 
         return self.async_show_form(
-            step_id="facade_settings_options",
+            step_id="facade_settings",
             data_schema=self.add_suggested_values_to_schema(STEP_FACADE_SETTINGS_SCHEMA, self.options_data),
             errors=errors,
         )
 
-    async def async_step_dynamic_inputs_options(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_dynamic_inputs(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle dynamic inputs options."""
         errors: dict[str, str] = {}
         if user_input is not None:
             self.options_data.update(self._clean_number_inputs(user_input))
-            return await self.async_step_shadow_settings_options()
+            return await self.async_step_shadow_settings()
 
         return self.async_show_form(
-            step_id="dynamic_inputs_options",
+            step_id="dynamic_inputs",
             data_schema=self.add_suggested_values_to_schema(STEP_DYNAMIC_INPUTS_SCHEMA, self.options_data),
             errors=errors,
         )
 
-    async def async_step_shadow_settings_options(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_shadow_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle shadow settings options."""
         errors: dict[str, str] = {}
         if user_input is not None:
             self.options_data.update(self._clean_number_inputs(user_input))
-            return await self.async_step_dawn_settings_options()
+            return await self.async_step_dawn_settings()
 
         return self.async_show_form(
-            step_id="shadow_settings_options",
+            step_id="shadow_settings",
             data_schema=self.add_suggested_values_to_schema(STEP_SHADOW_SETTINGS_SCHEMA, self.options_data),
             errors=errors,
         )
 
-    async def async_step_dawn_settings_options(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_dawn_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle dawn settings options (final options step)."""
         errors: dict[str, str] = {}
         if user_input is not None:
@@ -631,7 +631,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                         errors["base"] = "unknown_error"
 
         return self.async_show_form(
-            step_id="dawn_settings_options",
+            step_id="dawn_settings",
             data_schema=self.add_suggested_values_to_schema(STEP_DAWN_SETTINGS_SCHEMA, self.options_data),
             errors=errors,
         )
