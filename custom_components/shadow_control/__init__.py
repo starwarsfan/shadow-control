@@ -846,8 +846,17 @@ class ShadowControlManager:
             message += f"NOT IN sun (shadow side, at sun from {sun_entry_angle}° to {sun_exit_angle}°)"
             self._effective_elevation = None
 
+        if (
+            min_elevation is None or
+            max_elevation is None or
+            self._effective_elevation is None
+        ):
+            self.logger.warning(f"Not all required values available to compute sun state of facade! Assuming facade is in sun.")
+            return True
+
         message += f"\n -> Effective elevation {self._effective_elevation:.1f}° for given elevation of {sun_current_elevation:.1f}°"
         _is_elevation_in_range = False
+
         if min_elevation < self._effective_elevation < max_elevation:
             message += f" -> IN min-max-range ({min_elevation}°-{max_elevation}°)"
             self._sun_between_min_max = True
