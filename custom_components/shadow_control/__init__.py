@@ -569,7 +569,7 @@ class ShadowControlManager:
         """
         Update all relevant input values from configuration or Home Assistant states.
         """
-        self.logger.debug(f"Updating all input values")
+        # self.logger.debug(f"Updating all input values")
 
         # Facade Configuration (static values)
         self._facade_config.azimuth = self._get_static_value(SCFacadeConfig.AZIMUTH_STATIC.value, 180.0, float)
@@ -2177,8 +2177,8 @@ class ShadowControlManager:
         entity_id = self._options.get(key) # This will be the string entity_id or None
 
         if entity_id is None or not isinstance(entity_id, str) or entity_id == '':
-            if log_warning:
-                self.logger.debug(f"No valid entity_id configured for key '{key}' ('{entity_id}'). Using default: {default}")
+            # if log_warning:
+            #     self.logger.debug(f"No valid entity_id configured for key '{key}' ('{entity_id}'). Using default: {default}")
             return default
 
         state = self.hass.states.get(entity_id)
