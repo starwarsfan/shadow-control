@@ -918,7 +918,7 @@ class ShadowControlManager:
             "calculated_shutter_angle": self._calculated_shutter_angle,
             "calculated_shutter_angle_degrees": self._calculated_shutter_angle_degrees,
             "current_lock_state": self._current_lock_state,
-            "next_modification_timestamp": self._next_modification_timestamp.isoformat() if self._next_modification_timestamp else None,
+            "next_modification_timestamp": self._next_modification_timestamp,
         }
 
     async def _shadow_handling_was_disabled(self) -> None:

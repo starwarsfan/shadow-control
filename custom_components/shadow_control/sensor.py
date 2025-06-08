@@ -4,7 +4,7 @@ import logging
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.config_entries import ConfigEntry
@@ -89,6 +89,9 @@ class ShadowControlSensor(SensorEntity):
             self._attr_icon = "mdi:lock-open-check"
         elif sensor_type == "next_shutter_modification":
             self._attr_icon = "mdi:clock-end"
+            self._attr_device_class = SensorDeviceClass.TIMESTAMP
+            self._attr_state_class = None
+            self._attr_native_unit_of_measurement = None
 
         # Connect with device (important for UI)
         self._attr_device_info = DeviceInfo(
@@ -119,7 +122,7 @@ class ShadowControlSensor(SensorEntity):
             # Assuming _current_lock_state is an Enum.
             return self._manager._current_lock_state.value if hasattr(self._manager._current_lock_state, 'value') else self._manager._current_lock_state
         elif self._sensor_type == "next_shutter_modification":
-            return self._manager._next_modification_timestamp.isoformat() if self._manager._next_modification_timestamp else None
+            return self._manager._next_modification_timestamp
         return None
 
     async def async_added_to_hass(self) -> None:
