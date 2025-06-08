@@ -1,17 +1,16 @@
 """Constants for the Shadow Control integration."""
-
 from enum import Enum, IntEnum
 
 DOMAIN = "shadow_control"
 DOMAIN_DATA_MANAGERS = f"{DOMAIN}_managers" # A good practice for unique keys
 DEFAULT_NAME = "Shadow Control"
-SC_CONF_COVERS = "covers" # Konstante für den 'covers' Schlüssel in der Konfiguration
+SC_CONF_COVERS = "covers" # Constant for 'covers' key within configuration
 
 SC_CONF_NAME = "name"
 DEBUG_ENABLED = "debug_enabled"
 TARGET_COVER_ENTITY_ID = "target_cover_entity"
 
-# === Dynamische Eingänge (Test-Helfer) ===
+# Dynamic configuration inputs
 class SCDynamicInput(Enum):
     BRIGHTNESS_ENTITY = "brightness_entity"
     BRIGHTNESS_DAWN_ENTITY = "brightness_dawn_entity"
@@ -26,7 +25,7 @@ class SCDynamicInput(Enum):
     MOVEMENT_RESTRICTION_HEIGHT_ENTITY = "movement_restriction_height_entity"
     MOVEMENT_RESTRICTION_ANGLE_ENTITY = "movement_restriction_angle_entity"
 
-# === Allgemeine Einstellungen (Test-Helfer) ===
+# General facade configuration
 class SCFacadeConfig(Enum):
     AZIMUTH_STATIC = "facade_azimuth_static"
     OFFSET_SUN_IN_STATIC = "facade_offset_sun_in_static"
@@ -47,7 +46,7 @@ class SCFacadeConfig(Enum):
     MODIFICATION_TOLERANCE_HEIGHT_STATIC = "facade_modification_tolerance_height_static"
     MODIFICATION_TOLERANCE_ANGLE_STATIC = "facade_modification_tolerance_angle_static"
 
-# === Beschattungseinstellungen (Test-Helfer) ===
+# Shadow configuration
 class SCShadowInput(Enum):
     CONTROL_ENABLED_ENTITY = "shadow_control_enabled_entity"
     CONTROL_ENABLED_STATIC = "shadow_control_enabled_static"
@@ -70,7 +69,7 @@ class SCShadowInput(Enum):
     ANGLE_AFTER_SUN_ENTITY = "shadow_angle_after_sun_entity"
     ANGLE_AFTER_SUN_STATIC = "shadow_angle_after_sun_static"
 
-# === Dämmerungseinstellungen (Test-Helfer) ===
+# Dawn configuration
 class SCDawnInput(Enum):
     CONTROL_ENABLED_ENTITY = "dawn_control_enabled_entity"
     CONTROL_ENABLED_STATIC = "dawn_control_enabled_static"
@@ -93,7 +92,7 @@ class SCDawnInput(Enum):
     ANGLE_AFTER_DAWN_ENTITY = "dawn_angle_after_dawn_entity"
     ANGLE_AFTER_DAWN_STATIC = "dawn_angle_after_dawn_static"
 
-# --- Status Konstanten für die Behangsteuerung -----------------------------
+# State constants for shutter control
 class ShutterState(IntEnum):
     """Enum for the possible states of the shutter."""
     SHADOW_FULL_CLOSE_TIMER_RUNNING = 6
@@ -110,7 +109,7 @@ class ShutterState(IntEnum):
     DAWN_FULL_CLOSED = -5
     DAWN_FULL_CLOSE_TIMER_RUNNING = -6
 
-# --- Definition of all known internal lock states --------------------------
+# All known internal lock states
 class LockState(IntEnum):
     """Enum for the possible states of the lock."""
     UNLOCKED = 0
@@ -118,7 +117,7 @@ class LockState(IntEnum):
     LOCKED_MANUALLY_WITH_FORCED_POSITION = 2
     LOCKED_BY_EXTERNAL_MODIFICATION = 3
 
-# --- Definition of configuration values, how to update lockstate output ----
+# Configuration values, how to update lock state output
 class UpdateLockStateOutput(IntEnum):
     """Enum for the possible states of the lock."""
     UPDATE_LOCKSTATE_OUTPUT__NEVER = -1
@@ -126,14 +125,14 @@ class UpdateLockStateOutput(IntEnum):
     UPDATE_LOCKSTATE_OUTPUT__ONLY_ON_EXTERNAL_MODIFICATION = 1
     UPDATE_LOCKSTATE_OUTPUT__ONLY_ON_MANUAL_LOCK = 2
 
-# --- Definition of configuration values, how to update position outputs ----
+# Configuration values for possible movements restriction
 class MovementRestricted(Enum):
     """Enum for the possible movement restrictions."""
     NO_RESTRICTION = "no_restriction"
     ONLY_CLOSE = "only_close"
     ONLY_OPEN = "only_open"
 
-# --- Definition of configuration values, how to update position outputs ----
+# Configuration values of known shutter types
 class ShutterType(Enum):
     """Enum for the possible shutter types."""
     MODE1 = "mode1"
