@@ -89,16 +89,16 @@ STEP_FACADE_SETTINGS_SCHEMA = vol.Schema({
 
 # --- STEP 3: Dynamic settings ---
 STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema({
-    vol.Required(SCDynamicInput.BRIGHTNESS_ENTITY.value): selector.EntitySelector(
+    vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
-    vol.Required(SCDynamicInput.SUN_ELEVATION_ENTITY.value): selector.EntitySelector(
+    vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
-    vol.Required(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): selector.EntitySelector(
+    vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain=["sensor", "input_number"])
     ),
     vol.Optional(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value): selector.EntitySelector(
@@ -419,11 +419,55 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_dynamic_inputs(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle the dynamic inputs step."""
         errors: dict[str, str] = {}
+        form_data = user_input if user_input is not None else {}
 
         if user_input is not None:
-            self.config_data.update(self._clean_number_inputs(user_input))
-            _LOGGER.debug(f"[ConfigFlow] After dynamic_inputs, config_data: {self.config_data}") # NEU: Debug-Log
-            return await self.async_step_shadow_settings()
+            _LOGGER.debug(f"[ConfigFlow] Received user_input: {user_input}")
+
+            if not user_input.get(SCDynamicInput.BRIGHTNESS_ENTITY.value):
+                errors[SCDynamicInput.BRIGHTNESS_ENTITY.value] = "dynamic_brightness_missing"
+
+            if not user_input.get(SCDynamicInput.SUN_ELEVATION_ENTITY.value):
+                errors[SCDynamicInput.SUN_ELEVATION_ENTITY.value] = "dynamic_sun_elevation_missing"
+
+            if not user_input.get(SCDynamicInput.SUN_AZIMUTH_ENTITY.value):
+                errors[SCDynamicInput.SUN_AZIMUTH_ENTITY.value] = "dynamic_sun_azimuth_missing"
+
+            if errors:
+                return self.async_show_form(
+                    step_id="dynamic_inputs",
+                    data_schema=self.add_suggested_values_to_schema(STEP_DYNAMIC_INPUTS_SCHEMA, form_data),
+                    errors=errors,
+                )
+
+            try:
+                validated_user_input = STEP_DYNAMIC_INPUTS_SCHEMA(user_input)
+                if validated_user_input.get(TARGET_COVER_ENTITY_ID):
+                    target_entity = self.hass.states.get(validated_user_input[TARGET_COVER_ENTITY_ID])
+                    if not target_entity or target_entity.domain != "cover":
+                        errors[TARGET_COVER_ENTITY_ID] = "invalid_entity"
+                        return self.async_show_form(
+                            step_id="dynamic_inputs",
+                            data_schema=self.add_suggested_values_to_schema(STEP_DYNAMIC_INPUTS_SCHEMA, form_data),
+                            errors=errors
+                        )
+
+                self.config_data.update(self._clean_number_inputs(validated_user_input))
+                _LOGGER.debug(f"[ConfigFlow] After dynamic_inputs, config_data: {self.config_data}")
+                return await self.async_step_shadow_settings()
+
+            except vol.Invalid as exc:
+                _LOGGER.error("Validation error during user step (voluptuous): %s", exc)
+                for error in exc.errors:
+                    field_key = str(error.path[0]) if error.path else "base"
+                    errors[field_key] = "general_input_error"
+
+                # Catched voluptuous error, show the input form again
+                return self.async_show_form(
+                    step_id="dynamic_inputs",
+                    data_schema=self.add_suggested_values_to_schema(STEP_DYNAMIC_INPUTS_SCHEMA, form_data),
+                    errors=errors,
+                )
 
         return self.async_show_form(
             step_id="dynamic_inputs",
