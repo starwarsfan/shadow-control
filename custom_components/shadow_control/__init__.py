@@ -717,11 +717,11 @@ class ShadowControlManager:
         dawn_angle_after_dawn_static = self._get_static_value(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value, 0.0, float, log_warning=False)
         self._dawn_config.angle_after_dawn = self._get_entity_state_value(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value, dawn_angle_after_dawn_static, float)
 
-        self.logger.debug(f"Updated values:\n"
-                      f"{_format_config_object_for_logging(self._facade_config, 'Facade config: ')},\n"
-                      f"{_format_config_object_for_logging(self._dynamic_config, 'Dynamic config: ')},\n"
-                      f"{_format_config_object_for_logging(self._shadow_config, 'Shadow config: ')},\n"
-                      f"{_format_config_object_for_logging(self._dawn_config, 'Dawn config: ')}"
+        self.logger.debug(f"Updated input values:\n"
+                      f"{_format_config_object_for_logging(self._facade_config, ' -> Facade config: ')},\n"
+                      f"{_format_config_object_for_logging(self._dynamic_config, ' -> Dynamic config: ')},\n"
+                      f"{_format_config_object_for_logging(self._shadow_config, ' -> Shadow config: ')},\n"
+                      f"{_format_config_object_for_logging(self._dawn_config, ' -> Dawn config: ')}"
                       )
 
     @callback
@@ -836,24 +836,24 @@ class ShadowControlManager:
         if azimuth_calc < 0:
             azimuth_calc += 360
 
-        message = f"Finished facade check:\n -> real azimuth {sun_current_azimuth}° and facade at {facade_azimuth}° -> "
+        message = f"Finished facade check:\n -> Real azimuth {sun_current_azimuth}° and facade at {facade_azimuth}° -> "
         _sun_between_offsets = False
         if 0 <= azimuth_calc <= sun_exit_angle_calc:
-            message += f"IN SUN (from {sun_entry_angle}° to {sun_exit_angle}°)"
+            message += f"IN sun (from {sun_entry_angle}° to {sun_exit_angle}°)"
             _sun_between_offsets = True
             self._effective_elevation = await self._calculate_effective_elevation()
         else:
-            message += f"NOT IN SUN (shadow side, at sun from {sun_entry_angle}° to {sun_exit_angle}°)"
+            message += f"NOT IN sun (shadow side, at sun from {sun_entry_angle}° to {sun_exit_angle}°)"
             self._effective_elevation = None
 
-        message += f"\n -> effective elevation {self._effective_elevation}° for given elevation of {sun_current_elevation}°"
+        message += f"\n -> Effective elevation {self._effective_elevation:.1f}° for given elevation of {sun_current_elevation:.1f}°"
         _is_elevation_in_range = False
         if min_elevation < self._effective_elevation < max_elevation:
-            message += f" -> in min-max-range ({min_elevation}°-{max_elevation}°)"
+            message += f" -> IN min-max-range ({min_elevation}°-{max_elevation}°)"
             self._sun_between_min_max = True
             _is_elevation_in_range = True
         else:
-            message += f" -> NOT in min-max-range ({min_elevation}°-{max_elevation}°)"
+            message += f" -> NOT IN min-max-range ({min_elevation}°-{max_elevation}°)"
             self._sun_between_min_max = False
         self.logger.debug(f"{message}")
 
