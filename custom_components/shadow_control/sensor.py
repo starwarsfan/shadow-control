@@ -35,8 +35,10 @@ async def async_setup_entry(
     entities_to_add = [
         ShadowControlSensor(manager, config_entry.entry_id, "target_height"),
         ShadowControlSensor(manager, config_entry.entry_id, "target_angle"),
+        ShadowControlSensor(manager, config_entry.entry_id, "target_angle_degrees"),
         ShadowControlSensor(manager, config_entry.entry_id, "current_state"),
         ShadowControlSensor(manager, config_entry.entry_id, "lock_state"),
+        ShadowControlSensor(manager, config_entry.entry_id, "next_shutter_modification"),
     ]
 
     if entities_to_add:
@@ -77,10 +79,16 @@ class ShadowControlSensor(SensorEntity):
             self._attr_native_unit_of_measurement = "%"
             self._attr_icon = "mdi:rotate-3d"
             self._attr_state_class = "measurement"
+        elif sensor_type == "target_angle_degrees":
+            self._attr_native_unit_of_measurement = "°"
+            self._attr_icon = "mdi:rotate-3d"
+            self._attr_state_class = "measurement"
         elif sensor_type == "current_state":
             self._attr_icon = "mdi:state-machine"
         elif sensor_type == "lock_state":
             self._attr_icon = "mdi:lock-open-check"
+        elif sensor_type == "next_shutter_modification":
+            self._attr_icon = "mdi:clock-end"
 
         # Connect with device (important for UI)
         self._attr_device_info = DeviceInfo(
@@ -102,12 +110,16 @@ class ShadowControlSensor(SensorEntity):
             return self._manager._calculated_shutter_height
         elif self._sensor_type == "target_angle":
             return self._manager._calculated_shutter_angle
+        elif self._sensor_type == "target_angle_degrees":
+            return self._manager._calculated_shutter_angle_degrees
         elif self._sensor_type == "current_state":
             # Assuming _current_shutter_state is an Enum.
             return self._manager._current_shutter_state.value if hasattr(self._manager._current_shutter_state, 'value') else self._manager._current_shutter_state
         elif self._sensor_type == "lock_state":
             # Assuming _current_lock_state is an Enum.
             return self._manager._current_lock_state.value if hasattr(self._manager._current_lock_state, 'value') else self._manager._current_lock_state
+        elif self._sensor_type == "next_shutter_modification":
+            return self._manager._next_modification_timestamp.isoformat() if self._manager._next_modification_timestamp else None
         return None
 
     async def async_added_to_hass(self) -> None:
