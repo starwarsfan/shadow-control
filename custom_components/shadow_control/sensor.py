@@ -76,10 +76,10 @@ class ShadowControlSensor(SensorEntity):
         # Define attributes based on the sensor type
         if sensor_type == "target_height":
             self._attr_native_unit_of_measurement = "%"
-            self._attr_icon = "mdi:ruler-vertical"
+            self._attr_icon = "mdi:pan-vertical"
             self._attr_state_class = "measurement"
         elif sensor_type == "target_angle":
-            self._attr_native_unit_of_measurement = "°"
+            self._attr_native_unit_of_measurement = "%"
             self._attr_icon = "mdi:rotate-3d"
             self._attr_state_class = "measurement"
         elif sensor_type == "current_state":
