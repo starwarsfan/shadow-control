@@ -526,19 +526,28 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> config_entries.OptionsFlow:
-        """Create the options flow."""
-        return ShadowControlOptionsFlowHandler(config_entry)
+        """
+        Create the options flow.
+        """
+        return ShadowControlOptionsFlowHandler()
 
 class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle options flow for Shadow Control."""
+    """
+    Handle options flow for Shadow Control.
+    """
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Initialize options flow."""
-        self.config_entry = config_entry
-        self.options_data = dict(config_entry.options) # Start with current options
+    def __init__(self):
+        """
+        Initialize options flow.
+        """
+        self.options_data = None
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Manage the options."""
+        """
+        Manage the options.
+        """
+        self.options_data = dict(self.config_entry.options) # Start with current options
+
         # Redirect to the first specific options step
         return await self.async_step_general_data_options()
 
