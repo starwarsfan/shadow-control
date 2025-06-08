@@ -9,7 +9,7 @@ from voluptuous import Any
 
 from .const import DOMAIN, SCFacadeConfig, \
     SCDynamicInput, TARGET_COVER_ENTITY_ID, SC_CONF_NAME, \
-    SCShadowInput, SCDawnInput
+    SCShadowInput, SCDawnInput, DEBUG_ENABLED
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,6 +21,7 @@ STEP_GENERAL_DATA_SCHEMA = vol.Schema({
     vol.Optional(TARGET_COVER_ENTITY_ID): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="cover")
     ),
+    vol.Optional(DEBUG_ENABLED, default=False): selector.BooleanSelector(),
 })
 
 # --- STEP 2: General settings (facade, cover type, ...) ---

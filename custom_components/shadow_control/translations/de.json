@@ -5,11 +5,13 @@
       "user": {
         "data": {
           "name": "Instanzname",
-          "target_cover_entity": "Behang-Entität"
+          "target_cover_entity": "Behang-Entität",
+          "debug_enabled": "Debug-Logs"
         },
         "data_description": {
           "name": "Eindeutiger Name dieser Shadow Control (SC) Instanz",
-          "target_cover_entity": "Behang, welcher mit dieser Shadow Control (SC) Instanz gehandhabt werden soll"
+          "target_cover_entity": "Behang, welcher mit dieser Shadow Control (SC) Instanz gehandhabt werden soll",
+          "debug_enabled": "Debug-Logs für diese Instanz aktivieren"
         }
       },
       "facade_settings": {

@@ -2,6 +2,7 @@
 import datetime
 import logging
 import math
+import re
 
 import voluptuous as vol
 from datetime import datetime, timedelta, timezone
@@ -41,9 +42,11 @@ from .const import (
     ShutterType,
     SC_CONF_COVERS,
     SC_CONF_NAME,
-    TARGET_COVER_ENTITY_ID
+    TARGET_COVER_ENTITY_ID,
+    DEBUG_ENABLED
 )
 
+_GLOBAL_DOMAIN_LOGGER = logging.getLogger(DOMAIN)
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["sensor"]
@@ -72,12 +75,39 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.debug(f"[{DOMAIN}] Setting up Shadow Control from config entry: {entry.entry_id}: data={entry.data}, options={entry.options}")
 
     # Most reliable way to store the 'name',
-    # as it will be set as 'title' during creation of an entry.
+    # as it will be set as 'title' during the creation of an entry.
     manager_name = entry.title
 
     # Combined entry-data and entry.options for the configuration of the manager.
     # 'Options' overwrite 'data', if their key is identical.
     config_data = {**entry.data, **entry.options}
+
+    instance_name = config_data[SC_CONF_NAME]
+    if not instance_name:
+        _LOGGER.error("Instance name not found within configuration data.")
+        return False
+
+    # Sanitize logger instance name
+    # 1. Replace spaces with underscores
+    # 2. All lowercase
+    # 3. Remove all characters that are not alphanumeric or underscores
+    sanitized_instance_name = re.sub(r'\s+', '_', instance_name).lower()
+    sanitized_instance_name = re.sub(r'[^a-z0-9_]', '', sanitized_instance_name)
+
+    # Prevent empty name if there were only special characters used
+    if not sanitized_instance_name:
+        _LOGGER.warning(f"Sanitized logger instance name would be empty, using entry_id as fallback for: '{instance_name}'")
+        sanitized_instance_name = entry.entry_id
+
+    instance_logger_name = f"{DOMAIN}.{sanitized_instance_name}"
+    instance_specific_logger = logging.getLogger(instance_logger_name)
+
+    if entry.options.get(DEBUG_ENABLED, False):
+        instance_specific_logger.setLevel(logging.DEBUG)
+        instance_specific_logger.debug(f"Debug log for instance '{instance_name}' activated.")
+    else:
+        instance_specific_logger.setLevel(logging.INFO)
+        instance_specific_logger.debug(f"Debug log for instance '{instance_name}' disabled.")
 
     # The manager can't work without a configuration.
     if not config_data:
@@ -99,7 +129,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     manager = ShadowControlManager(
         hass,
         config_data,
-        entry.entry_id
+        entry.entry_id,
+        instance_specific_logger
     )
 
     # Store manager within 'hass.data' to let sensors and other components access it.
@@ -221,11 +252,13 @@ class ShadowControlManager:
             self,
             hass: HomeAssistant,
             config: dict[str, Any],
-            entry_id: str
+            entry_id: str,
+            instance_logger: logging.Logger
     ):
         self.hass = hass
         self._config = config
         self._entry_id = entry_id
+        self.logger = instance_logger
 
         self._name = config[SC_CONF_NAME]
         self._target_cover_entity_id = config[TARGET_COVER_ENTITY_ID]

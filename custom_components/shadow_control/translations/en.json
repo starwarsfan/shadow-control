@@ -5,11 +5,13 @@
       "user": {
         "data": {
           "name": "Instance name",
-          "target_cover_entity": "Cover to maintain"
+          "target_cover_entity": "Cover to maintain",
+          "debug_enabled": "Debug logs"
         },
         "data_description": {
           "name": "A descriptive and unique name for this Shadow Control (SC) instance",
-          "target_cover_entity": "Cover which should be handled by this Shadow Control (SC) instance"
+          "target_cover_entity": "Cover which should be handled by this Shadow Control (SC) instance",
+          "debug_enabled": "Activate debug logs for this instance"
         }
       },
       "facade_settings": {
