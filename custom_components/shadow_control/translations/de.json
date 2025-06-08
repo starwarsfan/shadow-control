@@ -192,6 +192,8 @@
       "name": "Name wird zwingend benötigt.",
       "target_cover_entity": "Zu steuernde Entität muss ausgewählt werden.",
       "invalid_entity": "Ungültige Entität ausgewählt",
+      "minGreaterThanMax": "Min-Wert muss kleiner als Max-Wert sein",
+      "slatWidthSmallerThanDistance": "Lamellenbreite muss grösser als Lamellenabstand sein",
       "general_input_error": "Ungültige Eingabe. Bitte Werte prüfen.",
       "shadow_brightness_threshold_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Helligkeitsschwelle der Beschattung an.",
       "shadow_after_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Verzögerung nach Auslösen der Beschattung an.",

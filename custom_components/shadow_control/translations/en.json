@@ -192,6 +192,8 @@
       "name": "Name required.",
       "target_cover_entity": "Entity required.",
       "invalid_entity": "Invalid entity selected.",
+      "minGreaterThanMax": "Min value must be smaller than max value",
+      "slatWidthSmallerThanDistance": "Shutter slat width must be greater than slat distance",
       "general_input_error": "Invalid input, please verify.",
       "shadow_brightness_threshold_missing": "Please use a static value or a entity for the brightness threshold of shadow control.",
       "shadow_after_seconds_missing": "Please use a static value or a entity for the timeout after triggered shadow position.",

@@ -366,11 +366,49 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_facade_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle the facade settings step."""
         errors: dict[str, str] = {}
+        form_data = user_input if user_input is not None else {}
 
         if user_input is not None:
-            self.config_data.update(self._clean_number_inputs(user_input))
-            _LOGGER.debug(f"[ConfigFlow] After facade_settings, config_data: {self.config_data}") # NEU: Debug-Log
-            return await self.async_step_dynamic_inputs()
+            _LOGGER.debug(f"[ConfigFlow] Received user_input: {user_input}")
+
+            sun_min = user_input.get(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value)
+            sun_max = user_input.get(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value)
+            if sun_min >= sun_max:
+                errors[SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value] = "minGreaterThanMax"
+                errors[SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value] = "minGreaterThanMax"
+
+            slat_width = user_input.get(SCFacadeConfig.SLAT_WIDTH_STATIC.value)
+            slat_distance = user_input.get(SCFacadeConfig.SLAT_DISTANCE_STATIC.value)
+            if slat_width <= slat_distance:
+                errors[SCFacadeConfig.SLAT_WIDTH_STATIC.value] = "slatWidthSmallerThanDistance"
+                errors[SCFacadeConfig.SLAT_DISTANCE_STATIC.value] = "slatWidthSmallerThanDistance"
+
+            # If configuration errors found, show the config form again
+            if errors:
+                return self.async_show_form(
+                    step_id="facade_settings",
+                    data_schema=self.add_suggested_values_to_schema(STEP_FACADE_SETTINGS_SCHEMA, form_data),
+                    errors=errors,
+                )
+
+            try:
+                # Trigger vol.Invalid if form contains invalid/missing data
+                validated_user_input = STEP_FACADE_SETTINGS_SCHEMA(user_input)
+
+                # Update config_data only if validation is successful
+                self.config_data.update(self._clean_number_inputs(validated_user_input))
+                _LOGGER.debug(f"[ConfigFlow] After facade_settings, config_data: {self.config_data}")
+                return await self.async_step_dynamic_inputs()
+
+            except vol.Invalid as exc:
+                # Catch validation errors and map them to the corresponding fields
+                _LOGGER.error("Validation error during user step: %s", exc)
+                for error in exc.errors:
+                    if error.path:
+                        errors[str(error.path[0])] = "invalid_input"
+                    else:
+                        # Commons errors without mapping to a specific field
+                        errors["base"] = "unknown_error"
 
         return self.async_show_form(
             step_id="facade_settings",
