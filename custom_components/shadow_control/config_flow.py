@@ -392,10 +392,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 )
 
             try:
-                # Trigger vol.Invalid if form contains invalid/missing data
                 validated_user_input = STEP_FACADE_SETTINGS_SCHEMA(user_input)
-
-                # Update config_data only if validation is successful
                 self.config_data.update(self._clean_number_inputs(validated_user_input))
                 _LOGGER.debug(f"[ConfigFlow] After facade_settings, config_data: {self.config_data}")
                 return await self.async_step_dynamic_inputs()
@@ -442,16 +439,6 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
             try:
                 validated_user_input = STEP_DYNAMIC_INPUTS_SCHEMA(user_input)
-                if validated_user_input.get(TARGET_COVER_ENTITY_ID):
-                    target_entity = self.hass.states.get(validated_user_input[TARGET_COVER_ENTITY_ID])
-                    if not target_entity or target_entity.domain != "cover":
-                        errors[TARGET_COVER_ENTITY_ID] = "invalid_entity"
-                        return self.async_show_form(
-                            step_id="dynamic_inputs",
-                            data_schema=self.add_suggested_values_to_schema(STEP_DYNAMIC_INPUTS_SCHEMA, form_data),
-                            errors=errors
-                        )
-
                 self.config_data.update(self._clean_number_inputs(validated_user_input))
                 _LOGGER.debug(f"[ConfigFlow] After dynamic_inputs, config_data: {self.config_data}")
                 return await self.async_step_shadow_settings()
