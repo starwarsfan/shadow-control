@@ -464,7 +464,7 @@ class ShadowControlManager:
 
         self.logger.debug(f"Listeners registered.")
 
-    async def _async_state_change_listener(self, event: Event) -> None: # NEUE METHODE HIER EINFÜGEN (ca. Zeile 565)
+    async def _async_state_change_listener(self, event: Event) -> None:
         """
         Callback for state changes of monitored entities.
         """
@@ -485,7 +485,7 @@ class ShadowControlManager:
         else:
             self.logger.debug(f"State change for {entity_id} detected, but value did not change. No recalculation triggered.")
 
-    async def _async_target_cover_entity_state_change_listener(self, event: Event) -> None: # NEUE METHODE HIER EINFÜGEN (ca. Zeile 610)
+    async def _async_target_cover_entity_state_change_listener(self, event: Event) -> None:
         """
         Callback for state changes of handled cover entity.
         """
@@ -546,7 +546,7 @@ class ShadowControlManager:
         self.logger.debug(f"Home Assistant started event received. Performing initial calculation.")
         await self._async_calculate_and_apply_cover_position(None)
 
-    async def async_stop(self) -> None: # NEUE METHODE HIER EINFÜGEN (ab Zeile 668)
+    async def async_stop(self) -> None:
         """
         Stop ShadowControlManager:
         - Remove listeners
