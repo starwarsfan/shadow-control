@@ -835,6 +835,7 @@ class ShadowControlManager:
         azimuth_calc = sun_current_azimuth - sun_entry_angle
         if azimuth_calc < 0:
             azimuth_calc += 360
+        self.logger.debug(f"sun_entry_angle: {sun_entry_angle}, sun_exit_angle: {sun_exit_angle}, sun_exit_angle_calc: {sun_exit_angle_calc}, azimuth_calc: {azimuth_calc}")
 
         message = f"Finished facade check:\n -> Real azimuth {sun_current_azimuth}° and facade at {facade_azimuth}° -> "
         _sun_between_offsets = False
@@ -846,18 +847,14 @@ class ShadowControlManager:
             message += f"NOT IN sun (shadow side, at sun from {sun_entry_angle}° to {sun_exit_angle}°)"
             self._effective_elevation = None
 
-        if (
-            min_elevation is None or
-            max_elevation is None or
-            self._effective_elevation is None
-        ):
-            self.logger.warning(f"Not all required values available to compute sun state of facade! Assuming facade is in sun.")
-            return True
-
-        message += f"\n -> Effective elevation {self._effective_elevation:.1f}° for given elevation of {sun_current_elevation:.1f}°"
+        effective_elevation_shortened = f"{self._effective_elevation:.1f}" if self._effective_elevation else "---"
+        message += f"\n -> Effective elevation {effective_elevation_shortened}° for given elevation of {sun_current_elevation:.1f}°"
         _is_elevation_in_range = False
 
-        if min_elevation < self._effective_elevation < max_elevation:
+        if self._effective_elevation is None:
+            _is_elevation_in_range = False
+            message += f" -> NOT IN min-max-range ({min_elevation}°-{max_elevation}°)"
+        elif min_elevation < self._effective_elevation < max_elevation:
             message += f" -> IN min-max-range ({min_elevation}°-{max_elevation}°)"
             self._sun_between_min_max = True
             _is_elevation_in_range = True
