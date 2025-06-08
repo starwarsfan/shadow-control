@@ -1418,7 +1418,7 @@ class ShadowControlManager:
     # =======================================================================
     # State SHADOW_FULL_CLOSE_TIMER_RUNNING
     async def _handle_state_shadow_full_close_timer_running(self) -> ShutterState:
-        self.logger.info(f"Handle SHADOW_FULL_CLOSE_TIMER_RUNNING")
+        self.logger.debug(f"Handle SHADOW_FULL_CLOSE_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._dynamic_config.brightness
             shadow_threshold_close = self._shadow_config.brightness_threshold
@@ -1471,7 +1471,7 @@ class ShadowControlManager:
     # =======================================================================
     # State SHADOW_FULL_CLOSED
     async def _handle_state_shadow_full_closed(self) -> ShutterState:
-        self.logger.info(f"Handle SHADOW_FULL_CLOSED")
+        self.logger.debug(f"Handle SHADOW_FULL_CLOSED")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_config.brightness_threshold
@@ -1519,7 +1519,7 @@ class ShadowControlManager:
     # =======================================================================
     # State SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
     async def _handle_state_shadow_horizontal_neutral_timer_running(self) -> ShutterState:
-        self.logger.info(f"Handle SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING")
+        self.logger.debug(f"Handle SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_config.brightness_threshold
@@ -1573,7 +1573,7 @@ class ShadowControlManager:
     # =======================================================================
     # State SHADOW_HORIZONTAL_NEUTRAL
     async def _handle_state_shadow_horizontal_neutral(self) -> ShutterState:
-        self.logger.info(f"Handle SHADOW_HORIZONTAL_NEUTRAL")
+        self.logger.debug(f"Handle SHADOW_HORIZONTAL_NEUTRAL")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_config.brightness_threshold
@@ -1627,7 +1627,7 @@ class ShadowControlManager:
     # =======================================================================
     # State SHADOW_NEUTRAL_TIMER_RUNNING
     async def _handle_state_shadow_neutral_timer_running(self) -> ShutterState:
-        self.logger.info(f"Handle SHADOW_NEUTRAL_TIMER_RUNNING")
+        self.logger.debug(f"Handle SHADOW_NEUTRAL_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_config.brightness_threshold
@@ -1683,7 +1683,7 @@ class ShadowControlManager:
     # =======================================================================
     # State SHADOW_NEUTRAL
     async def _handle_state_shadow_neutral(self) -> ShutterState:
-        self.logger.info(f"Handle SHADOW_NEUTRAL")
+        self.logger.debug(f"Handle SHADOW_NEUTRAL")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
             shadow_threshold_close = self._shadow_config.brightness_threshold
@@ -1759,7 +1759,7 @@ class ShadowControlManager:
     # =======================================================================
     # State NEUTRAL
     async def _handle_state_neutral(self) -> ShutterState:
-        self.logger.info(f"Handle NEUTRAL")
+        self.logger.debug(f"Handle NEUTRAL")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             self.logger.debug(f"self._check_if_facade_is_in_sun and self._is_shadow_handling_activated")
             current_brightness = self._get_current_brightness()
@@ -1804,7 +1804,7 @@ class ShadowControlManager:
     # =======================================================================
     # State DAWN_NEUTRAL
     async def _handle_state_dawn_neutral(self) -> ShutterState:
-        self.logger.info(f"Handle DAWN_NEUTRAL")
+        self.logger.debug(f"Handle DAWN_NEUTRAL")
         current_brightness = self._get_current_brightness()
 
         shadow_handling_active = await self._is_shadow_control_enabled()
@@ -1884,7 +1884,7 @@ class ShadowControlManager:
     # =======================================================================
     # State DAWN_NEUTRAL_TIMER_RUNNING
     async def _handle_state_dawn_neutral_timer_running(self) -> ShutterState:
-        self.logger.info(f"Handle DAWN_NEUTRAL_TIMER_RUNNING")
+        self.logger.debug(f"Handle DAWN_NEUTRAL_TIMER_RUNNING")
         if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_config.brightness_threshold
@@ -1938,7 +1938,7 @@ class ShadowControlManager:
     # =======================================================================
     # State DAWN_HORIZONTAL_NEUTRAL
     async def _handle_state_dawn_horizontal_neutral(self) -> ShutterState:
-        self.logger.info(f"Handle DAWN_HORIZONTAL_NEUTRAL")
+        self.logger.debug(f"Handle DAWN_HORIZONTAL_NEUTRAL")
         if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_config.brightness_threshold
@@ -1990,7 +1990,7 @@ class ShadowControlManager:
     # =======================================================================
     # State DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
     async def _handle_state_dawn_horizontal_neutral_timer_running(self) -> ShutterState:
-        self.logger.info(f"Handle DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING")
+        self.logger.debug(f"Handle DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING")
         if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_config.brightness_threshold
@@ -2043,7 +2043,7 @@ class ShadowControlManager:
     # =======================================================================
     # State DAWN_FULL_CLOSED
     async def _handle_state_dawn_full_closed(self) -> ShutterState:
-        self.logger.info(f"Handle DAWN_FULL_CLOSED")
+        self.logger.debug(f"Handle DAWN_FULL_CLOSED")
         if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_config.brightness_threshold
@@ -2093,7 +2093,7 @@ class ShadowControlManager:
     # =======================================================================
     # State DAWN_FULL_CLOSE_TIMER_RUNNING
     async def _handle_state_dawn_full_close_timer_running(self) -> ShutterState:
-        self.logger.info(f"Handle DAWN_FULL_CLOSE_TIMER_RUNNING")
+        self.logger.debug(f"Handle DAWN_FULL_CLOSE_TIMER_RUNNING")
         if await self._is_dawn_control_enabled():
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_config.brightness_threshold
