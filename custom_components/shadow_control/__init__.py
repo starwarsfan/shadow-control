@@ -3,31 +3,20 @@ import datetime
 import logging
 import math
 import re
-
-import voluptuous as vol
 from datetime import datetime, timedelta, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Callable, Awaitable, Mapping
+from typing import Any, Optional, Callable, Awaitable
 
 from homeassistant.components.cover import CoverEntityFeature
-from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_SUPPORTED_FEATURES,
-    STATE_ON, STATE_OFF,
-    EVENT_HOMEASSISTANT_STARTED
+    STATE_ON, EVENT_HOMEASSISTANT_STARTED
 )
 from homeassistant.core import HomeAssistant, callback, Event, State
-from homeassistant.helpers import discovery
 from homeassistant.helpers.dispatcher import async_dispatcher_send
-from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.event import async_track_state_change_event, async_track_time_change, async_call_later
+from homeassistant.helpers.event import async_track_state_change_event, async_call_later
 from homeassistant.helpers.typing import ConfigType
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-    DataUpdateCoordinator,
-    UpdateFailed,
-)
 
 from .const import (
     DOMAIN,
