@@ -13,10 +13,21 @@ from .const import DOMAIN, SCFacadeConfig, \
 
 _LOGGER = logging.getLogger(__name__)
 
-STEP_MINIMAL_KONFIGURATION = vol.Schema({
+# =================================================================================================
+# Voluptuous schemas for minimal configuration
+# They are used the initial configuration of a new instance, as the instance name is the one and
+# only configuration value, which is immutable. So it must be stored within `data`. All
+# other options will be stored as `options`.
+
+# Wrapper for minimal configuration, which will be stored within `data`
+STEP_MINIMAL_DATA = vol.Schema({
     vol.Optional(SC_CONF_NAME, default=""): selector.TextSelector(
         selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
     ),
+})
+
+# Wrapper for minimal options, which will be used and validated within ConfigFlow and OptionFlow
+STEP_MINIMAL_OPTIONS = vol.Schema({
     vol.Optional(TARGET_COVER_ENTITY_ID): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="cover", multiple=True)
     ),
@@ -34,9 +45,19 @@ STEP_MINIMAL_KONFIGURATION = vol.Schema({
     ),
 })
 
+# Wrapper for minimal configuration, which is used to show initial ConfigFlow
+STEP_MINIMAL_KONFIGURATION = vol.Schema(
+    STEP_MINIMAL_DATA.schema |
+    STEP_MINIMAL_OPTIONS.schema
+)
+# End of minimal configuration schema
+# =================================================================================================
 
 
-# --- STEP 1: 1st part of facade configuration  ---
+# =================================================================================================
+# Voluptuous schemas for options
+#
+# --- STEP 2: 1st part of facade configuration  ---
 STEP_FACADE_SETTINGS_PART1_SCHEMA = vol.Schema({
     vol.Optional(TARGET_COVER_ENTITY_ID): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="cover", multiple=True)
@@ -59,7 +80,7 @@ STEP_FACADE_SETTINGS_PART1_SCHEMA = vol.Schema({
     vol.Optional(DEBUG_ENABLED, default=False): selector.BooleanSelector(),
 })
 
-# --- STEP 2: 2nd part of facade configuration ---
+# --- STEP 3: 2nd part of facade configuration ---
 STEP_FACADE_SETTINGS_PART2_SCHEMA = vol.Schema({
     vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
@@ -108,7 +129,7 @@ STEP_FACADE_SETTINGS_PART2_SCHEMA = vol.Schema({
     ),
 })
 
-# --- STEP 3: Dynamic settings ---
+# --- STEP 4: Dynamic settings ---
 STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema({
     vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain=["sensor", "input_number"])
@@ -162,7 +183,7 @@ STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema({
     ),
 })
 
-# --- STEP 4: Shadow settings ---
+# --- STEP 5: Shadow settings ---
 STEP_SHADOW_SETTINGS_SCHEMA = vol.Schema({
     vol.Optional(SCShadowInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
     vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
@@ -233,7 +254,7 @@ STEP_SHADOW_SETTINGS_SCHEMA = vol.Schema({
     ),
 })
 
-# --- STEP 5: Dawn settings ---
+# --- STEP 6: Dawn settings ---
 STEP_DAWN_SETTINGS_SCHEMA = vol.Schema({
     vol.Optional(SCDawnInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
     vol.Optional(SCDawnInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
@@ -304,27 +325,35 @@ STEP_DAWN_SETTINGS_SCHEMA = vol.Schema({
     ),
 })
 
-# Combined schema for final validation and options flow
-FULL_CONFIG_SCHEMA = vol.Schema(
+# Combined schema for OptionsFlow
+FULL_OPTIONS_SCHEMA = vol.Schema(
     STEP_FACADE_SETTINGS_PART1_SCHEMA.schema |
     STEP_FACADE_SETTINGS_PART2_SCHEMA.schema |
     STEP_DYNAMIC_INPUTS_SCHEMA.schema |
     STEP_SHADOW_SETTINGS_SCHEMA.schema |
     STEP_DAWN_SETTINGS_SCHEMA.schema
 )
+# End of Voluptuous schemas for options
+# =================================================================================================
 
 class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Shadow Control."""
+    """
+    Handle a config flow for Shadow Control.
+    """
 
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self):
-        """Initialize the config flow."""
+        """
+        Initialize the config flow.
+        """
         self.config_data = {}
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Handle the initial step."""
+        """
+        Handle the initial step.
+        """
         errors: dict[str, str] = {}
 
         # Initialize data for the form, using user_input if available, else empty for initial display
@@ -362,16 +391,28 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     errors=errors,
                 )
 
-            #self.options_data.update(self._clean_number_inputs(user_input))
+            instance_name = user_input.get(SC_CONF_NAME, "")
+
+            # Immutable configuration data, not available within OptionsFlow
+            config_data_for_entry = {
+                SC_CONF_NAME: instance_name
+            }
+
+            # Create list of options, which are visible and editable within OptionsFlow
+            options_data_for_entry = {
+                key: value
+                for key, value in user_input.items()
+                if key != SC_CONF_NAME # Remove instance name
+            }
 
             # All fine, now perform voluptuous validation
             try:
-                validated_user_input = STEP_MINIMAL_KONFIGURATION(user_input)
-                _LOGGER.debug(f"Validated config data: {validated_user_input}")
+                validated_options_initial = STEP_MINIMAL_OPTIONS(options_data_for_entry)
+                _LOGGER.debug(f"Creating entry with data: {config_data_for_entry} and options: {validated_options_initial}")
                 return self.async_create_entry(
-                    title=validated_user_input[SC_CONF_NAME],
-                    data={},  # Configuration data is stored as options now
-                    options=validated_user_input, # Store the full config as options
+                    title=instance_name,
+                    data=config_data_for_entry,
+                    options=validated_options_initial,
                 )
             except vol.Invalid as exc:
                 _LOGGER.error("Validation error during final config flow step: %s", exc)
@@ -388,7 +429,9 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     def _clean_number_inputs(self, user_input: dict[str, Any]) -> dict[str, Any]:
-        """Convert empty string number fields to 0 or their default."""
+        """
+        Convert empty string number fields to 0 or their default.
+        """
         cleaned_input = user_input.copy()
         for key, value in cleaned_input.items():
             if isinstance(value, str) and value == "":
@@ -421,13 +464,18 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         """
         Manage the options.
         """
-        self.options_data = dict(self.config_entry.options) # Start with current options
+        # Initialize options_data from config_entry.options, with all editable options
+        self.options_data = dict(self.config_entry.options)
+
+        _LOGGER.debug(f"Initial options_data: {self.options_data}")
 
         # Redirect to the first specific options step
         return await self.async_step_user(user_input)
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Handle general data options."""
+        """
+        Handle general data options.
+        """
         errors: dict[str, str] = {}
         if user_input is not None:
             _LOGGER.debug(f"[OptionsFlow] Received user_input: {user_input}")
@@ -464,7 +512,9 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_facade_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Handle facade settings options."""
+        """
+        Handle facade settings options.
+        """
         errors: dict[str, str] = {}
         if user_input is not None:
             _LOGGER.debug(f"[OptionsFlow] Received user_input: {user_input}")
@@ -495,7 +545,9 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_dynamic_inputs(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Handle dynamic inputs options."""
+        """
+        Handle dynamic inputs options.
+        """
         errors: dict[str, str] = {}
         if user_input is not None:
             _LOGGER.debug(f"[OptionsFlow] Received user_input: {user_input}")
@@ -529,7 +581,9 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_shadow_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Handle shadow settings options."""
+        """
+        Handle shadow settings options.
+        """
         errors: dict[str, str] = {}
         if user_input is not None:
             self.options_data.update(self._clean_number_inputs(user_input))
@@ -542,7 +596,9 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_dawn_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Handle dawn settings options (final options step)."""
+        """
+        Handle dawn settings options (final options step).
+        """
         errors: dict[str, str] = {}
         if user_input is not None:
             self.options_data.update(self._clean_number_inputs(user_input))
@@ -550,14 +606,15 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
             try:
                 # Validate the entire options configuration using the combined schema
-                validated_options = FULL_CONFIG_SCHEMA(self.options_data)
+                validated_options = FULL_OPTIONS_SCHEMA(self.options_data)
                 _LOGGER.debug(f"Validated options data: {validated_options}")
 
-                # In einem Optionsfluss wird 'async_create_entry' mit den aktualisierten Daten
-                # verwendet, um die Optionen des *bestehenden* Eintrags zu speichern und
-                # den Home Assistant Kern zu informieren, dass eine Aktualisierung erfolgt ist.
-                # Home Assistant wird den Eintrag dann bei Bedarf automatisch neu laden.
-                # Der manuelle Aufruf von async_update_entry und async_reload ist nicht nötig.
+                self.hass.config_entries.async_update_entry(
+                    self.config_entry,
+                    data=self.config_entry.data,
+                    options=validated_options
+                )
+
                 return self.async_create_entry(title="", data=validated_options)
 
             except vol.Invalid as exc:
@@ -575,7 +632,9 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     def _clean_number_inputs(self, user_input: dict[str, Any]) -> dict[str, Any]:
-        """Convert empty string number fields to 0 or their default."""
+        """
+        Convert empty string number fields to 0 or their default.
+        """
         cleaned_input = user_input.copy()
         for key, value in cleaned_input.items():
             if isinstance(value, str) and value == "":
