@@ -238,59 +238,59 @@
   "options": {
     "step": {
       "user": {
+        "description": "Hier wird der erste Teil der Details der zu steuernden Fassade resp. des zu steuernden Fensters konfiguriert.",
         "data": {
-          "name": "Instanzname",
           "target_cover_entity": "Behang-Entität",
-          "debug_enabled": "Debug-Logs"
-        },
-        "data_description": {
-          "name": "Eindeutiger Name dieser Shadow Control (SC) Instanz",
-          "target_cover_entity": "Behang, welcher mit dieser Shadow Control (SC) Instanz gehandhabt werden soll",
-          "debug_enabled": "Debug-Logs für diese Instanz aktivieren"
-        }
-      },
-      "facade_settings": {
-        "title": "Konfiguration Fassade",
-        "description": "Hier werden die Details der zu steuernden Fassade resp. des zu steuernden Fensters konfiguriert.",
-        "data": {
           "facade_azimuth_static": "Azimut",
           "facade_offset_sun_in_static": "Start Sonneneinfall",
           "facade_offset_sun_out_static": "Ende Sonneneinfall",
           "facade_elevation_sun_min_static": "Minimale Sonnenhöhe",
           "facade_elevation_sun_max_static": "Maximale Sonnenhöhe",
+          "debug_enabled": "Debug-Logs"
+        },
+        "data_description": {
+          "name": "Eindeutiger Name dieser Shadow Control (SC) Instanz",
+          "target_cover_entity": "Behang, welcher mit dieser Shadow Control (SC) Instanz gehandhabt werden soll",
+          "facade_azimuth_static": "Azimuth der Fassade in Grad mit Blickrichtung von innen nach aussen. Gültiger Bereich: 0° bis 359°",
+          "facade_offset_sun_in_static": "Ab welchem Winkel ausgehend vom Azimut der Fassade scheint die Sonne auf die Fassade. Gültiger Bereich: -90° bis 0°",
+          "facade_offset_sun_out_static": "Bis zu welchem Winkel ausgehend vom Azimut der Fassade scheint die Sonne auf die Fassade. Gültiger Bereich: 0° bis 90°",
+          "facade_elevation_sun_min_static": "Minimale Höhe der Sonne in Grad (°), ab welcher die Sonne auf die Fassade scheint. Gültiger Bereich: 0° bis 90°",
+          "facade_elevation_sun_max_static": "Maximale Höhe der Sonne in Grad (°), bis zu welcher die Sonne auf die Fassade scheint. Gültiger Bereich: 0° bis 90°",
+          "debug_enabled": "Debug-Logs für diese Instanz aktivieren"
+        }
+      },
+      "facade_settings": {
+        "title": "Fassadenkonfiguration - Teil 2",
+        "description": "Hier wird der zweite Teil der Details der zu steuernden Fassade resp. des zu steuernden Fensters konfiguriert.",
+        "data": {
+          "facade_neutral_pos_height_static": "Neutrale Höhe",
+          "facade_neutral_pos_angle_static": "Neutraler Winkel",
           "facade_slat_width_static": "Breite Raffstorelamellen",
           "facade_slat_distance_static": "Abstand Raffstorelamellen",
           "facade_slat_angle_offset_static": "Lamellenwinkeloffset",
           "facade_slat_min_angle_static": "Minimaler Lamellenwinkel",
           "facade_shutter_stepping_height_static": "Höhenschrittweite",
           "facade_shutter_stepping_angle_static": "Winkelschrittweite",
-          "facade_shutter_type_static": "Behangtyp",
           "facade_light_strip_width_static": "Lichtstreifenbreite",
           "facade_shutter_height_static": "Behang-Gesamthöhe",
-          "facade_neutral_pos_height_static": "Neutrale Höhe",
-          "facade_neutral_pos_angle_static": "Neutraler Winkel",
           "facade_modification_tolerance_height_static": "Toleranz Höhenänderung",
-          "facade_modification_tolerance_angle_static": "Toleranz Lamellenwinkeländerung"
+          "facade_modification_tolerance_angle_static": "Toleranz Lamellenwinkeländerung",
+          "facade_shutter_type_static": "Behangtyp"
         },
         "data_description": {
-          "facade_azimuth_static": "Azimuth der Fassade in Grad mit Blickrichtung von innen nach aussen. Gültiger Bereich: 0° bis 359°",
-          "facade_offset_sun_in_static": "Ab welchem Winkel ausgehend vom Azimut der Fassade scheint die Sonne auf die Fassade. Gültiger Bereich: -90° bis 0°",
-          "facade_offset_sun_out_static": "Bis zu welchem Winkel ausgehend vom Azimut der Fassade scheint die Sonne auf die Fassade. Gültiger Bereich: 0° bis 90°",
-          "facade_elevation_sun_min_static": "Minimale Höhe der Sonne in Grad (°), ab welcher die Sonne auf die Fassade scheint. Gültiger Bereich: 0° bis 90°",
-          "facade_elevation_sun_max_static": "Maximale Höhe der Sonne in Grad (°), bis zu welcher die Sonne auf die Fassade scheint. Gültiger Bereich: 0° bis 90°",
+          "facade_neutral_pos_height_static": "Anzufahrende Höhe in Neutralposition.",
+          "facade_neutral_pos_angle_static": "Anzufahrender Winkel in Neutralposition.",
           "facade_slat_width_static": "Breite der Raffstorelamellen in mm.",
           "facade_slat_distance_static": "Abstand der Raffstorelamellen zueinander in mm.",
           "facade_slat_angle_offset_static": "Lamellenwinkeloffset in %. Dieser Wert wird zum berechneten %-Wert der Lamellenstellung im Beschattungsfall addiert und kann verwendet werden, um den errechneten Winkel falls notwendig zu korrigieren",
           "facade_slat_min_angle_static": "Minimaler Winkel der Raffstore-Lamellen bei Beschattung in %. Lamellen werden im Beschattungsfall nur im Bereich von diesem Wert bis 100% bewegt. Default: 0",
           "facade_shutter_stepping_height_static": "Schrittweite der Höhenverstellung in %, um kleine und damit nicht positionierbare Verstellungen auszugleichen. Default: 5",
           "facade_shutter_stepping_angle_static": "Schrittweite der Lamellenverstellung in %, um kleine und damit nicht positionierbare Verstellungen auszugleichen. Default: 5",
-          "facade_shutter_type_static": "Typ des Behangs auswählen",
           "facade_light_strip_width_static": "Breite eines Lichtstreifens auf dem Boden.",
           "facade_shutter_height_static": "Gesamthöhe des Behangs resp. des Fensters bzw. der Tür. Wird für die Berechnung des Lichtstreifens aus der vorherigen Einstellung benötigt.",
-          "facade_neutral_pos_height_static": "Anzufahrende Höhe in Neutralposition.",
-          "facade_neutral_pos_angle_static": "Anzufahrender Winkel in Neutralposition.",
           "facade_modification_tolerance_height_static": "Toleranzbereich, in dem keine Höhenanpassung erfolgt.",
-          "facade_modification_tolerance_angle_static": "Toleranzbereich, in dem keine Lamellenwinkelanpassung erfolgt."
+          "facade_modification_tolerance_angle_static": "Toleranzbereich, in dem keine Lamellenwinkelanpassung erfolgt.",
+          "facade_shutter_type_static": "Typ des Behangs auswählen"
         }
       },
       "dynamic_inputs": {

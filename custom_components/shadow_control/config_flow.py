@@ -36,60 +36,54 @@ STEP_MINIMAL_KONFIGURATION = vol.Schema({
 
 
 
-# --- STEP 1: Name, cover entity  ---
-STEP_GENERAL_DATA_SCHEMA = vol.Schema({
-    vol.Optional(SC_CONF_NAME, default=""): selector.TextSelector(
-        selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
-    ),
+# --- STEP 1: 1st part of facade configuration  ---
+STEP_FACADE_SETTINGS_PART1_SCHEMA = vol.Schema({
     vol.Optional(TARGET_COVER_ENTITY_ID): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="cover", multiple=True)
+    ),
+    vol.Optional(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): selector.NumberSelector(
+        selector.NumberSelectorConfig(min=0, max=359, step=1, mode=selector.NumberSelectorMode.BOX)
+    ),
+    vol.Optional(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value, default=-90): selector.NumberSelector(
+        selector.NumberSelectorConfig(min=-90, max=0, step=1, mode=selector.NumberSelectorMode.BOX)
+    ),
+    vol.Optional(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value, default=90): selector.NumberSelector(
+        selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
+    ),
+    vol.Optional(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value, default=0): selector.NumberSelector(
+        selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
+    ),
+    vol.Optional(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value, default=90): selector.NumberSelector(
+        selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
     vol.Optional(DEBUG_ENABLED, default=False): selector.BooleanSelector(),
 })
 
-# --- STEP 2: General settings (facade, cover type, ...) ---
-STEP_FACADE_SETTINGS_SCHEMA = vol.Schema({
-    vol.Required(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): selector.NumberSelector(
-        selector.NumberSelectorConfig(min=0, max=359, step=1, mode=selector.NumberSelectorMode.BOX)
+# --- STEP 2: 2nd part of facade configuration ---
+STEP_FACADE_SETTINGS_PART2_SCHEMA = vol.Schema({
+    vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
+        selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value, default=-90): selector.NumberSelector(
-        selector.NumberSelectorConfig(min=-90, max=0, step=1, mode=selector.NumberSelectorMode.BOX)
+    vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, default=0): selector.NumberSelector(
+        selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value, default=90): selector.NumberSelector(
-        selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
-    ),
-    vol.Required(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value, default=0): selector.NumberSelector(
-        selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
-    ),
-    vol.Required(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value, default=90): selector.NumberSelector(
-        selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
-    ),
-    vol.Required(SCFacadeConfig.SLAT_WIDTH_STATIC.value, default=95): selector.NumberSelector(
+    vol.Optional(SCFacadeConfig.SLAT_WIDTH_STATIC.value, default=95): selector.NumberSelector(
         selector.NumberSelectorConfig(min=20, max=150, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.SLAT_DISTANCE_STATIC.value, default=67): selector.NumberSelector(
+    vol.Optional(SCFacadeConfig.SLAT_DISTANCE_STATIC.value, default=67): selector.NumberSelector(
         selector.NumberSelectorConfig(min=20, max=150, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.SLAT_ANGLE_OFFSET_STATIC.value, default=0): selector.NumberSelector(
+    vol.Optional(SCFacadeConfig.SLAT_ANGLE_OFFSET_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=10, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value, default=0): selector.NumberSelector(
+    vol.Optional(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=10): selector.NumberSelector(
+    vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=10): selector.NumberSelector(
         selector.NumberSelectorConfig(min=1, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Required(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, default=10): selector.NumberSelector(
+    vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, default=10): selector.NumberSelector(
         selector.NumberSelectorConfig(min=1, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
-    ),
-    vol.Required(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, default="mode1"): selector.SelectSelector(
-        selector.SelectSelectorConfig(
-            options=[
-                "mode1",
-                "mode2"
-            ],
-            translation_key="facade_shutter_type"
-        )
     ),
     vol.Optional(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=2000, step=1, mode=selector.NumberSelectorMode.BOX)
@@ -97,17 +91,20 @@ STEP_FACADE_SETTINGS_SCHEMA = vol.Schema({
     vol.Optional(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value, default=1000): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=3000, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
-        selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
-    ),
-    vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, default=0): selector.NumberSelector(
-        selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
-    ),
     vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
     vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
+    ),
+    vol.Optional(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, default="mode1"): selector.SelectSelector(
+        selector.SelectSelectorConfig(
+            options=[
+                "mode1",
+                "mode2"
+            ],
+            translation_key="facade_shutter_type"
+        )
     ),
 })
 
@@ -308,9 +305,9 @@ STEP_DAWN_SETTINGS_SCHEMA = vol.Schema({
 })
 
 # Combined schema for final validation and options flow
-FULL_CONFIG_SCHEMA = vol.Schema( # <--- Korrektur hier
-    STEP_GENERAL_DATA_SCHEMA.schema |
-    STEP_FACADE_SETTINGS_SCHEMA.schema |
+FULL_CONFIG_SCHEMA = vol.Schema(
+    STEP_FACADE_SETTINGS_PART1_SCHEMA.schema |
+    STEP_FACADE_SETTINGS_PART2_SCHEMA.schema |
     STEP_DYNAMIC_INPUTS_SCHEMA.schema |
     STEP_SHADOW_SETTINGS_SCHEMA.schema |
     STEP_DAWN_SETTINGS_SCHEMA.schema
@@ -390,152 +387,6 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_facade_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Handle the facade settings step."""
-        errors: dict[str, str] = {}
-        form_data = user_input if user_input is not None else {}
-
-        if user_input is not None:
-            _LOGGER.debug(f"[ConfigFlow] Received user_input: {user_input}")
-
-            sun_min = user_input.get(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value)
-            sun_max = user_input.get(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value)
-            if sun_min >= sun_max:
-                errors[SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value] = "minGreaterThanMax"
-                errors[SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value] = "minGreaterThanMax"
-
-            slat_width = user_input.get(SCFacadeConfig.SLAT_WIDTH_STATIC.value)
-            slat_distance = user_input.get(SCFacadeConfig.SLAT_DISTANCE_STATIC.value)
-            if slat_width <= slat_distance:
-                errors[SCFacadeConfig.SLAT_WIDTH_STATIC.value] = "slatWidthSmallerThanDistance"
-                errors[SCFacadeConfig.SLAT_DISTANCE_STATIC.value] = "slatWidthSmallerThanDistance"
-
-            # If configuration errors found, show the config form again
-            if errors:
-                return self.async_show_form(
-                    step_id="facade_settings",
-                    data_schema=self.add_suggested_values_to_schema(STEP_FACADE_SETTINGS_SCHEMA, form_data),
-                    errors=errors,
-                )
-
-            try:
-                validated_user_input = STEP_FACADE_SETTINGS_SCHEMA(user_input)
-                self.config_data.update(self._clean_number_inputs(validated_user_input))
-                _LOGGER.debug(f"[ConfigFlow] After facade_settings, config_data: {self.config_data}")
-                return await self.async_step_dynamic_inputs()
-
-            except vol.Invalid as exc:
-                # Catch validation errors and map them to the corresponding fields
-                _LOGGER.error("Validation error during user step: %s", exc)
-                for error in exc.errors:
-                    if error.path:
-                        errors[str(error.path[0])] = "invalid_input"
-                    else:
-                        # Commons errors without mapping to a specific field
-                        errors["base"] = "unknown_error"
-
-        return self.async_show_form(
-            step_id="facade_settings",
-            data_schema=self.add_suggested_values_to_schema(STEP_FACADE_SETTINGS_SCHEMA, self.config_data),
-            errors=errors,
-        )
-
-    async def async_step_dynamic_inputs(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Handle the dynamic inputs step."""
-        errors: dict[str, str] = {}
-        form_data = user_input if user_input is not None else {}
-
-        if user_input is not None:
-            _LOGGER.debug(f"[ConfigFlow] Received user_input: {user_input}")
-
-            if not user_input.get(SCDynamicInput.BRIGHTNESS_ENTITY.value):
-                errors[SCDynamicInput.BRIGHTNESS_ENTITY.value] = "dynamic_brightness_missing"
-
-            if not user_input.get(SCDynamicInput.SUN_ELEVATION_ENTITY.value):
-                errors[SCDynamicInput.SUN_ELEVATION_ENTITY.value] = "dynamic_sun_elevation_missing"
-
-            if not user_input.get(SCDynamicInput.SUN_AZIMUTH_ENTITY.value):
-                errors[SCDynamicInput.SUN_AZIMUTH_ENTITY.value] = "dynamic_sun_azimuth_missing"
-
-            if errors:
-                return self.async_show_form(
-                    step_id="dynamic_inputs",
-                    data_schema=self.add_suggested_values_to_schema(STEP_DYNAMIC_INPUTS_SCHEMA, form_data),
-                    errors=errors,
-                )
-
-            try:
-                validated_user_input = STEP_DYNAMIC_INPUTS_SCHEMA(user_input)
-                self.config_data.update(self._clean_number_inputs(validated_user_input))
-                _LOGGER.debug(f"[ConfigFlow] After dynamic_inputs, config_data: {self.config_data}")
-                return await self.async_step_shadow_settings()
-
-            except vol.Invalid as exc:
-                _LOGGER.error("Validation error during user step (voluptuous): %s", exc)
-                for error in exc.errors:
-                    field_key = str(error.path[0]) if error.path else "base"
-                    errors[field_key] = "general_input_error"
-
-                # Catched voluptuous error, show the input form again
-                return self.async_show_form(
-                    step_id="dynamic_inputs",
-                    data_schema=self.add_suggested_values_to_schema(STEP_DYNAMIC_INPUTS_SCHEMA, form_data),
-                    errors=errors,
-                )
-
-        return self.async_show_form(
-            step_id="dynamic_inputs",
-            data_schema=self.add_suggested_values_to_schema(STEP_DYNAMIC_INPUTS_SCHEMA, self.config_data),
-            errors=errors,
-        )
-
-    async def async_step_shadow_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Handle the shadow settings step."""
-        errors: dict[str, str] = {}
-
-        if user_input is not None:
-            self.config_data.update(self._clean_number_inputs(user_input))
-            _LOGGER.debug(f"[ConfigFlow] After shadow_settings, config_data: {self.config_data}") # NEU: Debug-Log
-            return await self.async_step_dawn_settings()
-
-        return self.async_show_form(
-            step_id="shadow_settings",
-            data_schema=self.add_suggested_values_to_schema(STEP_SHADOW_SETTINGS_SCHEMA, self.config_data),
-            errors=errors,
-        )
-
-    async def async_step_dawn_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Handle the dawn settings step (final step for configuration)."""
-        errors: dict[str, str] = {}
-
-        if user_input is not None:
-            self.config_data.update(self._clean_number_inputs(user_input))
-            _LOGGER.debug(f"[ConfigFlow] After dawn_settings, config_data: {self.config_data}") # NEU: Debug-Log
-            _LOGGER.debug(f"Final config data before creation: {self.config_data}")
-
-            try:
-                # Validate the entire configuration using the combined schema
-                validated_data = FULL_CONFIG_SCHEMA(self.config_data)
-                _LOGGER.debug(f"Validated config data: {validated_data}")
-                return self.async_create_entry(
-                    title=self.config_data[SC_CONF_NAME],
-                    data={},  # Configuration data is stored as options now
-                    options=validated_data, # Store the full config as options
-                )
-            except vol.Invalid as exc:
-                _LOGGER.error("Validation error during final config flow step: %s", exc)
-                for error in exc.errors:
-                    if error.path:
-                        errors[str(error.path[0])] = "invalid_input"
-                    else:
-                        errors["base"] = "unknown_error"
-
-        return self.async_show_form(
-            step_id="dawn_settings",
-            data_schema=self.add_suggested_values_to_schema(STEP_DAWN_SETTINGS_SCHEMA, self.config_data),
-            errors=errors,
-        )
-
     def _clean_number_inputs(self, user_input: dict[str, Any]) -> dict[str, Any]:
         """Convert empty string number fields to 0 or their default."""
         cleaned_input = user_input.copy()
@@ -579,12 +430,36 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         """Handle general data options."""
         errors: dict[str, str] = {}
         if user_input is not None:
+            _LOGGER.debug(f"[OptionsFlow] Received user_input: {user_input}")
+
+            # Manual validation of input fields to provide possible error messages
+            # for each field at once and not step by step.
+            if not user_input.get(TARGET_COVER_ENTITY_ID):
+                errors[TARGET_COVER_ENTITY_ID] = "target_cover_entity" # Error code from within strings.json
+
+            if not user_input.get(SCFacadeConfig.AZIMUTH_STATIC.value):
+                errors[SCFacadeConfig.AZIMUTH_STATIC.value] = "facade_azimuth_static_missing"
+
+            sun_min = user_input.get(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value)
+            sun_max = user_input.get(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value)
+            if sun_min >= sun_max:
+                errors[SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value] = "minGreaterThanMax"
+                errors[SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value] = "minGreaterThanMax"
+
+            # If configuration errors found, show the config form again
+            if errors:
+                return self.async_show_form(
+                    step_id="user",
+                    data_schema=self.add_suggested_values_to_schema(STEP_FACADE_SETTINGS_PART1_SCHEMA, self.options_data),
+                    errors=errors,
+                )
+
             self.options_data.update(user_input)
             return await self.async_step_facade_settings()
 
         return self.async_show_form(
             step_id="user",
-            data_schema=self.add_suggested_values_to_schema(STEP_GENERAL_DATA_SCHEMA, self.options_data),
+            data_schema=self.add_suggested_values_to_schema(STEP_FACADE_SETTINGS_PART1_SCHEMA, self.options_data),
             errors=errors,
         )
 
@@ -592,12 +467,30 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         """Handle facade settings options."""
         errors: dict[str, str] = {}
         if user_input is not None:
+            _LOGGER.debug(f"[OptionsFlow] Received user_input: {user_input}")
+
+            # Manual validation of input fields to provide possible error messages
+            # for each field at once and not step by step.
+            slat_width = user_input.get(SCFacadeConfig.SLAT_WIDTH_STATIC.value)
+            slat_distance = user_input.get(SCFacadeConfig.SLAT_DISTANCE_STATIC.value)
+            if slat_width <= slat_distance:
+                errors[SCFacadeConfig.SLAT_WIDTH_STATIC.value] = "slatWidthSmallerThanDistance"
+                errors[SCFacadeConfig.SLAT_DISTANCE_STATIC.value] = "slatWidthSmallerThanDistance"
+
+            # If configuration errors found, show the config form again
+            if errors:
+                return self.async_show_form(
+                    step_id="facade_settings",
+                    data_schema=self.add_suggested_values_to_schema(STEP_FACADE_SETTINGS_PART2_SCHEMA, self.options_data),
+                    errors=errors,
+                )
+
             self.options_data.update(self._clean_number_inputs(user_input))
             return await self.async_step_dynamic_inputs()
 
         return self.async_show_form(
             step_id="facade_settings",
-            data_schema=self.add_suggested_values_to_schema(STEP_FACADE_SETTINGS_SCHEMA, self.options_data),
+            data_schema=self.add_suggested_values_to_schema(STEP_FACADE_SETTINGS_PART2_SCHEMA, self.options_data),
             errors=errors,
         )
 
@@ -605,6 +498,27 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         """Handle dynamic inputs options."""
         errors: dict[str, str] = {}
         if user_input is not None:
+            _LOGGER.debug(f"[OptionsFlow] Received user_input: {user_input}")
+
+            # Manual validation of input fields to provide possible error messages
+            # for each field at once and not step by step.
+            if not user_input.get(SCDynamicInput.BRIGHTNESS_ENTITY.value):
+                errors[SCDynamicInput.BRIGHTNESS_ENTITY.value] = "dynamic_brightness_missing"
+
+            if not user_input.get(SCDynamicInput.SUN_ELEVATION_ENTITY.value):
+                errors[SCDynamicInput.SUN_ELEVATION_ENTITY.value] = "dynamic_sun_elevation_missing"
+
+            if not user_input.get(SCDynamicInput.SUN_AZIMUTH_ENTITY.value):
+                errors[SCDynamicInput.SUN_AZIMUTH_ENTITY.value] = "dynamic_sun_azimuth_missing"
+
+            # If configuration errors found, show the config form again
+            if errors:
+                return self.async_show_form(
+                    step_id="dynamic_inputs",
+                    data_schema=self.add_suggested_values_to_schema(STEP_DYNAMIC_INPUTS_SCHEMA, self.options_data),
+                    errors=errors,
+                )
+
             self.options_data.update(self._clean_number_inputs(user_input))
             return await self.async_step_shadow_settings()
 
