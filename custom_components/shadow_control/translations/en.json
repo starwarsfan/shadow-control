@@ -6,11 +6,19 @@
         "data": {
           "name": "Instance name",
           "target_cover_entity": "Cover to maintain",
+          "facade_azimuth_static": "Facade azimuth",
+          "brightness_entity": "Brightness",
+          "sun_elevation_entity": "Sun elevation",
+          "sun_azimuth_entity": "Sun azimuth",
           "debug_enabled": "Debug logs"
         },
         "data_description": {
           "name": "A descriptive and unique name for this Shadow Control (SC) instance",
           "target_cover_entity": "Cover which should be handled by this Shadow Control (SC) instance",
+          "facade_azimuth_static": "Azimuth of the facade in degrees in direction from the inside to the outside. Valid range: 0° to 359°",
+          "brightness_entity": "Current brightness, usually from a weather station",
+          "sun_elevation_entity": "Elevation of the sun, usually from sun entity or a weather station.",
+          "sun_azimuth_entity": "Azimuth of the sun, usually from sun entity or a weather station.",
           "debug_enabled": "Activate debug logs for this instance"
         }
       },

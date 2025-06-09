@@ -13,6 +13,29 @@ from .const import DOMAIN, SCFacadeConfig, \
 
 _LOGGER = logging.getLogger(__name__)
 
+STEP_MINIMAL_KONFIGURATION = vol.Schema({
+    vol.Optional(SC_CONF_NAME, default=""): selector.TextSelector(
+        selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
+    ),
+    vol.Optional(TARGET_COVER_ENTITY_ID): selector.EntitySelector(
+        selector.EntitySelectorConfig(domain="cover")
+    ),
+    vol.Optional(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): selector.NumberSelector(
+        selector.NumberSelectorConfig(min=0, max=359, step=1, mode=selector.NumberSelectorMode.BOX)
+    ),
+    vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): selector.EntitySelector(
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+    ),
+    vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): selector.EntitySelector(
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+    ),
+    vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): selector.EntitySelector(
+        selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+    ),
+})
+
+
+
 # --- STEP 1: Name, cover entity  ---
 STEP_GENERAL_DATA_SCHEMA = vol.Schema({
     vol.Optional(SC_CONF_NAME, default=""): selector.TextSelector(
@@ -322,48 +345,49 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             if not user_input.get(TARGET_COVER_ENTITY_ID):
                 errors[TARGET_COVER_ENTITY_ID] = "target_cover_entity" # Error code from within strings.json
 
+            if not user_input.get(SCFacadeConfig.AZIMUTH_STATIC.value):
+                errors[SCFacadeConfig.AZIMUTH_STATIC.value] = "facade_azimuth_static_missing"
+
+            if not user_input.get(SCDynamicInput.BRIGHTNESS_ENTITY.value):
+                errors[SCDynamicInput.BRIGHTNESS_ENTITY.value] = "dynamic_brightness_missing"
+
+            if not user_input.get(SCDynamicInput.SUN_ELEVATION_ENTITY.value):
+                errors[SCDynamicInput.SUN_ELEVATION_ENTITY.value] = "dynamic_sun_elevation_missing"
+
+            if not user_input.get(SCDynamicInput.SUN_AZIMUTH_ENTITY.value):
+                errors[SCDynamicInput.SUN_AZIMUTH_ENTITY.value] = "dynamic_sun_azimuth_missing"
+
             # If configuration errors found, show the config form again
             if errors:
                 return self.async_show_form(
                     step_id="user",
-                    data_schema=self.add_suggested_values_to_schema(STEP_GENERAL_DATA_SCHEMA, form_data),
+                    data_schema=self.add_suggested_values_to_schema(STEP_MINIMAL_KONFIGURATION, form_data),
                     errors=errors,
                 )
+
+            #self.options_data.update(self._clean_number_inputs(user_input))
 
             # All fine, now perform voluptuous validation
             try:
-                validated_user_input = STEP_GENERAL_DATA_SCHEMA(user_input)
-
-                # Additional entity validation
-                if validated_user_input.get(TARGET_COVER_ENTITY_ID): # Nur prüfen, wenn ein Wert vorhanden ist
-                    target_entity = self.hass.states.get(validated_user_input[TARGET_COVER_ENTITY_ID])
-                    if not target_entity or target_entity.domain != "cover":
-                        errors[TARGET_COVER_ENTITY_ID] = "invalid_entity"
-                        return self.async_show_form(step_id="user", data_schema=self.add_suggested_values_to_schema(STEP_GENERAL_DATA_SCHEMA, form_data), errors=errors)
-
-
-                self.config_data.update(validated_user_input)
-                _LOGGER.debug(f"[ConfigFlow] After general_settings, config_data: {self.config_data}")
-
-                return await self.async_step_facade_settings()
-
-            except vol.Invalid as exc:
-                _LOGGER.error("Validation error during user step (voluptuous): %s", exc)
-                for error in exc.errors:
-                    field_key = str(error.path[0]) if error.path else "base"
-                    errors[field_key] = "general_input_error"
-
-                    # Catched voluptuous error, show the input form again
-                return self.async_show_form(
-                    step_id="user",
-                    data_schema=self.add_suggested_values_to_schema(STEP_GENERAL_DATA_SCHEMA, form_data), # <--- Hier 'form_data' verwenden
-                    errors=errors,
+                validated_user_input = STEP_MINIMAL_KONFIGURATION(user_input)
+                _LOGGER.debug(f"Validated config data: {validated_user_input}")
+                return self.async_create_entry(
+                    title=validated_user_input[SC_CONF_NAME],
+                    data={},  # Configuration data is stored as options now
+                    options=validated_user_input, # Store the full config as options
                 )
+            except vol.Invalid as exc:
+                _LOGGER.error("Validation error during final config flow step: %s", exc)
+                for error in exc.errors:
+                    if error.path:
+                        errors[str(error.path[0])] = "invalid_input"
+                    else:
+                        errors["base"] = "unknown_error"
 
         return self.async_show_form(
             step_id="user",
-            data_schema=STEP_GENERAL_DATA_SCHEMA, # Hier kein suggested_values, da noch keine Eingaben
-            errors=errors, # Bleibt leer beim initialen Aufruf
+            data_schema=self.add_suggested_values_to_schema(STEP_MINIMAL_KONFIGURATION, self.config_data),
+            errors=errors,
         )
 
     async def async_step_facade_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
