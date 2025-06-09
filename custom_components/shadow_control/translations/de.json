@@ -5,7 +5,7 @@
       "user": {
         "data": {
           "name": "Instanzname",
-          "target_cover_entity": "Behang-Entität",
+          "target_cover_entity": "Behang-Entitäten",
           "facade_azimuth_static": "Azimut",
           "brightness_entity": "Helligkeit",
           "sun_elevation_entity": "Höhe der Sonne",
@@ -14,7 +14,7 @@
         },
         "data_description": {
           "name": "Eindeutiger Name dieser Shadow Control (SC) Instanz",
-          "target_cover_entity": "Behang, welcher mit dieser Shadow Control (SC) Instanz gehandhabt werden soll",
+          "target_cover_entity": "Eine oder mehrere Behang-Entitäten, welche mit dieser Shadow Control (SC) Instanz gesteuert werden sollen",
           "facade_azimuth_static": "Azimuth der Fassade in Grad mit Blickrichtung von innen nach aussen. Gültiger Bereich: 0° bis 359°",
           "brightness_entity": "Aktuelle Helligkeit, üblicherweise von einer Wetterstation.",
           "sun_elevation_entity": "Höhe der Sonne via Sun-Entität oder Wetterstation.",

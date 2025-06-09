@@ -18,7 +18,7 @@ STEP_MINIMAL_KONFIGURATION = vol.Schema({
         selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
     ),
     vol.Optional(TARGET_COVER_ENTITY_ID): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="cover")
+        selector.EntitySelectorConfig(domain="cover", multiple=True)
     ),
     vol.Optional(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=359, step=1, mode=selector.NumberSelectorMode.BOX)
@@ -42,7 +42,7 @@ STEP_GENERAL_DATA_SCHEMA = vol.Schema({
         selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
     ),
     vol.Optional(TARGET_COVER_ENTITY_ID): selector.EntitySelector(
-        selector.EntitySelectorConfig(domain="cover")
+        selector.EntitySelectorConfig(domain="cover", multiple=True)
     ),
     vol.Optional(DEBUG_ENABLED, default=False): selector.BooleanSelector(),
 })

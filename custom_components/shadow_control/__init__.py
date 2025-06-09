@@ -1081,7 +1081,8 @@ class ShadowControlManager:
             return  # Exit here, nothing else to do
 
         # --- Phase 4: Apply stepping and output restriction logic (only if not initial run AND not locked) ---
-        entity = self._target_cover_entity_id
+        # Computation is done with the first configured shutter
+        entity = self._target_cover_entity_id[0]
         current_cover_state: State | None = self.hass.states.get(entity)
 
         if not current_cover_state:
@@ -1131,45 +1132,53 @@ class ShadowControlManager:
             send_height_command = True
             send_angle_command = True
 
-        # Height positioning
-        if send_height_command or self._enforce_position_update:
-            if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
-                self.logger.info(f"Setting position to {shutter_height_percent:.1f}% (current: {self._previous_shutter_height}).")
-                try:
-                    await self.hass.services.async_call(
-                        "cover",
-                        "set_cover_position",
-                        {"entity_id": entity, "position": 100 - shutter_height_percent},
-                        blocking=False
-                    )
-                except Exception as e:
-                    self.logger.error(f"Failed to set position: {e}")
-                self._previous_shutter_height = shutter_height_percent
-            else:
-                self.logger.debug(f"Skipping position set. Supported: {supported_features & CoverEntityFeature.SET_POSITION}, Service Found: {has_pos_service}.")
-        else:
-            self.logger.debug(
-                f"Height '{height_to_set_percent:.2f}%' not sent, value was the same or restricted.")
+        # Position all configured shutters
+        for entity in self._target_cover_entity_id:
+            current_cover_state: State | None = self.hass.states.get(entity)
 
-        # Angle positioning
-        if send_angle_command or self._enforce_position_update:
-            if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
-                self.logger.info(f"Setting tilt position to {shutter_angle_percent:.1f}% (current: {self._previous_shutter_angle}).")
-                try:
-                    await self.hass.services.async_call(
-                        "cover",
-                        "set_cover_tilt_position",
-                        {"entity_id": entity, "tilt_position": 100 - shutter_angle_percent},
-                        blocking=False
-                    )
-                except Exception as e:
-                    self.logger.error(f"Failed to set tilt position: {e}")
-                self._previous_shutter_angle = shutter_angle_percent
+            if not current_cover_state:
+                self.logger.warning(f"Target cover entity '{entity}' not found. Cannot send commands.")
+                continue
+
+            # Height positioning
+            if send_height_command or self._enforce_position_update:
+                if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
+                    self.logger.info(f"Setting position to {shutter_height_percent:.1f}% (current: {self._previous_shutter_height}).")
+                    try:
+                        await self.hass.services.async_call(
+                            "cover",
+                            "set_cover_position",
+                            {"entity_id": entity, "position": 100 - shutter_height_percent},
+                            blocking=False
+                        )
+                    except Exception as e:
+                        self.logger.error(f"Failed to set position: {e}")
+                    self._previous_shutter_height = shutter_height_percent
+                else:
+                    self.logger.debug(f"Skipping position set. Supported: {supported_features & CoverEntityFeature.SET_POSITION}, Service Found: {has_pos_service}.")
             else:
-                self.logger.debug(f"Skipping tilt set. Supported: {supported_features & CoverEntityFeature.SET_TILT_POSITION}, Service Found: {has_tilt_service}.")
-        else:
-            self.logger.debug(
-                f"Angle '{angle_to_set_percent:.2f}%' not sent, value was the same or restricted.")
+                self.logger.debug(
+                    f"Height '{height_to_set_percent:.2f}%' not sent, value was the same or restricted.")
+
+            # Angle positioning
+            if send_angle_command or self._enforce_position_update:
+                if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
+                    self.logger.info(f"Setting tilt position to {shutter_angle_percent:.1f}% (current: {self._previous_shutter_angle}).")
+                    try:
+                        await self.hass.services.async_call(
+                            "cover",
+                            "set_cover_tilt_position",
+                            {"entity_id": entity, "tilt_position": 100 - shutter_angle_percent},
+                            blocking=False
+                        )
+                    except Exception as e:
+                        self.logger.error(f"Failed to set tilt position: {e}")
+                    self._previous_shutter_angle = shutter_angle_percent
+                else:
+                    self.logger.debug(f"Skipping tilt set. Supported: {supported_features & CoverEntityFeature.SET_TILT_POSITION}, Service Found: {has_tilt_service}.")
+            else:
+                self.logger.debug(
+                    f"Angle '{angle_to_set_percent:.2f}%' not sent, value was the same or restricted.")
 
         # Always update HA state at the end to reflect the latest internal calculated values and attributes
         self._update_extra_state_attributes()
