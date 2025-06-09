@@ -30,50 +30,93 @@ The integration will be triggered by updating the following entities:
 
 The configured cover entity will only be updated, if a value has changed since the last run of the integration, which prevents unnecessary movements.
 
-## Input entities
+## Configuration
 
-The configuration is structured into five blocks, which will be described in the following sections.
+The configuration is split into a minimalistic initial configuration, which results in a fully working cover automation and a separate configuration flow of all available options.
 
 
 
-### Instance configuration
+### Initial instance configuration
+
+The initial instance configuration is very minimalistic and requires only the following configuration entries. Everything else will be setup up with default values, which you might tweak to your needs afterward. See section "Optional configuration."
 
 #### Instance name (`name`)
 
 A descriptive and unique name for this Shadow Control (SC) instance. A sanitized version of this name will be used to mark corresponding log entries of this instance within the Home Assistant main log file.
 
-#### Cover to maintain (`target_cover_entity`)
+#### Covers to maintain (`target_cover_entity`)
 
-The cover entity which should be handled by this Shadow Control (SC) instance
-
-#### Debug mode (`debug_enabled`)
-
-With this switch the debug mode for this instance could be activated. If activated, there will be much more detailed output within the Home Assistant main log file.
-
-
-### Facade settings
+The cover entities, which should be handled by this Shadow Control (SC) instance. You can add as many covers as you like, but the recommendation is to use only these covers, which have at least the same azimuth. For any further calculation, only the first configured cover will be used. All other covers will just be positioned as the first one.
 
 #### Facade azimuth (`facade_azimuth_static`)
 
 Azimuth of the facade in degrees, for which the integration should be configured. This is viewing direction from the inside to the outside. A perfectly north facade has an Azimuth of 0°, a perfectly south facade has an Azimuth of 180°. The sun area at this facade is the range, from which a shadow handling is desired. This is a maximal range of 180°, from `azimuth_facade` + `offset_sun_in` to `azimuth_facade` + `offset_sun_out`.
 
-#### Sun start offest (`facade_offset_sun_in_static`)
+#### Brightness (`brightness_entity`)
 
-Negative offset to `facade_azimuth_static`, from which shadow handling should be done. Default: -90
+This input needs to be configured with the current brightness, which usually comes from a weather station. The value should match the real brightness on this facade as much as possible.
 
-#### Sun end offset (`facade_offset_sun_out_static`)
+#### Sun elevation (`sun_elevation_entity`)
 
-Positive offset to `facade_azimuth_static`, up to which shadow handling should be done. Default: 90
+This input should be filled with the current elevation of the sun. Usually this value comes from a weather station or the home assistant internal sun entity. Possible values are within the range from 0° (horizontal) to 90° (vertical).
 
-#### Min sun elevation (`facade_elevation_sun_min_static`)
+#### Sun azimuth (`sun_azimuth_entity`)
+
+This input should be filled with the current azimuth of the sun. Usually this value comes from a weather station or the home assistant internal sun entity. Possible values are within the range from 0° to 359°.
+
+
+
+
+
+### Additional options
+
+The following options will be available by a separate config flow, which will open up with a click on "Configure" at the desired instance right on Settings > Integrations > Shadow Control.
+
+#### Facade configuration - part 1
+
+##### Covers to maintain (`target_cover_entity`)
+
+See initial configuration
+
+##### Facade azimuth (`facade_azimuth_static`)
+
+See initial configuration
+
+##### Sun start offest (`facade_offset_sun_in_static`)
+
+Negative offset to `facade_azimuth_static`, from which shadow handling should be done. If the azimuth of the sun is lower than `facade_azimuth_static - facade_offset_sun_in_static`, no shadow handling will be performed. Default: -90
+
+##### Sun end offset (`facade_offset_sun_out_static`)
+
+Positive offset to `facade_azimuth_static`, up to which shadow handling should be done. If the azimuth of the sun is higher than `facade_azimuth_static + facade_offset_sun_out_static`, no shadow handling will be performed. Default: 90
+
+##### Min sun elevation (`facade_elevation_sun_min_static`)
 
 Minimal elevation (height) of the sun in degrees. If the effective (!) elevation is lower than this value, no shadow handling will be performed. A use case for this configuration is another building in front of the facade, which throws shadow onto the facade, whereas the weather station on the roof is still full in the sun. Default: 0
 
 Hint regarding effective elevation: To compute the right shutter angle, the elevation of the sun in the right angle to the facade must be computed. This so-called "effective elevation" is written to the log. If the shadow handling is not working as desired, especially nearly the limits of the given azimuth offsets, this value needs attention.
 
-#### Max sun elevation (`facade_elevation_sun_max_static`)
+##### Max sun elevation (`facade_elevation_sun_max_static`)
 
 Maximal elevation (height) of the sun in degrees. If the effective (!) elevation is higher than this value, no shadow handling will be performed. A use case for this configuration is a balcony from the story above, which throws shadow onto the facade, whereas the weather station on the roof is still full in the sun. Default: 90
+
+##### Debug mode (`debug_enabled`)
+
+With this switch, the debug mode for this instance could be activated. If activated, there will be much more detailed output within the Home Assistant main log file.
+
+
+
+#### Facade configuration - part 2
+
+
+
+
+
+
+
+
+
+### Facade settings
 
 #### Shutter slat width (`facade_slat_width_static`)
 
@@ -140,46 +183,20 @@ Same as "Tolerance height modification" but for the shutter slat angle. Default:
 
 ### Dynamic input entities
 
-#### brightness (``)
 
-This input needs to be configured with the current brightness, which usually comes from a weather station. The value should match the real brightness on this facade as much as possible.
-
-#### brightness_dawn (``)
+#### brightness_dawn (`brightness_dawn_entity`)
 
 A second brightness value could be configured here, which is used to calculate shutter position at dawn. This is especially useful if more than one facade should be maintained and so more than one integration is configured. If all integrations use the same value here, all the shutters will move to dawn position at the same time, even if it's currently brighter on one facade than on the other side of the building.
 
 If you have only one brightness sensor, this input should not be configured. Let the input stay empty in this case.
 
-#### sun_elevation (``)
-
-This input should be filled with the current elevation of the sun. Usually this value is used from a weather station or the home assistant internal sun entity. Possible values are within the range from 0° (horizontal) to 90° (vertical).
-
-#### sun_azimuth (``)
-
-This input should be filled with the current azimuth of the sun. Usually this value is used from a weather station or the home assistant internal sun entity. Possible values are within the range from 0° to 360°.
-
-#### shutter_current_height (``)
-
-Connect this input with the actual, current height of the shutter. If the calculated height differs from the value on this input, the integration will lock itself.
-
-This could be used to deactivate the automatic shutter positioning, in case the position was manually overridden. So if you open the shutter manually, this will not be replaced at the next run of the integration. You should unlock the integration after a certain amount of time manually or by using a timer. See `lock_integration` and `lock_integration_with_position`.
-
-It is important how the used shutter actor behaves! If the actor updates its current position during runtime, it might lead to a deactivated integration. The reason for this is that the integration assumes a manual modification in this case. There are two solutions to handle this:
-
-* Ignore the current shutter position
-* Delay the update of this input by the amount of time, which your shutter requires for a full move.
-
-#### shutter_current_angle (``)
-
-Connect this input with the actual, current angle of the shutter. Everything else is described in the previous configuration entry.
-
-#### lock_integration (``)
+#### lock_integration (`lock_integration_entity`)
 
 If this input is set to 'off', the integration works as desired by updating the output (as long as the input `lock_integration_with_position` is not set to 'on'). 
 
 If the input is set to 'on', the integration gets locked. That means the integration is internally still working, but the configured shutter will not be updated but stay at the current position. With this approach the integration is able to immediately move the shutter to the right position, as soon as it gets unlocked again.
 
-#### lock_integration_with_position (``)
+#### lock_integration_with_position (`lock_integration_with_position_entity`)
 
 If this input is set to 'off', the integration works as desired by updating the output (as long as the input `lock_integration` is not set to 'on').
 
@@ -187,15 +204,15 @@ If the input is set to 'on', the integration gets locked. That means the integra
 
 This input has precedence over 'lock_integration.' If both lock inputs are set 'on', the shutter will be moved to the configured lock position.
 
-#### lock_height (``)
+#### lock_height (`lock_height_entity`)
 
 Height in %, which should be set if integration gets locked by 'lock_integration_with_position.' 
 
-#### lock_angle (``)
+#### lock_angle (`lock_angle_entity`)
 
 Angle in %, which should be set if integration gets locked by 'lock_integration_with_position.'
 
-#### movement_restriction_height (``)
+#### movement_restriction_height (`movement_restriction_height_entity`)
 
 With this setting the movement direction could be restricted:
 
@@ -208,13 +225,10 @@ With this setting the movement direction could be restricted:
 
 This could be used to prevent shutters from being opened after the sun goes down and close them some minutes later because of starting dawn. This setting might be modified using a timer clock or other appropriate automations.
 
-#### movement_restriction_angle (``)
+#### movement_restriction_angle (`movement_restriction_angle_entity`)
 
 Same as before but for shutter slat angle.
 
-#### update_lock_output (``)
-
-tbd
 
 
 ### Shadow settings
