@@ -157,39 +157,39 @@ The following options will be available by a separate config flow, which will op
 #### Zu automatisierende Rollläden
 `target_cover_entity`
 
-See the description at [Zu automatisierende Rollläden](#covers-to-maintain).
+Siehe Beschreibung unter [Zu automatisierende Rollläden](#zu-automatisierende-rollläden).
 
 #### Azimut der Fassade
 `facade_azimuth_static`
 
-See the description at [Azimut der Fassade](#facade-azimuth).
+Siehe Beschreibung unter [Azimut der Fassade](#azimut-der-fassade).
 
 #### Beschattungsbeginn
 `facade_offset_sun_in_static`
 
-Negative offset to `facade_azimuth_static`, from which shadow handling should be done. If the azimuth of the sun is lower than `facade_azimuth_static + facade_offset_sun_in_static`, no shadow handling will be performed. Valid range: -90–0, default: -90
+Negativoffset zum [Azimut der Fassade](#azimut-der-fassade), ab welchem die Beschattung erfolgen soll. Wenn das Azimut der Sonne kleiner ist als [Azimut der Fassade](#azimut-der-fassade) + [Beschattungsbeginn](#beschattungsbeginn), wird keine Beschattungsberechnung ausgelöst. Gültiger Wertebereich: -90–0, Standardwert: -90
 
 #### Beschattungsende
 `facade_offset_sun_out_static`
 
-Positive offset to `facade_azimuth_static`, up to which shadow handling should be done. If the azimuth of the sun is higher than `facade_azimuth_static + facade_offset_sun_out_static`, no shadow handling will be performed. Valid range: 0–90, default: 90
+Positivoffset zum [Azimut der Fassade](#azimut-der-fassade), bis zu welchem die Beschattung erfolgen soll. Wenn das Azimut der Sonne grösser ist als [Azimut der Fassade](#azimut-der-fassade) + [Beschattungsende](#beschattungsende), wird keine Beschattungsberechnung ausgelöst. Gültiger Wertebereich: 0-90, Standardwert: 90
 
 #### Minimale Sonnenhöhe
 `facade_elevation_sun_min_static`
 
-Minimal elevation (height) of the sun in degrees. If the effective (!) elevation is lower than this value, no shadow handling will be performed. A use case for this configuration is another building in front of the facade, which throws shadow onto the facade, whereas the weather station on the roof is still full in the sun. Valid range: 0–90, default: 0
+Minimale Höhe der Sonne in Grad. Ist die effektive Höhe kleiner als dieser Wert, wird keine Beschattungsberechnung ausgelöst. Ein Anwendungsfall dafür ist bspw. wenn sich vor der Fassade ein anderes Gebäude befindet, welches Schatten auf die Fassade wird, während die Wetterstation auf dem Dach noch voll in der Sonne ist. Wertebereich: 0-90, Standardwert: 0
 
-Hint regarding effective elevation: To compute the right shutter angle, the elevation of the sun in the right angle to the facade must be computed. This so-called "effective elevation" is written to the log. If the shadow handling is not working as desired, especially nearly the limits of the given azimuth offsets, this value needs attention.
+Hinweis bzgl. "effektiver Höhe": Um den korrekten Lamellenwinkel zu berechnen, muss die Höhe der Sonne im rechten Winkel zur Fassade errechnet werden. Das ist die sog. "effektive Höhe", welche so auch im Log zu finden ist. Wenn die Beschattungssteuerung insbesondere im Grenzbereich der beiden Beginn- und Ende-Offsets nicht wie erwartet arbeitet, muss dieser Wert genauer betrachtet werden.
 
 #### Maximale Sonnenhöhe
 `facade_elevation_sun_max_static`
 
-Maximal elevation (height) of the sun in degrees. If the effective (!) elevation is higher than this value, no shadow handling will be performed. A use case for this configuration is a balcony from the story above, which throws shadow onto the facade, whereas the weather station on the roof is still full in the sun. Valid range: 0–90, default: 90
+Maximale Höhe der Sonne in Grad. Ist die effektive Höhe grösser als dieser Wert, wird keine Beschattungsberechnung ausgelöst. Ein Anwendungsfall dafür ist bspw. wenn sich über der Fassade resp. dem Fenster ein Balkon befindet, welcher Schatten auf die Fassade wird, während die Wetterstation auf dem Dach noch voll in der Sonne ist. Wertebereich: 0-90, Standardwert: 90
 
 #### Debugmodus
 `debug_enabled`
 
-With this switch, the debug mode for this instance could be activated. If activated, there will be much more detailed output within the Home Assistant main log file.
+Mit diesem Schalter kann der Debugmodus aktiviert werden. Damit werden erheblich mehr Informationen zum Verhalten und der Berechnung für diese Fassade ins Log geschrieben.
 
 
 
@@ -280,7 +280,7 @@ The options within this section are called "dynamic settings," as they might be 
 #### Helligkeit
 `brightness_entity`
 
-See the description at [Helligkeit](#brightness).
+Siehe Beschreibung unter [Helligkeit](#brightness).
 
 #### Helligkeit (Dämmerung)
 `brightness_dawn_entity`
@@ -297,12 +297,12 @@ If you have only one brightness sensor, this input should not be configured. Let
 #### Höhe der Sonne
 `sun_elevation_entity`
 
-See the description at [Höhe der Sonne](#sun-elevation).
+Siehe Beschreibung unter [Höhe der Sonne](#sun-elevation).
 
 #### Azimut der Sonne
 `sun_azimuth_entity`
 
-See the description at [Azimut der Sonne](#sun-azimuth).
+Siehe Beschreibung unter [Azimut der Sonne](#sun-azimuth).
 
 #### Integration sperren
 `lock_integration_entity`
