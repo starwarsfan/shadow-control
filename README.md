@@ -1,6 +1,6 @@
 # Shadow Control
 
-**A custom component for Home Assistant to fully automate movement and positioning of rolling shutters.**
+**A Home Assistant integration to fully automate movement and positioning of rolling shutters.**
 
 ## Table of content
 
