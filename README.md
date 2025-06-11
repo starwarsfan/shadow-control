@@ -75,12 +75,13 @@
 
 # Introduction
 
-Shadow Control is the migration of my Edomi-LBS "Beschattungssteuerung-NG" to Home Assistant. As Edomi was [sentenced to death](https://knx-user-forum.de/forum/projektforen/edomi/1956975-quo-vadis-edomi) and because I'm not really happy with the existing solutions to automate my shutters, I decided to migrate my LBS (Edomi name for **L**ogic**B**au**S**tein, a logic block) to a Home Assistant integration. To do so was a nice deep dive into the backgrounds of Home Assistant, the idea behind and how it works. Feel free to use the integration on your needs.
+**Shadow Control** is the migration of my Edomi-LBS "Beschattungssteuerung-NG" to Home Assistant. As Edomi was [sentenced to death](https://knx-user-forum.de/forum/projektforen/edomi/1956975-quo-vadis-edomi) and because I'm not really happy with the existing solutions to automate my shutters, I decided to migrate my LBS (Edomi name for **L**ogic**B**au**S**tein, a logic block) to a Home Assistant integration. To do so was a nice deep dive into the backgrounds of Home Assistant, the idea behind and how it works. Feel free to use the integration on your needs.
 
 Within further description:
 
 * The word "facade" is similar to "window" or "door," as it simply references the azimuth of an object in the sense of view direction from within that object to the outside.
 * The word "shutter" references rolling shutters. In the Home Assistant terminology, this is called a "cover". From the pov of this integration it's the same.
+* The whole internal logic was initially developed to interact with a KNX system, so the main difference is the handling of %-values. **Shadow Control** will interact with Home Assistant correct but the configuration as well as the log output is using 0% as fully open and 100% as fully closed.
 
 # What it does
 
@@ -116,12 +117,12 @@ The initial instance configuration is very minimalistic and requires only the fo
 ### Instance name 
 `name`
 
-A descriptive and unique name for this Shadow Control (SC) instance. A sanitized version of this name will be used to mark corresponding log entries of this instance within the Home Assistant main log file.
+A descriptive and unique name for this **Shadow Control** (SC) instance. A sanitized version of this name will be used to mark corresponding log entries of this instance within the Home Assistant main log file.
 
 ### Covers to maintain
 `target_cover_entity`
 
-The cover entities, which should be handled by this Shadow Control (SC) instance. You can add as many covers as you like, but the recommendation is to use only these covers, which have at least the same azimuth. For any further calculation, only the first configured cover will be used. All other covers will just be positioned as the first one.
+The cover entities, which should be handled by this **Shadow Control** (SC) instance. You can add as many covers as you like, but the recommendation is to use only these covers, which have at least the same azimuth. For any further calculation, only the first configured cover will be used. All other covers will just be positioned as the first one.
 
 ### Facade azimuth
 `facade_azimuth_static`
@@ -149,7 +150,7 @@ This input should be filled with the current azimuth of the sun. Usually this va
 
 ## Additional options
 
-The following options will be available by a separate config flow, which will open up with a click on "Configure" at the desired instance right on Settings > Integrations > Shadow Control.
+The following options will be available by a separate config flow, which will open up with a click on "Configure" at the desired instance right on Settings > Integrations > **Shadow Control**.
 
 ### Facade configuration - part 1
 
