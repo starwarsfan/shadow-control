@@ -196,8 +196,8 @@ class SCFacadeConfiguration:
         self.slat_distance: float = 67.0
         self.slat_angle_offset: float = 0.0
         self.slat_min_angle: float = 0.0
-        self.shutter_stepping_height: float = 10.0
-        self.shutter_stepping_angle: float = 10.0
+        self.shutter_stepping_height: float = 5.0
+        self.shutter_stepping_angle: float = 5.0
         self.shutter_type: ShutterType = ShutterType.MODE1
         self.light_strip_width: float = 0.0
         self.shutter_height: float = 1000.0

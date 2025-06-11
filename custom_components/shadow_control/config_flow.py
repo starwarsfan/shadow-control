@@ -100,10 +100,10 @@ STEP_FACADE_SETTINGS_PART2_SCHEMA = vol.Schema({
     vol.Optional(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=10): selector.NumberSelector(
+    vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=5): selector.NumberSelector(
         selector.NumberSelectorConfig(min=1, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, default=10): selector.NumberSelector(
+    vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, default=5): selector.NumberSelector(
         selector.NumberSelectorConfig(min=1, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
     vol.Optional(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value, default=0): selector.NumberSelector(
