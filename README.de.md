@@ -278,7 +278,7 @@ Der zweite mögliche Behangtyp hat einen Schwenkbereich von ca. 180°, also bei 
 
 ### Dynamische Eingänge
 
-The options within this section are called "dynamic settings," as they might be modified "dynamically." That covers such things like position updates of the sun or modification of the integration behavior in general.
+Dieser Abschnitt konfiguriert die dynmischen Eingänge. Damit werden die Werte eingerichtet, welche sich im täglichen Betrieb ändern können wie bspw. der Sonnenstand oder andere Verhaltenseinstellungen der Integration.
 
 #### Helligkeit
 `brightness_entity`
@@ -288,14 +288,11 @@ Siehe Beschreibung unter [Helligkeit](#brightness).
 #### Helligkeit (Dämmerung)
 `brightness_dawn_entity`
 
-A second brightness value could be configured here, which is used to calculate shutter position at dawn. This is especially useful if 
+Hier kann eine separate Helligkeit für die Dämmerungssteuerung eingestellt werden. Das ist insbesondere dann sinnvoll, wenn für die einzelnen **Shadow Control** Instanzen resp. Fassaden unterschiedliche Helligkeitssensoren verwendet werden, der Behang aber im gesamten Gebäude zur Dämmerung gleichzeitig geschlossen werden soll. 
 
-* more than one brightness is used, e.g., with different sensors per facade and
-* more than one facade should be automated, and so more than one integration is configured. 
+In diesem Fall sollte über eine separate Automation bspw. der Mittelwert aus allen Helligkeiten berechnet und hier verknüpft werden. Damit werden alle Raffstoren gleichzeitig in die Dämmerungsposition gefahren.
 
-If you're using more than one brightness sensor, you might set up an automation, which computes the median for all these values. After that, use that automation as input here. All the shutters will move to dawn position at the same time, even if it's currently brighter on one facade than on the other side of the building.
-
-If you have only one brightness sensor, this input should not be configured. Let the input stay empty in this case.
+Wenn nur eine Helligkeit für das gesamte Gebäude vorhanden ist, muss dieser Eingang leer bleiben.
 
 #### Höhe der Sonne
 `sun_elevation_entity`
@@ -310,47 +307,47 @@ Siehe Beschreibung unter [Azimut der Sonne](#sun-azimuth).
 #### Integration sperren
 `lock_integration_entity`
 
-If this input is set to 'off,' the integration works as desired by updating the output (as long as the input `lock_integration_with_position` is not set to 'on'). 
+Mit diesem Eingang kann die gesamte Integration gesperrt werden. Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, solange nicht [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) aktiv ist.
 
-If the input is set to 'on,' the integration gets locked. That means the integration is internally still working, but the configured shutter will not be updated and stay at the current position. With this approach, the integration is able to immediately move the shutter to the right position, as soon as it gets unlocked again.
+Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration intern normal weiter, aktualisiert aber den verbundenen Behang nicht. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann. 
 
 #### Integration sperren mit Zwangsposition
 `lock_integration_with_position_entity`
 
-If this input is set to 'off,' the integration works as desired by updating the output (as long as the input `lock_integration` is not set to 'on').
+Mit diesem Eingang kann die gesamte Integration gesperrt und eine Zwangsposition angefahren werden. Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, solange nicht [Integration sperren](#integration-sperren) aktiv ist.
 
-If the input is set to 'on,' the integration gets locked. That means the integration is internally still working, but the configured shutter will be moved to the position, configured with the inputs 'lock_height' and 'lock_angle.' With this approach, the integration is able to immediately move the shutter to the right position, as soon as it gets unlocked again.
+Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration intern normal weiter, fährt aber den Behang auf die via [Sperrhöhe](#sperrhöhe)/[Sperrwinkel](#sperrwinkel) konfigurierte Position. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann.
 
-This input has precedence over 'lock_integration.' If both lock inputs are set 'on,' the shutter will be moved to the configured lock position.
+Dieser Eingang hat Vorrang vor [Integration sperren](#integration-sperren). Werden beide Sperren auf 'on' gesetzt, wird die Zwangsposition angefahren.
 
 #### Sperrhöhe
 `lock_height_entity`
 
-Height in %, which should be set if integration gets locked by 'lock_integration_with_position.' 
+Anzufahrende Höhe in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
 #### Sperrwinkel
 `lock_angle_entity`
 
-Angle in %, which should be set if integration gets locked by 'lock_integration_with_position.'
+Anzufahrender Lamellenwinkel in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
 #### Bewegungseinschränkung Höhenpositionierung
 `movement_restriction_height_entity`
 
-With this setting, the movement direction could be restricted:
+Mit diesem Setting kann die Bewegungsrichtung der Höhenpositionierung wie folgt eingeschränkt werden
 
-* "No restriction" (Default)
-  No striction on shutter movement. The automation will open or close the shutter.
-* "Only close"
-  In comparison to the current position, only closing positions will be activated.
-* "Only open"
-  In comparison to the current position, only opening positions will be activated.
+* "Keine Einschränkung" (Default)
+  Keine Einschränkung der Höhenpositionierung. Die Integration wird den Behang öffnen oder schliessen.
+* "Nur schliessen"
+  Im Vergleich zur aktuellen Position werden nur weiter schliessende Positionen angefahren.
+* "Nur öffnen"
+  Im Vergleich zur aktuellen Position werden nur weiter öffnende Positionen angefahren.
 
-This could be used to prevent shutters from being opened after the sun goes down and close them some minutes later because of starting dawn. This setting might be modified using a timer clock or other appropriate automation.
+Das kann dafür verwendet werden, dass der Behang nicht nach der Beschattung hoch gefahren und kurze Zeit später durch schnell einsetzende Dämmerung wieder heruntergefahren wird. Durch eine separate, bspw. tageszeitabhängige Automation, kann dieser Eingang entsprechend modifiziert werden.
 
 #### Bewegungseinschränkung Lamellenwinkelpositionierung
 `movement_restriction_angle_entity`
 
-Same as [Bewegungseinschränkung Höhenpositionierung](#movement-restriction-height) but for the shutter slat angle.
+Siehe [Bewegungseinschränkung Höhenpositionierung](#bewegungseinschränkung-höhenpositionierung), hier nur für den Lamellenwinkel.
 
 
 
