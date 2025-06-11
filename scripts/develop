@@ -16,7 +16,7 @@ fi
 ## without resulting to symlinks.
 export PYTHONPATH="${PYTHONPATH}:${PWD}/custom_components"
 
-./scripts/installConfigs.sh
+#./scripts/installConfigs.sh
 
 # Start Home Assistant
 hass --config "${PWD}/config" --debug
