@@ -75,74 +75,74 @@
 
 # Einführung
 
-**Shadow Control** is the migration of my Edomi-LBS "Beschattungssteuerung-NG" to Home Assistant. As Edomi was [sentenced to death](https://knx-user-forum.de/forum/projektforen/edomi/1956975-quo-vadis-edomi) and because I'm not really happy with the existing solutions to automate my shutters, I decided to migrate my LBS (Edomi name for **L**ogic**B**au**S**tein, a logic block) to a Home Assistant integration. To do so was a nice deep dive into the backgrounds of Home Assistant, the idea behind and how it works. Feel free to use the integration on your needs.
+**Shadow Control** ist die Portierung des Edomi-LBS "Beschattungssteuerung-NG" für Home Assistant. Da Edomi [zum Tode verurteilt wurde](https://knx-user-forum.de/forum/projektforen/edomi/1956975-quo-vadis-edomi) und ich mit den bestehenden Beschattungslösungen nicht wirklich zufrieden war, habe ich mich dazu entschlossen, meinen LBS (Edomi-Bezeichnung für **L**ogic**B**au**S**tein) in eine Home Assistant Integration zu portieren. Das war ein sehr interessanter "Tauchgang" in die Hintergründe von Homa Assistant, der Idee dahinter und wie das Ganze im Detail funktioniert. Viel Spass mit der Integration.
 
-Within further description:
+In den folgenden Abschnitten gilt Folgendes:
 
-* The word "facade" is similar to "window" or "door," as it simply references the azimuth of an object in the sense of view direction from within that object to the outside.
-* The word "shutter" references rolling shutters. In the Home Assistant terminology, this is called a "cover". From the pov of this integration it's the same.
-* The whole internal logic was initially developed to interact with a KNX system, so the main difference is the handling of %-values. **Shadow Control** will interact with Home Assistant correct but the configuration as well as the log output is using 0% as fully open and 100% as fully closed.
+* Das Wort "Fassade" ist gleichbedeutend mit "Fenster" oder "Tür", da es hier lediglich den Bezug zum Azimut eines Objektes in Blickrichtung von innen nach aussen darstellt.
+* Das Wort "Behang" bezieht sich auf Raffstoren. In der Home Assistant Terminologie ist das ein "cover", was aus Sicht dieser Integration das Gleiche ist.
+* Die gesamte interne Logik wurde ursprünglich für die Interaktion mit KNX-Systemen entwickelt. Der Hauptunterschied ist daher die Handhabung von Prozentwerten. **Shadow Control** wird mit Home Assistant korrekt interagieren aber die Konfiguration sowie die Logausgaben verwenden 0 % als geöffnet und 100 % als geschlossen.
 
 # Was macht **Shadow Control**?
 
-Based on several input values, the integration handles the positioning of rolling shutters. To do so, the integration needs to be configured with the azimuth of the facade, for which the shutters should be controlled. Additionally, some offset and min-max values will be used to define the area within the facade is illuminated by the sun. If the sun is within that range and the configured brightness threshold is exceeded for a (also configurable) amount of time, the shutters will be positioned to prevent direct sunlight in the room.
+Basierend auf verschiedenen Eingangswerten wird die Integration die Positionierung des Behangs übernehmen. Damit das funktioniert, muss die jeweilige Instanz mit dem Azimut der Fassade, dem Sonnenstand sowie der dortigen Helligkeit konfiguriert werden. Zusätzlich sind viele weitere Details konfigurierbar, um den Beschattungsvorgang resp. den entsprechenden Bereich unter direkter Sonneneinstrahlung zu definieren und somit direktes Sonnenlicht im Raum zu verhindern oder einzuschränken.
 
-The determined shutter height and tilt angle depend on the current brightness, configured thresholds, dimensions of your shutter slats, some timers, and more settings. The different timers will be activated according to the current state of the integration.
+Die berechnete Behanghöhe sowie der Lamellenwinkel hängen von der momentanen Helligkeit, den konfigurierten Schwellwerten, der Abmessung der Lamellen, Timern und weiteren Einstellungen ab. Die verschiedenen Timer werden je nach momentanem Zustand der Integration gestartet.
 
-In general, there are two different operation modes: _Shadow_ and _Dawn_. Both modes will be configured independently.
+Grundsätzlich gibt es zwei Betriebsarten: _Beschattung_ und _Dämmerung_, welche unabhängig voneinander eingerichtet werden.
 
-The integration will be triggered by updating the following entities: 
+Die Berechnung der Position wird durch die Aktualisierung der folgenden Eingänge ausgelöst:
 
-* [Helligkeit](#brightness)
-* [Helligkeit (dawn)](#brightness-dawn)
-* [Höhe der Sonne](#sun-elevation)
-* [Azimut der Sonne](#sun-azimuth)
-* [Integration sperren](#lock-integration)
-* [Integration sperren mit Zwangsposition](#lock-integration-with-position)
-* [Shadow handling dis-/enabled state](#shadow-control-enabled)
-* [Dawn handling dis-/enabled state](#dawn-control-enabled)
+* [Helligkeit](#helligkeit)
+* [Helligkeit (Dämmerung)](#helligkeit-dämmerung)
+* [Höhe der Sonne](#höhe-der-sonne)
+* [Azimut der Sonne](#azimut-der-sonne)
+* [Integration sperren](#integration-sperren)
+* [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition)
+* [Beschattungssteuerung ein/aus](#beschattungssteuerung-aktiviert)
+* [Dämmerungssteuerung ein/aus](#dämmerungssteuerung-aktiviert)
 
-The configured cover entity will only be updated if a value has changed since the last run of the integration, which prevents unnecessary movements.
+Der konfigurierte Behang wird nur dann neu positioniert, wenn sich die berechneten Werte seit dem letzten Lauf der Integration geändert haben. Damit wird die unnötige Neupositionierung der Raffstorenlamellen verhindert.
 
 # Konfiguration
 
-The configuration is split into a minimalistic initial configuration, which results in a fully working cover automation and a separate configuration flow of all available options.
+Die Konfiguration ist unterteilt in die minimalistische Initialkonfiguration sowie in eine separate Detailkonfiguration. Die Initialkonfiguration führt bereits zu einer vollständig funktionieren Behangautomatisierung, welche über die Detailkonfiguration bei Bedarf jederzeit angepasst werden kann.
 
 
 
 ## Initiale Instanzkonfiguration
 
-The initial instance configuration is very minimalistic and requires only the following configuration entries. Everything else will be setup up with default values, which you might tweak to your needs afterward. See section "Optional configuration."
+Die initiale Instanzkonfiguration ist sehr minimalistisch und benötigt nur die folgenden Konfigurationswerte. Alle anderen Einstellungen werden mit Standardwerten vorbelegt, welche im Nachhinein an die persönlichen Wünsche angepasst werden können. Siehe dazu den Abschnitt ["Optionale Konfiguration"](#optionale-konfiguration).
 
 ### Name der Instanz
 `name`
 
-A descriptive and unique name for this **Shadow Control** (SC) instance. A sanitized version of this name will be used to mark corresponding log entries of this instance within the Home Assistant main log file.
+Ein beschreibender und eindeutiger Name für diese **Shadow Control** Instanz. Eine bereinigte Version dieses Namens wird zur Kennzeichnung der Log-Einträge in der Home Assistant Logdatei verwendet.
 
 ### Zu automatisierende Rollläden
 `target_cover_entity`
 
-The cover entities, which should be handled by this **Shadow Control** (SC) instance. You can add as many covers as you like, but the recommendation is to use only these covers, which have at least the same azimuth. For any further calculation, only the first configured cover will be used. All other covers will just be positioned as the first one.
+Hier werden die zu steuernden Behang-Entitäten verbunden. Es können beliebig viele davon gleichzeitig gesteuert werden. Allerdings empfiehlt es sich, nur die Storen zu steuern, welche sich auf der gleichen Fassade befinden, also das gleiche Azimut haben. Für die alle weiteren internen Berechnungen wird der erste konfigurierte Behang herangezogen. Alle anderen Storen werden identisch positioniert.
 
 ### Azimut der Fassade
 `facade_azimuth_static`
 
-Azimuth of the facade in degrees, for which the integration should be configured. This is the viewing direction from the inside to the outside. A perfectly north facade has an Azimuth of 0°, a perfectly south facade has an Azimuth of 180°. The sun area at this facade is the range, from which a shadow handling is desired. This is a maximal range of 180°, from `azimuth_facade` + `offset_sun_in` to `azimuth_facade` + `offset_sun_out`.
+Azimut der Fassade in Grad, also die Blickrichtung von innen nach aussen. Eine perfekt nach Norden ausgerichtete Fassade hat ein Azimut von 0°, eine nach Süden ausgerichtete Fassade demzufolge 180°. Der Sonnenbereich dieser Fassade ist der Bereich, in dem die Beschattungssteuerung via **Shadow Control** erfolgen soll. Das ist maximal ein Bereich von 180°, also [Azimut der Fassade](#azimut-der-fassade) + [Beschattungsbeginn](#beschattungsbeginn) bis [Azimut der Fassade](#azimut-der-fassade) + [Beschattungsende](#beschattungsende).
 
 ### Helligkeit
 `brightness_entity`
 
-This input needs to be configured with the current brightness, which usually comes from a weather station. The value should match the real brightness on this facade as much as possible.
+Aktuelle Helligkeit auf der Fassade. Im Regelfall kommt dieser Wert von einer Wetterstation und sollte der tatsächlichen Helligkeit auf dieser Fassade möglichst nah kommen.
 
 ### Höhe der Sonne
 `sun_elevation_entity`
 
-This input should be filled with the current elevation of the sun. Usually this value comes from a weather station or the home assistant internal sun entity. Possible values are within the range from 0° (horizontal) to 90° (vertical).
+Hier wird die aktuelle Höhe (Elevation) der Sonne konfiguriert. Dieser Wert kommt ebenfalls von einer Wetterstation oder direkt von der Home Assistant Sonne-Entität. Gültig ist dabei der Bereich von 0° (horizontal) bis 90° (vertikal).
 
 ### Azimut der Sonne
 `sun_azimuth_entity`
 
-This input should be filled with the current azimuth of the sun. Usually this value comes from a weather station or the home assistant internal sun entity. Possible values are within the range from 0° to 359°.
+Hier wird der aktuelle Winkel (Azimut) der Sonne konfiguriert. Dieser Wert kommt ebenfalls von einer Wetterstation oder direkt von der Home Assistant Sonne-Entität. Gültig ist dabei der Bereich von 0° bis 359°.
 
 
 
@@ -282,7 +282,7 @@ The options within this section are called "dynamic settings," as they might be 
 
 See the description at [Helligkeit](#brightness).
 
-#### Helligkeit Dawn
+#### Helligkeit (Dämmerung)
 `brightness_dawn_entity`
 
 A second brightness value could be configured here, which is used to calculate shutter position at dawn. This is especially useful if 
