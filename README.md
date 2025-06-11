@@ -75,12 +75,12 @@
 
 # Introduction
 
-Shadow Control is the migration of my Edomi-LBS "Beschattungssteuerung-NG" to Home Assistant. As Edomi was [sentenced to death](https://knx-user-forum.de/forum/projektforen/edomi/1956975-quo-vadis-edomi) and because I'm not really happy with the existing solutions to automate my shutters, I decided to migrate the LBS (Edomi name for **L**ogic**B**au**S**tein, a logic block) to a Home Assistant integration. To do so was a nice deep dive into the backgrounds of Home Assistant, the idea behind and how it works. Feel free to use the integration on your needs.
+Shadow Control is the migration of my Edomi-LBS "Beschattungssteuerung-NG" to Home Assistant. As Edomi was [sentenced to death](https://knx-user-forum.de/forum/projektforen/edomi/1956975-quo-vadis-edomi) and because I'm not really happy with the existing solutions to automate my shutters, I decided to migrate my LBS (Edomi name for **L**ogic**B**au**S**tein, a logic block) to a Home Assistant integration. To do so was a nice deep dive into the backgrounds of Home Assistant, the idea behind and how it works. Feel free to use the integration on your needs.
 
 Within further description:
 
-* The word "facade" is similar to "window" or "door," as it simply references the azimuth of an object in the sense of view direction from that object to the outside.
-* The integration "Shadow Control" will be shortened to "SC."
+* The word "facade" is similar to "window" or "door," as it simply references the azimuth of an object in the sense of view direction from within that object to the outside.
+* The word "shutter" references rolling shutters. In the Home Assistant terminology, this is called a "cover". From the pov of this integration it's the same.
 
 # What it does
 
