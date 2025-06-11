@@ -198,76 +198,79 @@ Mit diesem Schalter kann der Debugmodus aktiviert werden. Damit werden erheblich
 #### Neutralhöhe
 `facade_neutral_pos_height_static`
 
-Shutter height position in state _NEUTRAL_. The integration will switch to _NEUTRAL_ if
+Behanghöhe in % in Neutralposition. Die Integration wird in die Neutralposition fahren, wenn mindestens eine der folgenden Bedingungen erfüllt ist: 
 
-* the integration is within a shadow- or a dawn-state and the corresponding regulation will be deactivated _or_
-* the sun leaves the facade range.
+* Die Sonne befindet sich im Beschattungsbereich und die Beschattungsregelung wird deaktiviert
+* Die Dämmerungsregelung wird deaktiviert
+* Die Sonne verlässt den Beschattungsbereich
 
-Default: 0
+Standardwert: 0
 
 #### Neutralwinkel
 `facade_neutral_pos_angle_static`
 
-Shutter angle position in state _NEUTRAL_. Everything else is described in the previous configuration entry. Default: 0
+Lamellenwinkel in % in Neutralposition. Alles andere identisch zu [Neutralhöhe](#neutralhöhe). Standardwert: 0
 
 #### Lamellenbreite
 `facade_slat_width_static`)
 
-The Width of the shutter slats in mm. Width and distance are required to compute the angle, which is used to close the shutter only that much, to prevent direct sun rays within the room. The slat width must be larger than the slat distance, otherwise it's impossible to set up the correct shadow position. Default: 95
+Die Breite der Lamellen in mm. Breite und Abstand werden benötigt, um den Lamellenwinkel zu berechnen, der benötigt wird, die Lamellen gerade so schräg zu stellen, dass kein direktes Sonnenlicht in den Raum fällt. Die Lamellenbreite muss zwingend grösser als der Lamellenabstand sein, anderenfalls ist es nicht möglich, eine korrekte Beschattungsposition anzufahren. Standardwert: 95
 
 #### Lamellenabstand
 `facade_slat_distance_static`
 
-The distance of the shutter slats in mm. Everything else is described in the previous configuration entry. Default: 67
+Der Abstand der Lamellen in mm. Alles andere siehe [Lamellenbreite](#lamellenbreite). Standardwert: 67
 
 #### Shutter angle offset
 `facade_slat_angle_offset_static`
 
-Angle offset in %. This value will be added to the computed slat angle and could be used if the computed angle needs to be corrected. This could be necessary if the shadow position has a slight gap, which lets the sun pass through. Default: 0
+Lamellenwinkeloffset in %. Dieser Wert wird zum berechneten Lamellenwinkel addiert. Er kann somit verwendet werden, um allfällige Ungenauigkeiten im Grenzbereich der Beschattung zu korrigieren. Das ist bspw. der Fall, wenn der Behang in Beschattungsposition ist aber dennoch ein schmaler Lichtstrahl hindurchfällt. Standardwert: 0
 
 #### Minimaler Lamellenwinkel
 `facade_slat_min_angle_static`
 
-Min shutter slat angle in %. The slat position will be in the range of this value and 100%. This option could be used to restrict the opening range of the shutter slats. Default: 0
+Minimaler Lamellenwinkel in %. Die Lamellen werden im Bereich von diesem Wert bis 100% positioniert. Damit kann diese Option dazu verwendet werden, den Öffnungsbereich zu begrenzen. Standardwert: 0
 
 #### Schrittweite Höhenpositionierung
 `facade_shutter_stepping_height_static`
 
-Stepping size for shutter height positioning. Most shutters could not handle repositioning of small values within the percent range. To handle this, the height will be modified in steps of a given size. Increasing or decreasing elevation of the sun will be handled properly. Default: 5
+Schrittweite der Höhenpositionierung. Die meissten Rollläden sind nicht in der Lage, sehr kleine Positionierungsschritte anzufahren. Um dem zu begegnen, kann hier die Schrittweite eingestellt werden, in welcher der Behang positioniert werden soll. Dabei wird berücksichtigt, ob die Sonne steigt oder fällt. Standardwert: 5
 
 #### Schrittweite Lamellenwinkelpositionierung
 `facade_shutter_stepping_angle_static`
 
-Same as "Schrittweite Höhenpositionierung" but for the shutter slat angle positioning. Default: 5
+Schrittweite der Lamellenwinkelpositionierung. Details siehe [Schrittweite Höhenpositionierung](#schrittweite-höhenpositionierung). Standardwert: 5
 
 #### Lichtstreifenbreite
 `facade_light_strip_width_static`
 
-Width of a desired light strip. With this setting could be configured, how "deep" the sun should shine directly into the room. According to this setting, during shadow the shutter will not be at a height position of 100% (aka full closed) but instead at a computed height position, which produces the desired light strip. Default: 0
+Breite eines nicht zu beschattenden Lichtstreifens am Boden. Mit dieser Einstellung wird festgelegt, wie tief oder weit die Sonne in den Raum hinein scheinen soll. Dementsprechend wird der Behang in der Höhe nicht 100% geschlossen sondern auf die Höhe gefahren, welche in den hier definierten Lichtstreifen resultiert. Standardwert: 0
 
 #### Gesamthöhe
 `facade_shutter_height_static`
 
-To compute the light strip given with the previous configuration option, the integration needs to know the overall height of the shutter (or window). The same unit as on light bar width must be used. Default: 1000
+Um den Lichtstreifen aus [Lichtstreifenbreite](#lichtstreifenbreite) zu berechnen, wird die Gesamthöhe des Behangs resp. des Fensters benötigt. Damit muss die gleiche Einheit verwendet werden, also bspw. beide Werte in mm. Standardwert: 1000
 
 #### Toleranz Höhenpositionierung
 `facade_modification_tolerance_height_static`
 
-Tolerance range for external shutter height modification. If the calculated height is within the range of current height plus/minus this value, the integration will not lock itself. Default: 8
+_Wird aktuell noch nicht ausgewertet!_
+
+Toleranzbereich für externe Höhenmodifikation. Weicht die kalkulierte Höhe von der tatsächlichen Höhe +/- der hier angegebenem Toleranz ab, sperrt sich die Integration nicht selbst. Standardwert: 8
 
 #### Toleranz Lamellenwinkelpositionierung
 `facade_modification_tolerance_angle_static`
 
-Same as [Toleranz Höhenpositionierung](#tolerance-height-modification) but for the shutter slat angle. Default: 5
+_Wird aktuell noch nicht ausgewertet!_
+
+Toleranzbereich für externe Lamellenwinkelmodifikation, alles weitere siehe [Toleranz Höhenpositionierung](#toleranz-höhenpositionierung). Standardwert: 5
 
 #### Behangtyp
 `facade_shutter_type_static`
 
-Konfiguration of the used shutter type.
+Der verwendete Behangtyp. Standardeinstellung ist der 90°-Behangtyp. Bei diesem Typ sind die Lamellen bei 0% waagerecht, also offen und bei 100% (i.d.R. nach aussen) vollständig geschlossen.
 
-Default is pivoting range of 0°-90°. These shutters are fully closed (vertical) at 90° and horizontally open at 0°.
-
-The other possible shutter type has a movement range from 0°-180°, whereas these shutters are closed to the inside at 0°, horizontally open at 90°, and closed to the outside at 180°.
+Der zweite mögliche Behangtyp hat einen Schwenkbereich von ca. 180°, also bei 0% (i.d.R. nach aussen) geschlossen, bei 50% waagerecht offen und bei 100% (i.d.R. nach innen) wiederum geschlossen.
 
 
 
