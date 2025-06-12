@@ -10,7 +10,7 @@
     options:
       - "mode1"
       - "mode2"
-    initial: "mode1"
+    #initial: "mode1"
   g17_movement_restriction_height:
     #[e#36           =Bwg Hoehe einschraenken (0/1/2)         #init=0      ]
     name: "G17: Move restriction height"
@@ -18,7 +18,7 @@
       - "No restriction"
       - "Only close"
       - "Only open"
-    initial: "No restriction"
+    #initial: "No restriction"
   g18_movement_restriction_angle:
     #[e#37           =Bwg Winkel einschraenken (0/1/2)        #init=0      ]
     name: "G18: Move restriction angle"
@@ -26,7 +26,7 @@
       - "No restriction"
       - "Only close"
       - "Only open"
-    initial: "No restriction"
+    #initial: "No restriction"
   g19_update_lock_output:
     #[e#38           =Update Sperrausgang (0/1/2)             #init=0      ]
     name: "G19: Update lock output"
@@ -34,7 +34,7 @@
       - "0"
       - "1"
       - "2"
-    initial: "0"
+    #initial: "0"
   # General settings end
   # =========================================================================
   # Shadow settings

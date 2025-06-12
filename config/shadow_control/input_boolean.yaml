@@ -14,13 +14,13 @@
   s01_shadow_control_enabled:
     #[e#40 trigger   =Beschattungssteuerung aktiv (0/1)       #init=1      ]
     name: "S01: Shadow control"
-    initial: on 
+    #initial: on
   # Shadow settings end
   # =========================================================================
   # Dawn settings
   sd01_dawn_control_enabled:
     #[e#60 trigger   =Daemmerungssteuerung aktiv (0/1)        #init=1      ]
     name: "SD01: Dawn control"
-    initial: on 
+    #initial: on
   # Dawn settings end
   # =========================================================================
