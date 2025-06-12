@@ -283,6 +283,7 @@ class ShadowControlManager:
         self._dynamic_config.lock_angle = config.get(SCDynamicInput.LOCK_ANGLE_ENTITY.value)
         self._dynamic_config.movement_restriction_height = config.get(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value)
         self._dynamic_config.movement_restriction_angle = config.get(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value)
+        self._dynamic_config.enforce_positioning_entity = config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value)
 
         # === Get general facade configuration
         self._facade_config.azimuth = config.get(SCFacadeConfig.AZIMUTH_STATIC.value)
@@ -415,6 +416,7 @@ class ShadowControlManager:
             SCDynamicInput.SUN_AZIMUTH_ENTITY,
             SCDynamicInput.LOCK_HEIGHT_ENTITY,
             SCDynamicInput.LOCK_ANGLE_ENTITY,
+            SCDynamicInput.ENFORCE_POSITIONING_ENTITY,
             SCShadowInput.CONTROL_ENABLED_ENTITY,
             SCDawnInput.CONTROL_ENABLED_ENTITY,
         ]:
@@ -625,6 +627,8 @@ class ShadowControlManager:
             MovementRestricted.NO_RESTRICTION
         )
 
+        self._enforce_position_update = self._get_entity_state_value(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value, False, bool)
+
         # Shadow Control Inputs
         shadow_control_enabled_static = self._get_static_value(SCShadowInput.CONTROL_ENABLED_STATIC.value, True, bool, log_warning=False)
         self._shadow_config.enabled = self._get_entity_state_value(SCShadowInput.CONTROL_ENABLED_ENTITY.value, shadow_control_enabled_static, bool)
@@ -764,6 +768,10 @@ class ShadowControlManager:
                         self._enforce_position_update = True
                     else:
                         self.logger.debug(f"Lock with position enabled, enforcing position update")
+                        self._enforce_position_update = True
+                elif entity == SCDynamicInput.ENFORCE_POSITIONING_ENTITY:
+                    if new_state.state == "on":
+                        self.logger.debug(f"Enforced positioning triggered")
                         self._enforce_position_update = True
             elif event_type == "time_changed":
                 self.logger.debug(f"Time changed event received")

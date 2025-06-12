@@ -181,6 +181,9 @@ STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema({
             translation_key="facade_movement_restriction"
         )
     ),
+    vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): selector.EntitySelector(
+        selector.EntitySelectorConfig(domain="input_boolean")
+    ),
 })
 
 # --- STEP 5: Shadow settings ---

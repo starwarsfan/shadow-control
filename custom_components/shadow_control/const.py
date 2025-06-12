@@ -24,6 +24,7 @@ class SCDynamicInput(Enum):
     LOCK_ANGLE_ENTITY = "lock_angle_entity"
     MOVEMENT_RESTRICTION_HEIGHT_ENTITY = "movement_restriction_height_entity"
     MOVEMENT_RESTRICTION_ANGLE_ENTITY = "movement_restriction_angle_entity"
+    ENFORCE_POSITIONING_ENTITY = "enforce_positioning_entity"
 
 # General facade configuration
 class SCFacadeConfig(Enum):

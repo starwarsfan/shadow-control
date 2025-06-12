@@ -308,7 +308,8 @@
           "lock_height_entity": "Enforced position height",
           "lock_angle_entity": "Enforced position slat angle",
           "movement_restriction_height_entity": "Restrict height movement",
-          "movement_restriction_angle_entity": "Restrict angle movement"
+          "movement_restriction_angle_entity": "Restrict angle movement",
+          "enforce_positioning_entity": "Enforce shutter positioning"
         },
         "data_description": {
           "brightness_entity": "Current brightness, usually from a weather station",
@@ -322,7 +323,8 @@
           "lock_height_entity": "Enforced lock shutter height.",
           "lock_angle_entity": "Enforced lock shutter slat angle.",
           "movement_restriction_height_entity": "Restrict height positioning to prevent redundant shutter movements e. g. between shadow and dawn.",
-          "movement_restriction_angle_entity": "Restrict angle positioning to prevent redundant shutter movements e. g. between shadow and dawn."
+          "movement_restriction_angle_entity": "Restrict angle positioning to prevent redundant shutter movements e. g. between shadow and dawn.",
+          "enforce_positioning_entity": "If the connected entity is switched to 'on', the positioning of the shutter will be enforced."
         }
       },
       "shadow_settings": {
