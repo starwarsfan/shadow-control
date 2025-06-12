@@ -353,9 +353,7 @@ Same as [Movement restriction height](#movement-restriction-height) but for the 
 #### Enforce shutter positioning
 `enforce_positioning_entity`
 
-This input could be wired with a boolean entity. If this entity is switched to "on," a shutter positioning will be enforced. This could be used to align the shutter position with the computed position of the integration.
-
-
+This input could be wired with a boolean entity. If this entity is switched to "on," the shutter positioning will be enforced. That means that with every run of the integration, the shutter will be positioned. This could be used to align the shutter position with the computed position of the integration but should normally not be activated all the time. Otherwise, the shutter slats might close and immediately open again as that is how rolling shutters work: At first the move to the given height and position the shutter slats afterward.
 
 
 

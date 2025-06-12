@@ -353,7 +353,7 @@ Siehe [Bewegungseinschränkung Höhenpositionierung](#bewegungseinschränkung-h�
 #### Zwangspositionierung auslösen
 `enforce_positioning_entity`
 
-Dieser Eingang kann mit einer Boolean-Entität verknüpft werden. Wird diese Entität auf 'on' gestellt, wird eine Zwangspositionierung ausgelöst. Das ist mitunter hilfreich, wenn die tatsächliche Behangposition nicht mehr mit der von der Integration angenommenen Position übereinstimmt.
+Dieser Eingang kann mit einer Boolean-Entität verknüpft werden. Wird diese Entität auf 'on' gestellt, wird die Zwangspositionierung aktiviert. Das heisst, dass mit jeder Berechnung die Behangposition geschrieben wird. Das ist hilfreich, wenn die tatsächliche Behangposition nicht mehr mit der von der Integration angenommenen Position übereinstimmt, sollte aber im Normalfall deaktiviert bleiben. Anderenfalls werden die Lamellen ständig nur geschlossen und wieder geöffnet, weil Raffstoren technisch immer erst die Höhe und danach den Lamellenwinkel anfahren.
 
 
 
