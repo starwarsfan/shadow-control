@@ -150,7 +150,7 @@
           "lock_angle_entity": "Anzufahrender Lamellenwinkel bei Zwangsposition",
           "movement_restriction_height_entity": "Einschränkung der Höhenpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
           "movement_restriction_angle_entity": "Einschränkung der Winkelpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
-          "enforce_positioning_entity": "Wird dieser Eingang mit 'on' beschrieben, wird erzwungen, den Behang auf die aktuell gültige Position zu fahren."
+          "enforce_positioning_entity": "Wird dieser Eingang mit 'on' beschrieben, wird erzwungen, den Behang immer auf die aktuell gültige Position zu fahren."
         }
       },
       "shadow_settings": {
