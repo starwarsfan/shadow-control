@@ -50,6 +50,7 @@
       * [Sperrwinkel](#sperrwinkel)
       * [Bewegungseinschränkung Höhenpositionierung](#bewegungseinschränkung-höhenpositionierung)
       * [Bewegungseinschränkung Lamellenwinkelpositionierung](#bewegungseinschränkung-lamellenwinkelpositionierung)
+      * [Zwangspositionierung auslösen](#zwangspositionierung-auslösen)
     * [Beschattungseinstellungen](#beschattungseinstellungen)
       * [Beschattungssteuerung aktiviert](#beschattungssteuerung-aktiviert)
       * [Beschattung: Helligkeitsschwellwert](#beschattung-helligkeitsschwellwert)
@@ -349,7 +350,10 @@ Das kann dafür verwendet werden, dass der Behang nicht nach der Beschattung hoc
 
 Siehe [Bewegungseinschränkung Höhenpositionierung](#bewegungseinschränkung-höhenpositionierung), hier nur für den Lamellenwinkel.
 
+#### Zwangspositionierung auslösen
+`enforce_positioning_entity`
 
+Dieser Eingang kann mit einer Boolean-Entität verknüpft werden. Wird diese Entität auf 'on' gestellt, wird eine Zwangspositionierung ausgelöst. Das ist mitunter hilfreich, wenn die tatsächliche Behangposition nicht mehr mit der von der Integration angenommenen Position übereinstimmt.
 
 
 

@@ -50,6 +50,7 @@
       * [Lock angle](#lock-angle)
       * [Movement restriction height](#movement-restriction-height)
       * [Movement restriction angle](#movement-restriction-angle)
+      * [Enforce shutter positioning](#enforce-shutter-positioning)
     * [Shadow settings](#shadow-settings)
       * [Shadow control enabled](#shadow-control-enabled)
       * [Shadow brightness threshold](#shadow-brightness-threshold)
@@ -348,6 +349,11 @@ This could be used to prevent shutters from being opened after the sun goes down
 `movement_restriction_angle_entity`
 
 Same as [Movement restriction height](#movement-restriction-height) but for the shutter slat angle.
+
+#### Enforce shutter positioning
+`enforce_positioning_entity`
+
+This input could be wired with a boolean entity. If this entity is switched to "on," a shutter positioning will be enforced. This could be used to align the shutter position with the computed position of the integration.
 
 
 
