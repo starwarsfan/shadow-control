@@ -414,8 +414,8 @@ class ShadowControlManager:
             SCDynamicInput.BRIGHTNESS_DAWN_ENTITY,
             SCDynamicInput.SUN_ELEVATION_ENTITY,
             SCDynamicInput.SUN_AZIMUTH_ENTITY,
-            SCDynamicInput.LOCK_HEIGHT_ENTITY,
-            SCDynamicInput.LOCK_ANGLE_ENTITY,
+            SCDynamicInput.LOCK_INTEGRATION_ENTITY,
+            SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY,
             SCDynamicInput.ENFORCE_POSITIONING_ENTITY,
             SCShadowInput.CONTROL_ENABLED_ENTITY,
             SCDawnInput.CONTROL_ENABLED_ENTITY,
@@ -600,6 +600,7 @@ class ShadowControlManager:
 
         self._dynamic_config.lock_integration = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, False, bool)
         self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, False, bool)
+        self._current_lock_state = self._calculate_lock_state()
 
         # Here, lock_height_entity and lock_angle_entity can be static defaults (0.0) or actual entity IDs.
         # Check if the stored value is an entity ID (string) or a static number.
@@ -759,11 +760,11 @@ class ShadowControlManager:
                     self.logger.debug(f"Dawn control enable changed to {new_state.state}")
                     dawn_handling_was_disabled = new_state.state == "off"
                 elif entity == SCDynamicInput.LOCK_INTEGRATION_ENTITY:
-                    if new_state.state == "off" and not SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY:
+                    if new_state.state == "off" and not self._dynamic_config.lock_integration_with_position:
                         self.logger.debug(f"Simple lock was disabled and lock with position is already disabled, enforcing position update")
                         self._enforce_position_update = True
                 elif entity == SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY:
-                    if new_state.state == "off" and not SCDynamicInput.LOCK_INTEGRATION_ENTITY:
+                    if new_state.state == "off" and not self._dynamic_config.lock_integration:
                         self.logger.debug(f"Lock with position was disabled and simple lock already disabled, enforcing position update")
                         self._enforce_position_update = True
                     else:
@@ -2389,6 +2390,18 @@ class ShadowControlManager:
         Check if a recalculation timer is running.
         """
         return self._recalculation_timer is None
+
+    def _calculate_lock_state(self) -> LockState:
+        """
+        Calculate the current lock state based on SCDynamicInput booleans.
+        lock_integration_with_position has precedence over lock_integration.
+        """
+        if self._dynamic_config.lock_integration_with_position:
+            return LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
+        elif self._dynamic_config.lock_integration:
+            return LockState.LOCKED_MANUALLY
+        else:
+            return LockState.UNLOCKED
 
 # Helper for dynamic log output
 def _format_config_object_for_logging(obj, prefix: str = "") -> str:
