@@ -353,6 +353,44 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """
         self.config_data = {}
 
+    async def async_step_import(self, import_config: dict[str, Any]) -> FlowResult:
+        """
+        Handle a flow initiated by a YAML configuration.
+        """
+        # Check if there is already an instance to prevent duplicated entries
+        # The name is the key
+        instance_name = import_config.get(SC_CONF_NAME)
+        if instance_name:
+            for entry in self.hass.config_entries.async_entries(DOMAIN):
+                if entry.data.get(SC_CONF_NAME) == instance_name:
+                    _LOGGER.warning(f"Attempted to import duplicate Shadow Control instance '{instance_name}' from YAML. Skipping.")
+                    return self.async_abort(reason="already_configured")
+
+        _LOGGER.debug(f"[ConfigFlow] Importing from YAML with config: {import_config}")
+
+        # Convert yaml configuration into ConfigEntry, 'name' goes to 'data' section,
+        # all the rest into 'options'.
+        # Must be the same as in __init__.py!
+        config_data_for_entry = {
+            SC_CONF_NAME: import_config.pop(SC_CONF_NAME) # Remove name from import_config
+        }
+        # All the rest into 'options'
+        options_data_for_entry = import_config
+
+        # Optional validation against FULL_OPTIONS_SCHEMA to verify the yaml data
+        try:
+            validated_options = FULL_OPTIONS_SCHEMA(options_data_for_entry)
+        except vol.Invalid as exc:
+            _LOGGER.error(f"Validation error during YAML import for '{instance_name}': {exc}")
+            return self.async_abort(reason="invalid_yaml_config")
+
+        # Create ConfigEntry with 'title' as the name within the UI
+        return self.async_create_entry(
+            title=instance_name,
+            data=config_data_for_entry,
+            options=validated_options,
+        )
+
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """
         Handle the initial step.
@@ -395,6 +433,12 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 )
 
             instance_name = user_input.get(SC_CONF_NAME, "")
+
+            # Check for already existing entries
+            for entry in self.hass.config_entries.async_entries(DOMAIN):
+                if entry.data.get(SC_CONF_NAME) == instance_name:
+                    errors = {"base": "already_configured"}
+                    return self.async_show_form(step_id="user", data_schema=STEP_MINIMAL_KONFIGURATION, errors=errors)
 
             # Immutable configuration data, not available within OptionsFlow
             config_data_for_entry = {
