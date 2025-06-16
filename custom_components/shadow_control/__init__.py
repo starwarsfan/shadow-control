@@ -7,6 +7,8 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Optional, Callable, Awaitable
 
+import cv
+import vol
 from homeassistant.components.cover import CoverEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -40,6 +42,100 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["sensor"]
 
+YAML_CONFIG_SCHEMA = vol.Schema({
+    vol.Required(SC_CONF_NAME): cv.string, # Name ist hier erforderlich und einzigartig
+    vol.Required(TARGET_COVER_ENTITY_ID): vol.All(cv.ensure_list, [cv.entity_id]),
+    vol.Optional(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value, default=-90): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value, default=90): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value, default=90): vol.Coerce(float),
+    vol.Optional(DEBUG_ENABLED, default=False): cv.boolean,
+    vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.SLAT_WIDTH_STATIC.value, default=95): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.SLAT_DISTANCE_STATIC.value, default=67): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.SLAT_ANGLE_OFFSET_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=5): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, default=5): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value, default=1000): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, default="mode1"): vol.In([
+        "mode1",
+        "mode2",
+    ]),
+    vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, default=0): vol.Coerce(float),
+    vol.Optional(SCDynamicInput.LOCK_ANGLE_ENTITY.value, default=0): vol.Coerce(float),
+    vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value, default="no_restriction"): vol.In([
+        "no_restriction",
+        "only_close",
+        "only_open",
+    ]),
+    vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value, default="no_restriction"): vol.In([
+        "no_restriction",
+        "only_close",
+        "only_open",
+    ]),
+    vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): cv.entity_id,
+    vol.Optional(SCShadowInput.CONTROL_ENABLED_STATIC.value, default=True): cv.boolean,
+    vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value): cv.entity_id,
+    vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_STATIC.value, default=50000): vol.Coerce(float),
+    vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value): cv.entity_id,
+    vol.Optional(SCShadowInput.AFTER_SECONDS_STATIC.value, default=15): vol.Coerce(float),
+    vol.Optional(SCShadowInput.AFTER_SECONDS_ENTITY.value): cv.entity_id,
+    vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): vol.Coerce(float),
+    vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value): cv.entity_id,
+    vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value, default=100): vol.Coerce(float),
+    vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value): cv.entity_id,
+    vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, default=15): vol.Coerce(float),
+    vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value): cv.entity_id,
+    vol.Optional(SCShadowInput.SHUTTER_OPEN_SECONDS_STATIC.value, default=15): vol.Coerce(float),
+    vol.Optional(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value): cv.entity_id,
+    vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value): cv.entity_id,
+    vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value): cv.entity_id,
+    vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDawnInput.CONTROL_ENABLED_STATIC.value, default=True): cv.boolean,
+    vol.Optional(SCDawnInput.CONTROL_ENABLED_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDawnInput.BRIGHTNESS_THRESHOLD_STATIC.value, default=500): vol.Coerce(float),
+    vol.Optional(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDawnInput.AFTER_SECONDS_STATIC.value, default=15): vol.Coerce(float),
+    vol.Optional(SCDawnInput.AFTER_SECONDS_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): vol.Coerce(float),
+    vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value, default=100): vol.Coerce(float),
+    vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, default=15): vol.Coerce(float),
+    vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDawnInput.SHUTTER_OPEN_SECONDS_STATIC.value, default=15): vol.Coerce(float),
+    vol.Optional(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value): cv.entity_id,
+    vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value): cv.entity_id,
+
+})
+
+CONFIG_SCHEMA = vol.Schema(
+    {
+        DOMAIN: vol.All(cv.ensure_list, [YAML_CONFIG_SCHEMA]) # Allow multiple instances below domain key
+    },
+    extra=vol.ALLOW_EXTRA, # Allow different sections within configuration.yaml
+)
+
 # Setup entry point, which is called at every start of Home Assistant.
 # Not specific for config entries.
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -52,6 +148,25 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     # Will be used to store things like the ShadowControlManager instances.
     # hass.data[DOMAIN_DATA_MANAGERS] will be a dictionary to map ConfigEntry IDs to manager instances.
     hass.data.setdefault(DOMAIN_DATA_MANAGERS, {})
+
+    if DOMAIN in config:
+        for entry_config in config[DOMAIN]:
+            # Import yaml configuration into ConfigEntry, separated the same way than
+            # on the ConfigFlow: Name in 'data', rest in 'options'
+
+            instance_name = entry_config.pop(SC_CONF_NAME) # Remove name from yaml configuration
+
+            hass.async_create_task(
+                hass.config_entries.flow.async_init(
+                    DOMAIN,
+                    context={"source": "import"},
+                    data={
+                        SC_CONF_NAME: instance_name, # Name into the 'data' section
+                        # Pass the dictionary which contains the options for the ConfigEntry
+                        **entry_config # Yaml content without a name will be options
+                    },
+                )
+            )
 
     _LOGGER.info(f"[{DOMAIN}] Integration 'Shadow Control' base setup complete.")
     return True
