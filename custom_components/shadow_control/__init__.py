@@ -7,8 +7,7 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Optional, Callable, Awaitable
 
-import cv
-import vol
+import voluptuous as vol
 from homeassistant.components.cover import CoverEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -16,6 +15,7 @@ from homeassistant.const import (
     STATE_ON, EVENT_HOMEASSISTANT_STARTED
 )
 from homeassistant.core import HomeAssistant, callback, Event, State
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.event import async_track_state_change_event, async_call_later
 from homeassistant.helpers.typing import ConfigType
