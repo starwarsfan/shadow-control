@@ -73,6 +73,8 @@
       * [Dämmerung: Durchsichtswinkel](#dämmerung-durchsichtswinkel)
       * [Dämmerung: Höhe nach Beschattung](#dämmerung-höhe-nach-beschattung)
       * [Dämmerung: Lamellenwinkel nach Beschattung](#dämmerung-lamellenwinkel-nach-beschattung)
+  * [Konfiguration via yaml](#konfiguration-via-yaml)
+    * [yaml Beispielkonfiguration](#yaml-beispielkonfiguration)
 
 # Einführung
 
@@ -470,3 +472,100 @@ Wenn keine Dämmerungssituation mehr vorliegt, wird der Behang auf die hier in %
 
 Wenn keine Dämmerungssituation mehr vorliegt, wird der Behang auf den hier in % konfigurierten Lamellenwinkel gefahren. Standardwert: 0
 
+## Konfiguration via yaml
+
+Es ist möglich, die **Shadow Control** Instanzen via yaml zu konfigurieren. Dazu müssen die entsprechenden Konfigurationen im `configuration.yaml` einmalig eingetragen und Home Assistant neu gestartet werden. **Shadow Control** wird die yaml-Konfiguration einlesen und entsprechende Instanzen anlegen. Diese Instanzen können im Anschluss via ConfigFlow bearbeitet werden. Änderungen an der yaml-Konfiguration werden nicht übernommen, da die gesamte Konfiguration via Home Assistant ConfigFlow abgebildet wird. Sollen die yaml-Konfigurationen dennoch neu eingelesen werden, müssen die entsprechenden **Shadow Control** Instanzen zunächst gelöscht und dann Home Assistant neu gestartet werden.
+
+### yaml Beispielkonfiguration
+
+Die Einträge der Konfiguration folgen den oben in der Dokumentation jeweils genannten Schlüsselwörtern. Nicht verwendete Schlüsselwörter müssen auskommentiert oder entfernt werden.
+
+```yaml
+shadow_control:
+  - name: "Büro West"
+    debug_enabled: false
+    target_cover_entity:
+      - cover.fenster_buro_west
+
+    # =======================================================================
+    # Dynamic configuration inputs
+    brightness_entity: input_number.d01_brightness
+    #brightness_dawn_entity: input_number.d02_brightness_dawn
+    sun_elevation_entity: input_number.d03_sun_elevation
+    sun_azimuth_entity: input_number.d04_sun_azimuth
+    lock_integration_entity: input_boolean.d07_lock_integration
+    lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
+    lock_height_static: 0
+    lock_angle_static: 0
+    movement_restriction_height_entity: no_restriction
+    movement_restriction_angle_entity: no_restriction
+    enforce_positioning_entity: input_boolean.d13_enforce_positioning
+
+    # =======================================================================
+    # General facade configuration
+    facade_azimuth_static: 180
+    facade_offset_sun_in_static: -90
+    facade_offset_sun_out_static: 90
+    facade_elevation_sun_min_static: 0
+    facade_elevation_sun_max_static: 90
+    facade_slat_width_static: 95
+    facade_slat_distance_static: 67
+    facade_slat_angle_offset_static: 0
+    facade_slat_min_angle_static: 0
+    facade_shutter_stepping_height_static: 5
+    facade_shutter_stepping_angle_static: 5
+    # Either 'mode1' or 'mode2'
+    facade_shutter_type_static: mode1
+    facade_light_strip_width_static: 0
+    facade_shutter_height_static: 1000
+    facade_neutral_pos_height_static: 0
+    facade_neutral_pos_angle_static: 0
+    facade_modification_tolerance_height_static: 8
+    facade_modification_tolerance_angle_static: 5
+
+    # =======================================================================
+    # Shadow configuration
+    #shadow_control_enabled_entity:
+    shadow_control_enabled_static: true
+    #shadow_brightness_threshold_entity:
+    shadow_brightness_threshold_static: 50000
+    #shadow_after_seconds_entity:
+    shadow_after_seconds_static: 15
+    #shadow_shutter_max_height_entity:
+    shadow_shutter_max_height_static: 100
+    #shadow_shutter_max_angle_entity:
+    shadow_shutter_max_angle_static: 100
+    #shadow_shutter_look_through_seconds_entity:
+    shadow_shutter_look_through_seconds_static: 15
+    #shadow_shutter_open_seconds_entity:
+    shadow_shutter_open_seconds_static: 15
+    #shadow_shutter_look_through_angle_entity:
+    shadow_shutter_look_through_angle_static: 0
+    #shadow_height_after_sun_entity:
+    shadow_height_after_sun_static: 0
+    #shadow_angle_after_sun_entity:
+    shadow_angle_after_sun_static: 0
+
+    # =======================================================================
+    # Dawn configuration
+    #dawn_control_enabled_entity:
+    dawn_control_enabled_static: true
+    #dawn_brightness_threshold_entity:
+    dawn_brightness_threshold_static: 500
+    #dawn_after_seconds_entity:
+    dawn_after_seconds_static: 15
+    #dawn_shutter_max_height_entity:
+    dawn_shutter_max_height_static: 100
+    #dawn_shutter_max_angle_entity:
+    dawn_shutter_max_angle_static: 100
+    #dawn_shutter_look_through_seconds_entity:
+    dawn_shutter_look_through_seconds_static: 15
+    #dawn_shutter_open_seconds_entity:
+    dawn_shutter_open_seconds_static: 15
+    #dawn_shutter_look_through_angle_entity:
+    dawn_shutter_look_through_angle_static: 50
+    #dawn_height_after_dawn_entity:
+    dawn_height_after_dawn_static: 0
+    #dawn_angle_after_dawn_entity:
+    dawn_angle_after_dawn_static: 0
+```
