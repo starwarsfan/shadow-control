@@ -131,8 +131,8 @@
           "shutter_current_angle_entity": "Aktueller Behangwinkel",
           "lock_integration_entity": "Integration sperren",
           "lock_integration_with_position_entity": "Integration mit Zwangsposition sperren",
-          "lock_height_entity": "Zwangsposition Höhe",
-          "lock_angle_entity": "Zwangsposition Lamellenwinkel",
+          "lock_height_static": "Zwangsposition Höhe",
+          "lock_angle_static": "Zwangsposition Lamellenwinkel",
           "movement_restriction_height_entity": "Höhenveränderung einschränken",
           "movement_restriction_angle_entity": "Winkelveränderung einschränken",
           "enforce_positioning_entity": "Zwangspositionierung auslösen"
@@ -146,8 +146,8 @@
           "shutter_current_angle_entity": "Aktueller Lamellenwinkel als Rückmeldeobjekt von Aktor.",
           "lock_integration_entity": "Sperren der gesamten Integration, so dass keine Behangpositionierung erfolgt.",
           "lock_integration_with_position_entity": "Sperren der gesamten Integration mit Anfahren einer Zwangsposition",
-          "lock_height_entity": "Anzufahrende Höhe bei Zwangsposition",
-          "lock_angle_entity": "Anzufahrender Lamellenwinkel bei Zwangsposition",
+          "lock_height_static": "Anzufahrende Höhe bei Zwangsposition",
+          "lock_angle_static": "Anzufahrender Lamellenwinkel bei Zwangsposition",
           "movement_restriction_height_entity": "Einschränkung der Höhenpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
           "movement_restriction_angle_entity": "Einschränkung der Winkelpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
           "enforce_positioning_entity": "Wird dieser Eingang mit 'on' beschrieben, wird erzwungen, den Behang immer auf die aktuell gültige Position zu fahren."

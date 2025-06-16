@@ -155,10 +155,10 @@ STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema({
     vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value): selector.EntitySelector(
         selector.EntitySelectorConfig(domain="input_boolean")
     ),
-    vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, default=0): selector.NumberSelector(
+    vol.Optional(SCDynamicInput.LOCK_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
-    vol.Optional(SCDynamicInput.LOCK_ANGLE_ENTITY.value, default=0): selector.NumberSelector(
+    vol.Optional(SCDynamicInput.LOCK_ANGLE_STATIC.value, default=0): selector.NumberSelector(
         selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
     ),
     vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value, default="no_restriction"): selector.SelectSelector(

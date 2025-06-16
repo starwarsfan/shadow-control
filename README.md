@@ -322,12 +322,12 @@ If the input is set to 'on,' the integration gets locked. That means the integra
 This input has precedence over 'lock_integration.' If both lock inputs are set 'on,' the shutter will be moved to the configured lock position.
 
 #### Lock height
-`lock_height_entity`
+`lock_height_static`
 
 Height in %, which should be set if integration gets locked by 'lock_integration_with_position.' 
 
 #### Lock angle
-`lock_angle_entity`
+`lock_angle_static`
 
 Angle in %, which should be set if integration gets locked by 'lock_integration_with_position.'
 

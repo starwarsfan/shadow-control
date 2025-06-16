@@ -322,12 +322,12 @@ Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration inte
 Dieser Eingang hat Vorrang vor [Integration sperren](#integration-sperren). Werden beide Sperren auf 'on' gesetzt, wird die Zwangsposition angefahren.
 
 #### Sperrhöhe
-`lock_height_entity`
+`lock_height_static`
 
 Anzufahrende Höhe in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
 #### Sperrwinkel
-`lock_angle_entity`
+`lock_angle_static`
 
 Anzufahrender Lamellenwinkel in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 

@@ -131,8 +131,8 @@
           "shutter_current_angle_entity": "Current shutter slat angle",
           "lock_integration_entity": "Lock integration",
           "lock_integration_with_position_entity": "Lock integration with enforced position",
-          "lock_height_entity": "Enforced position height",
-          "lock_angle_entity": "Enforced position slat angle",
+          "lock_height_static": "Enforced position height",
+          "lock_angle_static": "Enforced position slat angle",
           "movement_restriction_height_entity": "Restrict height movement",
           "movement_restriction_angle_entity": "Restrict angle movement",
           "enforce_positioning_entity": "Enforce shutter positioning"
@@ -146,8 +146,8 @@
           "shutter_current_angle_entity": "Current shutter angle as the returned value from the used actor.",
           "lock_integration_entity": "Lock the whole integration to prevent any shutter position modification.",
           "lock_integration_with_position_entity": "Lock the whole integration by moving the shutter to a dedicated position.",
-          "lock_height_entity": "Enforced lock shutter height.",
-          "lock_angle_entity": "Enforced lock shutter slat angle.",
+          "lock_height_static": "Enforced lock shutter height.",
+          "lock_angle_static": "Enforced lock shutter slat angle.",
           "movement_restriction_height_entity": "Restrict height positioning to prevent redundant shutter movements e. g. between shadow and dawn.",
           "movement_restriction_angle_entity": "Restrict angle positioning to prevent redundant shutter movements e. g. between shadow and dawn.",
           "enforce_positioning_entity": "If the connected entity is switched to 'on', the positioning of the shutter will be enforced."

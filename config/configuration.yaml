@@ -51,8 +51,8 @@ input_select:
 #      shutter_current_angle_entity: input_number.d06_shutter_current_angle
 #      lock_integration_entity: input_boolean.d07_lock_integration
 #      lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
-#      lock_height_entity: input_number.d09_lock_height
-#      lock_angle_entity: input_number.d10_lock_angle
+#      lock_height_static: input_number.d09_lock_height
+#      lock_angle_static: input_number.d10_lock_angle
 #      modification_tolerance_height_entity: input_number.d11_modification_tolerance_height
 #      modification_tolerance_angle_entity: input_number.d12_modification_tolerance_angle
 #

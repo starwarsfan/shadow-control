@@ -73,8 +73,8 @@ YAML_CONFIG_SCHEMA = vol.Schema({
     vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): cv.entity_id,
     vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): cv.entity_id,
     vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, default=0): vol.Coerce(float),
-    vol.Optional(SCDynamicInput.LOCK_ANGLE_ENTITY.value, default=0): vol.Coerce(float),
+    vol.Optional(SCDynamicInput.LOCK_HEIGHT_STATIC.value, default=0): vol.Coerce(float),
+    vol.Optional(SCDynamicInput.LOCK_ANGLE_STATIC.value, default=0): vol.Coerce(float),
     vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value, default="no_restriction"): vol.In([
         "no_restriction",
         "only_close",
@@ -394,8 +394,8 @@ class ShadowControlManager:
         self._dynamic_config.shutter_current_angle = config.get(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value)
         self._dynamic_config.lock_integration = config.get(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value)
         self._dynamic_config.lock_integration_with_position = config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value)
-        self._dynamic_config.lock_height = config.get(SCDynamicInput.LOCK_HEIGHT_ENTITY.value)
-        self._dynamic_config.lock_angle = config.get(SCDynamicInput.LOCK_ANGLE_ENTITY.value)
+        self._dynamic_config.lock_height = config.get(SCDynamicInput.LOCK_HEIGHT_STATIC.value)
+        self._dynamic_config.lock_angle = config.get(SCDynamicInput.LOCK_ANGLE_STATIC.value)
         self._dynamic_config.movement_restriction_height = config.get(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value)
         self._dynamic_config.movement_restriction_angle = config.get(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value)
         self._dynamic_config.enforce_positioning_entity = config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value)
@@ -717,19 +717,18 @@ class ShadowControlManager:
         self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, False, bool)
         self._current_lock_state = self._calculate_lock_state()
 
-        # Here, lock_height_entity and lock_angle_entity can be static defaults (0.0) or actual entity IDs.
         # Check if the stored value is an entity ID (string) or a static number.
-        lock_height_config_value = self._options.get(SCDynamicInput.LOCK_HEIGHT_ENTITY.value)
+        lock_height_config_value = self._options.get(SCDynamicInput.LOCK_HEIGHT_STATIC.value)
         if isinstance(lock_height_config_value, (int, float)):
             self._dynamic_config.lock_height = lock_height_config_value
         else: # Assume it's an entity ID if not a number
-            self._dynamic_config.lock_height = self._get_entity_state_value(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, 0.0, float)
+            self._dynamic_config.lock_height = self._get_entity_state_value(SCDynamicInput.LOCK_HEIGHT_STATIC.value, 0.0, float)
 
-        lock_angle_config_value = self._options.get(SCDynamicInput.LOCK_ANGLE_ENTITY.value)
+        lock_angle_config_value = self._options.get(SCDynamicInput.LOCK_ANGLE_STATIC.value)
         if isinstance(lock_angle_config_value, (int, float)):
             self._dynamic_config.lock_angle = lock_angle_config_value
         else: # Assume it's an entity ID if not a number
-            self._dynamic_config.lock_angle = self._get_entity_state_value(SCDynamicInput.LOCK_ANGLE_ENTITY.value, 0.0, float)
+            self._dynamic_config.lock_angle = self._get_entity_state_value(SCDynamicInput.LOCK_ANGLE_STATIC.value, 0.0, float)
 
         # Movement restrictions (Enum values)
         self._dynamic_config.movement_restriction_height = self._get_enum_value(
