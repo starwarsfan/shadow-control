@@ -130,6 +130,8 @@ class ShadowControlSensor(SensorEntity):
             return self._manager._current_lock_state.value if hasattr(self._manager._current_lock_state, 'value') else self._manager._current_lock_state
         elif self._sensor_type == SensorEntries.NEXT_SHUTTER_MODIFICATION.value:
             return self._manager._next_modification_timestamp
+        elif self._sensor_type == SensorEntries.IS_IN_SUN.value:
+            return self._manager._is_in_sun
         return None
 
     async def async_added_to_hass(self) -> None:
