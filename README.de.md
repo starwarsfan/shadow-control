@@ -73,6 +73,14 @@
       * [Dämmerung: Durchsichtswinkel](#dämmerung-durchsichtswinkel)
       * [Dämmerung: Höhe nach Beschattung](#dämmerung-höhe-nach-beschattung)
       * [Dämmerung: Lamellenwinkel nach Beschattung](#dämmerung-lamellenwinkel-nach-beschattung)
+* [Status und Rückgabewerte](#status-und-rückgabewerte)
+  * [Zielhöhe](#zielhöhe)
+  * [Zielwinkel](#zielwinkel)
+  * [Zielwinkel in Grad](#zielwinkel-in-grad)
+  * [Aktueller Status](#aktueller-status)
+  * [Sperr-Status](#sperr-status)
+  * [Nächste Behangmodifikation](#nächste-behangmodifikation)
+  * [In der Sonne](#in-der-sonne)
 
 # Einführung
 
@@ -470,3 +478,27 @@ Wenn keine Dämmerungssituation mehr vorliegt, wird der Behang auf die hier in %
 
 Wenn keine Dämmerungssituation mehr vorliegt, wird der Behang auf den hier in % konfigurierten Lamellenwinkel gefahren. Standardwert: 0
 
+# Status und Rückgabewerte
+
+Jede Instanz von **Shadow Control** legt in Home Assistant ein Gerät an, unter dem die folgenden Entitäten zur weiteren Verwendung zur Verfügung stehen:
+
+## Zielhöhe
+`target_height`
+
+## Zielwinkel
+`target_angle`
+
+## Zielwinkel in Grad
+`target_angle_degrees`
+
+## Aktueller Status
+`current_state`
+
+## Sperr-Status
+`lock_state`
+
+## Nächste Behangmodifikation
+`next_shutter_modification`
+
+## In der Sonne
+`is_in_sun`

@@ -70,9 +70,17 @@
       * [Dawn max angle](#dawn-max-angle)
       * [Dawn look through seconds](#dawn-look-through-seconds)
       * [Dawn open seconds](#dawn-open-seconds)
-      * [dawn_look_through_angle](#dawn_look_through_angle)
-      * [after_dawn_height](#after_dawn_height)
-      * [after_dawn_angle](#after_dawn_angle)
+      * [Dawn look through angle](#dawn-look-through-angle)
+      * [After dawn height](#after-dawn-height)
+      * [After dawn angle](#after-dawn-angle)
+* [State and return values](#state-and-return-values)
+  * [Target height](#target-height)
+  * [Target angle](#target-angle)
+  * [Target angle (degrees)](#target-angle-degrees)
+  * [Current state](#current-state)
+  * [Lock state](#lock-state)
+  * [Next shutter modification](#next-shutter-modification)
+  * [Is in the Sun](#is-in-the-sun)
 
 # Introduction
 
@@ -452,18 +460,42 @@ If brightness exceeds the value of `dawn_brightness_threshold`, the shutter slat
 
 If brightness stays above the value of `dawn_brightness_threshold`, the shutter will be fully opened after the configured number of seconds. Default: 3600
 
-#### dawn_look_through_angle
+#### Dawn look through angle
 `dawn_shutter_look_through_angle_static` / `dawn_shutter_look_through_angle_entity`
 
 This is the shutter slat angle in %, which should be used at the "look through" position. Default: 0
 
-#### after_dawn_height
+#### After dawn height
 `dawn_height_after_dawn_static` / `dawn_height_after_dawn_entity`
 
 This is the shutter height in %, which should be set after the shadow position. Default: 0
 
-#### after_dawn_angle
+#### After dawn angle
 `dawn_angle_after_dawn_static` / `dawn_angle_after_dawn_entity`
 
 This is the shutter angle in %, which should be set after the shadow position. Default: 0
 
+# State and return values
+
+Each instance of **Shadow Control** creates a device within Home Assistant, which contains the following entities for further usage: 
+
+## Target height
+`target_height`
+
+## Target angle
+`target_angle`
+
+## Target angle (degrees)
+`target_angle_degrees`
+
+## Current state
+`current_state`
+
+## Lock state
+`lock_state`
+
+## Next shutter modification
+`next_shutter_modification`
+
+## Is in the Sun
+`is_in_sun`
