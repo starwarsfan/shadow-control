@@ -351,7 +351,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """
         Migrate old configuration
         """
-        _LOGGER.debug(f"[{DOMAIN}] Migrating config entry from version {entry.version} to {self.VERSION}")
+        _LOGGER.debug(f"Migrating config entry from version {entry.version} to {self.VERSION}")
 
         new_data = entry.data.copy()
         new_options = entry.options.copy()
@@ -363,7 +363,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
             if old_lock_height_key in new_options:
                 new_options[SCDynamicInput.LOCK_HEIGHT_STATIC] = new_options.pop(old_lock_height_key)
-                _LOGGER.debug(f"[{DOMAIN}] Migrated: Renamed '{old_lock_height_key}' to '{SCDynamicInput.LOCK_HEIGHT_STATIC}'.")
+                _LOGGER.debug(f"Migrated: Renamed '{old_lock_height_key}' to '{SCDynamicInput.LOCK_HEIGHT_STATIC}'.")
             else:
                 # If the old key was not found, make sure it is there after migration.
                 if SCDynamicInput.LOCK_HEIGHT_STATIC not in new_options:
@@ -371,7 +371,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
             if old_lock_angle_key in new_options:
                 new_options[SCDynamicInput.LOCK_ANGLE_STATIC] = new_options.pop(old_lock_angle_key)
-                _LOGGER.debug(f"[{DOMAIN}] Migrated: Renamed '{old_lock_angle_key}' to '{SCDynamicInput.LOCK_ANGLE_STATIC}'.")
+                _LOGGER.debug(f"Migrated: Renamed '{old_lock_angle_key}' to '{SCDynamicInput.LOCK_ANGLE_STATIC}'.")
             else:
                 # If the old key was not found, make sure it is there after migration.
                 if SCDynamicInput.LOCK_ANGLE_STATIC not in new_options:
@@ -380,9 +380,9 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # Validate migrated options
             try:
                 validated_options = FULL_OPTIONS_SCHEMA(new_options)
-                _LOGGER.debug(f"[{DOMAIN}] Migrated options successfully validated.")
+                _LOGGER.debug(f"Migrated options successfully validated.")
             except vol.Invalid as exc:
-                _LOGGER.error(f"[{DOMAIN}] Validation failed after migration to version {self.VERSION} for entry {entry.entry_id}: {exc}")
+                _LOGGER.error(f"Validation failed after migration to version {self.VERSION} for entry {entry.entry_id}: {exc}")
                 return False # Migration failed
 
             # Update data and options with migrated values
@@ -390,7 +390,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             entry.data = new_data
             entry.options = validated_options
 
-            _LOGGER.info(f"[{DOMAIN}] Config entry successfully migrated to version {entry.version}")
+            _LOGGER.info(f"Config entry successfully migrated to version {entry.version}")
             return True
 
         # Migrate v2 to v3
@@ -398,7 +398,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         #    old_lock_height_key = "lock_height_entity"
         #    old_lock_angle_key = "lock_angle_entity"
 
-        _LOGGER.error(f"[{DOMAIN}] Unknown config entry version {entry.version} for migration. This should not happen.")
+        _LOGGER.error(f"Unknown config entry version {entry.version} for migration. This should not happen.")
         return False # Migration failed for an unknown or too high version
 
     def __init__(self):
