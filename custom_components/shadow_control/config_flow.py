@@ -391,7 +391,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         #    old_lock_angle_key = "lock_angle_entity"
 
         _LOGGER.error(f"[{DOMAIN}] Unknown config entry version {entry.version} for migration. This should not happen.")
-        return False # Migration fehlgeschlagen für unbekannte oder zu hohe Version
+        return False # Migration failed for an unknown or too high version
 
     def __init__(self):
         """
