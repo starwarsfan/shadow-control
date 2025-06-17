@@ -9,7 +9,11 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.config_entries import ConfigEntry
 
-from .const import DOMAIN, DOMAIN_DATA_MANAGERS
+from .const import (
+    DOMAIN,
+    DOMAIN_DATA_MANAGERS,
+    SensorEntries
+)
 from . import ShadowControlManager
 
 _LOGGER = logging.getLogger(__name__)
@@ -33,12 +37,13 @@ async def async_setup_entry(
     _LOGGER.debug(f"[{DOMAIN}] Creating sensors for manager: {manager._name} (from entry {config_entry.entry_id})")
 
     entities_to_add = [
-        ShadowControlSensor(manager, config_entry.entry_id, "target_height"),
-        ShadowControlSensor(manager, config_entry.entry_id, "target_angle"),
-        ShadowControlSensor(manager, config_entry.entry_id, "target_angle_degrees"),
-        ShadowControlSensor(manager, config_entry.entry_id, "current_state"),
-        ShadowControlSensor(manager, config_entry.entry_id, "lock_state"),
-        ShadowControlSensor(manager, config_entry.entry_id, "next_shutter_modification"),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_HEIGHT.value),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_ANGLE.value),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_ANGLE_DEGREES.value),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.CURRENT_STATE.value),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.LOCK_STATE.value),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.NEXT_SHUTTER_MODIFICATION.value),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.IS_IN_SUN.value),
     ]
 
     if entities_to_add:
@@ -52,7 +57,7 @@ class ShadowControlSensor(SensorEntity):
     Represents a Shadow Control sensor.
     """
 
-    def __init__(self, manager: ShadowControlManager, entry_id: str, sensor_type: str) -> None: # <--- HIER ÄNDERN
+    def __init__(self, manager: ShadowControlManager, entry_id: str, sensor_type: SensorEntries) -> None: # <--- HIER ÄNDERN
         """
         Initialize the sensor.
         """
@@ -71,27 +76,29 @@ class ShadowControlSensor(SensorEntity):
         self._attr_name = f"{manager._name} Shadow Control {sensor_type.replace('_', ' ').title()}"
 
         # Define attributes based on the sensor type
-        if sensor_type == "target_height":
+        if sensor_type == SensorEntries.TARGET_HEIGHT.value:
             self._attr_native_unit_of_measurement = "%"
             self._attr_icon = "mdi:pan-vertical"
             self._attr_state_class = "measurement"
-        elif sensor_type == "target_angle":
+        elif sensor_type == SensorEntries.TARGET_ANGLE.value:
             self._attr_native_unit_of_measurement = "%"
             self._attr_icon = "mdi:rotate-3d"
             self._attr_state_class = "measurement"
-        elif sensor_type == "target_angle_degrees":
+        elif sensor_type == SensorEntries.TARGET_ANGLE_DEGREES.value:
             self._attr_native_unit_of_measurement = "°"
             self._attr_icon = "mdi:rotate-3d"
             self._attr_state_class = "measurement"
-        elif sensor_type == "current_state":
+        elif sensor_type == SensorEntries.CURRENT_STATE.value:
             self._attr_icon = "mdi:state-machine"
-        elif sensor_type == "lock_state":
+        elif sensor_type == SensorEntries.LOCK_STATE.value:
             self._attr_icon = "mdi:lock-open-check"
-        elif sensor_type == "next_shutter_modification":
+        elif sensor_type == SensorEntries.NEXT_SHUTTER_MODIFICATION.value:
             self._attr_icon = "mdi:clock-end"
             self._attr_device_class = SensorDeviceClass.TIMESTAMP
             self._attr_state_class = None
             self._attr_native_unit_of_measurement = None
+        elif sensor_type == SensorEntries.IS_IN_SUN.value:
+            self._attr_icon = "mdi:sun-angle-outline"
 
         # Connect with device (important for UI)
         self._attr_device_info = DeviceInfo(
@@ -109,19 +116,19 @@ class ShadowControlSensor(SensorEntity):
         # Access the internal values of the manager.
         # Make sure your manager updates these attributes (`_calculated_shutter_height`, etc.)
         # and calls the dispatcher signal when they change.
-        if self._sensor_type == "target_height":
+        if self._sensor_type == SensorEntries.TARGET_HEIGHT.value:
             return self._manager._calculated_shutter_height
-        elif self._sensor_type == "target_angle":
+        elif self._sensor_type == SensorEntries.TARGET_ANGLE.value:
             return self._manager._calculated_shutter_angle
-        elif self._sensor_type == "target_angle_degrees":
+        elif self._sensor_type == SensorEntries.TARGET_ANGLE_DEGREES.value:
             return self._manager._calculated_shutter_angle_degrees
-        elif self._sensor_type == "current_state":
+        elif self._sensor_type == SensorEntries.CURRENT_STATE.value:
             # Assuming _current_shutter_state is an Enum.
             return self._manager._current_shutter_state.value if hasattr(self._manager._current_shutter_state, 'value') else self._manager._current_shutter_state
-        elif self._sensor_type == "lock_state":
+        elif self._sensor_type == SensorEntries.LOCK_STATE.value:
             # Assuming _current_lock_state is an Enum.
             return self._manager._current_lock_state.value if hasattr(self._manager._current_lock_state, 'value') else self._manager._current_lock_state
-        elif self._sensor_type == "next_shutter_modification":
+        elif self._sensor_type == SensorEntries.NEXT_SHUTTER_MODIFICATION.value:
             return self._manager._next_modification_timestamp
         return None
 
