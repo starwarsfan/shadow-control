@@ -344,8 +344,54 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     Handle a config flow for Shadow Control.
     """
 
-    VERSION = 1
+    VERSION = 2
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
+
+    async def async_migrate_entry(self, entry: config_entries.ConfigEntry):
+        """
+        Migrate old configuration
+        """
+        _LOGGER.debug(f"[{DOMAIN}] Migrating config entry from version {entry.version} to {self.VERSION}")
+
+        new_data = entry.data.copy()
+        new_options = entry.options.copy()
+
+        # Migrate v1 to v2
+        if entry.version == 1:
+            old_lock_height_key = "lock_height_entity"
+            old_lock_angle_key = "lock_angle_entity"
+
+            if old_lock_height_key in new_options:
+                new_options[SCDynamicInput.LOCK_HEIGHT_STATIC] = new_options.pop(old_lock_height_key)
+                _LOGGER.debug(f"[{DOMAIN}] Migrated: Renamed '{old_lock_height_key}' to '{SCDynamicInput.LOCK_HEIGHT_STATIC}'.")
+            else:
+                # If the old key was not found, make sure it is there after migration.
+                if SCDynamicInput.LOCK_HEIGHT_STATIC not in new_options:
+                    new_options[SCDynamicInput.LOCK_HEIGHT_STATIC] = 0 # Default value
+
+            if old_lock_angle_key in new_options:
+                new_options[SCDynamicInput.LOCK_ANGLE_STATIC] = new_options.pop(old_lock_angle_key)
+                _LOGGER.debug(f"[{DOMAIN}] Migrated: Renamed '{old_lock_angle_key}' to '{SCDynamicInput.LOCK_ANGLE_STATIC}'.")
+            else:
+                # If the old key was not found, make sure it is there after migration.
+                if SCDynamicInput.LOCK_ANGLE_STATIC not in new_options:
+                    new_options[SCDynamicInput.LOCK_ANGLE_STATIC] = 0 # Default value
+
+            # Update data and options with migrated values
+            entry.version = self.VERSION
+            entry.data = new_data
+            entry.options = new_options
+
+            _LOGGER.info(f"[{DOMAIN}] Config entry successfully migrated to version {entry.version}")
+            return True
+
+        # Migrate v2 to v3
+        #if entry.version == 2:
+        #    old_lock_height_key = "lock_height_entity"
+        #    old_lock_angle_key = "lock_angle_entity"
+
+        _LOGGER.error(f"[{DOMAIN}] Unknown config entry version {entry.version} for migration. This should not happen.")
+        return False # Migration fehlgeschlagen für unbekannte oder zu hohe Version
 
     def __init__(self):
         """
