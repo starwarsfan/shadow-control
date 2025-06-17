@@ -377,10 +377,18 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 if SCDynamicInput.LOCK_ANGLE_STATIC not in new_options:
                     new_options[SCDynamicInput.LOCK_ANGLE_STATIC] = 0 # Default value
 
+            # Validate migrated options
+            try:
+                validated_options = FULL_OPTIONS_SCHEMA(new_options)
+                _LOGGER.debug(f"[{DOMAIN}] Migrated options successfully validated.")
+            except vol.Invalid as exc:
+                _LOGGER.error(f"[{DOMAIN}] Validation failed after migration to version {self.VERSION} for entry {entry.entry_id}: {exc}")
+                return False # Migration failed
+
             # Update data and options with migrated values
             entry.version = self.VERSION
             entry.data = new_data
-            entry.options = new_options
+            entry.options = validated_options
 
             _LOGGER.info(f"[{DOMAIN}] Config entry successfully migrated to version {entry.version}")
             return True
