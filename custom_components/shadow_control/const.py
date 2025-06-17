@@ -147,3 +147,4 @@ class SensorEntries(Enum):
     CURRENT_STATE = "current_state"
     LOCK_STATE = "lock_state"
     NEXT_SHUTTER_MODIFICATION = "next_shutter_modification"
+    IS_IN_SUN = "is_in_sun"
