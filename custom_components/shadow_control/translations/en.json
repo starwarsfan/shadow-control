@@ -288,6 +288,31 @@
       "already_configured": "This entry is already configured."
     }
   },
+  "entity": {
+    "sensor": {
+      "sensor_target_height": {
+        "name": "Height"
+      },
+      "sensor_target_angle": {
+        "name": "Slat Angle"
+      },
+      "sensor_target_angle_degrees": {
+        "name": "Slat Angle (Degrees)"
+      },
+      "sensor_current_state": {
+        "name": "Current State"
+      },
+      "sensor_lock_state": {
+        "name": "Lock State"
+      },
+      "sensor_next_shutter_modification": {
+        "name": "Next Positioning"
+      },
+      "sensor_is_in_sun": {
+        "name": "Is in Sun"
+      }
+    }
+  },
   "selector": {
     "facade_shutter_type": {
       "options": {

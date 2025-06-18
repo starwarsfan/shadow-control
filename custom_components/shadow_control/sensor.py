@@ -9,7 +9,11 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.config_entries import ConfigEntry
 
-from .const import DOMAIN, DOMAIN_DATA_MANAGERS
+from .const import (
+    DOMAIN,
+    DOMAIN_DATA_MANAGERS,
+    SensorEntries
+)
 from . import ShadowControlManager
 
 _LOGGER = logging.getLogger(__name__)
@@ -33,12 +37,13 @@ async def async_setup_entry(
     _LOGGER.debug(f"[{DOMAIN}] Creating sensors for manager: {manager._name} (from entry {config_entry.entry_id})")
 
     entities_to_add = [
-        ShadowControlSensor(manager, config_entry.entry_id, "target_height"),
-        ShadowControlSensor(manager, config_entry.entry_id, "target_angle"),
-        ShadowControlSensor(manager, config_entry.entry_id, "target_angle_degrees"),
-        ShadowControlSensor(manager, config_entry.entry_id, "current_state"),
-        ShadowControlSensor(manager, config_entry.entry_id, "lock_state"),
-        ShadowControlSensor(manager, config_entry.entry_id, "next_shutter_modification"),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_HEIGHT),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_ANGLE),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_ANGLE_DEGREES),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.CURRENT_STATE),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.LOCK_STATE),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.NEXT_SHUTTER_MODIFICATION),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.IS_IN_SUN),
     ]
 
     if entities_to_add:
@@ -52,51 +57,56 @@ class ShadowControlSensor(SensorEntity):
     Represents a Shadow Control sensor.
     """
 
-    def __init__(self, manager: ShadowControlManager, entry_id: str, sensor_type: str) -> None: # <--- HIER ÄNDERN
+    def __init__(self, manager: ShadowControlManager, entry_id: str, sensor_entry_type: SensorEntries) -> None:
         """
         Initialize the sensor.
         """
         self._manager = manager
         self._entry_id = entry_id
-        self._sensor_type = sensor_type
 
-        # Unique ID must be stable and globally unique across HA
-        # The manager's name (which should be unique per config entry) is used here.
-        # It's good practice to base unique_id on entry_id as well for full uniqueness guarantee
-        # self._attr_unique_id = f"{DOMAIN}_{self._manager._name.lower().replace(' ', '_')}_{sensor_type}_{self._manager.hass.config_entries.async_get_entry(self._manager._config['name']).entry_id}" # Adjusted for better uniqueness based on entry_id
-        # Alternatively, if manager has access to its own entry_id:
-        self._attr_unique_id = f"{DOMAIN}_{self._entry_id}_{sensor_type}" # <--- HIER ÄNDERN
+        # Store the enum itself, not only the string representation
+        self._sensor_entry_type = sensor_entry_type
 
-        # Use the name from the config entry for the device/entity name
-        self._attr_name = f"{manager._name} Shadow Control {sensor_type.replace('_', ' ').title()}"
+        # Set _attr_has_entity_name true for naming convention
+        self._attr_has_entity_name = True
+
+        # Use stable unique_id based on entry_id and the sensor type
+        self._attr_unique_id = f"sc_{self._entry_id}_{self._sensor_entry_type.value}"
+
+        # Define key used within translation files based on enum values e.g. "target_height".
+        self._attr_translation_key = f"sensor_{self._sensor_entry_type.value}"
 
         # Define attributes based on the sensor type
-        if sensor_type == "target_height":
+        if self._sensor_entry_type == SensorEntries.TARGET_HEIGHT:
             self._attr_native_unit_of_measurement = "%"
             self._attr_icon = "mdi:pan-vertical"
             self._attr_state_class = "measurement"
-        elif sensor_type == "target_angle":
+        elif self._sensor_entry_type == SensorEntries.TARGET_ANGLE:
             self._attr_native_unit_of_measurement = "%"
             self._attr_icon = "mdi:rotate-3d"
             self._attr_state_class = "measurement"
-        elif sensor_type == "target_angle_degrees":
+        elif self._sensor_entry_type == SensorEntries.TARGET_ANGLE_DEGREES:
             self._attr_native_unit_of_measurement = "°"
             self._attr_icon = "mdi:rotate-3d"
             self._attr_state_class = "measurement"
-        elif sensor_type == "current_state":
+        elif self._sensor_entry_type == SensorEntries.CURRENT_STATE:
             self._attr_icon = "mdi:state-machine"
-        elif sensor_type == "lock_state":
+            # States for enums are usually handled directly by HA or via attribute in translation
+        elif self._sensor_entry_type == SensorEntries.LOCK_STATE:
             self._attr_icon = "mdi:lock-open-check"
-        elif sensor_type == "next_shutter_modification":
+            # States for enums are usually handled directly by HA or via attribute in translation
+        elif self._sensor_entry_type == SensorEntries.NEXT_SHUTTER_MODIFICATION:
             self._attr_icon = "mdi:clock-end"
             self._attr_device_class = SensorDeviceClass.TIMESTAMP
-            self._attr_state_class = None
+            self._attr_state_class = None # TIMESTAMP devices typically don't have a state class
             self._attr_native_unit_of_measurement = None
+        elif self._sensor_entry_type == SensorEntries.IS_IN_SUN:
+            self._attr_icon = "mdi:sun-angle-outline"
 
-        # Connect with device (important for UI)
+        # Connect with the device (important for UI)
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, self._entry_id)},
-            name=manager._name,
+            identifiers={(DOMAIN, self._entry_id)}, # Hier self._entry_id verwenden
+            name=manager._name, # Der Name der Instanz (aus der Konfiguration)
             model="Shadow Control",
             manufacturer="Yves Schumann",
         )
@@ -106,23 +116,22 @@ class ShadowControlSensor(SensorEntity):
         """
         Return the state of the sensor from the manager.
         """
-        # Access the internal values of the manager.
-        # Make sure your manager updates these attributes (`_calculated_shutter_height`, etc.)
-        # and calls the dispatcher signal when they change.
-        if self._sensor_type == "target_height":
+        # Verwenden Sie _sensor_entry_type (die Enum)
+        if self._sensor_entry_type == SensorEntries.TARGET_HEIGHT:
             return self._manager._calculated_shutter_height
-        elif self._sensor_type == "target_angle":
+        elif self._sensor_entry_type == SensorEntries.TARGET_ANGLE:
             return self._manager._calculated_shutter_angle
-        elif self._sensor_type == "target_angle_degrees":
+        elif self._sensor_entry_type == SensorEntries.TARGET_ANGLE_DEGREES:
             return self._manager._calculated_shutter_angle_degrees
-        elif self._sensor_type == "current_state":
-            # Assuming _current_shutter_state is an Enum.
+        elif self._sensor_entry_type == SensorEntries.CURRENT_STATE:
             return self._manager._current_shutter_state.value if hasattr(self._manager._current_shutter_state, 'value') else self._manager._current_shutter_state
-        elif self._sensor_type == "lock_state":
-            # Assuming _current_lock_state is an Enum.
+        elif self._sensor_entry_type == SensorEntries.LOCK_STATE:
             return self._manager._current_lock_state.value if hasattr(self._manager._current_lock_state, 'value') else self._manager._current_lock_state
-        elif self._sensor_type == "next_shutter_modification":
+        elif self._sensor_entry_type == SensorEntries.NEXT_SHUTTER_MODIFICATION:
             return self._manager._next_modification_timestamp
+        elif self._sensor_entry_type == SensorEntries.IS_IN_SUN:
+            # For boolean states, ensure it's a native Python boolean
+            return bool(self._manager._is_in_sun)
         return None
 
     async def async_added_to_hass(self) -> None:

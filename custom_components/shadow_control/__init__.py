@@ -474,7 +474,7 @@ class ShadowControlManager:
         self._previous_shutter_height: float | None = None
         self._previous_shutter_angle: float | None = None
         self._is_initial_run: bool = True # Flag for initial integration run
-        self._is_producing_shadow: bool = False
+        self._is_in_sun: bool = False
         self._next_modification_timestamp: datetime | None = None
 
         self._last_known_height: float | None = None
@@ -975,7 +975,8 @@ class ShadowControlManager:
             self._sun_between_min_max = False
         self.logger.debug(f"{message}")
 
-        return _sun_between_offsets and _is_elevation_in_range
+        self._is_in_sun = _sun_between_offsets and _is_elevation_in_range
+        return self._is_in_sun
 
     def _get_current_brightness(self) -> float:
         return self._dynamic_config.brightness

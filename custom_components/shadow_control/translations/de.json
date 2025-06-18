@@ -288,6 +288,31 @@
       "already_configured": "This entry is already configured."
     }
   },
+  "entity": {
+    "sensor": {
+      "sensor_target_height": {
+        "name": "Höhe"
+      },
+      "sensor_target_angle": {
+        "name": "Lamellenwinkel"
+      },
+      "sensor_target_angle_degrees": {
+        "name": "Lamellenwinkel (Grad)"
+      },
+      "sensor_current_state": {
+        "name": "Aktueller Status"
+      },
+      "sensor_lock_state": {
+        "name": "Sperrstatus"
+      },
+      "sensor_next_shutter_modification": {
+        "name": "Nächste Positionierung"
+      },
+      "sensor_is_in_sun": {
+        "name": "In der Sonne"
+      }
+    }
+  },
   "selector": {
     "facade_shutter_type": {
       "options": {

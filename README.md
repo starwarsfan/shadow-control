@@ -70,11 +70,19 @@
       * [Dawn max angle](#dawn-max-angle)
       * [Dawn look through seconds](#dawn-look-through-seconds)
       * [Dawn open seconds](#dawn-open-seconds)
-      * [dawn_look_through_angle](#dawn_look_through_angle)
-      * [after_dawn_height](#after_dawn_height)
-      * [after_dawn_angle](#after_dawn_angle)
+      * [Dawn look through angle](#dawn-look-through-angle)
+      * [After dawn height](#after-dawn-height)
+      * [After dawn angle](#after-dawn-angle)
   * [Configuration by yaml](#configuration-by-yaml)
     * [Example YAML configuration](#example-yaml-configuration)
+* [State and return values](#state-and-return-values)
+  * [Target height](#target-height)
+  * [Target angle](#target-angle)
+  * [Target angle (degrees)](#target-angle-degrees)
+  * [Current state](#current-state)
+  * [Lock state](#lock-state)
+  * [Next shutter modification](#next-shutter-modification)
+  * [Is in the Sun](#is-in-the-sun)
 
 # Introduction
 
@@ -454,17 +462,17 @@ If brightness exceeds the value of `dawn_brightness_threshold`, the shutter slat
 
 If brightness stays above the value of `dawn_brightness_threshold`, the shutter will be fully opened after the configured number of seconds. Default: 3600
 
-#### dawn_look_through_angle
+#### Dawn look through angle
 `dawn_shutter_look_through_angle_static` / `dawn_shutter_look_through_angle_entity`
 
 This is the shutter slat angle in %, which should be used at the "look through" position. Default: 0
 
-#### after_dawn_height
+#### After dawn height
 `dawn_height_after_dawn_static` / `dawn_height_after_dawn_entity`
 
 This is the shutter height in %, which should be set after the shadow position. Default: 0
 
-#### after_dawn_angle
+#### After dawn angle
 `dawn_angle_after_dawn_static` / `dawn_angle_after_dawn_entity`
 
 This is the shutter angle in %, which should be set after the shadow position. Default: 0
@@ -566,3 +574,48 @@ shadow_control:
     #dawn_angle_after_dawn_entity:
     dawn_angle_after_dawn_static: 0
 ```
+# State and return values
+
+Each instance of **Shadow Control** creates a device within Home Assistant, which contains the following entities for further usage: 
+
+## Target height
+`target_height`
+This entity holds the calculated shutter height.
+
+## Target angle
+`target_angle`
+This entity holds the calculated shutter angle.
+
+## Target angle (degrees)
+`target_angle_degrees`
+This entity holds the calculated shutter angle in degrees (°).
+
+## Current state
+`current_state`
+This entity holds the current internal state of the integration as a numeric value. The follwoing values will be available here for further usage within other automations:
+
+* SHADOW_FULL_CLOSE_TIMER_RUNNING = 6
+* SHADOW_FULL_CLOSED = 5
+* SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING = 4
+* SHADOW_HORIZONTAL_NEUTRAL = 3
+* SHADOW_NEUTRAL_TIMER_RUNNING = 2
+* SHADOW_NEUTRAL = 1
+* NEUTRAL = 0
+* DAWN_NEUTRAL = -1
+* DAWN_NEUTRAL_TIMER_RUNNING = -2
+* DAWN_HORIZONTAL_NEUTRAL = -3
+* DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING = -4
+* DAWN_FULL_CLOSED = -5
+* DAWN_FULL_CLOSE_TIMER_RUNNING = -6
+
+## Lock state
+`lock_state`
+This entity is `True`, if the integration is locked. Otherwise `False`.
+
+## Next shutter modification
+`next_shutter_modification`
+On this entity the integration publishes the next point in time, where a running timer will be finished.
+
+## Is in the Sun
+`is_in_sun`
+This entity is either `True`, if the sun within the min-max-offset and the min-max-height range. Otherwise `False`.

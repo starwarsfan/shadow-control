@@ -138,3 +138,13 @@ class ShutterType(Enum):
     """Enum for the possible shutter types."""
     MODE1 = "mode1"
     MODE2 = "mode2"
+
+class SensorEntries(Enum):
+    """Enum for the possible sensor entries."""
+    TARGET_HEIGHT = "target_height"
+    TARGET_ANGLE = "target_angle"
+    TARGET_ANGLE_DEGREES = "target_angle_degrees"
+    CURRENT_STATE = "current_state"
+    LOCK_STATE = "lock_state"
+    NEXT_SHUTTER_MODIFICATION = "next_shutter_modification"
+    IS_IN_SUN = "is_in_sun"
