@@ -306,7 +306,7 @@
         "name": "Lock State"
       },
       "sensor_next_shutter_modification": {
-        "name": "Next Shutter Modification"
+        "name": "Next Positioning"
       },
       "sensor_is_in_sun": {
         "name": "Is in Sun"
