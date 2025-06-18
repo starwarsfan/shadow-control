@@ -34,7 +34,7 @@ from .const import (
     SC_CONF_COVERS,
     SC_CONF_NAME,
     TARGET_COVER_ENTITY_ID,
-    DEBUG_ENABLED
+    YAML_CONFIG_SCHEMA
 )
 
 _GLOBAL_DOMAIN_LOGGER = logging.getLogger(DOMAIN)
@@ -42,92 +42,8 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["sensor"]
 
-YAML_CONFIG_SCHEMA = vol.Schema({
-    vol.Required(SC_CONF_NAME): cv.string, # Name ist hier erforderlich und einzigartig
-    vol.Required(TARGET_COVER_ENTITY_ID): vol.All(cv.ensure_list, [cv.entity_id]),
-    vol.Optional(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value, default=-90): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value, default=90): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value, default=90): vol.Coerce(float),
-    vol.Optional(DEBUG_ENABLED, default=False): cv.boolean,
-    vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.SLAT_WIDTH_STATIC.value, default=95): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.SLAT_DISTANCE_STATIC.value, default=67): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.SLAT_ANGLE_OFFSET_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=5): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, default=5): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value, default=1000): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, default="mode1"): vol.In([
-        "mode1",
-        "mode2",
-    ]),
-    vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDynamicInput.LOCK_HEIGHT_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCDynamicInput.LOCK_ANGLE_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value, default="no_restriction"): vol.In([
-        "no_restriction",
-        "only_close",
-        "only_open",
-    ]),
-    vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value, default="no_restriction"): vol.In([
-        "no_restriction",
-        "only_close",
-        "only_open",
-    ]),
-    vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): cv.entity_id,
-    vol.Optional(SCShadowInput.CONTROL_ENABLED_STATIC.value, default=True): cv.boolean,
-    vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value): cv.entity_id,
-    vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_STATIC.value, default=50000): vol.Coerce(float),
-    vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value): cv.entity_id,
-    vol.Optional(SCShadowInput.AFTER_SECONDS_STATIC.value, default=15): vol.Coerce(float),
-    vol.Optional(SCShadowInput.AFTER_SECONDS_ENTITY.value): cv.entity_id,
-    vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): vol.Coerce(float),
-    vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value): cv.entity_id,
-    vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value, default=100): vol.Coerce(float),
-    vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value): cv.entity_id,
-    vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, default=15): vol.Coerce(float),
-    vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value): cv.entity_id,
-    vol.Optional(SCShadowInput.SHUTTER_OPEN_SECONDS_STATIC.value, default=15): vol.Coerce(float),
-    vol.Optional(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value): cv.entity_id,
-    vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value): cv.entity_id,
-    vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value): cv.entity_id,
-    vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDawnInput.CONTROL_ENABLED_STATIC.value, default=True): cv.boolean,
-    vol.Optional(SCDawnInput.CONTROL_ENABLED_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDawnInput.BRIGHTNESS_THRESHOLD_STATIC.value, default=500): vol.Coerce(float),
-    vol.Optional(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDawnInput.AFTER_SECONDS_STATIC.value, default=15): vol.Coerce(float),
-    vol.Optional(SCDawnInput.AFTER_SECONDS_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): vol.Coerce(float),
-    vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value, default=100): vol.Coerce(float),
-    vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, default=15): vol.Coerce(float),
-    vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDawnInput.SHUTTER_OPEN_SECONDS_STATIC.value, default=15): vol.Coerce(float),
-    vol.Optional(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value): cv.entity_id,
-    vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value, default=0): vol.Coerce(float),
-    vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value): cv.entity_id,
-
-})
+# Config schema version
+CURRENT_SCHEMA_VERSION = 2
 
 CONFIG_SCHEMA = vol.Schema(
     {
