@@ -29,69 +29,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     Handle a config flow for Shadow Control.
     """
 
-    VERSION = 2
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
-
-    async def async_migrate_entry(self, entry: config_entries.ConfigEntry):
-        """
-        Migrate old configuration
-        """
-        _LOGGER.debug(f"Migrating config entry from version {entry.version} to {self.VERSION}")
-
-        new_data = entry.data.copy()
-        new_options = entry.options.copy()
-
-        # Migrate v1 to v2
-        if entry.version == 1:
-            old_lock_height_key = "lock_height_entity"
-            old_lock_angle_key = "lock_angle_entity"
-
-            lock_height_static_key = SCDynamicInput.LOCK_HEIGHT_STATIC.value if hasattr(SCDynamicInput.LOCK_HEIGHT_STATIC, 'value') else SCDynamicInput.LOCK_HEIGHT_STATIC
-            lock_angle_static_key = SCDynamicInput.LOCK_ANGLE_STATIC.value if hasattr(SCDynamicInput.LOCK_ANGLE_STATIC, 'value') else SCDynamicInput.LOCK_ANGLE_STATIC
-
-            if old_lock_height_key in new_options:
-                new_options[lock_height_static_key] = new_options.pop(old_lock_height_key)
-                _LOGGER.debug(f"Migrated: Renamed '{old_lock_height_key}' to '{lock_height_static_key}'.")
-            elif lock_height_static_key not in new_options:
-                # If the old key was not found, make sure it is there after migration.
-                new_options[lock_height_static_key] = 0 # Default value
-                _LOGGER.debug(f"Set default value for '{lock_height_static_key}'.")
-
-
-            if old_lock_angle_key in new_options:
-                new_options[lock_angle_static_key] = new_options.pop(old_lock_angle_key)
-                _LOGGER.debug(f"Migrated: Renamed '{old_lock_angle_key}' to '{lock_angle_static_key}'.")
-            elif lock_angle_static_key not in new_options:
-                # Wenn der alte Schlüssel nicht gefunden wurde und der neue auch nicht, Standardwert setzen
-                new_options[lock_angle_static_key] = 0 # Default value
-                _LOGGER.debug(f"Set default value for '{lock_angle_static_key}'.")
-
-            # Validate migrated options
-            try:
-                validated_options = FULL_OPTIONS_SCHEMA(new_options)
-                _LOGGER.debug(f"Migrated options successfully validated.")
-            except vol.Invalid as exc:
-                _LOGGER.error(f"Validation failed after migration to version {self.VERSION} for entry {entry.entry_id}: {exc}")
-                return False # Migration failed
-
-            # Update data and options with migrated values
-            await self.hass.config_entries.async_update_entry(
-                entry,
-                data=new_data,        # Behalten Sie die (eventuell angepassten) Daten bei
-                options=validated_options,  # Verwenden Sie die migrierten und validierten Optionen
-                version=self.VERSION # Setzen Sie die neue Version des gespeicherten Eintrags
-            )
-
-            _LOGGER.info(f"Config entry successfully migrated to version {entry.version}")
-            return True
-
-        # Migrate v2 to v3
-        #if entry.version == 2:
-        #    old_lock_height_key = "lock_height_entity"
-        #    old_lock_angle_key = "lock_angle_entity"
-
-        _LOGGER.error(f"Unknown config entry version {entry.version} for migration. This should not happen.")
-        return False # Migration failed for an unknown or too high version
 
     def __init__(self):
         """

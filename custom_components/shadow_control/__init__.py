@@ -12,7 +12,8 @@ from homeassistant.components.cover import CoverEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_SUPPORTED_FEATURES,
-    STATE_ON, EVENT_HOMEASSISTANT_STARTED
+    EVENT_HOMEASSISTANT_STARTED,
+    STATE_ON
 )
 from homeassistant.core import HomeAssistant, callback, Event, State
 from homeassistant.helpers import config_validation as cv
@@ -21,8 +22,10 @@ from homeassistant.helpers.event import async_track_state_change_event, async_ca
 from homeassistant.helpers.typing import ConfigType
 
 from .const import (
+    DEBUG_ENABLED,
     DOMAIN,
     DOMAIN_DATA_MANAGERS,
+    FULL_OPTIONS_SCHEMA,
     LockState,
     MovementRestricted,
     SCFacadeConfig,
@@ -192,6 +195,59 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error(f"[{DOMAIN}] Failed to unload platforms for entry {entry.entry_id}.")
 
     return unload_ok
+
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """
+    Migrate old config entry.
+    """
+    _LOGGER.debug(f"[{DOMAIN}] Migrating config entry '{config_entry.entry_id}' from version {config_entry.version} to {CURRENT_SCHEMA_VERSION}")
+
+    new_data = config_entry.data.copy()
+    new_options = config_entry.options.copy()
+
+    if config_entry.version == 1:
+        old_lock_height_key = "lock_height_entity"
+        old_lock_angle_key = "lock_angle_entity"
+
+        lock_height_static_key = SCDynamicInput.LOCK_HEIGHT_STATIC.value if hasattr(SCDynamicInput.LOCK_HEIGHT_STATIC, 'value') else SCDynamicInput.LOCK_HEIGHT_STATIC
+        lock_angle_static_key = SCDynamicInput.LOCK_ANGLE_STATIC.value if hasattr(SCDynamicInput.LOCK_ANGLE_STATIC, 'value') else SCDynamicInput.LOCK_ANGLE_STATIC
+
+        if old_lock_height_key in new_options:
+            new_options[lock_height_static_key] = new_options.pop(old_lock_height_key)
+            _LOGGER.debug(f"[{DOMAIN}] Migrated: Renamed '{old_lock_height_key}' to '{lock_height_static_key}'.")
+        elif lock_height_static_key not in new_options:
+            new_options[lock_height_static_key] = 0 # Default value
+            _LOGGER.debug(f"[{DOMAIN}] Set default value for '{lock_height_static_key}'.")
+
+        if old_lock_angle_key in new_options:
+            new_options[lock_angle_static_key] = new_options.pop(old_lock_angle_key)
+            _LOGGER.debug(f"[{DOMAIN}] Migrated: Renamed '{old_lock_angle_key}' to '{lock_angle_static_key}'.")
+        elif lock_angle_static_key not in new_options:
+            new_options[lock_angle_static_key] = 0 # Default value
+            _LOGGER.debug(f"[{DOMAIN}] Set default value for '{lock_angle_static_key}'.")
+
+        # Validate migrated options
+        try:
+            # WICHTIG: Stellen Sie sicher, dass FULL_OPTIONS_SCHEMA hier verfügbar ist.
+            # Dies könnte bedeuten, dass Sie es aus config_flow.py importieren müssen
+            # oder die Schema-Definition hier in __init__.py kopieren.
+            validated_options = FULL_OPTIONS_SCHEMA(new_options)
+            _LOGGER.debug(f"[{DOMAIN}] Migrated options successfully validated.")
+        except vol.Invalid as exc:
+            _LOGGER.error(f"[{DOMAIN}] Validation failed after migration to version {CURRENT_SCHEMA_VERSION} for entry {config_entry.entry_id}: {exc}")
+            return False # Migration fehlgeschlagen
+
+        await hass.config_entries.async_update_entry(
+            config_entry,
+            data=new_data,
+            options=validated_options,
+            version=2 # Dies ist die Zielversion Ihres Schemas
+        )
+        _LOGGER.info(f"[{DOMAIN}] Config entry '{config_entry.entry_id}' successfully migrated to version 2.")
+        return True
+
+    _LOGGER.error(f"[{DOMAIN}] Unknown config entry version {config_entry.version} for migration. This should not happen.")
+    return False
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """
