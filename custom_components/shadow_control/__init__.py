@@ -241,7 +241,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         _LOGGER.debug(f"[{DOMAIN}]   Arg 'options' type: {type(validated_options)}, value: {validated_options}")
         _LOGGER.debug(f"[{DOMAIN}]   Arg 'version' type: {type(CURRENT_SCHEMA_VERSION)}, value: {CURRENT_SCHEMA_VERSION}")
 
-        await hass.config_entries.async_update_entry(
+        hass.config_entries.async_update_entry(
             config_entry,
             data=new_data,
             options=validated_options,
