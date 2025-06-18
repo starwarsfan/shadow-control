@@ -484,21 +484,42 @@ Jede Instanz von **Shadow Control** legt in Home Assistant ein Gerät an, unter 
 
 ## Zielhöhe
 `target_height`
+Hier ist die errechnete Höhe des Behangs zu finden.
 
 ## Zielwinkel
 `target_angle`
+Hier ist der errechnete Lamellenwinkel des Behangs zu finden.
 
 ## Zielwinkel in Grad
 `target_angle_degrees`
+Hier ist der errechnete Lamellenwinkel des Behangs in Grad (°) zu finden.
 
 ## Aktueller Status
 `current_state`
+Hier wird der aktuelle interne Status von **Shadow Control** als numerischer Wert ausgegeben. Dabei sind die folgenden Status resp. Werte möglich, welche für weitere eigenen Automatisierungen verwendet werden können:
+
+* SHADOW_FULL_CLOSE_TIMER_RUNNING = 6
+* SHADOW_FULL_CLOSED = 5
+* SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING = 4
+* SHADOW_HORIZONTAL_NEUTRAL = 3
+* SHADOW_NEUTRAL_TIMER_RUNNING = 2
+* SHADOW_NEUTRAL = 1
+* NEUTRAL = 0
+* DAWN_NEUTRAL = -1
+* DAWN_NEUTRAL_TIMER_RUNNING = -2
+* DAWN_HORIZONTAL_NEUTRAL = -3
+* DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING = -4
+* DAWN_FULL_CLOSED = -5
+* DAWN_FULL_CLOSE_TIMER_RUNNING = -6
 
 ## Sperr-Status
 `lock_state`
+Der Wert ist `True`, wenn die Integration gesperrt ist. Anderenfalls `False`.
 
 ## Nächste Behangmodifikation
 `next_shutter_modification`
+Auf dieser Entität steht der Zeitpunkt der nächsten Behang-Positionierung zur Verfügung, sofern gerade ein entsprechender Timer läuft.
 
 ## In der Sonne
 `is_in_sun`
+Der Wert ist `True`, wenn sich die Sonne im min-max-Offsetbereich und min-max-Höhenbereich befindet. Anderenfalls `False`.

@@ -481,21 +481,42 @@ Each instance of **Shadow Control** creates a device within Home Assistant, whic
 
 ## Target height
 `target_height`
+This entity holds the calculated shutter height.
 
 ## Target angle
 `target_angle`
+This entity holds the calculated shutter angle.
 
 ## Target angle (degrees)
 `target_angle_degrees`
+This entity holds the calculated shutter angle in degrees (°).
 
 ## Current state
 `current_state`
+This entity holds the current internal state of the integration as a numeric value. The follwoing values will be available here for further usage within other automations:
+
+* SHADOW_FULL_CLOSE_TIMER_RUNNING = 6
+* SHADOW_FULL_CLOSED = 5
+* SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING = 4
+* SHADOW_HORIZONTAL_NEUTRAL = 3
+* SHADOW_NEUTRAL_TIMER_RUNNING = 2
+* SHADOW_NEUTRAL = 1
+* NEUTRAL = 0
+* DAWN_NEUTRAL = -1
+* DAWN_NEUTRAL_TIMER_RUNNING = -2
+* DAWN_HORIZONTAL_NEUTRAL = -3
+* DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING = -4
+* DAWN_FULL_CLOSED = -5
+* DAWN_FULL_CLOSE_TIMER_RUNNING = -6
 
 ## Lock state
 `lock_state`
+This entity is `True`, if the integration is locked. Otherwise `False`.
 
 ## Next shutter modification
 `next_shutter_modification`
+On this entity the integration publishes the next point in time, where a running timer will be finished.
 
 ## Is in the Sun
 `is_in_sun`
+This entity is either `True`, if the sun within the min-max-offset and the min-max-height range. Otherwise `False`.
