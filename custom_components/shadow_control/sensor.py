@@ -71,7 +71,7 @@ class ShadowControlSensor(SensorEntity):
         self._attr_has_entity_name = True
 
         # Use stable unique_id based on entry_id and the sensor type
-        self._attr_unique_id = f"{DOMAIN}_{self._entry_id}_{self._sensor_entry_type.value}"
+        self._attr_unique_id = f"sc_{self._entry_id}_{self._sensor_entry_type.value}"
 
         # Define key used within translation files based on enum values e.g. "target_height".
         self._attr_translation_key = f"sensor_{self._sensor_entry_type.value}"
