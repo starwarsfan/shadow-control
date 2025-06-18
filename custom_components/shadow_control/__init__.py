@@ -209,41 +209,44 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         old_lock_height_key = "lock_height_entity"
         old_lock_angle_key = "lock_angle_entity"
 
-        lock_height_static_key = SCDynamicInput.LOCK_HEIGHT_STATIC.value if hasattr(SCDynamicInput.LOCK_HEIGHT_STATIC, 'value') else SCDynamicInput.LOCK_HEIGHT_STATIC
-        lock_angle_static_key = SCDynamicInput.LOCK_ANGLE_STATIC.value if hasattr(SCDynamicInput.LOCK_ANGLE_STATIC, 'value') else SCDynamicInput.LOCK_ANGLE_STATIC
+        lock_height_static_key = SCDynamicInput.LOCK_HEIGHT_STATIC.value
+        lock_angle_static_key = SCDynamicInput.LOCK_ANGLE_STATIC.value
 
         if old_lock_height_key in new_options:
             new_options[lock_height_static_key] = new_options.pop(old_lock_height_key)
             _LOGGER.debug(f"[{DOMAIN}] Migrated: Renamed '{old_lock_height_key}' to '{lock_height_static_key}'.")
         elif lock_height_static_key not in new_options:
-            new_options[lock_height_static_key] = 0 # Default value
+            new_options[lock_height_static_key] = 0
             _LOGGER.debug(f"[{DOMAIN}] Set default value for '{lock_height_static_key}'.")
 
         if old_lock_angle_key in new_options:
             new_options[lock_angle_static_key] = new_options.pop(old_lock_angle_key)
             _LOGGER.debug(f"[{DOMAIN}] Migrated: Renamed '{old_lock_angle_key}' to '{lock_angle_static_key}'.")
         elif lock_angle_static_key not in new_options:
-            new_options[lock_angle_static_key] = 0 # Default value
+            new_options[lock_angle_static_key] = 0
             _LOGGER.debug(f"[{DOMAIN}] Set default value for '{lock_angle_static_key}'.")
 
-        # Validate migrated options
         try:
-            # WICHTIG: Stellen Sie sicher, dass FULL_OPTIONS_SCHEMA hier verfügbar ist.
-            # Dies könnte bedeuten, dass Sie es aus config_flow.py importieren müssen
-            # oder die Schema-Definition hier in __init__.py kopieren.
             validated_options = FULL_OPTIONS_SCHEMA(new_options)
-            _LOGGER.debug(f"[{DOMAIN}] Migrated options successfully validated.")
+            _LOGGER.debug(f"[{DOMAIN}] Migrated options successfully validated. Result: {validated_options}")
+            _LOGGER.debug(f"[{DOMAIN}] Type of validated_options: {type(validated_options)}")
         except vol.Invalid as exc:
             _LOGGER.error(f"[{DOMAIN}] Validation failed after migration to version {CURRENT_SCHEMA_VERSION} for entry {config_entry.entry_id}: {exc}")
-            return False # Migration fehlgeschlagen
+            return False
+
+        _LOGGER.debug(f"[{DOMAIN}] Preparing to call hass.config_entries.async_update_entry with:")
+        _LOGGER.debug(f"[{DOMAIN}]   Arg 'config_entry' type: {type(config_entry)}")
+        _LOGGER.debug(f"[{DOMAIN}]   Arg 'data' type: {type(new_data)}, value: {new_data}")
+        _LOGGER.debug(f"[{DOMAIN}]   Arg 'options' type: {type(validated_options)}, value: {validated_options}")
+        _LOGGER.debug(f"[{DOMAIN}]   Arg 'version' type: {type(CURRENT_SCHEMA_VERSION)}, value: {CURRENT_SCHEMA_VERSION}")
 
         await hass.config_entries.async_update_entry(
             config_entry,
             data=new_data,
             options=validated_options,
-            version=2 # Dies ist die Zielversion Ihres Schemas
+            version=CURRENT_SCHEMA_VERSION
         )
-        _LOGGER.info(f"[{DOMAIN}] Config entry '{config_entry.entry_id}' successfully migrated to version 2.")
+        _LOGGER.info(f"[{DOMAIN}] Config entry '{config_entry.entry_id}' successfully migrated to version {CURRENT_SCHEMA_VERSION}.")
         return True
 
     _LOGGER.error(f"[{DOMAIN}] Unknown config entry version {config_entry.version} for migration. This should not happen.")
