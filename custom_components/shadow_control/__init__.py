@@ -37,7 +37,8 @@ from .const import (
     SC_CONF_COVERS,
     SC_CONF_NAME,
     TARGET_COVER_ENTITY_ID,
-    YAML_CONFIG_SCHEMA
+    YAML_CONFIG_SCHEMA,
+    VERSION
 )
 
 _GLOBAL_DOMAIN_LOGGER = logging.getLogger(DOMAIN)
@@ -45,8 +46,8 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["sensor"]
 
-# Config schema version
-CURRENT_SCHEMA_VERSION = 2
+# Get the schema version from constants
+CURRENT_SCHEMA_VERSION = VERSION
 
 CONFIG_SCHEMA = vol.Schema(
     {

@@ -19,7 +19,8 @@ from .const import (
     STEP_DYNAMIC_INPUTS_SCHEMA,
     STEP_SHADOW_SETTINGS_SCHEMA,
     STEP_DAWN_SETTINGS_SCHEMA,
-    TARGET_COVER_ENTITY_ID
+    TARGET_COVER_ENTITY_ID,
+    VERSION
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,7 +29,8 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """
     Handle a config flow for Shadow Control.
     """
-
+    # Get the schema version from constants
+    VERSION = VERSION
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self):

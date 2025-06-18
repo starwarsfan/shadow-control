@@ -9,6 +9,9 @@ DOMAIN_DATA_MANAGERS = f"{DOMAIN}_managers" # A good practice for unique keys
 DEFAULT_NAME = "Shadow Control"
 SC_CONF_COVERS = "covers" # Constant for 'covers' key within configuration
 
+# Config schema version
+VERSION = 2
+
 SC_CONF_NAME = "name"
 DEBUG_ENABLED = "debug_enabled"
 TARGET_COVER_ENTITY_ID = "target_cover_entity"
