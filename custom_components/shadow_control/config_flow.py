@@ -361,21 +361,25 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             old_lock_height_key = "lock_height_entity"
             old_lock_angle_key = "lock_angle_entity"
 
+            lock_height_static_key = SCDynamicInput.LOCK_HEIGHT_STATIC.value if hasattr(SCDynamicInput.LOCK_HEIGHT_STATIC, 'value') else SCDynamicInput.LOCK_HEIGHT_STATIC
+            lock_angle_static_key = SCDynamicInput.LOCK_ANGLE_STATIC.value if hasattr(SCDynamicInput.LOCK_ANGLE_STATIC, 'value') else SCDynamicInput.LOCK_ANGLE_STATIC
+
             if old_lock_height_key in new_options:
-                new_options[SCDynamicInput.LOCK_HEIGHT_STATIC] = new_options.pop(old_lock_height_key)
-                _LOGGER.debug(f"Migrated: Renamed '{old_lock_height_key}' to '{SCDynamicInput.LOCK_HEIGHT_STATIC}'.")
-            else:
+                new_options[lock_height_static_key] = new_options.pop(old_lock_height_key)
+                _LOGGER.debug(f"Migrated: Renamed '{old_lock_height_key}' to '{lock_height_static_key}'.")
+            elif lock_height_static_key not in new_options:
                 # If the old key was not found, make sure it is there after migration.
-                if SCDynamicInput.LOCK_HEIGHT_STATIC not in new_options:
-                    new_options[SCDynamicInput.LOCK_HEIGHT_STATIC] = 0 # Default value
+                new_options[lock_height_static_key] = 0 # Default value
+                _LOGGER.debug(f"Set default value for '{lock_height_static_key}'.")
+
 
             if old_lock_angle_key in new_options:
-                new_options[SCDynamicInput.LOCK_ANGLE_STATIC] = new_options.pop(old_lock_angle_key)
-                _LOGGER.debug(f"Migrated: Renamed '{old_lock_angle_key}' to '{SCDynamicInput.LOCK_ANGLE_STATIC}'.")
-            else:
-                # If the old key was not found, make sure it is there after migration.
-                if SCDynamicInput.LOCK_ANGLE_STATIC not in new_options:
-                    new_options[SCDynamicInput.LOCK_ANGLE_STATIC] = 0 # Default value
+                new_options[lock_angle_static_key] = new_options.pop(old_lock_angle_key)
+                _LOGGER.debug(f"Migrated: Renamed '{old_lock_angle_key}' to '{lock_angle_static_key}'.")
+            elif lock_angle_static_key not in new_options:
+                # Wenn der alte Schlüssel nicht gefunden wurde und der neue auch nicht, Standardwert setzen
+                new_options[lock_angle_static_key] = 0 # Default value
+                _LOGGER.debug(f"Set default value for '{lock_angle_static_key}'.")
 
             # Validate migrated options
             try:
@@ -386,9 +390,12 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 return False # Migration failed
 
             # Update data and options with migrated values
-            entry.version = self.VERSION
-            entry.data = new_data
-            entry.options = validated_options
+            await self.hass.config_entries.async_update_entry(
+                entry,
+                data=new_data,        # Behalten Sie die (eventuell angepassten) Daten bei
+                options=validated_options,  # Verwenden Sie die migrierten und validierten Optionen
+                version=self.VERSION # Setzen Sie die neue Version des gespeicherten Eintrags
+            )
 
             _LOGGER.info(f"Config entry successfully migrated to version {entry.version}")
             return True
