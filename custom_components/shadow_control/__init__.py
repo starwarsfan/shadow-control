@@ -392,7 +392,8 @@ class ShadowControlManager:
             self.logger.error(
                 "Manager init: Target cover entity ID is missing in config for entry %s. "
                 "This is critical.", entry_id)
-            raise ValueError(f"Target cover entity ID missing for entry {entry_id}")
+            message = f"Target cover entity ID missing for entry {entry_id}"
+            raise ValueError(message)
 
         self._options = config
 
@@ -609,7 +610,7 @@ class ShadowControlManager:
                 "No recalculation triggered.", entity_id)
 
     async def _async_target_cover_entity_state_change_listener(self, event: Event) -> None:
-        """Callback for state changes of handled cover entity."""
+        """Handle state changes of cover entities."""
         entity_id = event.data.get("entity_id")
         old_state: State | None = event.data.get("old_state")
         new_state: State | None = event.data.get("new_state")
@@ -662,7 +663,7 @@ class ShadowControlManager:
         self._listeners = []
 
     async def _async_home_assistant_started(self, event: Event) -> None:
-        """Callback for start of Home Assistant."""
+        """Calculate positions after start of Home Assistant."""
         self.logger.debug(
             "Home Assistant started event received. Performing initial calculation.")
         await self._async_calculate_and_apply_cover_position(None)
