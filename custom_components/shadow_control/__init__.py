@@ -290,7 +290,7 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> Non
     await hass.config_entries.async_reload(entry.entry_id)
 
 class SCDynamicInputConfiguration:
-    """Define defaults for dynamic configuration"""
+    """Define defaults for dynamic configuration."""
 
     def __init__(self):
         self.brightness: float = 5000.0
@@ -307,7 +307,7 @@ class SCDynamicInputConfiguration:
         self.movement_restriction_angle: MovementRestricted = MovementRestricted.NO_RESTRICTION
 
 class SCFacadeConfiguration:
-    """Define defaults for facade configuration"""
+    """Define defaults for facade configuration."""
 
     def __init__(self):
         self.azimuth: float = 180.0
@@ -330,7 +330,7 @@ class SCFacadeConfiguration:
         self.modification_tolerance_angle: float = 0.0
 
 class SCShadowControlConfig:
-    """Define defaults for trigger configuration"""
+    """Define defaults for trigger configuration."""
 
     def __init__(self):
         self.enabled: bool = True
@@ -345,7 +345,7 @@ class SCShadowControlConfig:
         self.angle_after_sun: float = 0.0
 
 class SCDawnControlConfig:
-    """Define defaults for dawn configuration"""
+    """Define defaults for dawn configuration."""
 
     def __init__(self):
         self.enabled: bool = True
@@ -1032,9 +1032,8 @@ class ShadowControlManager:
             self.logger.debug("Unable to compute effective elevation: Division by zero")
             return None
 
-    # Persistent values
     def _update_extra_state_attributes(self) -> None:
-        """Helper to update the extra_state_attributes dictionary."""
+        """Update the persistent values."""
         self._attr_extra_state_attributes = {
             "current_shutter_state": self._current_shutter_state,
             "calculated_shutter_height": self._calculated_shutter_height,
@@ -1125,7 +1124,7 @@ class ShadowControlManager:
             shadow_position: bool,
             stop_timer: bool
     ) -> None:
-        """Helper to send commands to the cover, which is maintained by this ShadowControlManager instance."""
+        """Evaluate and perform final shutter positioning commands."""
         self.logger.debug(
             f"Starting _position_shutter with target height {shutter_height_percent:.2f}% "
             f"and angle {shutter_angle_percent:.2f}% (is_initial_run: {self._is_initial_run}, "
