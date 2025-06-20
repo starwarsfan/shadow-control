@@ -711,19 +711,25 @@ class ShadowControlManager:
         self._facade_config.shutter_height = self._get_static_value(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value, 1000.0, float)
         self._facade_config.neutral_pos_height = self._get_static_value(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, 0.0, float)
         self._facade_config.neutral_pos_angle = self._get_static_value(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, 0.0, float)
-        self._facade_config.modification_tolerance_height = self._get_static_value(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, 0.0, float)
-        self._facade_config.modification_tolerance_angle = self._get_static_value(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, 0.0, float)
+        self._facade_config.modification_tolerance_height = self._get_static_value(
+            SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, 0.0, float)
+        self._facade_config.modification_tolerance_angle = self._get_static_value(
+            SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, 0.0, float)
 
         # Dynamic Inputs (entity states or static values)
         self._dynamic_config.brightness = self._get_entity_state_value(SCDynamicInput.BRIGHTNESS_ENTITY.value, 0.0, float)
         self._dynamic_config.brightness_dawn = self._get_entity_state_value(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value, -1.0, float)
         self._dynamic_config.sun_elevation = self._get_entity_state_value(SCDynamicInput.SUN_ELEVATION_ENTITY.value, 0.0, float)
         self._dynamic_config.sun_azimuth = self._get_entity_state_value(SCDynamicInput.SUN_AZIMUTH_ENTITY.value, 0.0, float)
-        self._dynamic_config.shutter_current_height = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value, -1.0, float)
-        self._dynamic_config.shutter_current_angle = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value, -1.0, float)
+        self._dynamic_config.shutter_current_height = self._get_entity_state_value(
+            SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value, -1.0, float)
+        self._dynamic_config.shutter_current_angle = self._get_entity_state_value(
+            SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value, -1.0, float)
 
-        self._dynamic_config.lock_integration = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, False, bool)
-        self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, False, bool)
+        self._dynamic_config.lock_integration = self._get_entity_state_value(
+            SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, False, bool)
+        self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(
+            SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, False, bool)
         self._current_lock_state = self._calculate_lock_state()
 
         # Check if the stored value is an entity ID (string) or a static number.
@@ -754,85 +760,125 @@ class ShadowControlManager:
         self._enforce_position_update = self._get_entity_state_value(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value, False, bool)
 
         # Shadow Control Inputs
-        shadow_control_enabled_static = self._get_static_value(SCShadowInput.CONTROL_ENABLED_STATIC.value, True, bool, log_warning=False)
-        self._shadow_config.enabled = self._get_entity_state_value(SCShadowInput.CONTROL_ENABLED_ENTITY.value, shadow_control_enabled_static, bool)
+        shadow_control_enabled_static = self._get_static_value(SCShadowInput.CONTROL_ENABLED_STATIC.value,
+                                                               True, bool, log_warning=False)
+        self._shadow_config.enabled = self._get_entity_state_value(SCShadowInput.CONTROL_ENABLED_ENTITY.value,
+                                                                   shadow_control_enabled_static, bool)
 
         # Shadow Brightness Threshold
-        shadow_brightness_threshold_static = self._get_static_value(SCShadowInput.BRIGHTNESS_THRESHOLD_STATIC.value, 50000.0, float, log_warning=False)
-        self._shadow_config.brightness_threshold = self._get_entity_state_value(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value, shadow_brightness_threshold_static, float)
+        shadow_brightness_threshold_static = self._get_static_value(SCShadowInput.BRIGHTNESS_THRESHOLD_STATIC.value,
+                                                                    50000.0, float, log_warning=False)
+        self._shadow_config.brightness_threshold = self._get_entity_state_value(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value,
+                                                                                shadow_brightness_threshold_static, float)
 
         # Shadow After Seconds
-        shadow_after_seconds_static = self._get_static_value(SCShadowInput.AFTER_SECONDS_STATIC.value, 15.0, float, log_warning=False)
-        self._shadow_config.after_seconds = self._get_entity_state_value(SCShadowInput.AFTER_SECONDS_ENTITY.value, shadow_after_seconds_static, float)
+        shadow_after_seconds_static = self._get_static_value(SCShadowInput.AFTER_SECONDS_STATIC.value,
+                                                             15.0, float, log_warning=False)
+        self._shadow_config.after_seconds = self._get_entity_state_value(SCShadowInput.AFTER_SECONDS_ENTITY.value,
+                                                                         shadow_after_seconds_static, float)
 
         # Shadow Shutter Max Height
-        shadow_shutter_max_height_static = self._get_static_value(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value, 100.0, float, log_warning=False)
-        self._shadow_config.shutter_max_height = self._get_entity_state_value(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value, shadow_shutter_max_height_static, float)
+        shadow_shutter_max_height_static = self._get_static_value(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value,
+                                                                  100.0, float, log_warning=False)
+        self._shadow_config.shutter_max_height = self._get_entity_state_value(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value,
+                                                                              shadow_shutter_max_height_static, float)
 
         # Shadow Shutter Max Angle
-        shadow_shutter_max_angle_static = self._get_static_value(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value, 100.0, float, log_warning=False)
-        self._shadow_config.shutter_max_angle = self._get_entity_state_value(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value, shadow_shutter_max_angle_static, float)
+        shadow_shutter_max_angle_static = self._get_static_value(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value,
+                                                                 100.0, float, log_warning=False)
+        self._shadow_config.shutter_max_angle = self._get_entity_state_value(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value,
+                                                                             shadow_shutter_max_angle_static, float)
 
         # Shadow Shutter Look Through Seconds
-        shadow_shutter_look_through_seconds_static = self._get_static_value(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, 15.0, float, log_warning=False)
-        self._shadow_config.shutter_look_through_seconds = self._get_entity_state_value(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, shadow_shutter_look_through_seconds_static, float)
+        shadow_shutter_look_through_seconds_static = self._get_static_value(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value,
+                                                                            15.0, float, log_warning=False)
+        self._shadow_config.shutter_look_through_seconds = self._get_entity_state_value(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value,
+                                                                                        shadow_shutter_look_through_seconds_static, float)
 
         # Shadow Shutter Open Seconds
-        shadow_shutter_open_seconds_static = self._get_static_value(SCShadowInput.SHUTTER_OPEN_SECONDS_STATIC.value, 15.0, float, log_warning=False)
-        self._shadow_config.shutter_open_seconds = self._get_entity_state_value(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value, shadow_shutter_open_seconds_static, float)
+        shadow_shutter_open_seconds_static = self._get_static_value(SCShadowInput.SHUTTER_OPEN_SECONDS_STATIC.value,
+                                                                    15.0, float, log_warning=False)
+        self._shadow_config.shutter_open_seconds = self._get_entity_state_value(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value,
+                                                                                shadow_shutter_open_seconds_static, float)
 
         # Shadow Shutter Look Through Angle
-        shadow_shutter_look_through_angle_static = self._get_static_value(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, 0.0, float, log_warning=False)
-        self._shadow_config.shutter_look_through_angle = self._get_entity_state_value(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value, shadow_shutter_look_through_angle_static, float)
+        shadow_shutter_look_through_angle_static = self._get_static_value(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value,
+                                                                          0.0, float, log_warning=False)
+        self._shadow_config.shutter_look_through_angle = self._get_entity_state_value(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value,
+                                                                                      shadow_shutter_look_through_angle_static, float)
 
         # Shadow Height After Sun
-        shadow_height_after_sun_static = self._get_static_value(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value, 0.0, float, log_warning=False)
-        self._shadow_config.height_after_sun = self._get_entity_state_value(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value, shadow_height_after_sun_static, float)
+        shadow_height_after_sun_static = self._get_static_value(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value,
+                                                                0.0, float, log_warning=False)
+        self._shadow_config.height_after_sun = self._get_entity_state_value(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value,
+                                                                            shadow_height_after_sun_static, float)
 
         # Shadow Angle After Sun
-        shadow_angle_after_sun_static = self._get_static_value(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value, 0.0, float, log_warning=False)
-        self._shadow_config.angle_after_sun = self._get_entity_state_value(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value, shadow_angle_after_sun_static, float)
+        shadow_angle_after_sun_static = self._get_static_value(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value,
+                                                               0.0, float, log_warning=False)
+        self._shadow_config.angle_after_sun = self._get_entity_state_value(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value,
+                                                                           shadow_angle_after_sun_static, float)
 
 
         # Dawn Control Inputs
-        dawn_control_enabled_static = self._get_static_value(SCDawnInput.CONTROL_ENABLED_STATIC.value, True, bool, log_warning=False)
-        self._dawn_config.enabled = self._get_entity_state_value(SCDawnInput.CONTROL_ENABLED_ENTITY.value, dawn_control_enabled_static, bool)
+        dawn_control_enabled_static = self._get_static_value(SCDawnInput.CONTROL_ENABLED_STATIC.value,
+                                                             True, bool, log_warning=False)
+        self._dawn_config.enabled = self._get_entity_state_value(SCDawnInput.CONTROL_ENABLED_ENTITY.value,
+                                                                 dawn_control_enabled_static, bool)
 
         # Dawn Brightness Threshold
-        dawn_brightness_threshold_static = self._get_static_value(SCDawnInput.BRIGHTNESS_THRESHOLD_STATIC.value, 500.0, float, log_warning=False)
-        self._dawn_config.brightness_threshold = self._get_entity_state_value(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value, dawn_brightness_threshold_static, float)
+        dawn_brightness_threshold_static = self._get_static_value(SCDawnInput.BRIGHTNESS_THRESHOLD_STATIC.value,
+                                                                  500.0, float, log_warning=False)
+        self._dawn_config.brightness_threshold = self._get_entity_state_value(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value,
+                                                                              dawn_brightness_threshold_static, float)
 
         # Dawn After Seconds
-        dawn_after_seconds_static = self._get_static_value(SCDawnInput.AFTER_SECONDS_STATIC.value, 15.0, float, log_warning=False)
-        self._dawn_config.after_seconds = self._get_entity_state_value(SCDawnInput.AFTER_SECONDS_ENTITY.value, dawn_after_seconds_static, float)
+        dawn_after_seconds_static = self._get_static_value(SCDawnInput.AFTER_SECONDS_STATIC.value,
+                                                           15.0, float, log_warning=False)
+        self._dawn_config.after_seconds = self._get_entity_state_value(SCDawnInput.AFTER_SECONDS_ENTITY.value,
+                                                                       dawn_after_seconds_static, float)
 
         # Dawn Shutter Max Height
-        dawn_shutter_max_height_static = self._get_static_value(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value, 100.0, float, log_warning=False)
-        self._dawn_config.shutter_max_height = self._get_entity_state_value(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value, dawn_shutter_max_height_static, float)
+        dawn_shutter_max_height_static = self._get_static_value(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value,
+                                                                100.0, float, log_warning=False)
+        self._dawn_config.shutter_max_height = self._get_entity_state_value(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value,
+                                                                            dawn_shutter_max_height_static, float)
 
         # Dawn Shutter Max Angle
-        dawn_shutter_max_angle_static = self._get_static_value(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value, 100.0, float, log_warning=False)
-        self._dawn_config.shutter_max_angle = self._get_entity_state_value(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value, dawn_shutter_max_angle_static, float)
+        dawn_shutter_max_angle_static = self._get_static_value(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value,
+                                                               100.0, float, log_warning=False)
+        self._dawn_config.shutter_max_angle = self._get_entity_state_value(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value,
+                                                                           dawn_shutter_max_angle_static, float)
 
         # Dawn Shutter Look Through Seconds
-        dawn_shutter_look_through_seconds_static = self._get_static_value(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, 15.0, float, log_warning=False)
-        self._dawn_config.shutter_look_through_seconds = self._get_entity_state_value(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, dawn_shutter_look_through_seconds_static, float)
+        dawn_shutter_look_through_seconds_static = self._get_static_value(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value,
+                                                                          15.0, float, log_warning=False)
+        self._dawn_config.shutter_look_through_seconds = self._get_entity_state_value(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value,
+                                                                                      dawn_shutter_look_through_seconds_static, float)
 
         # Dawn Shutter Open Seconds
-        dawn_shutter_open_seconds_static = self._get_static_value(SCDawnInput.SHUTTER_OPEN_SECONDS_STATIC.value, 15.0, float, log_warning=False)
-        self._dawn_config.shutter_open_seconds = self._get_entity_state_value(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value, dawn_shutter_open_seconds_static, float)
+        dawn_shutter_open_seconds_static = self._get_static_value(SCDawnInput.SHUTTER_OPEN_SECONDS_STATIC.value,
+                                                                  15.0, float, log_warning=False)
+        self._dawn_config.shutter_open_seconds = self._get_entity_state_value(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value,
+                                                                              dawn_shutter_open_seconds_static, float)
 
         # Dawn Shutter Look Through Angle
-        dawn_shutter_look_through_angle_static = self._get_static_value(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, 0.0, float, log_warning=False)
-        self._dawn_config.shutter_look_through_angle = self._get_entity_state_value(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value, dawn_shutter_look_through_angle_static, float)
+        dawn_shutter_look_through_angle_static = self._get_static_value(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value,
+                                                                        0.0, float, log_warning=False)
+        self._dawn_config.shutter_look_through_angle = self._get_entity_state_value(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value,
+                                                                                    dawn_shutter_look_through_angle_static, float)
 
         # Dawn Height After Dawn
-        dawn_height_after_dawn_static = self._get_static_value(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value, 0.0, float, log_warning=False)
-        self._dawn_config.height_after_dawn = self._get_entity_state_value(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value, dawn_height_after_dawn_static, float)
+        dawn_height_after_dawn_static = self._get_static_value(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value,
+                                                               0.0, float, log_warning=False)
+        self._dawn_config.height_after_dawn = self._get_entity_state_value(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value,
+                                                                           dawn_height_after_dawn_static, float)
 
         # Dawn Angle After Dawn
-        dawn_angle_after_dawn_static = self._get_static_value(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value, 0.0, float, log_warning=False)
-        self._dawn_config.angle_after_dawn = self._get_entity_state_value(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value, dawn_angle_after_dawn_static, float)
+        dawn_angle_after_dawn_static = self._get_static_value(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value,
+                                                              0.0, float, log_warning=False)
+        self._dawn_config.angle_after_dawn = self._get_entity_state_value(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value,
+                                                                          dawn_angle_after_dawn_static, float)
 
         self.logger.debug(f"Updated input values:\n"
                       f"{_format_config_object_for_logging(self._facade_config, ' -> Facade config: ')},\n"
@@ -1180,7 +1226,8 @@ class ShadowControlManager:
                     shutter_height_percent = self._dynamic_config.lock_height
                     shutter_angle_percent = self._dynamic_config.lock_angle
                     self.logger.info(
-                        f"Integration set to locked with forced position, setting position to {shutter_height_percent:.1f}%/{shutter_angle_percent:.1f}%")
+                        f"Integration set to locked with forced position, "
+                        f"setting position to {shutter_height_percent:.1f}%/{shutter_angle_percent:.1f}%")
                     try:
                         await self.hass.services.async_call(
                             "cover",
@@ -1217,7 +1264,8 @@ class ShadowControlManager:
         has_pos_service = self.hass.services.has_service("cover", "set_cover_position")
         has_tilt_service = self.hass.services.has_service("cover", "set_cover_tilt_position")
 
-        self.logger.debug("Services availability (%s): set_cover_position=%s, set_cover_tilt_position=%s", entity, has_pos_service, has_tilt_service)
+        self.logger.debug("Services availability (%s): set_cover_position=%s, set_cover_tilt_position=%s",
+                          entity, has_pos_service, has_tilt_service)
 
         async_dispatcher_send(
             self.hass,
@@ -1236,7 +1284,8 @@ class ShadowControlManager:
         # We need the value of _previous_shutter_height *before* it's updated for height.
         # So, compare the *calculated* `shutter_height_percent` with what was previously *stored*.
         height_calculated_different_from_previous = (
-                -0.001 < abs(shutter_height_percent - self._previous_shutter_height) > 0.001) if self._previous_shutter_height is not None else True
+                -0.001 < abs(shutter_height_percent - self._previous_shutter_height) > 0.001) \
+            if self._previous_shutter_height is not None else True
 
         angle_to_set_percent = self._should_output_be_updated(
             config_value=self._dynamic_config.movement_restriction_angle,
@@ -1245,10 +1294,12 @@ class ShadowControlManager:
         )
 
         # --- Phase 5: Send commands if values actually changed (only if not initial run AND not locked) ---
-        send_height_command = -0.001 < abs(height_to_set_percent - self._previous_shutter_height) > 0.001 if self._previous_shutter_height is not None else True
+        send_height_command = -0.001 < abs(height_to_set_percent - self._previous_shutter_height) > 0.001 \
+            if self._previous_shutter_height is not None else True
 
         # Send angle command if the angle changed OR if height changed significantly
-        send_angle_command = (-0.001 < abs(angle_to_set_percent - self._previous_shutter_angle) > 0.001 if self._previous_shutter_angle is not None else True) or height_calculated_different_from_previous
+        send_angle_command = (-0.001 < abs(angle_to_set_percent - self._previous_shutter_angle) > 0.001
+                              if self._previous_shutter_angle is not None else True) or height_calculated_different_from_previous
 
         if self._enforce_position_update:
             self.logger.debug("Enforcing position update")
@@ -2468,7 +2519,8 @@ class ShadowControlManager:
         value = self._options.get(key)
         if value is None:
             if log_warning:
-                self.logger.debug("Static key '%s' not found in options. Using default: %s", key, default)
+                self.logger.debug("Static key '%s' not found in options. Using default: %s",
+                                  key, default)
             return default
         try:
             if expected_type == bool: # For boolean selectors (if any static boolean values existed)
@@ -2476,7 +2528,8 @@ class ShadowControlManager:
             return expected_type(value)
         except (ValueError, TypeError):
             if log_warning:
-                self.logger.warning("Static value for key '%s' ('%s') cannot be converted to %s. Using default: %s", key, value, expected_type, default)
+                self.logger.warning("Static value for key '%s' ('%s') cannot be converted to %s. Using default: %s",
+                                    key, value, expected_type, default)
             return default
 
     def _get_entity_state_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
@@ -2492,7 +2545,8 @@ class ShadowControlManager:
 
         if state is None or state.state in ["unavailable", "unknown", "none"]: # 'none' can happen for input_number if not set
             if log_warning:
-                self.logger.debug("Entity '%s' for key '%s' is unavailable or unknown. Using default: %s", entity_id, key, default)
+                self.logger.debug("Entity '%s' for key '%s' is unavailable or unknown. Using default: %s",
+                                  entity_id, key, default)
             return default
 
         try:
@@ -2506,7 +2560,8 @@ class ShadowControlManager:
             return expected_type(state.state)
         except (ValueError, TypeError):
             if log_warning:
-                self.logger.warning("State of entity '%s' for key '%s' ('%s') cannot be converted to %s. Using default: %s", entity_id, key, state.state, expected_type, default)
+                self.logger.warning("State of entity '%s' for key '%s' ('%s') cannot be converted to %s. Using default: %s",
+                                    entity_id, key, state.state, expected_type, default)
             return default
 
     def _get_enum_value(self, key: str, enum_class: type, default_enum_member: Enum, log_warning: bool = True) -> Enum:
@@ -2515,7 +2570,8 @@ class ShadowControlManager:
 
         if value_str is None or not isinstance(value_str, str) or value_str == "":
             if log_warning:
-                self.logger.debug("Enum key '%s' not found or empty in options. Using default: %s", key, default_enum_member.name)
+                self.logger.debug("Enum key '%s' not found or empty in options. Using default: %s",
+                                  key, default_enum_member.name)
             return default_enum_member
 
         try:
@@ -2524,7 +2580,8 @@ class ShadowControlManager:
             return enum_class[value_str.upper()]
         except KeyError:
             if log_warning:
-                self.logger.warning("Value '%s' for enum key '%s' is not a valid %s member. Using default: %s", value_str, key, enum_class.__name__, default_enum_member.name)
+                self.logger.warning("Value '%s' for enum key '%s' is not a valid %s member. Using default: %s",
+                                    value_str, key, enum_class.__name__, default_enum_member.name)
             return default_enum_member
 
     def _convert_shutter_angle_percent_to_degrees(self, angle_percent: float) -> float:
@@ -2539,7 +2596,9 @@ class ShadowControlManager:
 
         if min_slat_angle is None or angle_offset is None:
             self.logger.warning(
-                "_convert_shutter_angle_percent_to_degrees: min_slat_angle (%s) or angle_offset (%s) is None. Using default values (0, 0)", min_slat_angle, angle_offset)
+                "_convert_shutter_angle_percent_to_degrees: min_slat_angle (%s) or angle_offset (%s) is None. "
+                "Using default values (0, 0)",
+                min_slat_angle, angle_offset)
             min_slat_angle = 0.0
             angle_offset = 0.0
 
@@ -2550,7 +2609,8 @@ class ShadowControlManager:
         calculated_degrees = max(min_slat_angle, calculated_degrees)
 
         self.logger.debug(
-            "Angle of %s% equates to %s° (min_slat_angle=%s, angle_offset=%s)", angle_percent, calculated_degrees, min_slat_angle, angle_offset)
+            "Angle of %s% equates to %s° (min_slat_angle=%s, angle_offset=%s)",
+            angle_percent, calculated_degrees, min_slat_angle, angle_offset)
 
         return calculated_degrees
 
@@ -2574,27 +2634,33 @@ class ShadowControlManager:
         # by using a small tolerance to prevent redundant movements.
         if abs(new_value - previous_value) < 0.001:
             # self.logger.debug(
-            #     "_should_output_be_updated: new_value (%s) is nearly identical to previous_value (%s). Returning previous_value", new_value, previous_value)
+            #     "_should_output_be_updated: new_value (%s) is nearly identical to previous_value (%s). Returning previous_value",
+            #     new_value, previous_value)
             return previous_value
 
         # self.logger.debug(
-        #     "_should_output_be_updated: config_value=%s, new_value=%s, previous_value=%s", config_value.name, new_value, previous_value)
+        #     "_should_output_be_updated: config_value=%s, new_value=%s, previous_value=%s", config_value.name,
+        #     new_value, previous_value)
 
         if config_value == MovementRestricted.ONLY_CLOSE:
             if new_value > previous_value:
                 # self.logger.debug(
-                #     "_should_output_be_updated: ONLY_DOWN -> new_value (%s) > previous_value (%s). Returning new_value", new_value, previous_value)
+                #     "_should_output_be_updated: ONLY_DOWN -> new_value (%s) > previous_value (%s). Returning new_value",
+                #     new_value, previous_value)
                 return new_value
             # self.logger.debug(
-            #     "_should_output_be_updated: ONLY_DOWN -> new_value (%s) <= previous_value (%s). Returning previous_value", new_value, previous_value)
+            #     "_should_output_be_updated: ONLY_DOWN -> new_value (%s) <= previous_value (%s). Returning previous_value",
+            #     new_value, previous_value)
             return previous_value
         if config_value == MovementRestricted.ONLY_OPEN:
             if new_value < previous_value:
                 # self.logger.debug(
-                #     "_should_output_be_updated: ONLY_UP -> new_value (%s) < previous_value (%s). Returning new_value", new_value, previous_value)
+                #     "_should_output_be_updated: ONLY_UP -> new_value (%s) < previous_value (%s). Returning new_value",
+                #     new_value, previous_value)
                 return new_value
             # self.logger.debug(
-            #     "_should_output_be_updated: ONLY_UP -> new_value (%s) >= previous_value (%s). Returning previous_value", new_value, previous_value)
+            #     "_should_output_be_updated: ONLY_UP -> new_value (%s) >= previous_value (%s). Returning previous_value",
+            #     new_value, previous_value)
             return previous_value
         if config_value == MovementRestricted.NO_RESTRICTION:
             # self.logger.debug(

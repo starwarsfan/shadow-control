@@ -112,9 +112,13 @@ class ShadowControlSensor(SensorEntity):
         if self._sensor_entry_type == SensorEntries.TARGET_ANGLE_DEGREES:
             return self._manager._calculated_shutter_angle_degrees
         if self._sensor_entry_type == SensorEntries.CURRENT_STATE:
-            return self._manager._current_shutter_state.value if hasattr(self._manager._current_shutter_state, "value") else self._manager._current_shutter_state
+            return self._manager._current_shutter_state.value \
+                if hasattr(self._manager._current_shutter_state, "value") \
+                else self._manager._current_shutter_state
         if self._sensor_entry_type == SensorEntries.LOCK_STATE:
-            return self._manager._current_lock_state.value if hasattr(self._manager._current_lock_state, "value") else self._manager._current_lock_state
+            return self._manager._current_lock_state.value \
+                if hasattr(self._manager._current_lock_state, "value") \
+                else self._manager._current_lock_state
         if self._sensor_entry_type == SensorEntries.NEXT_SHUTTER_MODIFICATION:
             return self._manager._next_modification_timestamp
         if self._sensor_entry_type == SensorEntries.IS_IN_SUN:
