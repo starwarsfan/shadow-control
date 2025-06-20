@@ -21,6 +21,10 @@ ignore = [
     "PLR0912", # Too many branches
     "PLR0915", # Too many statements
     "PLR0911", # Too many return statements
+    "TD003", # Missing issue link
+    "FIX002", # Line contains TODO
+    "ARG002", # Unused method argument
+    "FBT003", # Boolean positional value in function call
 ]
 
 [lint.flake8-pytest-style]
