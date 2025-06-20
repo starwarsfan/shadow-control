@@ -255,7 +255,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                           DOMAIN, type(validated_options))
         except vol.Invalid as exc:
             _LOGGER.exception("[%s] Validation failed after migration to version %s for entry %s",
-                          DOMAIN, CURRENT_SCHEMA_VERSION, config_entry.entry_id, exc)
+                          DOMAIN, CURRENT_SCHEMA_VERSION, config_entry.entry_id)
             return False
 
         _LOGGER.debug("[%s] Preparing to call hass.config_entries.async_update_entry with:",
@@ -293,6 +293,8 @@ class SCDynamicInputConfiguration:
     """Define defaults for dynamic configuration."""
 
     def __init__(self) -> None:
+        """Define defaults for dynamic configuration."""
+
         self.brightness: float = 5000.0
         self.brightness_dawn: float = -1.0
         self.sun_elevation: float = 45.0
@@ -310,6 +312,8 @@ class SCFacadeConfiguration:
     """Define defaults for facade configuration."""
 
     def __init__(self) -> None:
+        """Define defaults for facade configuration."""
+
         self.azimuth: float = 180.0
         self.offset_sun_in: float = -90.0
         self.offset_sun_out: float = 90.0
@@ -333,6 +337,8 @@ class SCShadowControlConfig:
     """Define defaults for trigger configuration."""
 
     def __init__(self) -> None:
+        """Define defaults for trigger configuration."""
+
         self.enabled: bool = True
         self.brightness_threshold: float = 50000.0
         self.after_seconds: float = 15.0
@@ -348,6 +354,8 @@ class SCDawnControlConfig:
     """Define defaults for dawn configuration."""
 
     def __init__(self) -> None:
+        """Define defaults for dawn configuration."""
+
         self.enabled: bool = True
         self.brightness_threshold: float = 500.0
         self.after_seconds: float = 15.0
@@ -369,6 +377,8 @@ class ShadowControlManager:
             entry_id: str,
             instance_logger: logging.Logger
     ) -> None:
+        """Initialize all defaults."""
+
         self.hass = hass
         self._config = config
         self._entry_id = entry_id
@@ -511,6 +521,7 @@ class ShadowControlManager:
         - Trigger initial calculation
         Will be called after instantiation of the manager.
         """
+
         self.logger.debug("Starting manager lifecycle...")
         self._async_register_listeners()
         await self._async_calculate_and_apply_cover_position(None)
@@ -583,15 +594,16 @@ class ShadowControlManager:
         self.logger.debug("Listeners registered.")
 
     async def _async_state_change_listener(self, event: Event) -> None:
-        """Callback for state changes of monitored entities."""
+        """Listen for state changes of monitored entites."""
         entity_id = event.data.get("entity_id")
         old_state = event.data.get("old_state")
         new_state = event.data.get("new_state")
 
         self.logger.debug(
-            f"State change detected for {entity_id}. "
-            f"Old state: {old_state.state if old_state else 'None'}, "
-            f"New state: {new_state.state if new_state else 'None'}."
+            "State change detected for %s. Old state: %s, New state: %s.",
+            entity_id,
+            old_state.state if old_state else 'None',
+            new_state.state if new_state else 'None'
         )
 
         # Check if state really was changed
@@ -606,17 +618,18 @@ class ShadowControlManager:
 
     async def _async_target_cover_entity_state_change_listener(self, event: Event) -> None:
         """Callback for state changes of handled cover entity."""
+
         entity_id = event.data.get("entity_id")
         old_state: State | None = event.data.get("old_state")
         new_state: State | None = event.data.get("new_state")
 
         self.logger.debug(
-            f"Target cover state change detected for {entity_id}. "
-            f"Old state: {old_state.state if old_state else 'None'}, "
-            f"New state: {new_state.state if new_state else 'None'}."
+            "Target cover state change detected for %s. Old state: %s, New state: %s.",
+            entity_id, old_state.state if old_state else 'None',
+            new_state.state if new_state else 'None'
         )
 
-        # Check if state really was changed
+        # Check if the state really was changed
         old_current_height = old_state.attributes.get("current_position") if old_state else None
         new_current_height = new_state.attributes.get("current_position") if new_state else None
         old_current_angle = old_state.attributes.get("current_tilt") if old_state else None
@@ -659,6 +672,7 @@ class ShadowControlManager:
 
     async def _async_home_assistant_started(self, event: Event) -> None:
         """Callback for start of Home Assistant."""
+
         self.logger.debug(
             "Home Assistant started event received. Performing initial calculation.")
         await self._async_calculate_and_apply_cover_position(None)
@@ -669,6 +683,7 @@ class ShadowControlManager:
         - Remove listeners
         - Stop timer
         """
+
         self.logger.debug("Stopping manager lifecycle...")
         if self._recalculation_timer:
             self._recalculation_timer()
@@ -684,7 +699,7 @@ class ShadowControlManager:
 
     async def _update_input_values(self, event: Event | None = None) -> None:
         """Update all relevant input values from configuration or Home Assistant states."""
-        # self.logger.debug(f"Updating all input values")
+        # self.logger.debug("Updating all input values")
 
         # Facade Configuration (static values)
         self._facade_config.azimuth = self._get_static_value(SCFacadeConfig.AZIMUTH_STATIC.value, 180.0, float)
@@ -899,6 +914,7 @@ class ShadowControlManager:
         Calculate and apply the new cover and tilt position for this specific cover.
         This is where your main Shadow Control logic resides.
         """
+
         self.logger.debug("=====================================================================")
         self.logger.debug("Calculating and applying cover positions")
 
@@ -1130,6 +1146,7 @@ class ShadowControlManager:
         Process current shutter state and call corresponding handler functions.
         Handler functions must return the new shutter state.
         """
+
         self.logger.debug(
             "Current shutter state (before processing): %s (%s)",
             self._current_shutter_state.name, self._current_shutter_state.value)
@@ -1206,8 +1223,8 @@ class ShadowControlManager:
         is_locked = (self._current_lock_state != LockState.UNLOCKED)
         if is_locked:
             self.logger.info(
-                f"Integration is locked ({self._current_lock_state.name}). "
-                f"Calculations are running, but physical outputs are skipped."
+                "Integration is locked (%s). Calculations are running, but physical outputs are skipped.",
+                self._current_lock_state.name
             )
             # Update internal _previous values here to reflect that if it *were* unlocked,
             # it would have moved to these calculated positions.
