@@ -493,7 +493,7 @@ class ShadowControlManager:
         self._previous_shutter_height: float | None = None
         self._previous_shutter_angle: float | None = None
         self._is_initial_run: bool = True # Flag for initial integration run
-        self._is_in_sun: bool = False
+        self.is_in_sun: bool = False
         self.next_modification_timestamp: datetime | None = None
 
         self._last_known_height: float | None = None
@@ -668,11 +668,9 @@ class ShadowControlManager:
         await self._async_calculate_and_apply_cover_position(None)
 
     async def async_stop(self) -> None:
-        """
-        Stop ShadowControlManager:
-        - Remove listeners
-        - Stop timer
-        """
+        """Stop ShadowControlManager."""
+        # Remove listeners
+        # Stop timer
         self.logger.debug("Stopping manager lifecycle...")
         if self._recalculation_timer:
             self._recalculation_timer()
@@ -961,7 +959,9 @@ class ShadowControlManager:
         else:
             self.logger.debug("No specific event data (likely initial run or manual trigger)")
 
-        self._check_if_position_changed_externally(self._dynamic_config.shutter_current_height, self._dynamic_config.shutter_current_angle)
+        # TODO: Needs to be implemented later
+        #self._check_if_position_changed_externally(self._dynamic_config.shutter_current_height, self._dynamic_config.shutter_current_angle)
+
         await self._check_if_facade_is_in_sun()
 
         if shadow_handling_was_disabled:
@@ -1041,8 +1041,8 @@ class ShadowControlManager:
             self._sun_between_min_max = False
         self.logger.debug("%s", message)
 
-        self._is_in_sun = _sun_between_offsets and _is_elevation_in_range
-        return self._is_in_sun
+        self.is_in_sun = _sun_between_offsets and _is_elevation_in_range
+        return self.is_in_sun
 
     def _get_current_brightness(self) -> float:
         return self._dynamic_config.brightness
@@ -1135,10 +1135,7 @@ class ShadowControlManager:
                 self.logger.debug("Dawn handling was disabled but currently within a shadow state. Nothing to do")
 
     async def _process_shutter_state(self) -> None:
-        """
-        Process current shutter state and call corresponding handler functions.
-        Handler functions must return the new shutter state.
-        """
+        """Process current shutter state and call corresponding handler functions."""
         self.logger.debug(
             "Current shutter state (before processing): %s (%s)",
             self.current_shutter_state.name, self.current_shutter_state.value)
@@ -1166,11 +1163,6 @@ class ShadowControlManager:
         self.logger.debug(
             "New shutter state after processing: %s (%s)",
             self.current_shutter_state.name, self.current_shutter_state.value)
-
-    def _check_if_position_changed_externally(self, current_height, current_angle):
-        # Replace functionality with _async_target_cover_entity_state_change_listener
-        #self.logger.debug(f"Check for external shutter modification -> TBD")
-        pass
 
     async def _position_shutter(
             self,
@@ -1468,12 +1460,10 @@ class ShadowControlManager:
         return calculated_height_percent
 
     def _calculate_shutter_angle(self) -> float:
-        """
-        Calculate shutter slat angle to prevent sun light within the room.
-        Returns angle in percent (0-100).
-        """
+        """Calculate the shutter slat angle."""
         self.logger.debug("Starting calculation of shutter angle")
 
+        # Prevent sunlight within the room, return angle in percent (0-100).
         elevation = self._dynamic_config.sun_elevation
         azimuth = self._dynamic_config.sun_azimuth  # For logging
         given_shutter_slat_width = self._facade_config.slat_width

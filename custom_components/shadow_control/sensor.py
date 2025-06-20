@@ -104,7 +104,6 @@ class ShadowControlSensor(SensorEntity):
     @property
     def native_value(self):
         """Return the state of the sensor from the manager."""
-        # Verwenden Sie _sensor_entry_type (die Enum)
         if self._sensor_entry_type == SensorEntries.TARGET_HEIGHT:
             return self._manager.calculated_shutter_height
         if self._sensor_entry_type == SensorEntries.TARGET_ANGLE:
@@ -123,7 +122,7 @@ class ShadowControlSensor(SensorEntity):
             return self._manager.next_modification_timestamp
         if self._sensor_entry_type == SensorEntries.IS_IN_SUN:
             # For boolean states, ensure it's a native Python boolean
-            return bool(self._manager._is_in_sun)
+            return bool(self._manager.is_in_sun)
         return None
 
     async def async_added_to_hass(self) -> None:
