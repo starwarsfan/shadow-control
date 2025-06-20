@@ -140,6 +140,10 @@ The cover entities, which should be handled by this **Shadow Control** (SC) inst
 
 Azimuth of the facade in degrees, for which the integration should be configured. This is the viewing direction from the inside to the outside. A perfectly north facade has an Azimuth of 0°, a perfectly south facade has an Azimuth of 180°. The sun area at this facade is the range, from which a shadow handling is desired. This is a maximal range of 180°, from `azimuth_facade` + `offset_sun_in` to `azimuth_facade` + `offset_sun_out`.
 
+rdeckard has provided a nice drawing to the Edomi-LBS, which is still valid at this point:
+
+![Azimuth explanation](/images/azimut.png)
+
 ### Brightness
 `brightness_entity`
 

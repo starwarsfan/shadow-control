@@ -140,6 +140,10 @@ Hier werden die zu steuernden Behang-Entitäten verbunden. Es können beliebig v
 
 Azimut der Fassade in Grad, also die Blickrichtung von innen nach aussen. Eine perfekt nach Norden ausgerichtete Fassade hat ein Azimut von 0°, eine nach Süden ausgerichtete Fassade demzufolge 180°. Der Sonnenbereich dieser Fassade ist der Bereich, in dem die Beschattungssteuerung via **Shadow Control** erfolgen soll. Das ist maximal ein Bereich von 180°, also [Azimut der Fassade](#azimut-der-fassade) + [Beschattungsbeginn](#beschattungsbeginn) bis [Azimut der Fassade](#azimut-der-fassade) + [Beschattungsende](#beschattungsende).
 
+rdeckard hat damals für den Edomi-Baustein eine Zeichnung beigesteuert, welche unverändert auch hier gültig ist:
+
+![Erklärung zum Azimut](/images/azimut.png)
+
 ### Helligkeit
 `brightness_entity`
 
