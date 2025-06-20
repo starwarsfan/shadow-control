@@ -4,10 +4,10 @@
   "codeowners": [
     "@starwarsfan"
   ],
+  "config_flow": true,
   "dependencies": [
     "sun"
   ],
-  "config_flow": true,
   "documentation": "https://github.com/starwarsfan/shadow-control",
   "integration_type": "device",
   "iot_class": "calculated",
