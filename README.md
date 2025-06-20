@@ -1,3 +1,8 @@
+![Version](https://img.shields.io/github/v/release/starwarsfan/shadow-control?style=for-the-badge)
+
+![logo](/images/logo.svg#gh-light-mode-only)
+![logo](/images/dark_logo.svg#gh-dark-mode-only)
+
 # Shadow Control
 
 **A Home Assistant integration to fully automate movement and positioning of rolling shutters.**
@@ -114,6 +119,10 @@ The integration will be triggered by updating the following entities:
 * [Dawn handling dis-/enabled state](#dawn-control-enabled)
 
 The configured cover entity will only be updated if a value has changed since the last run of the integration, which prevents unnecessary movements.
+
+# Installation
+
+Install **Shadow Control** using HACS is recommended. To do so, add https://github.com/starwarsfan/shadow-control as custom repository to HACS. Search and download **Shadow Control** within HACS. After that, restart Home-Assistant and add the integration.
 
 # Configuration
 

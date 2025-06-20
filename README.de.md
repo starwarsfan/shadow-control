@@ -1,3 +1,8 @@
+![Version](https://img.shields.io/github/v/release/starwarsfan/shadow-control?style=for-the-badge)
+
+![logo](/images/logo.svg#gh-light-mode-only)
+![logo](/images/dark_logo.svg#gh-dark-mode-only)
+
 # Shadow Control
 
 **Eine Home Assistant Integration zur vollständig automatischen Steuerung von Raffstoren.**
@@ -114,6 +119,12 @@ Die Berechnung der Position wird durch die Aktualisierung der folgenden Eingäng
 * [Dämmerungssteuerung ein/aus](#dämmerungssteuerung-aktiviert)
 
 Der konfigurierte Behang wird nur dann neu positioniert, wenn sich die berechneten Werte seit dem letzten Lauf der Integration geändert haben. Damit wird die unnötige Neupositionierung der Raffstorenlamellen verhindert.
+
+# Installation
+
+Es wird empfohlen, **Shadow Control** via HACS zu installieren. Dazu bitte das Repository https://github.com/starwarsfan/shadow-control als _Benutzerdefiniertes Repository_ zu HACS hinzufügen. Danach in HACS **Shadow Control** suchen, herunterladen und Home-Assistant neu starten. Im Anschluss kann die Integration unter _Einstellungen > Geräte und Dienste_ hinzugefügt werden.
+
+
 
 # Konfiguration
 
