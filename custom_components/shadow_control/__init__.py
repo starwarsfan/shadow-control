@@ -903,10 +903,7 @@ class ShadowControlManager:
         await self._async_calculate_and_apply_cover_position(event)
 
     async def _async_calculate_and_apply_cover_position(self, event: Event | None) -> None:
-        """
-        Calculate and apply the new cover and tilt position for this specific cover.
-        This is where your main Shadow Control logic resides.
-        """
+        """Calculate and apply cover and tilt position."""
         self.logger.debug("=====================================================================")
         self.logger.debug("Calculating and applying cover positions")
 
@@ -1174,9 +1171,11 @@ class ShadowControlManager:
     ) -> None:
         """Evaluate and perform final shutter positioning commands."""
         self.logger.debug(
-            f"Starting _position_shutter with target height {shutter_height_percent:.2f}% "
-            f"and angle {shutter_angle_percent:.2f}% (is_initial_run: {self._is_initial_run}, "
-            f"lock_state: {self.current_lock_state.name})"
+            "Starting _position_shutter with target height %.2f% and angle %.2f% (is_initial_run: %s, lock_state: %s)",
+            shutter_height_percent,
+            shutter_angle_percent,
+            self._is_initial_run,
+            self.current_lock_state.name
         )
 
         # Always handle timer cancellation if required, regardless of initial run or lock state
@@ -1338,7 +1337,9 @@ class ShadowControlManager:
                         supported_features & CoverEntityFeature.SET_POSITION, has_pos_service)
             else:
                 self.logger.debug(
-                    f"Height '{height_to_set_percent:.2f}%' not sent, value was the same or restricted.")
+                    "Height '%.2f%' not sent, value was the same or restricted.",
+                    height_to_set_percent
+                )
 
             # Angle positioning
             if send_angle_command or self._enforce_position_update:
@@ -1361,7 +1362,9 @@ class ShadowControlManager:
                         supported_features & CoverEntityFeature.SET_TILT_POSITION, has_tilt_service)
             else:
                 self.logger.debug(
-                    f"Angle '{angle_to_set_percent:.2f}%' not sent, value was the same or restricted.")
+                    "Angle '%.2f%' not sent, value was the same or restricted.",
+                    angle_to_set_percent
+                )
 
         # Always update HA state at the end to reflect the latest internal calculated values and attributes
         self._update_extra_state_attributes()
@@ -1449,14 +1452,16 @@ class ShadowControlManager:
                 # 23 + 10 - 3 = 30. (Rounds up to the next full step).
                 adjusted_height = calculated_height_percent + shutter_stepping_percent - remainder
                 self.logger.debug(
-                    f"Adjusting shutter height from {calculated_height_percent:.2f}% "
-                    f"to {adjusted_height:.2f}% (stepping: {shutter_stepping_percent:.2f}%)."
+                    "Adjusting shutter height from %.2f% to %.2f% (stepping: %.2f%).",
+                    calculated_height_percent,
+                    adjusted_height,
+                    shutter_stepping_percent
                 )
                 return adjusted_height
 
         self.logger.debug(
-            f"Shutter height {calculated_height_percent:.2f}% "
-            f"fits stepping or stepping is 0. No adjustment."
+            "Shutter height %.2f% fits stepping or stepping is 0. No adjustment.",
+        calculated_height_percent
         )
         return calculated_height_percent
 
@@ -1597,14 +1602,16 @@ class ShadowControlManager:
             if remainder != 0:
                 adjusted_angle = calculated_angle_percent + shutter_stepping_percent - remainder
                 self.logger.debug(
-                    f"Adjusting shutter height from {calculated_angle_percent:.2f}% "
-                    f"to {adjusted_angle:.2f}% (stepping: {shutter_stepping_percent:.2f}%)."
+                    "Adjusting shutter height from %.2f% to %.2f% (stepping: %.2f%).",
+                    calculated_angle_percent,
+                    adjusted_angle,
+                    shutter_stepping_percent
                 )
                 return adjusted_angle
 
         self.logger.debug(
-            f"Shutter height {calculated_angle_percent:.2f}% "
-            f"fits stepping or stepping is 0. No adjustment."
+            "Shutter height %.2f% fits stepping or stepping is 0. No adjustment.",
+            calculated_angle_percent
         )
         return calculated_angle_percent
 
