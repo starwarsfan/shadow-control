@@ -379,15 +379,15 @@ class ShadowControlManager:
         self._entry_id = entry_id
         self.logger = instance_logger
 
-        self._name = config[SC_CONF_NAME]
+        self.name = config[SC_CONF_NAME]
         self._target_cover_entity_id = config[TARGET_COVER_ENTITY_ID]
 
         # Check if critical values are missing, even if this might be done within async_setup_entry
-        if not self._name:
+        if not self.name:
             self.logger.warning(
                 "Manager init: Manager name is missing in config for entry %s. Using fallback.",
                 entry_id)
-            self._name = f"Unnamed Shadow Control ({entry_id})"
+            self.name = f"Unnamed Shadow Control ({entry_id})"
         if not self._target_cover_entity_id:
             self.logger.error(
                 "Manager init: Target cover entity ID is missing in config for entry %s. "
@@ -484,17 +484,17 @@ class ShadowControlManager:
         self._enforce_position_update: bool = False
 
         # Persistant vars
-        self._current_shutter_state: ShutterState = ShutterState.NEUTRAL
-        self._current_lock_state: LockState = LockState.UNLOCKED
-        self._calculated_shutter_height: float = 0.0
-        self._calculated_shutter_angle: float = 0.0
-        self._calculated_shutter_angle_degrees: float | None = None
+        self.current_shutter_state: ShutterState = ShutterState.NEUTRAL
+        self.current_lock_state: LockState = LockState.UNLOCKED
+        self.calculated_shutter_height: float = 0.0
+        self.calculated_shutter_angle: float = 0.0
+        self.calculated_shutter_angle_degrees: float | None = None
         self._effective_elevation: float | None = None
         self._previous_shutter_height: float | None = None
         self._previous_shutter_angle: float | None = None
         self._is_initial_run: bool = True # Flag for initial integration run
         self._is_in_sun: bool = False
-        self._next_modification_timestamp: datetime | None = None
+        self.next_modification_timestamp: datetime | None = None
 
         self._last_known_height: float | None = None
         self._last_known_angle: float | None = None
@@ -635,11 +635,11 @@ class ShadowControlManager:
         # und der Manager nicht selbst die Änderung verursacht hat (z.B. durch async_set_cover_position)
         if old_current_height != new_current_height or old_current_angle != new_current_angle:
             # Check if modification was triggerd by the ShadowControlManager himself
-            if self._next_modification_timestamp and (
-                    (datetime.now(datetime.UTC) - self._next_modification_timestamp).total_seconds() < 5 # Less than 5 seconds since last change
+            if self.next_modification_timestamp and (
+                    (datetime.now(datetime.UTC) - self.next_modification_timestamp).total_seconds() < 5 # Less than 5 seconds since last change
             ):
                 self.logger.debug("Cover state change detected, but appears to be self-initiated. Skipping lock state update.")
-                self._next_modification_timestamp = None # Reset for next external change
+                self.next_modification_timestamp = None # Reset for next external change
                 return
 
             self.logger.debug(
@@ -734,7 +734,7 @@ class ShadowControlManager:
             SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, False, bool)
         self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(
             SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, False, bool)
-        self._current_lock_state = self._calculate_lock_state()
+        self.current_lock_state = self._calculate_lock_state()
 
         # Check if the stored value is an entity ID (string) or a static number.
         lock_height_config_value = self._options.get(SCDynamicInput.LOCK_HEIGHT_STATIC.value)
@@ -1090,17 +1090,17 @@ class ShadowControlManager:
     def _update_extra_state_attributes(self) -> None:
         """Update the persistent values."""
         self._attr_extra_state_attributes = {
-            "current_shutter_state": self._current_shutter_state,
-            "calculated_shutter_height": self._calculated_shutter_height,
-            "calculated_shutter_angle": self._calculated_shutter_angle,
-            "calculated_shutter_angle_degrees": self._calculated_shutter_angle_degrees,
-            "current_lock_state": self._current_lock_state,
-            "next_modification_timestamp": self._next_modification_timestamp,
+            "current_shutter_state": self.current_shutter_state,
+            "calculated_shutter_height": self.calculated_shutter_height,
+            "calculated_shutter_angle": self.calculated_shutter_angle,
+            "calculated_shutter_angle_degrees": self.calculated_shutter_angle_degrees,
+            "current_lock_state": self.current_lock_state,
+            "next_modification_timestamp": self.next_modification_timestamp,
         }
 
     async def _shadow_handling_was_disabled(self) -> None:
         # False positive warning "This code is unreachable"
-        match self._current_shutter_state:
+        match self.current_shutter_state:
             case ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING | \
                  ShutterState.SHADOW_FULL_CLOSED | \
                  ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING | \
@@ -1109,7 +1109,7 @@ class ShadowControlManager:
                  ShutterState.SHADOW_NEUTRAL:
                 self.logger.debug("Shadow handling was disabled, position shutter at neutral height")
                 self._cancel_recalculation_timer()
-                self._current_shutter_state = ShutterState.NEUTRAL
+                self.current_shutter_state = ShutterState.NEUTRAL
                 self._update_extra_state_attributes()
             case ShutterState.NEUTRAL:
                 self.logger.debug("Shadow handling was disabled, but shutter already at neutral height. Nothing to do")
@@ -1118,7 +1118,7 @@ class ShadowControlManager:
 
     async def _dawn_handling_was_disabled(self) -> None:
         # False positive warning "This code is unreachable"
-        match self._current_shutter_state:
+        match self.current_shutter_state:
             case ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING | \
                  ShutterState.DAWN_FULL_CLOSED | \
                  ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING | \
@@ -1127,7 +1127,7 @@ class ShadowControlManager:
                  ShutterState.DAWN_NEUTRAL:
                 self.logger.debug("Dawn handling was disabled, position shutter at neutral height")
                 self._cancel_recalculation_timer()
-                self._current_shutter_state = ShutterState.NEUTRAL
+                self.current_shutter_state = ShutterState.NEUTRAL
                 self._update_extra_state_attributes()
             case ShutterState.NEUTRAL:
                 self.logger.debug("Dawn handling was disabled, but shutter already at neutral height. Nothing to do")
@@ -1141,31 +1141,31 @@ class ShadowControlManager:
         """
         self.logger.debug(
             "Current shutter state (before processing): %s (%s)",
-            self._current_shutter_state.name, self._current_shutter_state.value)
+            self.current_shutter_state.name, self.current_shutter_state.value)
 
-        handler_func = self._state_handlers.get(self._current_shutter_state)
+        handler_func = self._state_handlers.get(self.current_shutter_state)
         new_shutter_state: ShutterState
 
         if handler_func:
             new_shutter_state = await handler_func()
-            if new_shutter_state is not None and new_shutter_state != self._current_shutter_state:
+            if new_shutter_state is not None and new_shutter_state != self.current_shutter_state:
                 self.logger.debug(
                     "State change from %s to %s",
-                    self._current_shutter_state.name, new_shutter_state.name)
-                self._current_shutter_state = new_shutter_state
+                    self.current_shutter_state.name, new_shutter_state.name)
+                self.current_shutter_state = new_shutter_state
                 self._update_extra_state_attributes()
                 self.logger.debug("Checking if there might be another change required")
                 await self._process_shutter_state()
         else:
             self.logger.debug(
                 "No specific handler for current state or locked. Current lock state: %s",
-                self._current_lock_state.name)
+                self.current_lock_state.name)
             self._cancel_recalculation_timer()
             self._update_extra_state_attributes()
 
         self.logger.debug(
             "New shutter state after processing: %s (%s)",
-            self._current_shutter_state.name, self._current_shutter_state.value)
+            self.current_shutter_state.name, self.current_shutter_state.value)
 
     def _check_if_position_changed_externally(self, current_height, current_angle):
         # Replace functionality with _async_target_cover_entity_state_change_listener
@@ -1183,7 +1183,7 @@ class ShadowControlManager:
         self.logger.debug(
             f"Starting _position_shutter with target height {shutter_height_percent:.2f}% "
             f"and angle {shutter_angle_percent:.2f}% (is_initial_run: {self._is_initial_run}, "
-            f"lock_state: {self._current_lock_state.name})"
+            f"lock_state: {self.current_lock_state.name})"
         )
 
         # Always handle timer cancellation if required, regardless of initial run or lock state
@@ -1193,9 +1193,9 @@ class ShadowControlManager:
 
         # --- Phase 1: Update internal states that should always reflect the calculation ---
         # These are the *calculated target* values.
-        self._calculated_shutter_height = shutter_height_percent
-        self._calculated_shutter_angle = shutter_angle_percent
-        self._calculated_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(
+        self.calculated_shutter_height = shutter_height_percent
+        self.calculated_shutter_angle = shutter_angle_percent
+        self.calculated_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(
             shutter_angle_percent)
 
         # --- Phase 2: Handle initial run special logic ---
@@ -1212,11 +1212,11 @@ class ShadowControlManager:
 
         # --- Phase 3: Check for Lock State BEFORE applying stepping/should_output_be_updated and sending commands ---
         # This ensures that calculations still happen, but outputs are skipped.
-        is_locked = (self._current_lock_state != LockState.UNLOCKED)
+        is_locked = (self.current_lock_state != LockState.UNLOCKED)
         if is_locked:
             self.logger.info(
                 "Integration is locked (%s). Calculations are running, but physical outputs are skipped.",
-                self._current_lock_state.name
+                self.current_lock_state.name
             )
             # Update internal _previous values here to reflect that if it *were* unlocked,
             # it would have moved to these calculated positions.
@@ -1224,7 +1224,7 @@ class ShadowControlManager:
             self._previous_shutter_height = shutter_height_percent
             self._previous_shutter_angle = shutter_angle_percent
 
-            if self._current_lock_state == LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION:
+            if self.current_lock_state == LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION:
                 for entity in self._target_cover_entity_id:
                     current_cover_state: State | None = self.hass.states.get(entity)
 
@@ -1278,7 +1278,7 @@ class ShadowControlManager:
 
         async_dispatcher_send(
             self.hass,
-            f"{DOMAIN}_update_{self._name.lower().replace(' ', '_')}"
+            f"{DOMAIN}_update_{self.name.lower().replace(' ', '_')}"
         )
 
         # Height Handling
@@ -2700,7 +2700,7 @@ class ShadowControlManager:
                 "Timer delay is <= 0 (%ss). Trigger immediate recalculation", delay_seconds)
             await self._async_calculate_and_apply_cover_position(None)
             # At immediate recalculation, there is no new timer
-            self._next_modification_timestamp = None
+            self.next_modification_timestamp = None
             return
 
         self.logger.debug("Starting recalculation timer for %ss", delay_seconds)
@@ -2710,8 +2710,8 @@ class ShadowControlManager:
         self._recalculation_timer_start_time = datetime.now(datetime.UTC)
         self._recalculation_timer_duration_seconds = delay_seconds
 
-        self._next_modification_timestamp = current_utc_time + timedelta(seconds=delay_seconds)
-        self.logger.debug("Next modification scheduled for: %s", self._next_modification_timestamp)
+        self.next_modification_timestamp = current_utc_time + timedelta(seconds=delay_seconds)
+        self.logger.debug("Next modification scheduled for: %s", self.next_modification_timestamp)
 
         # Save callback handle from async_call_later to enable timer canceling
         self._recalculation_timer = async_call_later(
@@ -2732,7 +2732,7 @@ class ShadowControlManager:
         # Reset timer tracking variables
         self._recalculation_timer_start_time = None
         self._recalculation_timer_duration_seconds = None
-        self._next_modification_timestamp = None
+        self.next_modification_timestamp = None
 
     async def _async_timer_callback(self, now) -> None:
         """

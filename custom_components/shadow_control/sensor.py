@@ -28,7 +28,7 @@ async def async_setup_entry(
         _LOGGER.error("[%s] No Shadow Control manager found for config entry %s. Cannot set up sensors.", DOMAIN, config_entry.entry_id)
         return
 
-    _LOGGER.debug("[%s] Creating sensors for manager: %s (from entry %s)", DOMAIN, manager._name, config_entry.entry_id)
+    _LOGGER.debug("[%s] Creating sensors for manager: %s (from entry %s)", DOMAIN, manager.name, config_entry.entry_id)
 
     entities_to_add = [
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_HEIGHT),
@@ -42,9 +42,9 @@ async def async_setup_entry(
 
     if entities_to_add:
         async_add_entities(entities_to_add, True)
-        _LOGGER.info("[%s] Successfully added %s Shadow Control sensor entities for '%s'.", DOMAIN, len(entities_to_add), manager._name)
+        _LOGGER.info("[%s] Successfully added %s Shadow Control sensor entities for '%s'.", DOMAIN, len(entities_to_add), manager.name)
     else:
-        _LOGGER.warning("[%s] No sensor entities created for manager '%s'.", DOMAIN, manager._name)
+        _LOGGER.warning("[%s] No sensor entities created for manager '%s'.", DOMAIN, manager.name)
 
 class ShadowControlSensor(SensorEntity):
     """Represents a Shadow Control sensor."""
@@ -96,7 +96,7 @@ class ShadowControlSensor(SensorEntity):
         # Connect with the device (important for UI)
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, self._entry_id)}, # Hier self._entry_id verwenden
-            name=manager._name, # Der Name der Instanz (aus der Konfiguration)
+            name=manager.name, # Der Name der Instanz (aus der Konfiguration)
             model="Shadow Control",
             manufacturer="Yves Schumann",
         )
@@ -106,21 +106,21 @@ class ShadowControlSensor(SensorEntity):
         """Return the state of the sensor from the manager."""
         # Verwenden Sie _sensor_entry_type (die Enum)
         if self._sensor_entry_type == SensorEntries.TARGET_HEIGHT:
-            return self._manager._calculated_shutter_height
+            return self._manager.calculated_shutter_height
         if self._sensor_entry_type == SensorEntries.TARGET_ANGLE:
-            return self._manager._calculated_shutter_angle
+            return self._manager.calculated_shutter_angle
         if self._sensor_entry_type == SensorEntries.TARGET_ANGLE_DEGREES:
-            return self._manager._calculated_shutter_angle_degrees
+            return self._manager.calculated_shutter_angle_degrees
         if self._sensor_entry_type == SensorEntries.CURRENT_STATE:
-            return self._manager._current_shutter_state.value \
-                if hasattr(self._manager._current_shutter_state, "value") \
-                else self._manager._current_shutter_state
+            return self._manager.current_shutter_state.value \
+                if hasattr(self._manager.current_shutter_state, "value") \
+                else self._manager.current_shutter_state
         if self._sensor_entry_type == SensorEntries.LOCK_STATE:
-            return self._manager._current_lock_state.value \
-                if hasattr(self._manager._current_lock_state, "value") \
-                else self._manager._current_lock_state
+            return self._manager.current_lock_state.value \
+                if hasattr(self._manager.current_lock_state, "value") \
+                else self._manager.current_lock_state
         if self._sensor_entry_type == SensorEntries.NEXT_SHUTTER_MODIFICATION:
-            return self._manager._next_modification_timestamp
+            return self._manager.next_modification_timestamp
         if self._sensor_entry_type == SensorEntries.IS_IN_SUN:
             # For boolean states, ensure it's a native Python boolean
             return bool(self._manager._is_in_sun)
@@ -135,7 +135,7 @@ class ShadowControlSensor(SensorEntity):
         self.async_on_remove(
             async_dispatcher_connect(
                 self.hass,
-                f"{DOMAIN}_update_{self._manager._name.lower().replace(' ', '_')}", # Unique signal for this manager
+                f"{DOMAIN}_update_{self._manager.name.lower().replace(' ', '_')}", # Unique signal for this manager
                 self.async_write_ha_state, # Calls this sensor's method to update its state in HA
             )
         )
