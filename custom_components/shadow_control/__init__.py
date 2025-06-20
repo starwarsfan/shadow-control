@@ -2549,7 +2549,8 @@ class ShadowControlManager:
             return default
 
     def _get_entity_state_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
-        """Gets a dynamic value from an entity state, with type conversion and default."""
+        """Extract dynamic value from an entity state"""
+        # Type conversion and default will be handled
         entity_id = self._options.get(key) # This will be the string entity_id or None
 
         if entity_id is None or not isinstance(entity_id, str) or entity_id == "":
@@ -2566,11 +2567,11 @@ class ShadowControlManager:
             return default
 
         try:
-            if expected_type == bool:
+            if expected_type is bool:
                 return state.state == STATE_ON
-            if expected_type == int:
+            if expected_type is int:
                 return int(float(state.state)) # Handle cases where state might be "10.0"
-            if expected_type == float:
+            if expected_type is float:
                 return float(state.state)
             # For other types, direct conversion might be risky or need specific handling
             return expected_type(state.state)
@@ -2601,12 +2602,10 @@ class ShadowControlManager:
             return default_enum_member
 
     def _convert_shutter_angle_percent_to_degrees(self, angle_percent: float) -> float:
-        """
-        Convert shutter slat angle from percent to degrees.
-        0% = 0 degrees (Slats open)
-        100% = 90 degrees (Slats closed)
-        Could be higher than 90° depending on shutter type.
-        """
+        """Convert percent to degrees."""
+        # 0% = 0 degrees (Slats open)
+        # 100% = 90 degrees (Slats closed)
+        # Could be higher than 90° depending on shutter type.
         min_slat_angle = self._facade_config.slat_min_angle
         angle_offset = self._facade_config.slat_angle_offset
 
@@ -2687,10 +2686,7 @@ class ShadowControlManager:
         return new_value
 
     async def _start_recalculation_timer(self, delay_seconds: float) -> None:
-        """
-        Start timer, which triggers a recalculation after 'delay_seconds'.
-        Existing timers will be stopped before.
-        """
+        """Start new timer."""
         self._cancel_recalculation_timer()
 
         if delay_seconds <= 0:
@@ -2733,10 +2729,7 @@ class ShadowControlManager:
         self.next_modification_timestamp = None
 
     async def _async_timer_callback(self, now) -> None:
-        """
-        Callback which will be called by the Home Assistant scheduler, if timer is running out.
-        Parameter 'now' is the object with the current point in time, which will be returned by async_call_later.
-        """
+        """Trigger position calculation."""
         self.logger.debug("Recalculation timer finished, triggering recalculation")
         # Reset vars, as timer is finished
         self._recalculation_timer = None
@@ -2757,10 +2750,7 @@ class ShadowControlManager:
         return self._recalculation_timer is None
 
     def _calculate_lock_state(self) -> LockState:
-        """
-        Calculate the current lock state based on SCDynamicInput booleans.
-        lock_integration_with_position has precedence over lock_integration.
-        """
+        """Calculate the current lock state."""
         if self._dynamic_config.lock_integration_with_position:
             return LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
         if self._dynamic_config.lock_integration:

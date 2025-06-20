@@ -61,8 +61,8 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         # Optional validation against FULL_OPTIONS_SCHEMA to verify the yaml data
         try:
             validated_options = FULL_OPTIONS_SCHEMA(options_data_for_entry)
-        except vol.Invalid as exc:
-            _LOGGER.error("Validation error during YAML import for '%s': %s", instance_name, exc)
+        except vol.Invalid:
+            _LOGGER.exception("Validation error during YAML import for '%s'", instance_name)
             return self.async_abort(reason="invalid_yaml_config")
 
         # Create ConfigEntry with 'title' as the name within the UI
@@ -141,7 +141,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     options=validated_options_initial,
                 )
             except vol.Invalid as exc:
-                _LOGGER.error("Validation error during final config flow step: %s", exc)
+                _LOGGER.exception("Validation error during final config flow step:")
                 for error in exc.errors:
                     if error.path:
                         errors[str(error.path[0])] = "invalid_input"
@@ -324,7 +324,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                 return self.async_create_entry(title="", data=validated_options)
 
             except vol.Invalid as exc:
-                _LOGGER.error("Validation error during options flow final step: %s", exc)
+                _LOGGER.exception("Validation error during options flow final step:")
                 for error in exc.errors:
                     if error.path:
                         errors[str(error.path[0])] = "invalid_input"
