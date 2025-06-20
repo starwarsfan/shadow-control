@@ -1,8 +1,9 @@
 """Constants for the Shadow Control integration."""
-import voluptuous as vol
 from enum import Enum, IntEnum
-from homeassistant.helpers import selector
+
+import voluptuous as vol
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import selector
 
 DOMAIN = "shadow_control"
 DOMAIN_DATA_MANAGERS = f"{DOMAIN}_managers" # A good practice for unique keys
@@ -102,6 +103,7 @@ class SCDawnInput(Enum):
 # State constants for shutter control
 class ShutterState(IntEnum):
     """Enum for the possible states of the shutter."""
+
     SHADOW_FULL_CLOSE_TIMER_RUNNING = 6
     SHADOW_FULL_CLOSED = 5
     SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING = 4
@@ -119,6 +121,7 @@ class ShutterState(IntEnum):
 # All known internal lock states
 class LockState(IntEnum):
     """Enum for the possible states of the lock."""
+
     UNLOCKED = 0
     LOCKED_MANUALLY = 1
     LOCKED_MANUALLY_WITH_FORCED_POSITION = 2
@@ -127,6 +130,7 @@ class LockState(IntEnum):
 # Configuration values, how to update lock state output
 class UpdateLockStateOutput(IntEnum):
     """Enum for the possible states of the lock."""
+
     UPDATE_LOCKSTATE_OUTPUT__NEVER = -1
     UPDATE_LOCKSTATE_OUTPUT__ALWAYS = 0
     UPDATE_LOCKSTATE_OUTPUT__ONLY_ON_EXTERNAL_MODIFICATION = 1
@@ -135,6 +139,7 @@ class UpdateLockStateOutput(IntEnum):
 # Configuration values for possible movements restriction
 class MovementRestricted(Enum):
     """Enum for the possible movement restrictions."""
+
     NO_RESTRICTION = "no_restriction"
     ONLY_CLOSE = "only_close"
     ONLY_OPEN = "only_open"
@@ -142,11 +147,13 @@ class MovementRestricted(Enum):
 # Configuration values of known shutter types
 class ShutterType(Enum):
     """Enum for the possible shutter types."""
+
     MODE1 = "mode1"
     MODE2 = "mode2"
 
 class SensorEntries(Enum):
     """Enum for the possible sensor entries."""
+
     TARGET_HEIGHT = "target_height"
     TARGET_ANGLE = "target_angle"
     TARGET_ANGLE_DEGREES = "target_angle_degrees"
