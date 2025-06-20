@@ -59,9 +59,7 @@ CONFIG_SCHEMA = vol.Schema(
 # Setup entry point, which is called at every start of Home Assistant.
 # Not specific for config entries.
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """
-    Set up the Shadow Control integration.
-    """
+    """ Set up the Shadow Control integration. """
     _LOGGER.debug(f"[{DOMAIN}] async_setup called.")
 
     # Placeholder for all data of this integration within 'hass.data'.
@@ -93,9 +91,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 # Entry point for setup using ConfigEntry (via ConfigFlow)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """
-    Set up Shadow Control from a config entry.
-    """
+    """ Set up Shadow Control from a config entry. """
     _LOGGER.debug(f"[{DOMAIN}] Setting up Shadow Control from config entry: {entry.entry_id}: data={entry.data}, options={entry.options}")
 
     # Most reliable way to store the 'name',
@@ -177,9 +173,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 # Entry point to unload a ConfigEntry
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """
-    Unload a config entry.
-    """
+    """ Unload a config entry. """
     _LOGGER.debug(f"[{DOMAIN}] Unloading Shadow Control integration for entry: {entry.entry_id}")
 
     # Unload platforms
@@ -198,9 +192,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
-    """
-    Migrate old config entry.
-    """
+    """ Migrate old config entry. """
     _LOGGER.debug(f"[{DOMAIN}] Migrating config entry '{config_entry.entry_id}' from version {config_entry.version} to {CURRENT_SCHEMA_VERSION}")
 
     new_data = config_entry.data.copy()
@@ -324,9 +316,7 @@ class SCDawnControlConfig:
         self.angle_after_dawn: float = 0.0
 
 class ShadowControlManager:
-    """
-    Manages the Shadow Control logic for a single cover.
-    """
+    """ Manages the Shadow Control logic for a single cover. """
 
     def __init__(
             self,
@@ -479,9 +469,7 @@ class ShadowControlManager:
         self.logger.debug(f"Manager lifecycle started.")
 
     def _async_register_listeners(self) -> None:
-        """
-        Register listener for state changes of relevant entities.
-        """
+        """ Register listener for state changes of relevant entities. """
         self.logger.debug(f"Registering listeners...")
 
         # If integration is re-loaded (e.g. by OptionsFlow), Home Assistant is already running.
@@ -547,9 +535,7 @@ class ShadowControlManager:
         self.logger.debug(f"Listeners registered.")
 
     async def _async_state_change_listener(self, event: Event) -> None:
-        """
-        Callback for state changes of monitored entities.
-        """
+        """ Callback for state changes of monitored entities. """
         entity_id = event.data.get("entity_id")
         old_state = event.data.get("old_state")
         new_state = event.data.get("new_state")
@@ -568,9 +554,7 @@ class ShadowControlManager:
             self.logger.debug(f"State change for {entity_id} detected, but value did not change. No recalculation triggered.")
 
     async def _async_target_cover_entity_state_change_listener(self, event: Event) -> None:
-        """
-        Callback for state changes of handled cover entity.
-        """
+        """ Callback for state changes of handled cover entity. """
         entity_id = event.data.get("entity_id")
         old_state: Optional[State] = event.data.get("old_state")
         new_state: Optional[State] = event.data.get("new_state")
@@ -613,18 +597,14 @@ class ShadowControlManager:
             self.logger.debug(f"Target cover state change detected, but height/angle did not change or no external modification.")
 
     def unregister_listeners(self) -> None:
-        """
-        Unregister all listeners for this manager.
-        """
+        """ Unregister all listeners for this manager. """
         self.logger.debug(f"Unregistering listeners")
         for unsub_func in self._listeners:
             unsub_func()
         self._listeners = []
 
     async def _async_home_assistant_started(self, event: Event) -> None:
-        """
-        Callback for start of Home Assistant.
-        """
+        """ Callback for start of Home Assistant. """
         self.logger.debug(f"Home Assistant started event received. Performing initial calculation.")
         await self._async_calculate_and_apply_cover_position(None)
 
@@ -648,9 +628,7 @@ class ShadowControlManager:
         self.logger.debug(f"Manager lifecycle stopped.")
 
     async def _update_input_values(self, event: Event | None = None) -> None:
-        """
-        Update all relevant input values from configuration or Home Assistant states.
-        """
+        """ Update all relevant input values from configuration or Home Assistant states. """
         # self.logger.debug(f"Updating all input values")
 
         # Facade Configuration (static values)
@@ -810,9 +788,7 @@ class ShadowControlManager:
 
     @callback
     async def _async_handle_input_change(self, event: Event | None) -> None:
-        """
-        Handle changes to any relevant input entity for this specific cover.
-        """
+        """ Handle changes to any relevant input entity for this specific cover. """
         self.logger.debug(f"Input change detected. Event: {event}")
 
         await self._async_calculate_and_apply_cover_position(event)
@@ -884,9 +860,7 @@ class ShadowControlManager:
         self._enforce_position_update = False
 
     async def _check_if_facade_is_in_sun(self) -> bool:
-        """
-        Calculate if the sun illuminates the given facade.
-        """
+        """ Calculate if the sun illuminates the given facade. """
         self.logger.debug(f"Checking if facade is in sun")
 
         sun_current_azimuth = self._dynamic_config.sun_azimuth
@@ -963,9 +937,7 @@ class ShadowControlManager:
         return self._dynamic_config.brightness
 
     async def _calculate_effective_elevation(self) -> float | None:
-        """
-        Calculate effective elevation in relation to the facade.
-        """
+        """ Calculate effective elevation in relation to the facade. """
 
         sun_current_azimuth = self._dynamic_config.sun_azimuth
         sun_current_elevation = self._dynamic_config.sun_elevation
@@ -998,9 +970,7 @@ class ShadowControlManager:
 
     # Persistent values
     def _update_extra_state_attributes(self) -> None:
-        """
-        Helper to update the extra_state_attributes dictionary.
-        """
+        """ Helper to update the extra_state_attributes dictionary. """
         self._attr_extra_state_attributes = {
             "current_shutter_state": self._current_shutter_state,
             "calculated_shutter_height": self._calculated_shutter_height,
@@ -1085,9 +1055,7 @@ class ShadowControlManager:
             shadow_position: bool,
             stop_timer: bool
     ) -> None:
-        """
-        Helper to send commands to the cover, which is maintained by this ShadowControlManager instance.
-        """
+        """ Helper to send commands to the cover, which is maintained by this ShadowControlManager instance. """
         self.logger.debug(
             f"Starting _position_shutter with target height {shutter_height_percent:.2f}% "
             f"and angle {shutter_angle_percent:.2f}% (is_initial_run: {self._is_initial_run}, "
@@ -1335,9 +1303,7 @@ class ShadowControlManager:
         return self._handle_shutter_height_stepping(shutter_height_to_set_percent)
 
     def _handle_shutter_height_stepping(self, calculated_height_percent: float) -> float:
-        """
-        Modify shutter height according to configured minimal stepping.
-        """
+        """ Modify shutter height according to configured minimal stepping. """
         shutter_stepping_percent = self._facade_config.shutter_stepping_height
 
         if shutter_stepping_percent is None:
@@ -1473,9 +1439,7 @@ class ShadowControlManager:
         return float(final_shutter_angle_percent)
 
     def _handle_shutter_angle_stepping(self, calculated_angle_percent: float) -> float:
-        """
-        Modify shutter angle according to configured minimal stepping.
-        """
+        """ Modify shutter angle according to configured minimal stepping. """
         self.logger.debug(
             f"Computing shutter angle stepping for {calculated_angle_percent}%")
 
@@ -2242,21 +2206,15 @@ class ShadowControlManager:
     # #######################################################################
 
     async def _is_shadow_control_enabled(self) -> bool:
-        """
-        Check if shadow handling is activated.
-        """
+        """ Check if shadow handling is activated. """
         return self._shadow_config.enabled
 
     async def _is_dawn_control_enabled(self) -> bool:
-        """
-        Check if dawn handling is activated.
-        """
+        """ Check if dawn handling is activated. """
         return self._dawn_config.enabled
 
     def _get_static_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
-        """
-        Gets a static value directly from options, with type conversion and default.
-        """
+        """ Gets a static value directly from options, with type conversion and default. """
         value = self._options.get(key)
         if value is None:
             if log_warning:
@@ -2272,9 +2230,7 @@ class ShadowControlManager:
             return default
 
     def _get_entity_state_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
-        """
-        Gets a dynamic value from an entity state, with type conversion and default.
-        """
+        """ Gets a dynamic value from an entity state, with type conversion and default. """
         entity_id = self._options.get(key) # This will be the string entity_id or None
 
         if entity_id is None or not isinstance(entity_id, str) or entity_id == '':
@@ -2304,9 +2260,7 @@ class ShadowControlManager:
             return default
 
     def _get_enum_value(self, key: str, enum_class: type, default_enum_member: Enum, log_warning: bool = True) -> Enum:
-        """
-        Gets an enum member from a string value stored in options.
-        """
+        """ Gets an enum member from a string value stored in options. """
         value_str = self._options.get(key)
 
         if value_str is None or not isinstance(value_str, str) or value_str == '':
@@ -2438,9 +2392,7 @@ class ShadowControlManager:
         self._update_extra_state_attributes()
 
     def _cancel_recalculation_timer(self) -> None:
-        """
-        Cancel running timer.
-        """
+        """ Cancel running timer. """
         if self._recalculation_timer:
             self.logger.info(f"Canceling recalculation timer")
             self._recalculation_timer()
@@ -2464,9 +2416,7 @@ class ShadowControlManager:
         await self._async_calculate_and_apply_cover_position(None)
 
     def get_remaining_timer_seconds(self) -> float | None:
-        """
-        Return remaining time of running timer or None if no timer is running.
-        """
+        """ Return remaining time of running timer or None if no timer is running. """
         if self._recalculation_timer and self._recalculation_timer_start_time and self._recalculation_timer_duration_seconds is not None:
             elapsed_time = (datetime.now(timezone.utc) - self._recalculation_timer_start_time).total_seconds()
             remaining_time = self._recalculation_timer_duration_seconds - elapsed_time
@@ -2474,9 +2424,7 @@ class ShadowControlManager:
         return None
 
     def _is_timer_finished(self) -> bool:
-        """
-        Check if a recalculation timer is running.
-        """
+        """ Check if a recalculation timer is running. """
         return self._recalculation_timer is None
 
     def _calculate_lock_state(self) -> LockState:
@@ -2493,9 +2441,7 @@ class ShadowControlManager:
 
 # Helper for dynamic log output
 def _format_config_object_for_logging(obj, prefix: str = "") -> str:
-    """
-    Format the public attributes of a given configuration object into one string
-    """
+    """ Format the public attributes of a given configuration object into one string """
     if not obj:
         return f"{prefix}None"
 

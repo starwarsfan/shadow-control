@@ -26,23 +26,17 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    """
-    Handle a config flow for Shadow Control.
-    """
+    """ Handle a config flow for Shadow Control. """
     # Get the schema version from constants
     VERSION = VERSION
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self):
-        """
-        Initialize the config flow.
-        """
+        """ Initialize the config flow. """
         self.config_data = {}
 
     async def async_step_import(self, import_config: dict[str, Any]) -> FlowResult:
-        """
-        Handle a flow initiated by a YAML configuration.
-        """
+        """ Handle a flow initiated by a YAML configuration. """
         # Check if there is already an instance to prevent duplicated entries
         # The name is the key
         instance_name = import_config.get(SC_CONF_NAME)
@@ -78,9 +72,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """
-        Handle the initial step.
-        """
+        """ Handle the initial step. """
         errors: dict[str, str] = {}
 
         # Initialize data for the form, using user_input if available, else empty for initial display
@@ -162,9 +154,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     def _clean_number_inputs(self, user_input: dict[str, Any]) -> dict[str, Any]:
-        """
-        Convert empty string number fields to 0 or their default.
-        """
+        """ Convert empty string number fields to 0 or their default. """
         cleaned_input = user_input.copy()
         for key, value in cleaned_input.items():
             if isinstance(value, str) and value == "":
@@ -177,26 +167,18 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> config_entries.OptionsFlow:
-        """
-        Create the options flow.
-        """
+        """ Create the options flow. """
         return ShadowControlOptionsFlowHandler()
 
 class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
-    """
-    Handle options flow for Shadow Control.
-    """
+    """ Handle options flow for Shadow Control. """
 
     def __init__(self):
-        """
-        Initialize options flow.
-        """
+        """ Initialize options flow. """
         self.options_data = None
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """
-        Manage the options.
-        """
+        """ Manage the options. """
         # Initialize options_data from config_entry.options, with all editable options
         self.options_data = dict(self.config_entry.options)
 
@@ -206,9 +188,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         return await self.async_step_user(user_input)
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """
-        Handle general data options.
-        """
+        """ Handle general data options. """
         errors: dict[str, str] = {}
         if user_input is not None:
             _LOGGER.debug(f"[OptionsFlow] Received user_input: {user_input}")
@@ -245,9 +225,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_facade_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """
-        Handle facade settings options.
-        """
+        """ Handle facade settings options. """
         errors: dict[str, str] = {}
         if user_input is not None:
             _LOGGER.debug(f"[OptionsFlow] Received user_input: {user_input}")
@@ -278,9 +256,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_dynamic_inputs(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """
-        Handle dynamic inputs options.
-        """
+        """ Handle dynamic inputs options. """
         errors: dict[str, str] = {}
         if user_input is not None:
             _LOGGER.debug(f"[OptionsFlow] Received user_input: {user_input}")
@@ -314,9 +290,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_shadow_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """
-        Handle shadow settings options.
-        """
+        """ Handle shadow settings options. """
         errors: dict[str, str] = {}
         if user_input is not None:
             self.options_data.update(self._clean_number_inputs(user_input))
@@ -329,9 +303,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_dawn_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """
-        Handle dawn settings options (final options step).
-        """
+        """ Handle dawn settings options (final options step). """
         errors: dict[str, str] = {}
         if user_input is not None:
             self.options_data.update(self._clean_number_inputs(user_input))
@@ -365,9 +337,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     def _clean_number_inputs(self, user_input: dict[str, Any]) -> dict[str, Any]:
-        """
-        Convert empty string number fields to 0 or their default.
-        """
+        """ Convert empty string number fields to 0 or their default. """
         cleaned_input = user_input.copy()
         for key, value in cleaned_input.items():
             if isinstance(value, str) and value == "":

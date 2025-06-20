@@ -23,9 +23,7 @@ async def async_setup_entry(
         config_entry: ConfigEntry,
         async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """
-    Set up the Shadow Control sensor platform from a config entry.
-    """
+    """ Set up the Shadow Control sensor platform from a config entry. """
     _LOGGER.debug(f"[{DOMAIN}] Setting up sensor platform from config entry: {config_entry.entry_id}")
 
     manager: ShadowControlManager | None = hass.data.get(DOMAIN_DATA_MANAGERS, {}).get(config_entry.entry_id)
@@ -53,14 +51,10 @@ async def async_setup_entry(
         _LOGGER.warning(f"[{DOMAIN}] No sensor entities created for manager '{manager._name}'.")
 
 class ShadowControlSensor(SensorEntity):
-    """
-    Represents a Shadow Control sensor.
-    """
+    """ Represents a Shadow Control sensor. """
 
     def __init__(self, manager: ShadowControlManager, entry_id: str, sensor_entry_type: SensorEntries) -> None:
-        """
-        Initialize the sensor.
-        """
+        """ Initialize the sensor. """
         self._manager = manager
         self._entry_id = entry_id
 
@@ -113,9 +107,7 @@ class ShadowControlSensor(SensorEntity):
 
     @property
     def native_value(self):
-        """
-        Return the state of the sensor from the manager.
-        """
+        """ Return the state of the sensor from the manager. """
         # Verwenden Sie _sensor_entry_type (die Enum)
         if self._sensor_entry_type == SensorEntries.TARGET_HEIGHT:
             return self._manager._calculated_shutter_height
@@ -135,9 +127,7 @@ class ShadowControlSensor(SensorEntity):
         return None
 
     async def async_added_to_hass(self) -> None:
-        """
-        Run when this entity has been added to Home Assistant.
-        """
+        """ Run when this entity has been added to Home Assistant. """
         # Register a Dispatcher listener here to receive updates.
         # The manager must then send this signal when its data is updated.
         # The signal name must exactly match what the manager sends.
