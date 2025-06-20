@@ -3,11 +3,10 @@ import datetime
 import logging
 import math
 import re
-from datetime import datetime, timedelta, timezone
-from enum import Enum
-from typing import Any, Optional, Callable, Awaitable
-
 import voluptuous as vol
+
+from datetime import timedelta, timezone
+from enum import Enum
 from homeassistant.components.cover import CoverEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -20,6 +19,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.event import async_track_state_change_event, async_call_later
 from homeassistant.helpers.typing import ConfigType
+from typing import Any, Optional, Callable, Awaitable
 
 from .const import (
     DEBUG_ENABLED,
@@ -34,7 +34,6 @@ from .const import (
     SCDawnInput,
     ShutterState,
     ShutterType,
-    SC_CONF_COVERS,
     SC_CONF_NAME,
     TARGET_COVER_ENTITY_ID,
     YAML_CONFIG_SCHEMA,
