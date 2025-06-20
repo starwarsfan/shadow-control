@@ -66,6 +66,7 @@
       "user": {
         "description": "Configure the first part of the details for the facade (or even the window), which should be handled by this SC instance",
         "data": {
+          "name": "Instance name",
           "target_cover_entity": "Cover to maintain",
           "facade_azimuth_static": "Facade azimuth",
           "facade_offset_sun_in_static": "Sun start offset",

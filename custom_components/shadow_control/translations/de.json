@@ -66,6 +66,7 @@
       "user": {
         "description": "Hier wird der erste Teil der Details der zu steuernden Fassade resp. des zu steuernden Fensters konfiguriert.",
         "data": {
+          "name": "Instanzname",
           "target_cover_entity": "Behang-Entität",
           "facade_azimuth_static": "Azimut",
           "facade_offset_sun_in_static": "Start Sonneneinfall",
