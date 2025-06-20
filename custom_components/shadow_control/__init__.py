@@ -253,7 +253,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                           DOMAIN, validated_options)
             _LOGGER.debug("[%s] Type of validated_options: %s",
                           DOMAIN, type(validated_options))
-        except vol.Invalid as exc:
+        except vol.Invalid:
             _LOGGER.exception("[%s] Validation failed after migration to version %s for entry %s",
                           DOMAIN, CURRENT_SCHEMA_VERSION, config_entry.entry_id)
             return False
@@ -294,7 +294,6 @@ class SCDynamicInputConfiguration:
 
     def __init__(self) -> None:
         """Define defaults for dynamic configuration."""
-
         self.brightness: float = 5000.0
         self.brightness_dawn: float = -1.0
         self.sun_elevation: float = 45.0
@@ -313,7 +312,6 @@ class SCFacadeConfiguration:
 
     def __init__(self) -> None:
         """Define defaults for facade configuration."""
-
         self.azimuth: float = 180.0
         self.offset_sun_in: float = -90.0
         self.offset_sun_out: float = 90.0
@@ -338,7 +336,6 @@ class SCShadowControlConfig:
 
     def __init__(self) -> None:
         """Define defaults for trigger configuration."""
-
         self.enabled: bool = True
         self.brightness_threshold: float = 50000.0
         self.after_seconds: float = 15.0
@@ -355,7 +352,6 @@ class SCDawnControlConfig:
 
     def __init__(self) -> None:
         """Define defaults for dawn configuration."""
-
         self.enabled: bool = True
         self.brightness_threshold: float = 500.0
         self.after_seconds: float = 15.0
@@ -378,7 +374,6 @@ class ShadowControlManager:
             instance_logger: logging.Logger
     ) -> None:
         """Initialize all defaults."""
-
         self.hass = hass
         self._config = config
         self._entry_id = entry_id
@@ -515,13 +510,10 @@ class ShadowControlManager:
         self.logger.debug("Manager initialized for target: %s.", self._target_cover_entity_id)
 
     async def async_start(self) -> None:
-        """
-        Start ShadowControlManager:
-        - Register listeners
-        - Trigger initial calculation
-        Will be called after instantiation of the manager.
-        """
-
+        """Start ShadowControlManager."""
+        # - Register listeners
+        # - Trigger initial calculation
+        # Will be called after instantiation of the manager.
         self.logger.debug("Starting manager lifecycle...")
         self._async_register_listeners()
         await self._async_calculate_and_apply_cover_position(None)
@@ -602,8 +594,8 @@ class ShadowControlManager:
         self.logger.debug(
             "State change detected for %s. Old state: %s, New state: %s.",
             entity_id,
-            old_state.state if old_state else 'None',
-            new_state.state if new_state else 'None'
+            old_state.state if old_state else "None",
+            new_state.state if new_state else "None"
         )
 
         # Check if state really was changed
@@ -618,15 +610,14 @@ class ShadowControlManager:
 
     async def _async_target_cover_entity_state_change_listener(self, event: Event) -> None:
         """Callback for state changes of handled cover entity."""
-
         entity_id = event.data.get("entity_id")
         old_state: State | None = event.data.get("old_state")
         new_state: State | None = event.data.get("new_state")
 
         self.logger.debug(
             "Target cover state change detected for %s. Old state: %s, New state: %s.",
-            entity_id, old_state.state if old_state else 'None',
-            new_state.state if new_state else 'None'
+            entity_id, old_state.state if old_state else "None",
+            new_state.state if new_state else "None"
         )
 
         # Check if the state really was changed
@@ -672,7 +663,6 @@ class ShadowControlManager:
 
     async def _async_home_assistant_started(self, event: Event) -> None:
         """Callback for start of Home Assistant."""
-
         self.logger.debug(
             "Home Assistant started event received. Performing initial calculation.")
         await self._async_calculate_and_apply_cover_position(None)
@@ -683,7 +673,6 @@ class ShadowControlManager:
         - Remove listeners
         - Stop timer
         """
-
         self.logger.debug("Stopping manager lifecycle...")
         if self._recalculation_timer:
             self._recalculation_timer()
@@ -895,12 +884,17 @@ class ShadowControlManager:
         self._dawn_config.angle_after_dawn = self._get_entity_state_value(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value,
                                                                           dawn_angle_after_dawn_static, float)
 
-        self.logger.debug(f"Updated input values:\n"
-                      f"{_format_config_object_for_logging(self._facade_config, ' -> Facade config: ')},\n"
-                      f"{_format_config_object_for_logging(self._dynamic_config, ' -> Dynamic config: ')},\n"
-                      f"{_format_config_object_for_logging(self._shadow_config, ' -> Shadow config: ')},\n"
-                      f"{_format_config_object_for_logging(self._dawn_config, ' -> Dawn config: ')}"
-                      )
+        facade = _format_config_object_for_logging(self._facade_config, " -> Facade config: ")
+        dynamic = _format_config_object_for_logging(self._dynamic_config, " -> Dynamic config: ")
+        shadow = _format_config_object_for_logging(self._shadow_config, " -> Shadow config: ")
+        dawn = _format_config_object_for_logging(self._dawn_config, " -> Dawn config: ")
+        self.logger.debug(
+            "Updated input values:\n%s,\n%s,\n%s,\n%s",
+            facade,
+            dynamic,
+            shadow,
+            dawn
+        )
 
     @callback
     async def _async_handle_input_change(self, event: Event | None) -> None:
@@ -914,7 +908,6 @@ class ShadowControlManager:
         Calculate and apply the new cover and tilt position for this specific cover.
         This is where your main Shadow Control logic resides.
         """
-
         self.logger.debug("=====================================================================")
         self.logger.debug("Calculating and applying cover positions")
 
@@ -1146,7 +1139,6 @@ class ShadowControlManager:
         Process current shutter state and call corresponding handler functions.
         Handler functions must return the new shutter state.
         """
-
         self.logger.debug(
             "Current shutter state (before processing): %s (%s)",
             self._current_shutter_state.name, self._current_shutter_state.value)
@@ -1252,8 +1244,8 @@ class ShadowControlManager:
                             {"entity_id": entity, "position": 100 - shutter_height_percent},
                             blocking=False
                         )
-                    except Exception as e:
-                        self.logger.error("Failed to set position: %s", e)
+                    except Exception:
+                        self.logger.exception("Failed to set position:")
                     try:
                         await self.hass.services.async_call(
                             "cover",
@@ -1261,8 +1253,8 @@ class ShadowControlManager:
                             {"entity_id": entity, "tilt_position": 100 - shutter_angle_percent},
                             blocking=False
                         )
-                    except Exception as e:
-                        self.logger.error("Failed to set tilt position: %s", e)
+                    except Exception:
+                        self.logger.exception("Failed to set tilt position:")
 
             self._update_extra_state_attributes()
             return  # Exit here, nothing else to do
@@ -1344,8 +1336,8 @@ class ShadowControlManager:
                             {"entity_id": entity, "position": 100 - shutter_height_percent},
                             blocking=False
                         )
-                    except Exception as e:
-                        self.logger.error("Failed to set position: %s", e)
+                    except Exception:
+                        self.logger.exception("Failed to set position:")
                     self._previous_shutter_height = shutter_height_percent
                 else:
                     self.logger.debug(
@@ -1367,8 +1359,8 @@ class ShadowControlManager:
                             {"entity_id": entity, "tilt_position": 100 - shutter_angle_percent},
                             blocking=False
                         )
-                    except Exception as e:
-                        self.logger.error("Failed to set tilt position: %s", e)
+                    except Exception:
+                        self.logger.exception("Failed to set tilt position:")
                     self._previous_shutter_angle = shutter_angle_percent
                 else:
                     self.logger.debug(
@@ -1477,8 +1469,6 @@ class ShadowControlManager:
 
     def _calculate_shutter_angle(self) -> float:
         """
-        Berechnet den Zielwinkel der Lamellen, um Sonneneinstrahlung zu verhindern.
-        Gibt den berechneten Winkel in Prozent (0-100) zurück.
         Calculate shutter slat angle to prevent sun light within the room.
         Returns angle in percent (0-100).
         """
@@ -1503,12 +1493,18 @@ class ShadowControlManager:
                 or effective_elevation is None
         ):
             self.logger.warning(
-                f"Not all required values for angle calculation available. "
-                f"elevation={elevation}, azimuth={azimuth}, "
-                f"slat_width={given_shutter_slat_width}, slat_distance={shutter_slat_distance}, "
-                f"angle_offset={shutter_angle_offset}, min_angle={min_shutter_angle_percent}, "
-                f"max_angle={max_shutter_angle_percent}, shutter_type={shutter_type}, "
-                f"effective_elevation={effective_elevation}. Returning 0.0")
+                "Not all required values for angle calculation available. elevation=%s, azimuth=%s, slat_width=%s, slat_distance=%s, "
+                "angle_offset=%s, min_angle=%s, max_angle=%s, shutter_type=%s, effective_elevation=%s. Returning 0.0",
+                elevation,
+                azimuth,
+                given_shutter_slat_width,
+                shutter_slat_distance,
+                shutter_angle_offset,
+                min_shutter_angle_percent,
+                max_shutter_angle_percent,
+                shutter_type,
+                effective_elevation
+            )
             return 0.0  # Default if values missing
 
         # ==============================
@@ -1524,8 +1520,9 @@ class ShadowControlManager:
 
         if not (-1 <= asin_arg <= 1):
             self.logger.warning(
-                f"Argument for asin() out of valid range ({-1 <= asin_arg <= 1}). "
-                f"Current value: {asin_arg}. Unable to compute angle, returning 0.0")
+                "Argument for asin() out of valid range (-1 <= arg <= 1). Current value: %s. Unable to compute angle, returning 0.0",
+                asin_arg
+            )
             return 0.0
 
         beta_rad = math.asin(asin_arg)
@@ -1538,9 +1535,13 @@ class ShadowControlManager:
         # so this is the result of the calculation
         shutter_angle_degrees = round(90 - gamma_deg)
 
-        self.logger.debug(f"Elevation/azimuth: {elevation}°/{azimuth}°, "
-                      f"resulting effective elevation and shutter angle: "
-                      f"{effective_elevation}°/{shutter_angle_degrees}° (without stepping and offset)")
+        self.logger.debug(
+            "Elevation/azimuth: %s°/%s°, resulting effective elevation and shutter angle: %s°/%s° (without stepping and offset)",
+            elevation,
+            azimuth,
+            effective_elevation,
+            shutter_angle_degrees
+        )
 
         shutter_angle_percent: float
         if shutter_type == ShutterType.MODE1:
