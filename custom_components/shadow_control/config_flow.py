@@ -44,10 +44,10 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         if instance_name:
             for entry in self.hass.config_entries.async_entries(DOMAIN):
                 if entry.data.get(SC_CONF_NAME) == instance_name:
-                    _LOGGER.warning(f"Attempted to import duplicate Shadow Control instance '{instance_name}' from YAML. Skipping.")
+                    _LOGGER.warning("Attempted to import duplicate Shadow Control instance '%s' from YAML. Skipping.", instance_name)
                     return self.async_abort(reason="already_configured")
 
-        _LOGGER.debug(f"[ConfigFlow] Importing from YAML with config: {import_config}")
+        _LOGGER.debug("[ConfigFlow] Importing from YAML with config: %s", import_config)
 
         # Convert yaml configuration into ConfigEntry, 'name' goes to 'data' section,
         # all the rest into 'options'.
@@ -62,7 +62,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         try:
             validated_options = FULL_OPTIONS_SCHEMA(options_data_for_entry)
         except vol.Invalid as exc:
-            _LOGGER.error(f"Validation error during YAML import for '{instance_name}': {exc}")
+            _LOGGER.error("Validation error during YAML import for '%s': %s", instance_name, exc)
             return self.async_abort(reason="invalid_yaml_config")
 
         # Create ConfigEntry with 'title' as the name within the UI
@@ -81,7 +81,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         form_data = user_input if user_input is not None else {}
 
         if user_input is not None:
-            _LOGGER.debug(f"[ConfigFlow] Received user_input: {user_input}")
+            _LOGGER.debug("[ConfigFlow] Received user_input: %s", user_input)
 
             # Manual validation of input fields to provide possible error messages
             # for each field at once and not step by step.
@@ -134,7 +134,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # All fine, now perform voluptuous validation
             try:
                 validated_options_initial = STEP_MINIMAL_OPTIONS(options_data_for_entry)
-                _LOGGER.debug(f"Creating entry with data: {config_data_for_entry} and options: {validated_options_initial}")
+                _LOGGER.debug("Creating entry with data: %s and options: %s", config_data_for_entry, validated_options_initial)
                 return self.async_create_entry(
                     title=instance_name,
                     data=config_data_for_entry,
@@ -162,7 +162,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 # For selectors, the default should come from the schema itself
                 # or be explicitly handled. Setting to 0 here for number fields.
                 cleaned_input[key] = 0
-                _LOGGER.debug(f"Cleaned empty string for key '{key}' to 0.")
+                _LOGGER.debug("Cleaned empty string for key '%s' to 0.", key)
         return cleaned_input
 
     @staticmethod
@@ -183,7 +183,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         # Initialize options_data from config_entry.options, with all editable options
         self.options_data = dict(self.config_entry.options)
 
-        _LOGGER.debug(f"Initial options_data: {self.options_data}")
+        _LOGGER.debug("Initial options_data: %s", self.options_data)
 
         # Redirect to the first specific options step
         return await self.async_step_user(user_input)
@@ -192,7 +192,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         """Handle general data options."""
         errors: dict[str, str] = {}
         if user_input is not None:
-            _LOGGER.debug(f"[OptionsFlow] Received user_input: {user_input}")
+            _LOGGER.debug("[OptionsFlow] Received user_input: %s", user_input)
 
             # Manual validation of input fields to provide possible error messages
             # for each field at once and not step by step.
@@ -229,7 +229,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         """Handle facade settings options."""
         errors: dict[str, str] = {}
         if user_input is not None:
-            _LOGGER.debug(f"[OptionsFlow] Received user_input: {user_input}")
+            _LOGGER.debug("[OptionsFlow] Received user_input: %s", user_input)
 
             # Manual validation of input fields to provide possible error messages
             # for each field at once and not step by step.
@@ -260,7 +260,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         """Handle dynamic inputs options."""
         errors: dict[str, str] = {}
         if user_input is not None:
-            _LOGGER.debug(f"[OptionsFlow] Received user_input: {user_input}")
+            _LOGGER.debug("[OptionsFlow] Received user_input: %s", user_input)
 
             # Manual validation of input fields to provide possible error messages
             # for each field at once and not step by step.
@@ -308,12 +308,12 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         errors: dict[str, str] = {}
         if user_input is not None:
             self.options_data.update(self._clean_number_inputs(user_input))
-            _LOGGER.debug(f"Final options data before update: {self.options_data}")
+            _LOGGER.debug("Final options data before update: %s", self.options_data)
 
             try:
                 # Validate the entire options configuration using the combined schema
                 validated_options = FULL_OPTIONS_SCHEMA(self.options_data)
-                _LOGGER.debug(f"Validated options data: {validated_options}")
+                _LOGGER.debug("Validated options data: %s", validated_options)
 
                 self.hass.config_entries.async_update_entry(
                     self.config_entry,
@@ -343,5 +343,5 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         for key, value in cleaned_input.items():
             if isinstance(value, str) and value == "":
                 cleaned_input[key] = 0
-                _LOGGER.debug(f"Cleaned empty string for key '{key}' to 0 in options flow.")
+                _LOGGER.debug("Cleaned empty string for key '%s' to 0 in options flow.", key)
         return cleaned_input

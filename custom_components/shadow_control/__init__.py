@@ -3,10 +3,9 @@ import datetime
 import logging
 import math
 import re
-from collections.abc import Awaitable, Callable
 from datetime import timedelta, timezone
 from enum import Enum
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 import voluptuous as vol
 from homeassistant.components.cover import CoverEntityFeature
@@ -41,6 +40,9 @@ from .const import (
     ShutterType,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+
 _GLOBAL_DOMAIN_LOGGER = logging.getLogger(DOMAIN)
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,19 +63,21 @@ CONFIG_SCHEMA = vol.Schema(
 # Not specific for config entries.
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the Shadow Control integration."""
-    _LOGGER.debug(f"[{DOMAIN}] async_setup called.")
+    _LOGGER.debug("[%s] async_setup called.", DOMAIN)
 
     # Placeholder for all data of this integration within 'hass.data'.
     # Will be used to store things like the ShadowControlManager instances.
-    # hass.data[DOMAIN_DATA_MANAGERS] will be a dictionary to map ConfigEntry IDs to manager instances.
+    # hass.data[DOMAIN_DATA_MANAGERS] will be a dictionary to map ConfigEntry
+    # IDs to manager instances.
     hass.data.setdefault(DOMAIN_DATA_MANAGERS, {})
 
     if DOMAIN in config:
         for entry_config in config[DOMAIN]:
-            # Import yaml configuration into ConfigEntry, separated the same way than
+            # Import YAML configuration into ConfigEntry, separated the same way than
             # on the ConfigFlow: Name in 'data', rest in 'options'
 
-            instance_name = entry_config.pop(SC_CONF_NAME) # Remove name from yaml configuration
+            # Remove name from YAML configuration
+            instance_name = entry_config.pop(SC_CONF_NAME)
 
             hass.async_create_task(
                 hass.config_entries.flow.async_init(
@@ -81,19 +85,20 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
                     context={"source": "import"},
                     data={
                         SC_CONF_NAME: instance_name, # Name into the 'data' section
-                        # Pass the dictionary which contains the options for the ConfigEntry
-                        **entry_config # Yaml content without a name will be options
+                        # Pass the dictionary which contains the options for the
+                        # ConfigEntry. YAML content without a name will be options
+                        **entry_config
                     },
                 )
             )
 
-    _LOGGER.info(f"[{DOMAIN}] Integration 'Shadow Control' base setup complete.")
+    _LOGGER.info("[%s] Integration 'Shadow Control' base setup complete.", DOMAIN)
     return True
 
 # Entry point for setup using ConfigEntry (via ConfigFlow)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Shadow Control from a config entry."""
-    _LOGGER.debug(f"[{DOMAIN}] Setting up Shadow Control from config entry: {entry.entry_id}: data={entry.data}, options={entry.options}")
+    _LOGGER.debug("[%s] Setting up Shadow Control from config entry: %s: data=%s, options=%s", DOMAIN, entry.entry_id, entry.data, entry.options)
 
     # Most reliable way to store the 'name',
     # as it will be set as 'title' during the creation of an entry.
@@ -117,7 +122,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Prevent empty name if there were only special characters used
     if not sanitized_instance_name:
-        _LOGGER.warning(f"Sanitized logger instance name would be empty, using entry_id as fallback for: '{instance_name}'")
+        _LOGGER.warning("Sanitized logger instance name would be empty, using entry_id as fallback for: '%s'", instance_name)
         sanitized_instance_name = entry.entry_id
 
     instance_logger_name = f"{DOMAIN}.{sanitized_instance_name}"
@@ -125,25 +130,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if entry.options.get(DEBUG_ENABLED, False):
         instance_specific_logger.setLevel(logging.DEBUG)
-        instance_specific_logger.debug(f"Debug log for instance '{instance_name}' activated.")
+        instance_specific_logger.debug("Debug log for instance '%s' activated.", instance_name)
     else:
         instance_specific_logger.setLevel(logging.INFO)
-        instance_specific_logger.debug(f"Debug log for instance '{instance_name}' disabled.")
+        instance_specific_logger.debug("Debug log for instance '%s' disabled.", instance_name)
 
     # The manager can't work without a configuration.
     if not config_data:
-        _LOGGER.error(f"[{manager_name}] Config data (entry.data + entry.options) is empty for entry {entry.entry_id} during setup/reload. This means no configuration could be loaded.")
+        _LOGGER.error("[%s] Config data (entry.data + entry.options) is empty for entry %s during setup/reload. This means no configuration could be loaded.", manager_name, entry.entry_id)
         return False
 
     # The cover to handle with this integration
     target_cover_entity_id = config_data.get(TARGET_COVER_ENTITY_ID)
 
     if not manager_name:
-        _LOGGER.error(f"[{DOMAIN}] No manager name found (entry.title was empty) for entry {entry.entry_id}. This should not happen and indicates a deeper problem.")
+        _LOGGER.error("[%s] No manager name found (entry.title was empty) for entry %s. This should not happen and indicates a deeper problem.", DOMAIN, entry.entry_id)
         return False
 
     if not target_cover_entity_id:
-        _LOGGER.error(f"[{manager_name}] No target cover entity ID found in config for entry {entry.entry_id}.")
+        _LOGGER.error("[%s] No target cover entity ID found in config for entry %s.", manager_name, entry.entry_id)
         return False
 
     # Hand over the combined configuration dictionary to the ShadowControlManager
@@ -158,7 +163,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if DOMAIN_DATA_MANAGERS not in hass.data:
         hass.data[DOMAIN_DATA_MANAGERS] = {}
     hass.data[DOMAIN_DATA_MANAGERS][entry.entry_id] = manager
-    _LOGGER.debug(f"[{manager_name}] Shadow Control manager stored for entry {entry.entry_id} in {DOMAIN_DATA_MANAGERS}.")
+    _LOGGER.debug("[%s] Shadow Control manager stored for entry %s in %s.", manager_name, entry.entry_id, DOMAIN_DATA_MANAGERS)
 
     # Initial start of the manager
     await manager.async_start()
@@ -169,13 +174,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Add listeners for update of input values and integration trigger
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
-    _LOGGER.info(f"[{DOMAIN}] Integration '{manager_name}' successfully set up from config entry.")
+    _LOGGER.info("[%s] Integration '%s' successfully set up from config entry.", DOMAIN, manager_name)
     return True
 
 # Entry point to unload a ConfigEntry
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    _LOGGER.debug(f"[{DOMAIN}] Unloading Shadow Control integration for entry: {entry.entry_id}")
+    _LOGGER.debug("[%s] Unloading Shadow Control integration for entry: %s", DOMAIN, entry.entry_id)
 
     # Unload platforms
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
@@ -186,15 +191,15 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if manager:
             await manager.async_stop()
 
-        _LOGGER.info(f"[{DOMAIN}] Shadow Control integration for entry {entry.entry_id} successfully unloaded.")
+        _LOGGER.info("[%s] Shadow Control integration for entry %s successfully unloaded.", DOMAIN, entry.entry_id)
     else:
-        _LOGGER.error(f"[{DOMAIN}] Failed to unload platforms for entry {entry.entry_id}.")
+        _LOGGER.error("[%s] Failed to unload platforms for entry %s.", DOMAIN, entry.entry_id)
 
     return unload_ok
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Migrate old config entry."""
-    _LOGGER.debug(f"[{DOMAIN}] Migrating config entry '{config_entry.entry_id}' from version {config_entry.version} to {CURRENT_SCHEMA_VERSION}")
+    _LOGGER.debug("[%s] Migrating config entry '%s' from version %s to %s", DOMAIN, config_entry.entry_id, config_entry.version, CURRENT_SCHEMA_VERSION)
 
     new_data = config_entry.data.copy()
     new_options = config_entry.options.copy()
@@ -208,31 +213,31 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
         if old_lock_height_key in new_options:
             new_options[lock_height_static_key] = new_options.pop(old_lock_height_key)
-            _LOGGER.debug(f"[{DOMAIN}] Migrated: Renamed '{old_lock_height_key}' to '{lock_height_static_key}'.")
+            _LOGGER.debug("[%s] Migrated: Renamed '%s' to '%s'.", DOMAIN, old_lock_height_key, lock_height_static_key)
         elif lock_height_static_key not in new_options:
             new_options[lock_height_static_key] = 0
-            _LOGGER.debug(f"[{DOMAIN}] Set default value for '{lock_height_static_key}'.")
+            _LOGGER.debug("[%s] Set default value for '%s'.", DOMAIN, lock_height_static_key)
 
         if old_lock_angle_key in new_options:
             new_options[lock_angle_static_key] = new_options.pop(old_lock_angle_key)
-            _LOGGER.debug(f"[{DOMAIN}] Migrated: Renamed '{old_lock_angle_key}' to '{lock_angle_static_key}'.")
+            _LOGGER.debug("[%s] Migrated: Renamed '%s' to '%s'.", DOMAIN, old_lock_angle_key, lock_angle_static_key)
         elif lock_angle_static_key not in new_options:
             new_options[lock_angle_static_key] = 0
-            _LOGGER.debug(f"[{DOMAIN}] Set default value for '{lock_angle_static_key}'.")
+            _LOGGER.debug("[%s] Set default value for '%s'.", DOMAIN, lock_angle_static_key)
 
         try:
             validated_options = FULL_OPTIONS_SCHEMA(new_options)
-            _LOGGER.debug(f"[{DOMAIN}] Migrated options successfully validated. Result: {validated_options}")
-            _LOGGER.debug(f"[{DOMAIN}] Type of validated_options: {type(validated_options)}")
+            _LOGGER.debug("[%s] Migrated options successfully validated. Result: %s", DOMAIN, validated_options)
+            _LOGGER.debug("[%s] Type of validated_options: %s", DOMAIN, type(validated_options))
         except vol.Invalid as exc:
-            _LOGGER.error(f"[{DOMAIN}] Validation failed after migration to version {CURRENT_SCHEMA_VERSION} for entry {config_entry.entry_id}: {exc}")
+            _LOGGER.error("[%s] Validation failed after migration to version %s for entry %s: %s", DOMAIN, CURRENT_SCHEMA_VERSION, config_entry.entry_id, exc)
             return False
 
-        _LOGGER.debug(f"[{DOMAIN}] Preparing to call hass.config_entries.async_update_entry with:")
-        _LOGGER.debug(f"[{DOMAIN}]   Arg 'config_entry' type: {type(config_entry)}")
-        _LOGGER.debug(f"[{DOMAIN}]   Arg 'data' type: {type(new_data)}, value: {new_data}")
-        _LOGGER.debug(f"[{DOMAIN}]   Arg 'options' type: {type(validated_options)}, value: {validated_options}")
-        _LOGGER.debug(f"[{DOMAIN}]   Arg 'version' type: {type(CURRENT_SCHEMA_VERSION)}, value: {CURRENT_SCHEMA_VERSION}")
+        _LOGGER.debug("[%s] Preparing to call hass.config_entries.async_update_entry with:", DOMAIN)
+        _LOGGER.debug("[%s]   Arg 'config_entry' type: %s", DOMAIN, type(config_entry))
+        _LOGGER.debug("[%s]   Arg 'data' type: %s, value: %s", DOMAIN, type(new_data), new_data)
+        _LOGGER.debug("[%s]   Arg 'options' type: %s, value: %s", DOMAIN, type(validated_options), validated_options)
+        _LOGGER.debug("[%s]   Arg 'version' type: %s, value: %s", DOMAIN, type(CURRENT_SCHEMA_VERSION), CURRENT_SCHEMA_VERSION)
 
         hass.config_entries.async_update_entry(
             config_entry,
@@ -240,10 +245,10 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             options=validated_options,
             version=CURRENT_SCHEMA_VERSION
         )
-        _LOGGER.info(f"[{DOMAIN}] Config entry '{config_entry.entry_id}' successfully migrated to version {CURRENT_SCHEMA_VERSION}.")
+        _LOGGER.info("[%s] Config entry '%s' successfully migrated to version %s.", DOMAIN, config_entry.entry_id, CURRENT_SCHEMA_VERSION)
         return True
 
-    _LOGGER.error(f"[{DOMAIN}] Unknown config entry version {config_entry.version} for migration. This should not happen.")
+    _LOGGER.error("[%s] Unknown config entry version %s for migration. This should not happen.", DOMAIN, config_entry.version)
     return False
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
@@ -251,7 +256,7 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> Non
     Handle options update.
     Will be called if the user modifies the configuration using the OptionsFlow.
     """
-    _LOGGER.debug(f"[{DOMAIN}] Options update listener triggered for entry {entry.entry_id}.")
+    _LOGGER.debug("[%s] Options update listener triggered for entry %s.", DOMAIN, entry.entry_id)
     await hass.config_entries.async_reload(entry.entry_id)
 
 class SCDynamicInputConfiguration:
@@ -336,10 +341,10 @@ class ShadowControlManager:
 
         # Check if critical values are missing, even if this might be done within async_setup_entry
         if not self._name:
-            self.logger.warning(f"Manager init: Manager name is missing in config for entry {entry_id}. Using fallback.")
+            self.logger.warning("Manager init: Manager name is missing in config for entry %s. Using fallback.", entry_id)
             self._name = f"Unnamed Shadow Control ({entry_id})"
         if not self._target_cover_entity_id:
-            self.logger.error(f"Manager init: Target cover entity ID is missing in config for entry {entry_id}. This is critical.")
+            self.logger.error("Manager init: Target cover entity ID is missing in config for entry %s. This is critical.", entry_id)
             raise ValueError(f"Target cover entity ID missing for entry {entry_id}")
 
         self._options = config
@@ -455,7 +460,7 @@ class ShadowControlManager:
         self._listeners: list[Callable[[], None]] = []
         self._recalculation_timer: Callable[[], None] | None = None
 
-        self.logger.debug(f"Manager initialized for target: {self._target_cover_entity_id}.")
+        self.logger.debug("Manager initialized for target: %s.", self._target_cover_entity_id)
 
     async def async_start(self) -> None:
         """
@@ -514,7 +519,7 @@ class ShadowControlManager:
             tracked_inputs.append(self._config[SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value])
 
         if tracked_inputs:
-            self.logger.debug(f"Tracking input entities: {tracked_inputs}")
+            self.logger.debug("Tracking input entities: %s", tracked_inputs)
             self._unsub_callbacks.append(
                 async_track_state_change_event(
                     self.hass, tracked_inputs, self._async_state_change_listener
@@ -524,7 +529,7 @@ class ShadowControlManager:
         # Listener of state changes at the handled cover entity to register external changes.
         # Important to recognize manual modification!
         if self._target_cover_entity_id:
-            self.logger.debug(f"Tracking target cover entity: {self._target_cover_entity_id}")
+            self.logger.debug("Tracking target cover entity: %s", self._target_cover_entity_id)
             self._unsub_callbacks.append(
                 async_track_state_change_event(
                     self.hass,
@@ -549,10 +554,10 @@ class ShadowControlManager:
 
         # Check if state really was changed
         if old_state is None or new_state is None or old_state.state != new_state.state:
-            self.logger.debug(f"Input entity '{entity_id}' changed. Triggering recalculation.")
+            self.logger.debug("Input entity '%s' changed. Triggering recalculation.", entity_id)
             await self._async_calculate_and_apply_cover_position(None)
         else:
-            self.logger.debug(f"State change for {entity_id} detected, but value did not change. No recalculation triggered.")
+            self.logger.debug("State change for %s detected, but value did not change. No recalculation triggered.", entity_id)
 
     async def _async_target_cover_entity_state_change_listener(self, event: Event) -> None:
         """Callback for state changes of handled cover entity."""
@@ -588,7 +593,7 @@ class ShadowControlManager:
                 self._next_modification_timestamp = None # Reset for next external change
                 return
 
-            self.logger.debug(f"External change detected on target cover '{entity_id}'. (Updating lock state not implemented yet)")
+            self.logger.debug("External change detected on target cover '%s'. (Updating lock state not implemented yet)", entity_id)
 
             # TODO: Implement logic for LockState handling e.g. manager.update_lock_state(LockState.LOCKED_BY_EXTERNAL_MODIFICATION)
 
@@ -649,7 +654,7 @@ class ShadowControlManager:
         try:
             self._facade_config.shutter_type = ShutterType[shutter_type_str.upper()]
         except KeyError:
-            self.logger.warning(f"Invalid shutter type '{shutter_type_str}' configured. Using default 'mode1'.")
+            self.logger.warning("Invalid shutter type '%s' configured. Using default 'mode1'.", shutter_type_str)
             self._facade_config.shutter_type = ShutterType.MODE1
 
         self._facade_config.light_strip_width = self._get_static_value(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value, 0.0, float)
@@ -789,7 +794,7 @@ class ShadowControlManager:
     @callback
     async def _async_handle_input_change(self, event: Event | None) -> None:
         """Handle changes to any relevant input entity for this specific cover."""
-        self.logger.debug(f"Input change detected. Event: {event}")
+        self.logger.debug("Input change detected. Event: %s", event)
 
         await self._async_calculate_and_apply_cover_position(event)
 
@@ -815,15 +820,15 @@ class ShadowControlManager:
                 old_state: State | None = event_data.get("old_state")
                 new_state: State | None = event_data.get("new_state")
 
-                self.logger.debug(f"State change for entity: {entity}")
-                self.logger.debug(f"  Old state: {old_state.state if old_state else 'None'}")
-                self.logger.debug(f"  New state: {new_state.state if new_state else 'None'}")
+                self.logger.debug("State change for entity: %s", entity)
+                self.logger.debug("  Old state: %s", old_state.state if old_state else "None")
+                self.logger.debug("  New state: %s", new_state.state if new_state else "None")
 
                 if entity == SCShadowInput.CONTROL_ENABLED_ENTITY:
-                    self.logger.debug(f"Shadow control enable changed to {new_state.state}")
+                    self.logger.debug("Shadow control enable changed to %s", new_state.state)
                     shadow_handling_was_disabled = new_state.state == "off"
                 elif entity == SCShadowInput.CONTROL_ENABLED_ENTITY:
-                    self.logger.debug(f"Dawn control enable changed to {new_state.state}")
+                    self.logger.debug("Dawn control enable changed to %s", new_state.state)
                     dawn_handling_was_disabled = new_state.state == "off"
                 elif entity == SCDynamicInput.LOCK_INTEGRATION_ENTITY:
                     if new_state.state == "off" and not self._dynamic_config.lock_integration_with_position:
@@ -843,7 +848,7 @@ class ShadowControlManager:
             elif event_type == "time_changed":
                 self.logger.debug("Time changed event received")
             else:
-                self.logger.debug(f"Unhandled event type: {event_type}")
+                self.logger.debug("Unhandled event type: %s", event_type)
         else:
             self.logger.debug("No specific event data (likely initial run or manual trigger)")
 
@@ -897,7 +902,7 @@ class ShadowControlManager:
         azimuth_calc = sun_current_azimuth - sun_entry_angle
         if azimuth_calc < 0:
             azimuth_calc += 360
-        self.logger.debug(f"sun_entry_angle: {sun_entry_angle}, sun_exit_angle: {sun_exit_angle}, sun_exit_angle_calc: {sun_exit_angle_calc}, azimuth_calc: {azimuth_calc}")
+        self.logger.debug("sun_entry_angle: %s, sun_exit_angle: %s, sun_exit_angle_calc: %s, azimuth_calc: %s", sun_entry_angle, sun_exit_angle, sun_exit_angle_calc, azimuth_calc)
 
         message = f"Finished facade check:\n -> Real azimuth {sun_current_azimuth}° and facade at {facade_azimuth}° -> "
         _sun_between_offsets = False
@@ -923,7 +928,7 @@ class ShadowControlManager:
         else:
             message += f" -> NOT IN min-max-range ({min_elevation}°-{max_elevation}°)"
             self._sun_between_min_max = False
-        self.logger.debug(f"{message}")
+        self.logger.debug("%s", message)
 
         self._is_in_sun = _sun_between_offsets and _is_elevation_in_range
         return self._is_in_sun
@@ -946,7 +951,7 @@ class ShadowControlManager:
             self.logger.debug("Unable to compute effective elevation, not all required values available")
             return None
 
-        self.logger.debug(f"Current sun position (a:e): {sun_current_azimuth}°:{sun_current_elevation}°, facade: {facade_azimuth}°")
+        self.logger.debug("Current sun position (a:e): %s°:%s°, facade: %s°", sun_current_azimuth, sun_current_elevation, facade_azimuth)
 
         try:
             virtual_depth = math.cos(math.radians(abs(sun_current_azimuth - facade_azimuth)))
@@ -958,7 +963,7 @@ class ShadowControlManager:
             else:
                 effective_elevation = math.degrees(math.atan(virtual_height / virtual_depth))
 
-            self.logger.debug(f"Virtual deep and height of the sun against the facade: {virtual_depth}, {virtual_height}, effektive Elevation: {effective_elevation}")
+            self.logger.debug("Virtual deep and height of the sun against the facade: %s, %s, effektive Elevation: %s", virtual_depth, virtual_height, effective_elevation)
             return effective_elevation
         except ValueError:
             self.logger.debug("Unable to compute effective elevation: Invalid input values")
@@ -1020,7 +1025,7 @@ class ShadowControlManager:
         Process current shutter state and call corresponding handler functions.
         Handler functions must return the new shutter state.
         """
-        self.logger.debug(f"Current shutter state (before processing): {self._current_shutter_state.name} ({self._current_shutter_state.value})")
+        self.logger.debug("Current shutter state (before processing): %s (%s)", self._current_shutter_state.name, self._current_shutter_state.value)
 
         handler_func = self._state_handlers.get(self._current_shutter_state)
         new_shutter_state: ShutterState
@@ -1029,18 +1034,18 @@ class ShadowControlManager:
             new_shutter_state = await handler_func()
             if new_shutter_state is not None and new_shutter_state != self._current_shutter_state:
                 self.logger.debug(
-                    f"State change from {self._current_shutter_state.name} to {new_shutter_state.name}")
+                    "State change from %s to %s", self._current_shutter_state.name, new_shutter_state.name)
                 self._current_shutter_state = new_shutter_state
                 self._update_extra_state_attributes()
                 self.logger.debug("Checking if there might be another change required")
                 await self._process_shutter_state()
         else:
             self.logger.debug(
-                f"No specific handler for current state or locked. Current lock state: {self._current_lock_state.name}")
+                "No specific handler for current state or locked. Current lock state: %s", self._current_lock_state.name)
             self._cancel_recalculation_timer()
             self._update_extra_state_attributes()
 
-        self.logger.debug(f"New shutter state after processing: {self._current_shutter_state.name} ({self._current_shutter_state.value})")
+        self.logger.debug("New shutter state after processing: %s (%s)", self._current_shutter_state.name, self._current_shutter_state.value)
 
     def _check_if_position_changed_externally(self, current_height, current_angle):
         # Replace functionality with _async_target_cover_entity_state_change_listener
@@ -1104,7 +1109,7 @@ class ShadowControlManager:
                     current_cover_state: State | None = self.hass.states.get(entity)
 
                     if not current_cover_state:
-                        self.logger.warning(f"Target cover entity '{entity}' not found. Cannot send commands.")
+                        self.logger.warning("Target cover entity '%s' not found. Cannot send commands.", entity)
                         continue
 
                     shutter_height_percent = self._dynamic_config.lock_height
@@ -1118,7 +1123,7 @@ class ShadowControlManager:
                             blocking=False
                         )
                     except Exception as e:
-                        self.logger.error(f"Failed to set position: {e}")
+                        self.logger.error("Failed to set position: %s", e)
                     try:
                         await self.hass.services.async_call(
                             "cover",
@@ -1127,7 +1132,7 @@ class ShadowControlManager:
                             blocking=False
                         )
                     except Exception as e:
-                        self.logger.error(f"Failed to set tilt position: {e}")
+                        self.logger.error("Failed to set tilt position: %s", e)
 
             self._update_extra_state_attributes()
             return  # Exit here, nothing else to do
@@ -1138,7 +1143,7 @@ class ShadowControlManager:
         current_cover_state: State | None = self.hass.states.get(entity)
 
         if not current_cover_state:
-            self.logger.warning(f"Target cover entity '{entity}' not found. Cannot send commands.")
+            self.logger.warning("Target cover entity '%s' not found. Cannot send commands.", entity)
             return
 
         supported_features = current_cover_state.attributes.get(ATTR_SUPPORTED_FEATURES, 0)
@@ -1146,7 +1151,7 @@ class ShadowControlManager:
         has_pos_service = self.hass.services.has_service("cover", "set_cover_position")
         has_tilt_service = self.hass.services.has_service("cover", "set_cover_tilt_position")
 
-        self.logger.debug(f"Services availability ({entity}): set_cover_position={has_pos_service}, set_cover_tilt_position={has_tilt_service}")
+        self.logger.debug("Services availability (%s): set_cover_position=%s, set_cover_tilt_position=%s", entity, has_pos_service, has_tilt_service)
 
         async_dispatcher_send(
             self.hass,
@@ -1189,7 +1194,7 @@ class ShadowControlManager:
             current_cover_state: State | None = self.hass.states.get(entity)
 
             if not current_cover_state:
-                self.logger.warning(f"Target cover entity '{entity}' not found. Cannot send commands.")
+                self.logger.warning("Target cover entity '%s' not found. Cannot send commands.", entity)
                 continue
 
             # Height positioning
@@ -1204,10 +1209,10 @@ class ShadowControlManager:
                             blocking=False
                         )
                     except Exception as e:
-                        self.logger.error(f"Failed to set position: {e}")
+                        self.logger.error("Failed to set position: %s", e)
                     self._previous_shutter_height = shutter_height_percent
                 else:
-                    self.logger.debug(f"Skipping position set. Supported: {supported_features & CoverEntityFeature.SET_POSITION}, Service Found: {has_pos_service}.")
+                    self.logger.debug("Skipping position set. Supported: %s, Service Found: %s.", supported_features & CoverEntityFeature.SET_POSITION, has_pos_service)
             else:
                 self.logger.debug(
                     f"Height '{height_to_set_percent:.2f}%' not sent, value was the same or restricted.")
@@ -1224,10 +1229,10 @@ class ShadowControlManager:
                             blocking=False
                         )
                     except Exception as e:
-                        self.logger.error(f"Failed to set tilt position: {e}")
+                        self.logger.error("Failed to set tilt position: %s", e)
                     self._previous_shutter_angle = shutter_angle_percent
                 else:
-                    self.logger.debug(f"Skipping tilt set. Supported: {supported_features & CoverEntityFeature.SET_TILT_POSITION}, Service Found: {has_tilt_service}.")
+                    self.logger.debug("Skipping tilt set. Supported: %s, Service Found: %s.", supported_features & CoverEntityFeature.SET_TILT_POSITION, has_tilt_service)
             else:
                 self.logger.debug(
                     f"Angle '{angle_to_set_percent:.2f}%' not sent, value was the same or restricted.")
@@ -1306,7 +1311,7 @@ class ShadowControlManager:
 
         if shutter_stepping_percent is None:
             self.logger.warning(
-                f"'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle {calculated_height_percent}%")
+                "'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle %s%", calculated_height_percent)
             return calculated_height_percent
 
         # Only apply stepping if the stepping value is not zero and height is not yet a multiple of the stepping
@@ -1403,7 +1408,7 @@ class ShadowControlManager:
             shutter_angle_percent = shutter_angle_degrees / 1.8 + 50
         else:
             self.logger.warning(
-                f"Unknown shutter type '{shutter_type}'. Using default (mode1, 90°)")
+                "Unknown shutter type '%s'. Using default (mode1, 90°)", shutter_type)
             shutter_angle_percent = shutter_angle_degrees / 0.9  # Standardverhalten
 
         # Make sure, the angle will not be lower than 0
@@ -1421,11 +1426,11 @@ class ShadowControlManager:
         if shutter_angle_percent_with_stepping < min_shutter_angle_percent:
             final_shutter_angle_percent = min_shutter_angle_percent
             self.logger.debug(
-                f"Limiting angle to min: {min_shutter_angle_percent}%")
+                "Limiting angle to min: %s%", min_shutter_angle_percent)
         elif shutter_angle_percent_with_stepping > max_shutter_angle_percent:
             final_shutter_angle_percent = max_shutter_angle_percent
             self.logger.debug(
-                f"Limiting angle to max: {max_shutter_angle_percent}%")
+                "Limiting angle to max: %s%", max_shutter_angle_percent)
         else:
             final_shutter_angle_percent = shutter_angle_percent_with_stepping
 
@@ -1433,19 +1438,19 @@ class ShadowControlManager:
         final_shutter_angle_percent = round(final_shutter_angle_percent)
 
         self.logger.debug(
-            f"Resulting shutter angle with offset and stepping: {final_shutter_angle_percent}%")
+            "Resulting shutter angle with offset and stepping: %s%", final_shutter_angle_percent)
         return float(final_shutter_angle_percent)
 
     def _handle_shutter_angle_stepping(self, calculated_angle_percent: float) -> float:
         """Modify shutter angle according to configured minimal stepping."""
         self.logger.debug(
-            f"Computing shutter angle stepping for {calculated_angle_percent}%")
+            "Computing shutter angle stepping for %s%", calculated_angle_percent)
 
         shutter_stepping_percent = self._facade_config.shutter_stepping_angle
 
         if shutter_stepping_percent is None:
             self.logger.warning(
-                f"'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle {calculated_angle_percent}%")
+                "'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle %s%", calculated_angle_percent)
             return calculated_angle_percent
 
         # PHP logic in Python:
@@ -1494,13 +1499,13 @@ class ShadowControlManager:
                             shadow_position=True,
                             stop_timer=True,
                         )
-                        self.logger.debug(f"State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name}): Timer finished, brightness above threshold, moving to shadow position ({target_height}%, {target_angle}%). Next state: {ShutterState.SHADOW_FULL_CLOSED}")
+                        self.logger.debug("State %s (%s): Timer finished, brightness above threshold, moving to shadow position (%s%, %s%). Next state: %s", ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING, ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name, target_height, target_angle, ShutterState.SHADOW_FULL_CLOSED)
                         return ShutterState.SHADOW_FULL_CLOSED
-                    self.logger.debug(f"State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name}): Error within calculation of height a/o angle, staying at {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING}")
+                    self.logger.debug("State %s (%s): Error within calculation of height a/o angle, staying at %s", ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING, ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name, ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING)
                     return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
-                self.logger.debug(f"State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name}): Waiting for timer (Brightness big enough)")
+                self.logger.debug("State %s (%s): Waiting for timer (Brightness big enough)", ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING, ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name)
                 return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
-            self.logger.debug(f"State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name}): Brightness ({current_brightness}) not above threshold ({shadow_threshold_close}), transitioning to {ShutterState.SHADOW_NEUTRAL}")
+            self.logger.debug("State %s (%s): Brightness (%s) not above threshold (%s), transitioning to %s", ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING, ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name, current_brightness, shadow_threshold_close, ShutterState.SHADOW_NEUTRAL)
             self._cancel_recalculation_timer()
             return ShutterState.SHADOW_NEUTRAL
         neutral_height = self._facade_config.neutral_pos_height
@@ -1512,12 +1517,12 @@ class ShadowControlManager:
                 shadow_position=False,
                 stop_timer=True,  # Stop Timer
             )
-            self.logger.debug(f"State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name}): Not in the sun or shadow mode disabled, transitioning to ({neutral_height}%, {neutral_angle}%) with state {ShutterState.NEUTRAL}")
+            self.logger.debug("State %s (%s): Not in the sun or shadow mode disabled, transitioning to (%s%, %s%) with state %s", ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING, ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name, neutral_height, neutral_angle, ShutterState.NEUTRAL)
             return ShutterState.NEUTRAL
-        self.logger.warning(f"State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
+        self.logger.warning("State %s (%s): Neutral height or angle not configured, transitioning to %s", ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING, ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name, ShutterState.NEUTRAL)
         return ShutterState.NEUTRAL
 
-        self.logger.debug(f"State {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name}): Staying at previous position.")
+        self.logger.debug("State %s (%s): Staying at previous position.", ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING, ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name)
         return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
 
     # =======================================================================
@@ -1534,10 +1539,10 @@ class ShadowControlManager:
                     and shadow_open_slat_delay is not None
                     and current_brightness < shadow_threshold_close
             ):
-                self.logger.debug(f"State {ShutterState.SHADOW_FULL_CLOSED} ({ShutterState.SHADOW_FULL_CLOSED.name}): Brightness ({current_brightness}) below threshold ({shadow_threshold_close}), starting timer for {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({shadow_open_slat_delay}s)")
+                self.logger.debug("State %s (%s): Brightness (%s) below threshold (%s), starting timer for %s (%ss)", ShutterState.SHADOW_FULL_CLOSED, ShutterState.SHADOW_FULL_CLOSED.name, current_brightness, shadow_threshold_close, ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING, shadow_open_slat_delay)
                 await self._start_recalculation_timer(shadow_open_slat_delay)
                 return ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
-            self.logger.debug(f"State {ShutterState.SHADOW_FULL_CLOSED} ({ShutterState.SHADOW_FULL_CLOSED.name}): Brightness not below threshold, recalculating shadow position")
+            self.logger.debug("State %s (%s): Brightness not below threshold, recalculating shadow position", ShutterState.SHADOW_FULL_CLOSED, ShutterState.SHADOW_FULL_CLOSED.name)
             target_height = self._calculate_shutter_height()
             target_angle = self._calculate_shutter_angle()
             if target_height is not None and target_angle is not None:
@@ -1557,12 +1562,12 @@ class ShadowControlManager:
                 shadow_position=False,
                 stop_timer=True,  # Stop Timer
             )
-            self.logger.debug(f"State {ShutterState.SHADOW_FULL_CLOSED} ({ShutterState.SHADOW_FULL_CLOSED.name}): Not in sun or shadow mode deactivated, moving to neutral position ({neutral_height}%, {neutral_angle}%) und state {ShutterState.NEUTRAL}")
+            self.logger.debug("State %s (%s): Not in sun or shadow mode deactivated, moving to neutral position (%s%, %s%) und state %s", ShutterState.SHADOW_FULL_CLOSED, ShutterState.SHADOW_FULL_CLOSED.name, neutral_height, neutral_angle, ShutterState.NEUTRAL)
             return ShutterState.NEUTRAL
-        self.logger.warning(f"State {ShutterState.SHADOW_FULL_CLOSED} ({ShutterState.SHADOW_FULL_CLOSED.name}): Neutral height or angle not configured, moving to state {ShutterState.NEUTRAL}")
+        self.logger.warning("State %s (%s): Neutral height or angle not configured, moving to state %s", ShutterState.SHADOW_FULL_CLOSED, ShutterState.SHADOW_FULL_CLOSED.name, ShutterState.NEUTRAL)
         return ShutterState.NEUTRAL
 
-        self.logger.debug(f"State {ShutterState.SHADOW_FULL_CLOSED} ({ShutterState.SHADOW_FULL_CLOSED.name}): Staying at previous position")
+        self.logger.debug("State %s (%s): Staying at previous position", ShutterState.SHADOW_FULL_CLOSED, ShutterState.SHADOW_FULL_CLOSED.name)
         return ShutterState.SHADOW_FULL_CLOSED
 
     # =======================================================================
@@ -1579,7 +1584,7 @@ class ShadowControlManager:
                     and shadow_open_slat_angle is not None
                     and current_brightness > shadow_threshold_close
             ):
-                self.logger.debug(f"State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Brightness ({current_brightness}) again above threshold ({shadow_threshold_close}), transitioning to {ShutterState.SHADOW_FULL_CLOSED} and stopping timer")
+                self.logger.debug("State %s (%s): Brightness (%s) again above threshold (%s), transitioning to %s and stopping timer", ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name, current_brightness, shadow_threshold_close, ShutterState.SHADOW_FULL_CLOSED)
                 self._cancel_recalculation_timer()
                 return ShutterState.SHADOW_FULL_CLOSED
             if self._is_timer_finished():
@@ -1591,11 +1596,11 @@ class ShadowControlManager:
                         shadow_position=False,
                         stop_timer=True,
                     )
-                    self.logger.debug(f"State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Timer finished, moving to height {target_height}% with neutral slats ({shadow_open_slat_angle}°) and state {ShutterState.SHADOW_HORIZONTAL_NEUTRAL}")
+                    self.logger.debug("State %s (%s): Timer finished, moving to height %s% with neutral slats (%s°) and state %s", ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name, target_height, shadow_open_slat_angle, ShutterState.SHADOW_HORIZONTAL_NEUTRAL)
                     return ShutterState.SHADOW_HORIZONTAL_NEUTRAL
-                self.logger.debug(f"State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Error during calculation of height and angle for open slats, staying at {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING}")
+                self.logger.debug("State %s (%s): Error during calculation of height and angle for open slats, staying at %s", ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name, ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING)
                 return ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
-            self.logger.debug(f"State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Waiting for timer (brightness not high enough)")
+            self.logger.debug("State %s (%s): Waiting for timer (brightness not high enough)", ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name)
             return ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
         neutral_height = self._facade_config.neutral_pos_height
         neutral_angle = self._facade_config.neutral_pos_angle
@@ -1606,12 +1611,12 @@ class ShadowControlManager:
                 shadow_position=False,
                 stop_timer=True,  # Stop Timer
             )
-            self.logger.debug(f"State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Not in the sun or shadow mode disabled, moving to neutral position ({neutral_height}%, {neutral_angle}%) and state {ShutterState.NEUTRAL}")
+            self.logger.debug("State %s (%s): Not in the sun or shadow mode disabled, moving to neutral position (%s%, %s%) and state %s", ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name, neutral_height, neutral_angle, ShutterState.NEUTRAL)
             return ShutterState.NEUTRAL
-        self.logger.warning(f"State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
+        self.logger.warning("State %s (%s): Neutral height or angle not configured, transitioning to %s", ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name, ShutterState.NEUTRAL)
         return ShutterState.NEUTRAL
 
-        self.logger.debug(f"State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Staying at previous position")
+        self.logger.debug("State %s (%s): Staying at previous position", ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name)
         return ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
     # =======================================================================
@@ -1637,15 +1642,15 @@ class ShadowControlManager:
                         shadow_position=True,
                         stop_timer=True,
                     )
-                    self.logger.debug(f"State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name}): Brightness ({current_brightness}) above threshold ({shadow_threshold_close}), moving to shadow position ({target_height}%, {target_angle}%) and state {ShutterState.SHADOW_FULL_CLOSED}")
+                    self.logger.debug("State %s (%s): Brightness (%s) above threshold (%s), moving to shadow position (%s%, %s%) and state %s", ShutterState.SHADOW_HORIZONTAL_NEUTRAL, ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name, current_brightness, shadow_threshold_close, target_height, target_angle, ShutterState.SHADOW_FULL_CLOSED)
                     return ShutterState.SHADOW_FULL_CLOSED
-                self.logger.warning(f"State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name}): Error at calculating height or angle, staying at {ShutterState.SHADOW_HORIZONTAL_NEUTRAL}")
+                self.logger.warning("State %s (%s): Error at calculating height or angle, staying at %s", ShutterState.SHADOW_HORIZONTAL_NEUTRAL, ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name, ShutterState.SHADOW_HORIZONTAL_NEUTRAL)
                 return ShutterState.SHADOW_HORIZONTAL_NEUTRAL
             if shadow_open_shutter_delay is not None:
-                self.logger.debug(f"State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name}): Brightness not above threshold, starting timer for {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING} ({shadow_open_shutter_delay}s)")
+                self.logger.debug("State %s (%s): Brightness not above threshold, starting timer for %s (%ss)", ShutterState.SHADOW_HORIZONTAL_NEUTRAL, ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name, ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING, shadow_open_shutter_delay)
                 await self._start_recalculation_timer(shadow_open_shutter_delay)
                 return ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING
-            self.logger.warning(f"State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name}): Brightness not above threshold and 'shadow_open_shutter_delay' not configured, staying at {ShutterState.SHADOW_HORIZONTAL_NEUTRAL}")
+            self.logger.warning("State %s (%s): Brightness not above threshold and 'shadow_open_shutter_delay' not configured, staying at %s", ShutterState.SHADOW_HORIZONTAL_NEUTRAL, ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name, ShutterState.SHADOW_HORIZONTAL_NEUTRAL)
             return ShutterState.SHADOW_HORIZONTAL_NEUTRAL
         neutral_height = self._facade_config.neutral_pos_height
         neutral_angle = self._facade_config.neutral_pos_angle
@@ -1656,12 +1661,12 @@ class ShadowControlManager:
                 shadow_position=False,
                 stop_timer=True,  # Stop Timer (falls ein Timer aktiv war)
             )
-            self.logger.debug(f"State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name}): Not in sun or shadow mode disabled, moving to neutral position ({neutral_height}%, {neutral_angle}%) and state {ShutterState.NEUTRAL}")
+            self.logger.debug("State %s (%s): Not in sun or shadow mode disabled, moving to neutral position (%s%, %s%) and state %s", ShutterState.SHADOW_HORIZONTAL_NEUTRAL, ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name, neutral_height, neutral_angle, ShutterState.NEUTRAL)
             return ShutterState.NEUTRAL
-        self.logger.warning(f"State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
+        self.logger.warning("State %s (%s): Neutral height or angle not configured, transitioning to %s", ShutterState.SHADOW_HORIZONTAL_NEUTRAL, ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name, ShutterState.NEUTRAL)
         return ShutterState.NEUTRAL
 
-        self.logger.debug(f"State {ShutterState.SHADOW_HORIZONTAL_NEUTRAL} ({ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name}): Staying at previous position")
+        self.logger.debug("State %s (%s): Staying at previous position", ShutterState.SHADOW_HORIZONTAL_NEUTRAL, ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name)
         return ShutterState.SHADOW_HORIZONTAL_NEUTRAL
 
     # =======================================================================
@@ -1678,7 +1683,7 @@ class ShadowControlManager:
                     and shadow_threshold_close is not None
                     and current_brightness > shadow_threshold_close
             ):
-                self.logger.debug(f"State {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name}): Brightness ({current_brightness}) again above threshold ({shadow_threshold_close}), state {ShutterState.SHADOW_FULL_CLOSED} and stopping timer")
+                self.logger.debug("State %s (%s): Brightness (%s) again above threshold (%s), state %s and stopping timer", ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name, current_brightness, shadow_threshold_close, ShutterState.SHADOW_FULL_CLOSED)
                 self._cancel_recalculation_timer()
                 return ShutterState.SHADOW_FULL_CLOSED
             if self._is_timer_finished():
@@ -1692,11 +1697,11 @@ class ShadowControlManager:
                         shadow_position=False,
                         stop_timer=True,
                     )
-                    self.logger.debug(f"State {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name}): Timer finished, moving to after-shadow position ({height_after_shadow}%, {angle_after_shadow}°) and state {ShutterState.SHADOW_NEUTRAL}")
+                    self.logger.debug("State %s (%s): Timer finished, moving to after-shadow position (%s%, %s°) and state %s", ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name, height_after_shadow, angle_after_shadow, ShutterState.SHADOW_NEUTRAL)
                     return ShutterState.SHADOW_NEUTRAL
-                self.logger.warning(f"State {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name}): Height or angle after shadow not configured, staying at {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING}")
+                self.logger.warning("State %s (%s): Height or angle after shadow not configured, staying at %s", ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name, ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING)
                 return ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING
-            self.logger.debug(f"State {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name}): Waiting for timer (brightness not high enough)")
+            self.logger.debug("State %s (%s): Waiting for timer (brightness not high enough)", ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name)
             return ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING
         neutral_height = self._facade_config.neutral_pos_height
         neutral_angle = self._facade_config.neutral_pos_angle
@@ -1707,12 +1712,12 @@ class ShadowControlManager:
                 shadow_position=False,
                 stop_timer=True,  # Stop Timer
             )
-            self.logger.debug(f"State {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name}): Not in sun or shadow mode disabled, moving to neutral position ({neutral_height}%, {neutral_angle}%) and state {ShutterState.NEUTRAL}")
+            self.logger.debug("State %s (%s): Not in sun or shadow mode disabled, moving to neutral position (%s%, %s%) and state %s", ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name, neutral_height, neutral_angle, ShutterState.NEUTRAL)
             return ShutterState.NEUTRAL
-        self.logger.warning(f"State {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
+        self.logger.warning("State %s (%s): Neutral height or angle not configured, transitioning to %s", ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name, ShutterState.NEUTRAL)
         return ShutterState.NEUTRAL
 
-        self.logger.debug(f"State {ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING} ({ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name}): Staying at previous position")
+        self.logger.debug("State %s (%s): Staying at previous position", ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name)
         return ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING
 
     # =======================================================================
@@ -1736,7 +1741,7 @@ class ShadowControlManager:
                     and current_brightness > shadow_threshold_close
                     and shadow_close_delay is not None
             ):
-                self.logger.debug(f"State {ShutterState.SHADOW_NEUTRAL} ({ShutterState.SHADOW_NEUTRAL.name}): Brightness ({current_brightness}) above threshold ({shadow_threshold_close}), starting timer for {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)")
+                self.logger.debug("State %s (%s): Brightness (%s) above threshold (%s), starting timer for %s (%ss)", ShutterState.SHADOW_NEUTRAL, ShutterState.SHADOW_NEUTRAL.name, current_brightness, shadow_threshold_close, ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING, shadow_close_delay)
                 await self._start_recalculation_timer(shadow_close_delay)
                 return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
             if (
@@ -1746,7 +1751,7 @@ class ShadowControlManager:
                     and dawn_brightness < dawn_threshold_close
                     and dawn_close_delay is not None
             ):
-                self.logger.debug(f"State {ShutterState.SHADOW_NEUTRAL} ({ShutterState.SHADOW_NEUTRAL.name}): Dawn handling active and dawn-brighness ({dawn_brightness}) below threshold ({dawn_threshold_close}), starting timer for {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)")
+                self.logger.debug("State %s (%s): Dawn handling active and dawn-brighness (%s) below threshold (%s), starting timer for %s (%ss)", ShutterState.SHADOW_NEUTRAL, ShutterState.SHADOW_NEUTRAL.name, dawn_brightness, dawn_threshold_close, ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING, dawn_close_delay)
                 await self._start_recalculation_timer(dawn_close_delay)
                 return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
             if height_after_shadow is not None and angle_after_shadow is not None:
@@ -1756,9 +1761,9 @@ class ShadowControlManager:
                     shadow_position=False,
                     stop_timer=True,
                 )
-                self.logger.debug(f"State {ShutterState.SHADOW_NEUTRAL} ({ShutterState.SHADOW_NEUTRAL.name}): Moving to after-shadow position ({height_after_shadow}%, {angle_after_shadow}%)")
+                self.logger.debug("State %s (%s): Moving to after-shadow position (%s%, %s%)", ShutterState.SHADOW_NEUTRAL, ShutterState.SHADOW_NEUTRAL.name, height_after_shadow, angle_after_shadow)
                 return ShutterState.SHADOW_NEUTRAL
-            self.logger.warning(f"State {ShutterState.SHADOW_NEUTRAL} ({ShutterState.SHADOW_NEUTRAL.name}): Height or angle after shadow not configured, staying at {ShutterState.SHADOW_NEUTRAL}")
+            self.logger.warning("State %s (%s): Height or angle after shadow not configured, staying at %s", ShutterState.SHADOW_NEUTRAL, ShutterState.SHADOW_NEUTRAL.name, ShutterState.SHADOW_NEUTRAL)
             return ShutterState.SHADOW_NEUTRAL
 
         if await self._is_dawn_control_enabled():
@@ -1771,7 +1776,7 @@ class ShadowControlManager:
                     and dawn_brightness < dawn_threshold_close
                     and dawn_close_delay is not None
             ):
-                self.logger.debug(f"State {ShutterState.SHADOW_NEUTRAL.name} ({ShutterState.SHADOW_NEUTRAL.name.name}): Dawn mode active and brightness ({dawn_brightness}) below threshold ({dawn_threshold_close}), starting timer for {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)")
+                self.logger.debug("State %s (%s): Dawn mode active and brightness (%s) below threshold (%s), starting timer for %s (%ss)", ShutterState.SHADOW_NEUTRAL.name, ShutterState.SHADOW_NEUTRAL.name.name, dawn_brightness, dawn_threshold_close, ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING, dawn_close_delay)
                 await self._start_recalculation_timer(dawn_close_delay)
                 return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
 
@@ -1784,9 +1789,9 @@ class ShadowControlManager:
                 shadow_position=False,
                 stop_timer=True,  # Stop Timer (falls ein Timer aktiv war)
             )
-            self.logger.debug(f"State {ShutterState.SHADOW_NEUTRAL} ({ShutterState.SHADOW_NEUTRAL.name}): Not in sun or shadow mode disabled or dawn mode not active, moving to neutral position ({neutral_height}%, {neutral_angle}%) and state {ShutterState.NEUTRAL}")
+            self.logger.debug("State %s (%s): Not in sun or shadow mode disabled or dawn mode not active, moving to neutral position (%s%, %s%) and state %s", ShutterState.SHADOW_NEUTRAL, ShutterState.SHADOW_NEUTRAL.name, neutral_height, neutral_angle, ShutterState.NEUTRAL)
             return ShutterState.NEUTRAL
-        self.logger.warning(f"State {ShutterState.SHADOW_NEUTRAL} ({ShutterState.SHADOW_NEUTRAL.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
+        self.logger.warning("State %s (%s): Neutral height or angle not configured, transitioning to %s", ShutterState.SHADOW_NEUTRAL, ShutterState.SHADOW_NEUTRAL.name, ShutterState.NEUTRAL)
         return ShutterState.NEUTRAL
 
     # =======================================================================
@@ -1804,7 +1809,7 @@ class ShadowControlManager:
                     and current_brightness > shadow_threshold_close
                     and shadow_close_delay is not None
             ):
-                self.logger.debug(f"State {ShutterState.NEUTRAL} ({ShutterState.NEUTRAL.name}): Brightness ({current_brightness}) above dawn threshold ({shadow_threshold_close}), starting timer for {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)")
+                self.logger.debug("State %s (%s): Brightness (%s) above dawn threshold (%s), starting timer for %s (%ss)", ShutterState.NEUTRAL, ShutterState.NEUTRAL.name, current_brightness, shadow_threshold_close, ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING, shadow_close_delay)
                 await self._start_recalculation_timer(shadow_close_delay)
                 return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
 
@@ -1818,7 +1823,7 @@ class ShadowControlManager:
                     and dawn_brightness < dawn_threshold_close
                     and dawn_close_delay is not None
             ):
-                self.logger.debug(f"State {ShutterState.NEUTRAL} ({ShutterState.NEUTRAL.name}): Dawn mode active and brightness ({dawn_brightness}) below dawn threshold ({dawn_threshold_close}), starting timer for {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)")
+                self.logger.debug("State %s (%s): Dawn mode active and brightness (%s) below dawn threshold (%s), starting timer for %s (%ss)", ShutterState.NEUTRAL, ShutterState.NEUTRAL.name, dawn_brightness, dawn_threshold_close, ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING, dawn_close_delay)
                 await self._start_recalculation_timer(dawn_close_delay)
                 return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
 
@@ -1831,7 +1836,7 @@ class ShadowControlManager:
                 shadow_position=False,
                 stop_timer=True,
             )
-            self.logger.debug(f"State {ShutterState.NEUTRAL} ({ShutterState.NEUTRAL.name}): Moving shutter to neutral position ({neutral_height}%, {neutral_angle}%).")
+            self.logger.debug("State %s (%s): Moving shutter to neutral position (%s%, %s%).", ShutterState.NEUTRAL, ShutterState.NEUTRAL.name, neutral_height, neutral_angle)
         return ShutterState.NEUTRAL
 
     # =======================================================================
@@ -1862,7 +1867,7 @@ class ShadowControlManager:
                     and dawn_brightness < dawn_threshold_close
                     and dawn_close_delay is not None
             ):
-                self.logger.debug(f"State {ShutterState.DAWN_NEUTRAL} ({ShutterState.DAWN_NEUTRAL.name}): Dawn mode active and brightness ({dawn_brightness}) below dawn threshold ({dawn_threshold_close}), starting timer for {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({dawn_close_delay}s)")
+                self.logger.debug("State %s (%s): Dawn mode active and brightness (%s) below dawn threshold (%s), starting timer for %s (%ss)", ShutterState.DAWN_NEUTRAL, ShutterState.DAWN_NEUTRAL.name, dawn_brightness, dawn_threshold_close, ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING, dawn_close_delay)
                 await self._start_recalculation_timer(dawn_close_delay)
                 return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
             if (
@@ -1873,7 +1878,7 @@ class ShadowControlManager:
                     and current_brightness > shadow_threshold_close
                     and shadow_close_delay is not None
             ):
-                self.logger.debug(f"State {ShutterState.DAWN_NEUTRAL} ({ShutterState.DAWN_NEUTRAL.name}): Within sun, shadow mode active and brightness ({current_brightness}) above shadow threshold ({shadow_threshold_close}), starting timer for {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)")
+                self.logger.debug("State %s (%s): Within sun, shadow mode active and brightness (%s) above shadow threshold (%s), starting timer for %s (%ss)", ShutterState.DAWN_NEUTRAL, ShutterState.DAWN_NEUTRAL.name, current_brightness, shadow_threshold_close, ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING, shadow_close_delay)
                 await self._start_recalculation_timer(shadow_close_delay)
                 return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
             if height_after_dawn is not None and angle_after_dawn is not None:
@@ -1883,9 +1888,9 @@ class ShadowControlManager:
                     shadow_position=False,
                     stop_timer=True,
                 )
-                self.logger.debug(f"State {ShutterState.DAWN_NEUTRAL} ({ShutterState.DAWN_NEUTRAL.name}): Moving shutter to after-dawn position ({height_after_dawn}%, {angle_after_dawn}%).")
+                self.logger.debug("State %s (%s): Moving shutter to after-dawn position (%s%, %s%).", ShutterState.DAWN_NEUTRAL, ShutterState.DAWN_NEUTRAL.name, height_after_dawn, angle_after_dawn)
                 return ShutterState.DAWN_NEUTRAL
-            self.logger.warning(f"State {ShutterState.DAWN_NEUTRAL} ({ShutterState.DAWN_NEUTRAL.name}): Height or angle after dawn not configured, staying at {ShutterState.DAWN_NEUTRAL}")
+            self.logger.warning("State %s (%s): Height or angle after dawn not configured, staying at %s", ShutterState.DAWN_NEUTRAL, ShutterState.DAWN_NEUTRAL.name, ShutterState.DAWN_NEUTRAL)
             return ShutterState.DAWN_NEUTRAL
 
         if (
@@ -1896,7 +1901,7 @@ class ShadowControlManager:
                 and current_brightness > shadow_threshold_close
                 and shadow_close_delay is not None
         ):
-            self.logger.debug(f"State {ShutterState.DAWN_NEUTRAL} ({ShutterState.DAWN_NEUTRAL.name}): Within sun, shadow mode active and brightness ({current_brightness}) above shadow threshold ({shadow_threshold_close}), starting timer for {ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING} ({shadow_close_delay}s)")
+            self.logger.debug("State %s (%s): Within sun, shadow mode active and brightness (%s) above shadow threshold (%s), starting timer for %s (%ss)", ShutterState.DAWN_NEUTRAL, ShutterState.DAWN_NEUTRAL.name, current_brightness, shadow_threshold_close, ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING, shadow_close_delay)
             await self._start_recalculation_timer(shadow_close_delay)
             return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
 
@@ -1907,9 +1912,9 @@ class ShadowControlManager:
                 shadow_position=False,
                 stop_timer=True,
             )
-            self.logger.debug(f"State {ShutterState.DAWN_NEUTRAL} ({ShutterState.DAWN_NEUTRAL.name}): Dawn mode disabled or requirements for shadow not given, moving to neutral position ({neutral_height}%, {neutral_angle}%)")
+            self.logger.debug("State %s (%s): Dawn mode disabled or requirements for shadow not given, moving to neutral position (%s%, %s%)", ShutterState.DAWN_NEUTRAL, ShutterState.DAWN_NEUTRAL.name, neutral_height, neutral_angle)
             return ShutterState.NEUTRAL
-        self.logger.warning(f"State {ShutterState.DAWN_NEUTRAL} ({ShutterState.DAWN_NEUTRAL.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
+        self.logger.warning("State %s (%s): Neutral height or angle not configured, transitioning to %s", ShutterState.DAWN_NEUTRAL, ShutterState.DAWN_NEUTRAL.name, ShutterState.NEUTRAL)
         return ShutterState.NEUTRAL
 
     # =======================================================================
@@ -1927,7 +1932,7 @@ class ShadowControlManager:
                     and dawn_threshold_close is not None
                     and dawn_brightness < dawn_threshold_close
             ):
-                self.logger.debug(f"State {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name}): Dawn brightness ({dawn_brightness}) again below threshold ({dawn_threshold_close}), moving to {ShutterState.DAWN_FULL_CLOSED} and stopping timer")
+                self.logger.debug("State %s (%s): Dawn brightness (%s) again below threshold (%s), moving to %s and stopping timer", ShutterState.DAWN_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name, dawn_brightness, dawn_threshold_close, ShutterState.DAWN_FULL_CLOSED)
                 self._cancel_recalculation_timer()
                 return ShutterState.DAWN_FULL_CLOSED
             if self._is_timer_finished():
@@ -1938,11 +1943,11 @@ class ShadowControlManager:
                         shadow_position=False,
                         stop_timer=True,
                     )
-                    self.logger.debug(f"State {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name}): Timer finished, moving to dawn height ({dawn_height}%) with open slats ({dawn_open_slat_angle}°) and state {ShutterState.DAWN_NEUTRAL}")
+                    self.logger.debug("State %s (%s): Timer finished, moving to dawn height (%s%) with open slats (%s°) and state %s", ShutterState.DAWN_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name, dawn_height, dawn_open_slat_angle, ShutterState.DAWN_NEUTRAL)
                     return ShutterState.DAWN_NEUTRAL
-                self.logger.warning(f"State {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name}): Dawn height or angle for open slats not configured, staying at {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING}")
+                self.logger.warning("State %s (%s): Dawn height or angle for open slats not configured, staying at %s", ShutterState.DAWN_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name, ShutterState.DAWN_NEUTRAL_TIMER_RUNNING)
                 return ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
-            self.logger.debug(f"State {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name}): Waiting for timer (brightness not low enough)")
+            self.logger.debug("State %s (%s): Waiting for timer (brightness not low enough)", ShutterState.DAWN_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name)
             return ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
         neutral_height = self._facade_config.neutral_pos_height
         neutral_angle = self._facade_config.neutral_pos_angle
@@ -1953,12 +1958,12 @@ class ShadowControlManager:
                 shadow_position=False,
                 stop_timer=True,  # Stop Timer
             )
-            self.logger.debug(f"State {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name}): Dawn mode disabled, moving to neutral position ({neutral_height}%, {neutral_angle}%) and state {ShutterState.NEUTRAL}")
+            self.logger.debug("State %s (%s): Dawn mode disabled, moving to neutral position (%s%, %s%) and state %s", ShutterState.DAWN_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name, neutral_height, neutral_angle, ShutterState.NEUTRAL)
             return ShutterState.NEUTRAL
-        self.logger.warning(f"State {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
+        self.logger.warning("State %s (%s): Neutral height or angle not configured, transitioning to %s", ShutterState.DAWN_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name, ShutterState.NEUTRAL)
         return ShutterState.NEUTRAL
 
-        self.logger.debug(f"State {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name}): Staying at previous position")
+        self.logger.debug("State %s (%s): Staying at previous position", ShutterState.DAWN_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name)
         return ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
 
     # =======================================================================
@@ -1985,13 +1990,13 @@ class ShadowControlManager:
                     shadow_position=False,
                     stop_timer=False,
                 )
-                self.logger.debug(f"State {ShutterState.DAWN_HORIZONTAL_NEUTRAL} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL.name}): Dawn brightness ({dawn_brightness}) below threshold ({dawn_threshold_close}), moving to dawn height ({dawn_height}%) with open slats ({dawn_open_slat_angle}°) and state {ShutterState.DAWN_FULL_CLOSED}")
+                self.logger.debug("State %s (%s): Dawn brightness (%s) below threshold (%s), moving to dawn height (%s%) with open slats (%s°) and state %s", ShutterState.DAWN_HORIZONTAL_NEUTRAL, ShutterState.DAWN_HORIZONTAL_NEUTRAL.name, dawn_brightness, dawn_threshold_close, dawn_height, dawn_open_slat_angle, ShutterState.DAWN_FULL_CLOSED)
                 return ShutterState.DAWN_FULL_CLOSED
             if dawn_open_shutter_delay is not None:
-                self.logger.debug(f"State {ShutterState.DAWN_HORIZONTAL_NEUTRAL} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL.name}): Dawn brightness not below threshold, starting timer for {ShutterState.DAWN_NEUTRAL_TIMER_RUNNING} ({dawn_open_shutter_delay}s)")
+                self.logger.debug("State %s (%s): Dawn brightness not below threshold, starting timer for %s (%ss)", ShutterState.DAWN_HORIZONTAL_NEUTRAL, ShutterState.DAWN_HORIZONTAL_NEUTRAL.name, ShutterState.DAWN_NEUTRAL_TIMER_RUNNING, dawn_open_shutter_delay)
                 await self._start_recalculation_timer(dawn_open_shutter_delay)
                 return ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
-            self.logger.warning(f"State {ShutterState.DAWN_HORIZONTAL_NEUTRAL} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL.name}): Dawn brightness not below threshold and 'dawn_open_shutter_delay' not configured, staying at {ShutterState.DAWN_HORIZONTAL_NEUTRAL}")
+            self.logger.warning("State %s (%s): Dawn brightness not below threshold and 'dawn_open_shutter_delay' not configured, staying at %s", ShutterState.DAWN_HORIZONTAL_NEUTRAL, ShutterState.DAWN_HORIZONTAL_NEUTRAL.name, ShutterState.DAWN_HORIZONTAL_NEUTRAL)
             return ShutterState.DAWN_HORIZONTAL_NEUTRAL
         neutral_height = self._facade_config.neutral_pos_height
         neutral_angle = self._facade_config.neutral_pos_angle
@@ -2002,12 +2007,12 @@ class ShadowControlManager:
                 shadow_position=False,
                 stop_timer=True,
             )
-            self.logger.debug(f"State {ShutterState.DAWN_HORIZONTAL_NEUTRAL} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL.name}): Dawn mode disabled, moving to neutral position ({neutral_height}%, {neutral_angle}%) and state {ShutterState.NEUTRAL}")
+            self.logger.debug("State %s (%s): Dawn mode disabled, moving to neutral position (%s%, %s%) and state %s", ShutterState.DAWN_HORIZONTAL_NEUTRAL, ShutterState.DAWN_HORIZONTAL_NEUTRAL.name, neutral_height, neutral_angle, ShutterState.NEUTRAL)
             return ShutterState.NEUTRAL
-        self.logger.warning(f"State {ShutterState.DAWN_HORIZONTAL_NEUTRAL} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
+        self.logger.warning("State %s (%s): Neutral height or angle not configured, transitioning to %s", ShutterState.DAWN_HORIZONTAL_NEUTRAL, ShutterState.DAWN_HORIZONTAL_NEUTRAL.name, ShutterState.NEUTRAL)
         return ShutterState.NEUTRAL
 
-        self.logger.debug(f"State {ShutterState.DAWN_HORIZONTAL_NEUTRAL} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL.name}): Staying at previous position")
+        self.logger.debug("State %s (%s): Staying at previous position", ShutterState.DAWN_HORIZONTAL_NEUTRAL, ShutterState.DAWN_HORIZONTAL_NEUTRAL.name)
         return ShutterState.DAWN_HORIZONTAL_NEUTRAL
 
     # =======================================================================
@@ -2024,7 +2029,7 @@ class ShadowControlManager:
                     and dawn_threshold_close is not None
                     and dawn_brightness < dawn_threshold_close
             ):
-                self.logger.debug(f"State {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Dawn brightness ({dawn_brightness}) again below threshold ({dawn_threshold_close}), moving to {ShutterState.DAWN_FULL_CLOSED} and stopping timer")
+                self.logger.debug("State %s (%s): Dawn brightness (%s) again below threshold (%s), moving to %s and stopping timer", ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name, dawn_brightness, dawn_threshold_close, ShutterState.DAWN_FULL_CLOSED)
                 self._cancel_recalculation_timer()
                 return ShutterState.DAWN_FULL_CLOSED
             if self._is_timer_finished():
@@ -2035,11 +2040,11 @@ class ShadowControlManager:
                         shadow_position=False,
                         stop_timer=False,
                     )
-                    self.logger.debug(f"State {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Timer finished, moving to dawn height ({dawn_height}%) with open slats ({dawn_open_slat_angle}°) and state {ShutterState.DAWN_HORIZONTAL_NEUTRAL}")
+                    self.logger.debug("State %s (%s): Timer finished, moving to dawn height (%s%) with open slats (%s°) and state %s", ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name, dawn_height, dawn_open_slat_angle, ShutterState.DAWN_HORIZONTAL_NEUTRAL)
                     return ShutterState.DAWN_HORIZONTAL_NEUTRAL
-                self.logger.warning(f"State {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Dawn height or angle for open slats not configured, staying at {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING}")
+                self.logger.warning("State %s (%s): Dawn height or angle for open slats not configured, staying at %s", ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name, ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING)
                 return ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
-            self.logger.debug(f"State {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Waiting for timer (brightness not low enough)")
+            self.logger.debug("State %s (%s): Waiting for timer (brightness not low enough)", ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name)
             return ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
         neutral_height = self._facade_config.neutral_pos_height
         neutral_angle = self._facade_config.neutral_pos_angle
@@ -2050,12 +2055,12 @@ class ShadowControlManager:
                 shadow_position=False,
                 stop_timer=True,  # Stop Timer
             )
-            self.logger.debug(f"State {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Dawn mode disabled, moving to neutral position ({neutral_height}%, {neutral_angle}%) and state {ShutterState.NEUTRAL}")
+            self.logger.debug("State %s (%s): Dawn mode disabled, moving to neutral position (%s%, %s%) and state %s", ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name, neutral_height, neutral_angle, ShutterState.NEUTRAL)
             return ShutterState.NEUTRAL
-        self.logger.warning(f"State {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
+        self.logger.warning("State %s (%s): Neutral height or angle not configured, transitioning to %s", ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name, ShutterState.NEUTRAL)
         return ShutterState.NEUTRAL
 
-        self.logger.debug(f"State {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name}): Staying at previous position")
+        self.logger.debug("State %s (%s): Staying at previous position", ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name)
         return ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
     # =======================================================================
@@ -2074,7 +2079,7 @@ class ShadowControlManager:
                     and dawn_brightness > dawn_threshold_close
                     and dawn_open_slat_delay is not None
             ):
-                self.logger.debug(f"State {ShutterState.DAWN_FULL_CLOSED} ({ShutterState.DAWN_FULL_CLOSED.name}): Dawn brightness ({dawn_brightness}) above threshold ({dawn_threshold_close}), starting timer for {ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING} ({dawn_open_slat_delay}s)")
+                self.logger.debug("State %s (%s): Dawn brightness (%s) above threshold (%s), starting timer for %s (%ss)", ShutterState.DAWN_FULL_CLOSED, ShutterState.DAWN_FULL_CLOSED.name, dawn_brightness, dawn_threshold_close, ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING, dawn_open_slat_delay)
                 await self._start_recalculation_timer(dawn_open_slat_delay)
                 return ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
             if dawn_height is not None and dawn_angle is not None:
@@ -2084,9 +2089,9 @@ class ShadowControlManager:
                     shadow_position=False,
                     stop_timer=True,
                 )
-                self.logger.debug(f"State {ShutterState.DAWN_FULL_CLOSED} ({ShutterState.DAWN_FULL_CLOSED.name}): Dawn brightness not above threshold, moving to dawn position ({dawn_height}%, {dawn_angle}%)")
+                self.logger.debug("State %s (%s): Dawn brightness not above threshold, moving to dawn position (%s%, %s%)", ShutterState.DAWN_FULL_CLOSED, ShutterState.DAWN_FULL_CLOSED.name, dawn_height, dawn_angle)
                 return ShutterState.DAWN_FULL_CLOSED
-            self.logger.warning(f"State {ShutterState.DAWN_FULL_CLOSED} ({ShutterState.DAWN_FULL_CLOSED.name}): Dawn height or angle not configured, staying at {ShutterState.DAWN_FULL_CLOSED}")
+            self.logger.warning("State %s (%s): Dawn height or angle not configured, staying at %s", ShutterState.DAWN_FULL_CLOSED, ShutterState.DAWN_FULL_CLOSED.name, ShutterState.DAWN_FULL_CLOSED)
             return ShutterState.DAWN_FULL_CLOSED
         neutral_height = self._facade_config.neutral_pos_height
         neutral_angle = self._facade_config.neutral_pos_angle
@@ -2097,12 +2102,12 @@ class ShadowControlManager:
                 shadow_position=False,
                 stop_timer=True,  # Stop Timer
             )
-            self.logger.debug(f"State {ShutterState.DAWN_FULL_CLOSED} ({ShutterState.DAWN_FULL_CLOSED.name}): Dawn handling disabled, moving to neutral position ({neutral_height}%, {neutral_angle}%) and state {ShutterState.NEUTRAL}")
+            self.logger.debug("State %s (%s): Dawn handling disabled, moving to neutral position (%s%, %s%) and state %s", ShutterState.DAWN_FULL_CLOSED, ShutterState.DAWN_FULL_CLOSED.name, neutral_height, neutral_angle, ShutterState.NEUTRAL)
             return ShutterState.NEUTRAL
-        self.logger.warning(f"State {ShutterState.DAWN_FULL_CLOSED} ({ShutterState.DAWN_FULL_CLOSED.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
+        self.logger.warning("State %s (%s): Neutral height or angle not configured, transitioning to %s", ShutterState.DAWN_FULL_CLOSED, ShutterState.DAWN_FULL_CLOSED.name, ShutterState.NEUTRAL)
         return ShutterState.NEUTRAL
 
-        self.logger.debug(f"State {ShutterState.DAWN_FULL_CLOSED} ({ShutterState.DAWN_FULL_CLOSED.name}): Staying at previous position")
+        self.logger.debug("State %s (%s): Staying at previous position", ShutterState.DAWN_FULL_CLOSED, ShutterState.DAWN_FULL_CLOSED.name)
         return ShutterState.DAWN_FULL_CLOSED
 
     # =======================================================================
@@ -2127,13 +2132,13 @@ class ShadowControlManager:
                             shadow_position=False,
                             stop_timer=True,
                         )
-                        self.logger.debug(f"State {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name}): Timer finished, moving to dawn position ({dawn_height}%, {dawn_angle}%) and state {ShutterState.DAWN_FULL_CLOSED}")
+                        self.logger.debug("State %s (%s): Timer finished, moving to dawn position (%s%, %s%) and state %s", ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING, ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name, dawn_height, dawn_angle, ShutterState.DAWN_FULL_CLOSED)
                         return ShutterState.DAWN_FULL_CLOSED
-                    self.logger.warning(f"State {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name}): Dawn height or angle not configured, staying at {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING}")
+                    self.logger.warning("State %s (%s): Dawn height or angle not configured, staying at %s", ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING, ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name, ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING)
                     return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
-                self.logger.debug(f"State {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name}): Waiting for timer (brightness low enough)")
+                self.logger.debug("State %s (%s): Waiting for timer (brightness low enough)", ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING, ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name)
                 return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
-            self.logger.debug(f"State {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name}): Brightness ({dawn_brightness}) not below threshold ({dawn_threshold_close}), moving to {ShutterState.DAWN_NEUTRAL} and stopping timer")
+            self.logger.debug("State %s (%s): Brightness (%s) not below threshold (%s), moving to %s and stopping timer", ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING, ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name, dawn_brightness, dawn_threshold_close, ShutterState.DAWN_NEUTRAL)
             self._cancel_recalculation_timer()
             return ShutterState.DAWN_NEUTRAL
         neutral_height = self._facade_config.neutral_pos_height
@@ -2145,12 +2150,12 @@ class ShadowControlManager:
                 shadow_position=False,
                 stop_timer=True,  # Stop Timer
             )
-            self.logger.debug(f"State {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name}): Dawn mode disabled, moving to neutral position ({neutral_height}%, {neutral_angle}%) and state {ShutterState.NEUTRAL}")
+            self.logger.debug("State %s (%s): Dawn mode disabled, moving to neutral position (%s%, %s%) and state %s", ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING, ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name, neutral_height, neutral_angle, ShutterState.NEUTRAL)
             return ShutterState.NEUTRAL
-        self.logger.warning(f"State {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name}): Neutral height or angle not configured, transitioning to {ShutterState.NEUTRAL}")
+        self.logger.warning("State %s (%s): Neutral height or angle not configured, transitioning to %s", ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING, ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name, ShutterState.NEUTRAL)
         return ShutterState.NEUTRAL
 
-        self.logger.debug(f"State {ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING} ({ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name}): Staying at previous position")
+        self.logger.debug("State %s (%s): Staying at previous position", ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING, ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name)
         return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
 
     # End of state handling
@@ -2169,7 +2174,7 @@ class ShadowControlManager:
         value = self._options.get(key)
         if value is None:
             if log_warning:
-                self.logger.debug(f"Static key '{key}' not found in options. Using default: {default}")
+                self.logger.debug("Static key '%s' not found in options. Using default: %s", key, default)
             return default
         try:
             if expected_type == bool: # For boolean selectors (if any static boolean values existed)
@@ -2177,7 +2182,7 @@ class ShadowControlManager:
             return expected_type(value)
         except (ValueError, TypeError):
             if log_warning:
-                self.logger.warning(f"Static value for key '{key}' ('{value}') cannot be converted to {expected_type}. Using default: {default}")
+                self.logger.warning("Static value for key '%s' ('%s') cannot be converted to %s. Using default: %s", key, value, expected_type, default)
             return default
 
     def _get_entity_state_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
@@ -2186,14 +2191,14 @@ class ShadowControlManager:
 
         if entity_id is None or not isinstance(entity_id, str) or entity_id == "":
             # if log_warning:
-            #     self.logger.debug(f"No valid entity_id configured for key '{key}' ('{entity_id}'). Using default: {default}")
+            #     self.logger.debug("No valid entity_id configured for key '%s' ('%s'). Using default: %s", key, entity_id, default)
             return default
 
         state = self.hass.states.get(entity_id)
 
         if state is None or state.state in ["unavailable", "unknown", "none"]: # 'none' can happen for input_number if not set
             if log_warning:
-                self.logger.debug(f"Entity '{entity_id}' for key '{key}' is unavailable or unknown. Using default: {default}")
+                self.logger.debug("Entity '%s' for key '%s' is unavailable or unknown. Using default: %s", entity_id, key, default)
             return default
 
         try:
@@ -2207,7 +2212,7 @@ class ShadowControlManager:
             return expected_type(state.state)
         except (ValueError, TypeError):
             if log_warning:
-                self.logger.warning(f"State of entity '{entity_id}' for key '{key}' ('{state.state}') cannot be converted to {expected_type}. Using default: {default}")
+                self.logger.warning("State of entity '%s' for key '%s' ('%s') cannot be converted to %s. Using default: %s", entity_id, key, state.state, expected_type, default)
             return default
 
     def _get_enum_value(self, key: str, enum_class: type, default_enum_member: Enum, log_warning: bool = True) -> Enum:
@@ -2216,7 +2221,7 @@ class ShadowControlManager:
 
         if value_str is None or not isinstance(value_str, str) or value_str == "":
             if log_warning:
-                self.logger.debug(f"Enum key '{key}' not found or empty in options. Using default: {default_enum_member.name}")
+                self.logger.debug("Enum key '%s' not found or empty in options. Using default: %s", key, default_enum_member.name)
             return default_enum_member
 
         try:
@@ -2225,7 +2230,7 @@ class ShadowControlManager:
             return enum_class[value_str.upper()]
         except KeyError:
             if log_warning:
-                self.logger.warning(f"Value '{value_str}' for enum key '{key}' is not a valid {enum_class.__name__} member. Using default: {default_enum_member.name}")
+                self.logger.warning("Value '%s' for enum key '%s' is not a valid %s member. Using default: %s", value_str, key, enum_class.__name__, default_enum_member.name)
             return default_enum_member
 
     def _convert_shutter_angle_percent_to_degrees(self, angle_percent: float) -> float:
@@ -2240,7 +2245,7 @@ class ShadowControlManager:
 
         if min_slat_angle is None or angle_offset is None:
             self.logger.warning(
-                f"_convert_shutter_angle_percent_to_degrees: min_slat_angle ({min_slat_angle}) or angle_offset ({angle_offset}) is None. Using default values (0, 0)")
+                "_convert_shutter_angle_percent_to_degrees: min_slat_angle (%s) or angle_offset (%s) is None. Using default values (0, 0)", min_slat_angle, angle_offset)
             min_slat_angle = 0.0
             angle_offset = 0.0
 
@@ -2251,7 +2256,7 @@ class ShadowControlManager:
         calculated_degrees = max(min_slat_angle, calculated_degrees)
 
         self.logger.debug(
-            f"Angle of {angle_percent}% equates to {calculated_degrees}° (min_slat_angle={min_slat_angle}, angle_offset={angle_offset})")
+            "Angle of %s% equates to %s° (min_slat_angle=%s, angle_offset=%s)", angle_percent, calculated_degrees, min_slat_angle, angle_offset)
 
         return calculated_degrees
 
@@ -2268,41 +2273,41 @@ class ShadowControlManager:
         if previous_value is None:
             # Return None if there's no previous value (like on the initial run)
             # self.logger.debug(
-            #     f"_should_output_be_updated: previous_value is None. Returning new value ({new_value})")
+            #     "_should_output_be_updated: previous_value is None. Returning new value (%s)", new_value)
             return new_value
 
         # Check if the value was changed at all
         # by using a small tolerance to prevent redundant movements.
         if abs(new_value - previous_value) < 0.001:
             # self.logger.debug(
-            #     f"_should_output_be_updated: new_value ({new_value}) is nearly identical to previous_value ({previous_value}). Returning previous_value")
+            #     "_should_output_be_updated: new_value (%s) is nearly identical to previous_value (%s). Returning previous_value", new_value, previous_value)
             return previous_value
 
         # self.logger.debug(
-        #     f"_should_output_be_updated: config_value={config_value.name}, new_value={new_value}, previous_value={previous_value}")
+        #     "_should_output_be_updated: config_value=%s, new_value=%s, previous_value=%s", config_value.name, new_value, previous_value)
 
         if config_value == MovementRestricted.ONLY_CLOSE:
             if new_value > previous_value:
                 # self.logger.debug(
-                #     f"_should_output_be_updated: ONLY_DOWN -> new_value ({new_value}) > previous_value ({previous_value}). Returning new_value")
+                #     "_should_output_be_updated: ONLY_DOWN -> new_value (%s) > previous_value (%s). Returning new_value", new_value, previous_value)
                 return new_value
             # self.logger.debug(
-            #     f"_should_output_be_updated: ONLY_DOWN -> new_value ({new_value}) <= previous_value ({previous_value}). Returning previous_value")
+            #     "_should_output_be_updated: ONLY_DOWN -> new_value (%s) <= previous_value (%s). Returning previous_value", new_value, previous_value)
             return previous_value
         if config_value == MovementRestricted.ONLY_OPEN:
             if new_value < previous_value:
                 # self.logger.debug(
-                #     f"_should_output_be_updated: ONLY_UP -> new_value ({new_value}) < previous_value ({previous_value}). Returning new_value")
+                #     "_should_output_be_updated: ONLY_UP -> new_value (%s) < previous_value (%s). Returning new_value", new_value, previous_value)
                 return new_value
             # self.logger.debug(
-            #     f"_should_output_be_updated: ONLY_UP -> new_value ({new_value}) >= previous_value ({previous_value}). Returning previous_value")
+            #     "_should_output_be_updated: ONLY_UP -> new_value (%s) >= previous_value (%s). Returning previous_value", new_value, previous_value)
             return previous_value
         if config_value == MovementRestricted.NO_RESTRICTION:
             # self.logger.debug(
-            #     f"_should_output_be_updated: NO_RESTRICTION -> Returning new_value ({new_value})")
+            #     "_should_output_be_updated: NO_RESTRICTION -> Returning new_value (%s)", new_value)
             return new_value
         # self.logger.warning(
-        #     f"_should_output_be_updated: Unknown value '{config_value.name}'. Returning new_value ({new_value})")
+        #     "_should_output_be_updated: Unknown value '%s'. Returning new_value (%s)", config_value.name, new_value)
         return new_value
 
     async def _start_recalculation_timer(self, delay_seconds: float) -> None:
@@ -2314,13 +2319,13 @@ class ShadowControlManager:
 
         if delay_seconds <= 0:
             self.logger.debug(
-                f"Timer delay is <= 0 ({delay_seconds}s). Trigger immediate recalculation")
+                "Timer delay is <= 0 (%ss). Trigger immediate recalculation", delay_seconds)
             await self._async_calculate_and_apply_cover_position(None)
             # At immediate recalculation, there is no new timer
             self._next_modification_timestamp = None
             return
 
-        self.logger.debug(f"Starting recalculation timer for {delay_seconds}s")
+        self.logger.debug("Starting recalculation timer for %ss", delay_seconds)
 
         # Save start time and duration
         current_utc_time = datetime.now(datetime.UTC)
@@ -2328,7 +2333,7 @@ class ShadowControlManager:
         self._recalculation_timer_duration_seconds = delay_seconds
 
         self._next_modification_timestamp = current_utc_time + timedelta(seconds=delay_seconds)
-        self.logger.debug(f"Next modification scheduled for: {self._next_modification_timestamp}")
+        self.logger.debug("Next modification scheduled for: %s", self._next_modification_timestamp)
 
         # Save callback handle from async_call_later to enable timer canceling
         self._recalculation_timer = async_call_later(

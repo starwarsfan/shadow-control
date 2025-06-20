@@ -20,15 +20,15 @@ async def async_setup_entry(
         async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Shadow Control sensor platform from a config entry."""
-    _LOGGER.debug(f"[{DOMAIN}] Setting up sensor platform from config entry: {config_entry.entry_id}")
+    _LOGGER.debug("[%s] Setting up sensor platform from config entry: %s", DOMAIN, config_entry.entry_id)
 
     manager: ShadowControlManager | None = hass.data.get(DOMAIN_DATA_MANAGERS, {}).get(config_entry.entry_id)
 
     if manager is None:
-        _LOGGER.error(f"[{DOMAIN}] No Shadow Control manager found for config entry {config_entry.entry_id}. Cannot set up sensors.")
+        _LOGGER.error("[%s] No Shadow Control manager found for config entry %s. Cannot set up sensors.", DOMAIN, config_entry.entry_id)
         return
 
-    _LOGGER.debug(f"[{DOMAIN}] Creating sensors for manager: {manager._name} (from entry {config_entry.entry_id})")
+    _LOGGER.debug("[%s] Creating sensors for manager: %s (from entry %s)", DOMAIN, manager._name, config_entry.entry_id)
 
     entities_to_add = [
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_HEIGHT),
@@ -42,9 +42,9 @@ async def async_setup_entry(
 
     if entities_to_add:
         async_add_entities(entities_to_add, True)
-        _LOGGER.info(f"[{DOMAIN}] Successfully added {len(entities_to_add)} Shadow Control sensor entities for '{manager._name}'.")
+        _LOGGER.info("[%s] Successfully added %s Shadow Control sensor entities for '%s'.", DOMAIN, len(entities_to_add), manager._name)
     else:
-        _LOGGER.warning(f"[{DOMAIN}] No sensor entities created for manager '{manager._name}'.")
+        _LOGGER.warning("[%s] No sensor entities created for manager '%s'.", DOMAIN, manager._name)
 
 class ShadowControlSensor(SensorEntity):
     """Represents a Shadow Control sensor."""
