@@ -254,7 +254,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             _LOGGER.debug("[%s] Type of validated_options: %s",
                           DOMAIN, type(validated_options))
         except vol.Invalid as exc:
-            _LOGGER.error("[%s] Validation failed after migration to version %s for entry %s: %s",
+            _LOGGER.exception("[%s] Validation failed after migration to version %s for entry %s: %s",
                           DOMAIN, CURRENT_SCHEMA_VERSION, config_entry.entry_id, exc)
             return False
 
@@ -284,15 +284,14 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     return False
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """
-    Handle options update.
-    Will be called if the user modifies the configuration using the OptionsFlow.
-    """
+    """Handle options update. Will be called if the user modifies the configuration using the OptionsFlow."""
     _LOGGER.debug("[%s] Options update listener triggered for entry %s.",
                   DOMAIN, entry.entry_id)
     await hass.config_entries.async_reload(entry.entry_id)
 
 class SCDynamicInputConfiguration:
+    """Define defaults for dynamic configuration"""
+
     def __init__(self):
         self.brightness: float = 5000.0
         self.brightness_dawn: float = -1.0
@@ -308,6 +307,8 @@ class SCDynamicInputConfiguration:
         self.movement_restriction_angle: MovementRestricted = MovementRestricted.NO_RESTRICTION
 
 class SCFacadeConfiguration:
+    """Define defaults for facade configuration"""
+
     def __init__(self):
         self.azimuth: float = 180.0
         self.offset_sun_in: float = -90.0
@@ -329,6 +330,8 @@ class SCFacadeConfiguration:
         self.modification_tolerance_angle: float = 0.0
 
 class SCShadowControlConfig:
+    """Define defaults for trigger configuration"""
+
     def __init__(self):
         self.enabled: bool = True
         self.brightness_threshold: float = 50000.0
@@ -342,6 +345,8 @@ class SCShadowControlConfig:
         self.angle_after_sun: float = 0.0
 
 class SCDawnControlConfig:
+    """Define defaults for dawn configuration"""
+
     def __init__(self):
         self.enabled: bool = True
         self.brightness_threshold: float = 500.0
