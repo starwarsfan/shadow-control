@@ -5,7 +5,7 @@
     "@starwarsfan"
   ],
   "dependencies": [
-    "knx", "sun"
+    "sun"
   ],
   "config_flow": true,
   "documentation": "https://github.com/starwarsfan/shadow-control",
