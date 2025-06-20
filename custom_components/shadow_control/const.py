@@ -17,8 +17,9 @@ SC_CONF_NAME = "name"
 DEBUG_ENABLED = "debug_enabled"
 TARGET_COVER_ENTITY_ID = "target_cover_entity"
 
-# Dynamic configuration inputs
 class SCDynamicInput(Enum):
+    """Dynamic configuration input enums."""
+
     BRIGHTNESS_ENTITY = "brightness_entity"
     BRIGHTNESS_DAWN_ENTITY = "brightness_dawn_entity"
     SUN_ELEVATION_ENTITY = "sun_elevation_entity"
@@ -33,8 +34,9 @@ class SCDynamicInput(Enum):
     MOVEMENT_RESTRICTION_ANGLE_ENTITY = "movement_restriction_angle_entity"
     ENFORCE_POSITIONING_ENTITY = "enforce_positioning_entity"
 
-# General facade configuration
 class SCFacadeConfig(Enum):
+    """General facade configuration enums."""
+
     AZIMUTH_STATIC = "facade_azimuth_static"
     OFFSET_SUN_IN_STATIC = "facade_offset_sun_in_static"
     OFFSET_SUN_OUT_STATIC = "facade_offset_sun_out_static"
@@ -54,8 +56,9 @@ class SCFacadeConfig(Enum):
     MODIFICATION_TOLERANCE_HEIGHT_STATIC = "facade_modification_tolerance_height_static"
     MODIFICATION_TOLERANCE_ANGLE_STATIC = "facade_modification_tolerance_angle_static"
 
-# Shadow configuration
 class SCShadowInput(Enum):
+    """Shadow configuration enums."""
+
     CONTROL_ENABLED_ENTITY = "shadow_control_enabled_entity"
     CONTROL_ENABLED_STATIC = "shadow_control_enabled_static"
     BRIGHTNESS_THRESHOLD_ENTITY = "shadow_brightness_threshold_entity"
@@ -77,8 +80,9 @@ class SCShadowInput(Enum):
     ANGLE_AFTER_SUN_ENTITY = "shadow_angle_after_sun_entity"
     ANGLE_AFTER_SUN_STATIC = "shadow_angle_after_sun_static"
 
-# Dawn configuration
 class SCDawnInput(Enum):
+    """Dawn configuration enums."""
+
     CONTROL_ENABLED_ENTITY = "dawn_control_enabled_entity"
     CONTROL_ENABLED_STATIC = "dawn_control_enabled_static"
     BRIGHTNESS_THRESHOLD_ENTITY = "dawn_brightness_threshold_entity"

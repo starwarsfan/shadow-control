@@ -254,7 +254,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             _LOGGER.debug("[%s] Type of validated_options: %s",
                           DOMAIN, type(validated_options))
         except vol.Invalid as exc:
-            _LOGGER.exception("[%s] Validation failed after migration to version %s for entry %s: %s",
+            _LOGGER.exception("[%s] Validation failed after migration to version %s for entry %s",
                           DOMAIN, CURRENT_SCHEMA_VERSION, config_entry.entry_id, exc)
             return False
 
@@ -292,7 +292,7 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> Non
 class SCDynamicInputConfiguration:
     """Define defaults for dynamic configuration."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.brightness: float = 5000.0
         self.brightness_dawn: float = -1.0
         self.sun_elevation: float = 45.0
@@ -309,7 +309,7 @@ class SCDynamicInputConfiguration:
 class SCFacadeConfiguration:
     """Define defaults for facade configuration."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.azimuth: float = 180.0
         self.offset_sun_in: float = -90.0
         self.offset_sun_out: float = 90.0
@@ -332,7 +332,7 @@ class SCFacadeConfiguration:
 class SCShadowControlConfig:
     """Define defaults for trigger configuration."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.enabled: bool = True
         self.brightness_threshold: float = 50000.0
         self.after_seconds: float = 15.0
@@ -347,7 +347,7 @@ class SCShadowControlConfig:
 class SCDawnControlConfig:
     """Define defaults for dawn configuration."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.enabled: bool = True
         self.brightness_threshold: float = 500.0
         self.after_seconds: float = 15.0
@@ -368,7 +368,7 @@ class ShadowControlManager:
             config: dict[str, Any],
             entry_id: str,
             instance_logger: logging.Logger
-    ):
+    ) -> None:
         self.hass = hass
         self._config = config
         self._entry_id = entry_id
@@ -2609,7 +2609,7 @@ class ShadowControlManager:
         calculated_degrees = max(min_slat_angle, calculated_degrees)
 
         self.logger.debug(
-            "Angle of %s% equates to %s° (min_slat_angle=%s, angle_offset=%s)",
+            "Angle of %s%% equates to %s° (min_slat_angle=%s, angle_offset=%s)",
             angle_percent, calculated_degrees, min_slat_angle, angle_offset)
 
         return calculated_degrees
