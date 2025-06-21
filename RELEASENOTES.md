@@ -1,6 +1,7 @@
-![Version](https://img.shields.io/github/v/release/starwarsfan/shadow-control?style=for-the-badge)
+# Changes
 
-# Shadow Control Release Notes
+## 0.2.0
+* ...
 
 ## 0.1.0
 * Initial release
