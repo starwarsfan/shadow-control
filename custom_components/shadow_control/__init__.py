@@ -1,6 +1,5 @@
 """Integration for Shadow Control."""
 
-import datetime
 import logging
 import math
 import re
