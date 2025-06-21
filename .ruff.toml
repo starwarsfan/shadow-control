@@ -27,6 +27,7 @@ ignore = [
     "FBT001", # Boolean-typed positional argument in function definition
     "FBT002", # Boolean default positional argument in function definition
     "FBT003", # Boolean positional value in function call
+    "ANN001", # Missing type annotation for function argument
 ]
 
 [lint.flake8-pytest-style]
