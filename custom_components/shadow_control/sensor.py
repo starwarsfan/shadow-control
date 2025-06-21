@@ -1,5 +1,4 @@
-# custom_components/shadow_control/sensor.py
-
+"""Shadow Control sensor implementation."""
 import logging
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity

@@ -2649,14 +2649,13 @@ class ShadowControlManager:
 
     def _should_output_be_updated(self, config_value: MovementRestricted, new_value: float,
                                   previous_value: float | None) -> float:
-        """
-        Check if the output should be updated, depending on given MovementRestricted configuration
-        New value will be returned if:
-        - config_value is 'ONLY_DOWN' and new value is higher than previous value or
-        - config_value is 'ONLY_UP' and new value is lower than previous value or
-        - config_value is 'NO_RESTRICTION' oder everything else.
-        All other cases will return the previous value.
-        """
+        """Perform output update check."""
+        # Check if the output should be updated, depending on given MovementRestricted configuration
+        # New value will be returned if:
+        # - config_value is 'ONLY_DOWN' and new value is higher than previous value or
+        # - config_value is 'ONLY_UP' and new value is lower than previous value or
+        # - config_value is 'NO_RESTRICTION' oder everything else.
+        # All other cases will return the previous value.
         if previous_value is None:
             # Return None if there's no previous value (like on the initial run)
             # self.logger.debug(
@@ -2777,7 +2776,7 @@ class ShadowControlManager:
 
 # Helper for dynamic log output
 def _format_config_object_for_logging(obj, prefix: str = "") -> str:
-    """Format the public attributes of a given configuration object into one string"""
+    """Format the public attributes of a given configuration object into one string."""
     if not obj:
         return f"{prefix}None"
 

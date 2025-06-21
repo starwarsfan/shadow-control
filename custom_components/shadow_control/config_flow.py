@@ -1,3 +1,4 @@
+"""Shadow Control ConfigFlow and OptionsFlow implementation."""
 import logging
 
 import voluptuous as vol
