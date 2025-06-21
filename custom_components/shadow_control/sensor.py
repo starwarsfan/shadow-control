@@ -1,4 +1,5 @@
 """Shadow Control sensor implementation."""
+
 import logging
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
@@ -13,10 +14,11 @@ from .const import DOMAIN, DOMAIN_DATA_MANAGERS, SensorEntries
 
 _LOGGER = logging.getLogger(__name__)
 
+
 async def async_setup_entry(
-        hass: HomeAssistant,
-        config_entry: ConfigEntry,
-        async_add_entities: AddEntitiesCallback,
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Shadow Control sensor platform from a config entry."""
     _LOGGER.debug("[%s] Setting up sensor platform from config entry: %s", DOMAIN, config_entry.entry_id)
@@ -44,6 +46,7 @@ async def async_setup_entry(
         _LOGGER.info("[%s] Successfully added %s Shadow Control sensor entities for '%s'.", DOMAIN, len(entities_to_add), manager.name)
     else:
         _LOGGER.warning("[%s] No sensor entities created for manager '%s'.", DOMAIN, manager.name)
+
 
 class ShadowControlSensor(SensorEntity):
     """Represents a Shadow Control sensor."""
@@ -87,21 +90,21 @@ class ShadowControlSensor(SensorEntity):
         elif self._sensor_entry_type == SensorEntries.NEXT_SHUTTER_MODIFICATION:
             self._attr_icon = "mdi:clock-end"
             self._attr_device_class = SensorDeviceClass.TIMESTAMP
-            self._attr_state_class = None # TIMESTAMP devices typically don't have a state class
+            self._attr_state_class = None  # TIMESTAMP devices typically don't have a state class
             self._attr_native_unit_of_measurement = None
         elif self._sensor_entry_type == SensorEntries.IS_IN_SUN:
             self._attr_icon = "mdi:sun-angle-outline"
 
         # Connect with the device (important for UI)
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, self._entry_id)}, # Hier self._entry_id verwenden
-            name=manager.name, # Der Name der Instanz (aus der Konfiguration)
+            identifiers={(DOMAIN, self._entry_id)},
+            name=manager.name,
             model="Shadow Control",
             manufacturer="Yves Schumann",
         )
 
     @property
-    def native_value(self): # noqa: ANN201
+    def native_value(self):  # noqa: ANN201
         """Return the state of the sensor from the manager."""
         if self._sensor_entry_type == SensorEntries.TARGET_HEIGHT:
             return self._manager.calculated_shutter_height
@@ -110,13 +113,13 @@ class ShadowControlSensor(SensorEntity):
         if self._sensor_entry_type == SensorEntries.TARGET_ANGLE_DEGREES:
             return self._manager.calculated_shutter_angle_degrees
         if self._sensor_entry_type == SensorEntries.CURRENT_STATE:
-            return self._manager.current_shutter_state.value \
-                if hasattr(self._manager.current_shutter_state, "value") \
+            return (
+                self._manager.current_shutter_state.value
+                if hasattr(self._manager.current_shutter_state, "value")
                 else self._manager.current_shutter_state
+            )
         if self._sensor_entry_type == SensorEntries.LOCK_STATE:
-            return self._manager.current_lock_state.value \
-                if hasattr(self._manager.current_lock_state, "value") \
-                else self._manager.current_lock_state
+            return self._manager.current_lock_state.value if hasattr(self._manager.current_lock_state, "value") else self._manager.current_lock_state
         if self._sensor_entry_type == SensorEntries.NEXT_SHUTTER_MODIFICATION:
             return self._manager.next_modification_timestamp
         if self._sensor_entry_type == SensorEntries.IS_IN_SUN:
@@ -133,7 +136,7 @@ class ShadowControlSensor(SensorEntity):
         self.async_on_remove(
             async_dispatcher_connect(
                 self.hass,
-                f"{DOMAIN}_update_{self._manager.name.lower().replace(' ', '_')}", # Unique signal for this manager
-                self.async_write_ha_state, # Calls this sensor's method to update its state in HA
+                f"{DOMAIN}_update_{self._manager.name.lower().replace(' ', '_')}",  # Unique signal for this manager
+                self.async_write_ha_state,  # Calls this sensor's method to update its state in HA
             )
         )

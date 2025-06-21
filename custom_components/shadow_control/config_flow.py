@@ -1,4 +1,5 @@
 """Shadow Control ConfigFlow and OptionsFlow implementation."""
+
 import logging
 
 import voluptuous as vol
@@ -25,6 +26,7 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Shadow Control."""
@@ -54,7 +56,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         # all the rest into 'options'.
         # Must be the same as in __init__.py!
         config_data_for_entry = {
-            SC_CONF_NAME: import_config.pop(SC_CONF_NAME) # Remove name from import_config
+            SC_CONF_NAME: import_config.pop(SC_CONF_NAME)  # Remove name from import_config
         }
         # All the rest into 'options'
         options_data_for_entry = import_config
@@ -87,10 +89,10 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # Manual validation of input fields to provide possible error messages
             # for each field at once and not step by step.
             if not user_input.get(SC_CONF_NAME):
-                errors[SC_CONF_NAME] = "name" # Error code from within strings.json
+                errors[SC_CONF_NAME] = "name"  # Error code from within strings.json
 
             if not user_input.get(TARGET_COVER_ENTITY_ID):
-                errors[TARGET_COVER_ENTITY_ID] = "target_cover_entity" # Error code from within strings.json
+                errors[TARGET_COVER_ENTITY_ID] = "target_cover_entity"  # Error code from within strings.json
 
             if not user_input.get(SCFacadeConfig.AZIMUTH_STATIC.value):
                 errors[SCFacadeConfig.AZIMUTH_STATIC.value] = "facade_azimuth_static_missing"
@@ -121,15 +123,13 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     return self.async_show_form(step_id="user", data_schema=STEP_MINIMAL_KONFIGURATION, errors=errors)
 
             # Immutable configuration data, not available within OptionsFlow
-            config_data_for_entry = {
-                SC_CONF_NAME: instance_name
-            }
+            config_data_for_entry = {SC_CONF_NAME: instance_name}
 
             # Create list of options, which are visible and editable within OptionsFlow
             options_data_for_entry = {
                 key: value
                 for key, value in user_input.items()
-                if key != SC_CONF_NAME # Remove instance name
+                if key != SC_CONF_NAME  # Remove instance name
             }
 
             # All fine, now perform voluptuous validation
@@ -172,6 +172,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Create the options flow."""
         return ShadowControlOptionsFlowHandler()
 
+
 class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle options flow for Shadow Control."""
 
@@ -198,7 +199,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
             # Manual validation of input fields to provide possible error messages
             # for each field at once and not step by step.
             if not user_input.get(TARGET_COVER_ENTITY_ID):
-                errors[TARGET_COVER_ENTITY_ID] = "target_cover_entity" # Error code from within strings.json
+                errors[TARGET_COVER_ENTITY_ID] = "target_cover_entity"  # Error code from within strings.json
 
             if not user_input.get(SCFacadeConfig.AZIMUTH_STATIC.value):
                 errors[SCFacadeConfig.AZIMUTH_STATIC.value] = "facade_azimuth_static_missing"
@@ -316,11 +317,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                 validated_options = FULL_OPTIONS_SCHEMA(self.options_data)
                 _LOGGER.debug("Validated options data: %s", validated_options)
 
-                self.hass.config_entries.async_update_entry(
-                    self.config_entry,
-                    data=self.config_entry.data,
-                    options=validated_options
-                )
+                self.hass.config_entries.async_update_entry(self.config_entry, data=self.config_entry.data, options=validated_options)
 
                 return self.async_create_entry(title="", data=validated_options)
 
