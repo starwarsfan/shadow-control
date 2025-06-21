@@ -9,10 +9,10 @@
 
 ## Table of content
 
-* [Shadow Control](#shadow-Control)
-  * [Table of content](#table-of-content)
 * [Introduction](#introduction)
 * [What it does](#what-it-does)
+  * [TL;DR – in short](#tldr--in-short)
+  * [What it does - long version](#what-it-does---long-version)
 * [Configuration](#configuration)
   * [Initial instance configuration](#initial-instance-configuration)
     * [Instance name ](#instance-name-)
@@ -95,11 +95,26 @@
 
 Within further description:
 
-* The word "facade" is similar to "window" or "door," as it simply references the azimuth of an object in the sense of view direction from within that object to the outside.
+* The word "facade" is similar to "window" or "door," as it simply references the azimuth of an object in the sense of viewing direction from within that object to the outside.
 * The word "shutter" references rolling shutters. In the Home Assistant terminology, this is called a "cover". From the pov of this integration it's the same.
-* The whole internal logic was initially developed to interact with a KNX system, so the main difference is the handling of %-values. **Shadow Control** will interact with Home Assistant correct but the configuration as well as the log output is using 0% as fully open and 100% as fully closed.
+* The whole internal logic was initially developed to interact with a KNX system, so the main difference is the handling of %-values. **Shadow Control** will interact with Home Assistant correct, but the configuration as well as the log output is using 0% as fully open and 100% as fully closed.
 
-# What it does
+## TL;DR – in short
+
+* Control venetian blinds based on brightness thresholds and timers
+* Height and slat angle are separately configurable for shadow and dawn
+  * Shadow respectively dawn position after a brightness threshold plus time X
+  * Look through position after a brightness threshold plus time Y
+  * Open after time Z
+* Sun area restrictable
+* Lockable positioning
+* Restrictable movement direction
+* Configurable "no shadow" area
+* Configurable stepping
+* Separate entity for dawn positioning possible
+* Configuration using ConfigFlow or YAML is possible
+
+## What it does - long version
 
 Based on several input values, the integration handles the positioning of rolling shutters. To do so, the integration needs to be configured with the azimuth of the facade, for which the shutters should be controlled. Additionally, some offset and min-max values will be used to define the area within the facade is illuminated by the sun. If the sun is within that range and the configured brightness threshold is exceeded for a (also configurable) amount of time, the shutters will be positioned to prevent direct sunlight in the room.
 

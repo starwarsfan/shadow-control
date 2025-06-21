@@ -9,10 +9,10 @@
 
 ## Inhaltsverzeichnis
 
-* [Shadow Control](#shadow-Control)
-  * [Inhaltsverzeichnis](#inhaltsverzeichnis)
 * [Einführung](#einführung)
 * [Was macht **Shadow Control**?](#was-macht-shadow-control)
+  * [TL;DR – Kurzform](#tldr--kurzform)
+  * [Beschreibung – Langform](#beschreibung--langform)
 * [Konfiguration](#konfiguration)
   * [Initiale Instanzkonfiguration](#initiale-instanzkonfiguration)
     * [Name der Instanz](#name-der-instanz)
@@ -101,6 +101,22 @@ In den folgenden Abschnitten gilt Folgendes:
 
 # Was macht **Shadow Control**?
 
+## TL;DR – Kurzform
+
+* Raffstoren-Steuerung basierend auf Helligkeitsschwellwerten und verschiedenen Timern
+* Höhe und Lamellenwinkel für Beschattung und Dämmerung separat konfigurierbar
+  * Beschattungs- resp. Dämmerungsposition nach Helligkeitsschwellwert und Zeit X
+  * Durchsicht-Position nach Helligkeitsschwellwert und Zeit Y
+  * Offen-Position nach Zeit Z
+* Besonnungsbereich einschränkbar
+* Positionierung sperrbar
+* Bewegungsrichtung des Behangs einschränkbar
+* Unbeschatteter Bereich konfigurierbar
+* Schrittweite konfigurierbar
+* Separater Helligkeitseingang für Dämmerungssteuerung möglich
+* Konfiguration via ConfigFlow und YAML möglich
+
+## Beschreibung – Langform
 Basierend auf verschiedenen Eingangswerten wird die Integration die Positionierung des Behangs übernehmen. Damit das funktioniert, muss die jeweilige Instanz mit dem Azimut der Fassade, dem Sonnenstand sowie der dortigen Helligkeit konfiguriert werden. Zusätzlich sind viele weitere Details konfigurierbar, um den Beschattungsvorgang resp. den entsprechenden Bereich unter direkter Sonneneinstrahlung zu definieren und somit direktes Sonnenlicht im Raum zu verhindern oder einzuschränken.
 
 Die berechnete Behanghöhe sowie der Lamellenwinkel hängen von der momentanen Helligkeit, den konfigurierten Schwellwerten, der Abmessung der Lamellen, Timern und weiteren Einstellungen ab. Die verschiedenen Timer werden je nach momentanem Zustand der Integration gestartet.
