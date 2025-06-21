@@ -101,7 +101,7 @@ class ShadowControlSensor(SensorEntity):
         )
 
     @property
-    def native_value(self):
+    def native_value(self): # noqa: ANN201
         """Return the state of the sensor from the manager."""
         if self._sensor_entry_type == SensorEntries.TARGET_HEIGHT:
             return self._manager.calculated_shutter_height

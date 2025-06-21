@@ -1074,16 +1074,17 @@ class ShadowControlManager:
             else:
                 effective_elevation = math.degrees(math.atan(virtual_height / virtual_depth))
 
-            self.logger.debug(
-                "Virtual deep and height of the sun against the facade: %s, %s, effektive Elevation: %s",
-                virtual_depth, virtual_height, effective_elevation)
-            return effective_elevation
         except ValueError:
             self.logger.debug("Unable to compute effective elevation: Invalid input values")
             return None
         except ZeroDivisionError:
             self.logger.debug("Unable to compute effective elevation: Division by zero")
             return None
+        else:
+            self.logger.debug(
+                "Virtual deep and height of the sun against the facade: %s, %s, effektive Elevation: %s",
+                virtual_depth, virtual_height, effective_elevation)
+            return effective_elevation
 
     def _update_extra_state_attributes(self) -> None:
         """Update the persistent values."""
@@ -2548,7 +2549,7 @@ class ShadowControlManager:
         return self._dawn_config.enabled
 
     def _get_static_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
-        """Gets a static value directly from options, with type conversion and default."""
+        """Get static value from options with type conversion and default handling."""
         value = self._options.get(key)
         if value is None:
             if log_warning:
@@ -2599,7 +2600,7 @@ class ShadowControlManager:
             return default
 
     def _get_enum_value(self, key: str, enum_class: type, default_enum_member: Enum, log_warning: bool = True) -> Enum:
-        """Gets an enum member from a string value stored in options."""
+        """Get enum member from string value stored in options."""
         value_str = self._options.get(key)
 
         if value_str is None or not isinstance(value_str, str) or value_str == "":
