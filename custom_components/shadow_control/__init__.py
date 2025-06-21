@@ -4,7 +4,7 @@ import datetime
 import logging
 import math
 import re
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
@@ -599,7 +599,7 @@ class ShadowControlManager:
         if old_current_height != new_current_height or old_current_angle != new_current_angle:
             # Check if modification was triggerd by the ShadowControlManager himself
             if self.next_modification_timestamp and (
-                (datetime.now(datetime.UTC) - self.next_modification_timestamp).total_seconds() < 5  # Less than 5 seconds since last change
+                (datetime.now(UTC) - self.next_modification_timestamp).total_seconds() < 5  # Less than 5 seconds since last change
             ):
                 self.logger.debug("Cover state change detected, but appears to be self-initiated. Skipping lock state update.")
                 self.next_modification_timestamp = None  # Reset for next external change
@@ -2845,8 +2845,8 @@ class ShadowControlManager:
         self.logger.debug("Starting recalculation timer for %ss", delay_seconds)
 
         # Save start time and duration
-        current_utc_time = datetime.now(datetime.UTC)
-        self._recalculation_timer_start_time = datetime.now(datetime.UTC)
+        current_utc_time = datetime.now(UTC)
+        self._recalculation_timer_start_time = datetime.now(UTC)
         self._recalculation_timer_duration_seconds = delay_seconds
 
         self.next_modification_timestamp = current_utc_time + timedelta(seconds=delay_seconds)
@@ -2881,7 +2881,7 @@ class ShadowControlManager:
     def get_remaining_timer_seconds(self) -> float | None:
         """Return remaining time of running timer or None if no timer is running."""
         if self._recalculation_timer and self._recalculation_timer_start_time and self._recalculation_timer_duration_seconds is not None:
-            elapsed_time = (datetime.now(datetime.UTC) - self._recalculation_timer_start_time).total_seconds()
+            elapsed_time = (datetime.now(UTC) - self._recalculation_timer_start_time).total_seconds()
             remaining_time = self._recalculation_timer_duration_seconds - elapsed_time
             return max(0.0, remaining_time)  # Only positive values
         return None
