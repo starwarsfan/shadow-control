@@ -1171,7 +1171,7 @@ class ShadowControlManager:
     ) -> None:
         """Evaluate and perform final shutter positioning commands."""
         self.logger.debug(
-            "Starting _position_shutter with target height %.2f% and angle %.2f% (is_initial_run: %s, lock_state: %s)",
+            "Starting _position_shutter with target height %.2f%% and angle %.2f%% (is_initial_run: %s, lock_state: %s)",
             shutter_height_percent,
             shutter_angle_percent,
             self._is_initial_run,
@@ -1227,7 +1227,7 @@ class ShadowControlManager:
                     shutter_height_percent = self._dynamic_config.lock_height
                     shutter_angle_percent = self._dynamic_config.lock_angle
                     self.logger.info(
-                        "Integration set to locked with forced position, setting position to %.1f%/%.1f%",
+                        "Integration set to locked with forced position, setting position to %.1f%%/%.1f%%",
                         shutter_height_percent,
                         shutter_angle_percent
                     )
@@ -1322,7 +1322,7 @@ class ShadowControlManager:
             if send_height_command or self._enforce_position_update:
                 if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
                     self.logger.info(
-                        "Setting position to %.1f% (current: %s).",
+                        "Setting position to %.1f%% (current: %s).",
                         shutter_height_percent,
                         self._previous_shutter_height
                     )
@@ -1342,7 +1342,7 @@ class ShadowControlManager:
                         supported_features & CoverEntityFeature.SET_POSITION, has_pos_service)
             else:
                 self.logger.debug(
-                    "Height '%.2f%' not sent, value was the same or restricted.",
+                    "Height '%.2f%%' not sent, value was the same or restricted.",
                     height_to_set_percent
                 )
 
@@ -1350,7 +1350,7 @@ class ShadowControlManager:
             if send_angle_command or self._enforce_position_update:
                 if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
                     self.logger.info(
-                        "Setting tilt position to %.1f% (current: %s).",
+                        "Setting tilt position to %.1f%% (current: %s).",
                         shutter_angle_percent,
                         self._previous_shutter_angle
                     )
@@ -1370,7 +1370,7 @@ class ShadowControlManager:
                         supported_features & CoverEntityFeature.SET_TILT_POSITION, has_tilt_service)
             else:
                 self.logger.debug(
-                    "Angle '%.2f%' not sent, value was the same or restricted.",
+                    "Angle '%.2f%%' not sent, value was the same or restricted.",
                     angle_to_set_percent
                 )
 
@@ -1380,10 +1380,8 @@ class ShadowControlManager:
         self.logger.debug("_position_shutter finished.")
 
     def _calculate_shutter_height(self) -> float:
-        """
-        Calculate shutter height based on sun position and shadow area configuration.
-        Returns height in percent (0-100).
-        """
+        """Calculate shutter height based on sun position and shadow area configuration."""
+        # Returns height in percent (0-100).
         self.logger.debug("Starting calculation of shutter height")
 
         width_of_light_strip = self._facade_config.light_strip_width
@@ -1437,7 +1435,8 @@ class ShadowControlManager:
                 )
             else:
                 self.logger.debug(
-                    "Elevation: %s°, Height: %s, Light strip width: %s, Resulting shutter height (%s%) is bigger or equal than given max height (%s%). Using max height",
+                    "Elevation: %s°, Height: %s, Light strip width: %s, Resulting shutter height (%s%) is bigger or equal than given max "
+                    "height (%s%). Using max height",
                     elevation,
                     shutter_overall_height,
                     width_of_light_strip,
@@ -1470,7 +1469,7 @@ class ShadowControlManager:
                 # 23 + 10 - 3 = 30. (Rounds up to the next full step).
                 adjusted_height = calculated_height_percent + shutter_stepping_percent - remainder
                 self.logger.debug(
-                    "Adjusting shutter height from %.2f% to %.2f% (stepping: %.2f%).",
+                    "Adjusting shutter height from %.2f%% to %.2f%% (stepping: %.2f%%).",
                     calculated_height_percent,
                     adjusted_height,
                     shutter_stepping_percent
@@ -1478,7 +1477,7 @@ class ShadowControlManager:
                 return adjusted_height
 
         self.logger.debug(
-            "Shutter height %.2f% fits stepping or stepping is 0. No adjustment.",
+            "Shutter height %.2f%% fits stepping or stepping is 0. No adjustment.",
         calculated_height_percent
         )
         return calculated_height_percent
@@ -1620,7 +1619,7 @@ class ShadowControlManager:
             if remainder != 0:
                 adjusted_angle = calculated_angle_percent + shutter_stepping_percent - remainder
                 self.logger.debug(
-                    "Adjusting shutter height from %.2f% to %.2f% (stepping: %.2f%).",
+                    "Adjusting shutter height from %.2f%% to %.2f%% (stepping: %.2f%%).",
                     calculated_angle_percent,
                     adjusted_angle,
                     shutter_stepping_percent
@@ -1628,7 +1627,7 @@ class ShadowControlManager:
                 return adjusted_angle
 
         self.logger.debug(
-            "Shutter height %.2f% fits stepping or stepping is 0. No adjustment.",
+            "Shutter height %.2f%% fits stepping or stepping is 0. No adjustment.",
             calculated_angle_percent
         )
         return calculated_angle_percent
@@ -2557,7 +2556,7 @@ class ShadowControlManager:
                                   key, default)
             return default
         try:
-            if expected_type == bool: # For boolean selectors (if any static boolean values existed)
+            if expected_type is bool: # For boolean selectors (if any static boolean values existed)
                 return bool(value)
             return expected_type(value)
         except (ValueError, TypeError):
@@ -2567,7 +2566,7 @@ class ShadowControlManager:
             return default
 
     def _get_entity_state_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
-        """Extract dynamic value from an entity state"""
+        """Extract dynamic value from an entity state."""
         # Type conversion and default will be handled
         entity_id = self._options.get(key) # This will be the string entity_id or None
 
