@@ -1227,8 +1227,10 @@ class ShadowControlManager:
                     shutter_height_percent = self._dynamic_config.lock_height
                     shutter_angle_percent = self._dynamic_config.lock_angle
                     self.logger.info(
-                        f"Integration set to locked with forced position, "
-                        f"setting position to {shutter_height_percent:.1f}%/{shutter_angle_percent:.1f}%")
+                        "Integration set to locked with forced position, setting position to %.1f%/%.1f%",
+                        shutter_height_percent,
+                        shutter_angle_percent
+                    )
                     try:
                         await self.hass.services.async_call(
                             "cover",
@@ -1320,7 +1322,10 @@ class ShadowControlManager:
             if send_height_command or self._enforce_position_update:
                 if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
                     self.logger.info(
-                        f"Setting position to {shutter_height_percent:.1f}% (current: {self._previous_shutter_height}).")
+                        "Setting position to %.1f% (current: %s).",
+                        shutter_height_percent,
+                        self._previous_shutter_height
+                    )
                     try:
                         await self.hass.services.async_call(
                             "cover",
@@ -1345,7 +1350,10 @@ class ShadowControlManager:
             if send_angle_command or self._enforce_position_update:
                 if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
                     self.logger.info(
-                        f"Setting tilt position to {shutter_angle_percent:.1f}% (current: {self._previous_shutter_angle}).")
+                        "Setting tilt position to %.1f% (current: %s).",
+                        shutter_angle_percent,
+                        self._previous_shutter_angle
+                    )
                     try:
                         await self.hass.services.async_call(
                             "cover",
@@ -1392,11 +1400,14 @@ class ShadowControlManager:
                 or shadow_max_height_percent is None  # Muss auch None-geprüft werden
         ):
             self.logger.warning(
-                f"Not all required values for calcualation of shutter height available! "
-                f"width_of_light_strip={width_of_light_strip}, elevation={elevation}, "
-                f"shutter_overall_height={shutter_overall_height}, "
-                f"shadow_max_height_percent={shadow_max_height_percent}. "
-                f"Using initial default value of {shutter_height_to_set_percent}%")
+                "Not all required values for calcualation of shutter height available! width_of_light_strip=%s, elevation=%s, "
+                "shutter_overall_height=%s, shadow_max_height_percent=%s. Using initial default value of %s%",
+                width_of_light_strip,
+                elevation,
+                shutter_overall_height,
+                shadow_max_height_percent,
+                shutter_height_to_set_percent
+            )
             return shutter_height_to_set_percent
 
         if width_of_light_strip != 0:
@@ -1417,20 +1428,27 @@ class ShadowControlManager:
             if new_shutter_height < shadow_max_height_percent:
                 shutter_height_to_set_percent = new_shutter_height
                 self.logger.debug(
-                    f"Elevation: {elevation}°, Height: {shutter_overall_height}, "
-                    f"Light strip width: {width_of_light_strip}, "
-                    f"Resulting shutter height: {shutter_height_to_set} ({shutter_height_to_set_percent}%). "
-                    f"Is smaller than max height")
+                    "Elevation: %s°, Height: %s, Light strip width: %s, Resulting shutter height: %s (%s%). Is smaller than max height",
+                    elevation,
+                    shutter_overall_height,
+                    width_of_light_strip,
+                    shutter_height_to_set,
+                    shutter_height_to_set_percent
+                )
             else:
                 self.logger.debug(
-                    f"Elevation: {elevation}°, Height: {shutter_overall_height}, "
-                    f"Light strip width: {width_of_light_strip}, "
-                    f"Resulting shutter height ({new_shutter_height}%) is bigger or equal than given max height ({shadow_max_height_percent}%). "
-                    f"Using max height")
+                    "Elevation: %s°, Height: %s, Light strip width: %s, Resulting shutter height (%s%) is bigger or equal than given max height (%s%). Using max height",
+                    elevation,
+                    shutter_overall_height,
+                    width_of_light_strip,
+                    new_shutter_height,
+                    shadow_max_height_percent
+                )
         else:
             self.logger.debug(
-                f"width_of_light_strip is 0. No height calculation required. "
-                f"Using default height {shutter_height_to_set_percent}%.")
+                "width_of_light_strip is 0. No height calculation required. Using default height %s%.",
+                shutter_height_to_set_percent
+            )
 
         return self._handle_shutter_height_stepping(shutter_height_to_set_percent)
 
