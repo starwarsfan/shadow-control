@@ -21,29 +21,21 @@ async def async_setup_entry(
     """Create Shadow Control switches based on config entries."""
     instance_name = config_entry.data.get(SC_CONF_NAME, DOMAIN)
 
-    entities = []
-
-    entities.append(
+    entities = [
         ShadowControlBooleanSwitch(
             hass,
             config_entry,
             key=DEBUG_ENABLED,
             translation_key="debug_enabled",
             instance_name=instance_name
-        )
-    )
-
-    entities.append(
+        ),
         ShadowControlBooleanSwitch(
             hass,
             config_entry,
             key=SCShadowInput.CONTROL_ENABLED_STATIC.value,
             translation_key="shadow_control_enabled",
             instance_name=instance_name
-        )
-    )
-
-    entities.append(
+        ),
         ShadowControlBooleanSwitch(
             hass,
             config_entry,
@@ -51,7 +43,7 @@ async def async_setup_entry(
             translation_key="dawn_control_enabled",
             instance_name=instance_name
         )
-    )
+    ]
 
     # Add all the entities to Home Assistant
     async_add_entities(entities)
