@@ -80,11 +80,11 @@ class ShadowControlBooleanSwitch(SwitchEntity, RestoreEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Switch the switch on."""
-        self._set_option(True)
+        await self._set_option(True)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Switch the switch off."""
-        self._set_option(False)
+        await self._set_option(False)
 
     async def _set_option(self, value: bool) -> None:
         """Update a config option within ConfigEntry."""
