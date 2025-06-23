@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.restore_state import RestoreEntity
 
-from .const import DOMAIN, SC_CONF_NAME, DEBUG_ENABLED, SCDawnInput, SCShadowInput
+from .const import DEBUG_ENABLED, DOMAIN, SC_CONF_NAME, SCDawnInput, SCShadowInput
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -96,7 +96,7 @@ class ShadowControlBooleanSwitch(SwitchEntity, RestoreEntity):
 
     async def _set_option(self, value: bool) -> None:
         """Update a config option within ConfigEntry."""
-        _LOGGER.debug(f"[{DOMAIN}] Setting option '{self._key}' to {value} for entry '{self._config_entry.entry_id}'")
+        _LOGGER.debug("[%s] Setting option '%s' to %s for entry '%s'", DOMAIN, self._key, value, self._config_entry.entry_id)
         current_options = self._config_entry.options.copy()
         current_options[self._key] = value
 
@@ -128,7 +128,6 @@ class ShadowControlBooleanSwitch(SwitchEntity, RestoreEntity):
         # Restore last state after Home Assistant restart.
         last_state = await self.async_get_last_state()
         if last_state:
-            _LOGGER.debug(f"[{DOMAIN}] Restoring last state for {self.name}: {last_state.state}")
+            _LOGGER.debug("[%s] Restoring last state for %s: %s", DOMAIN, self.name, last_state.state)
             # The `is_on` property is already reading the value from `_config_entry.options`.
             # If the key is not within `options` the default value (False) is used.
-            pass
