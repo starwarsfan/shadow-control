@@ -1307,7 +1307,7 @@ class ShadowControlManager:
         ):
             self.logger.warning(
                 "Not all required values for calcualation of shutter height available! width_of_light_strip=%s, elevation=%s, "
-                "shutter_overall_height=%s, shadow_max_height_percent=%s. Using initial default value of %s%",
+                "shutter_overall_height=%s, shadow_max_height_percent=%s. Using initial default value of %s%%",
                 width_of_light_strip,
                 elevation,
                 shutter_overall_height,
@@ -1333,7 +1333,7 @@ class ShadowControlManager:
             if new_shutter_height < shadow_max_height_percent:
                 shutter_height_to_set_percent = new_shutter_height
                 self.logger.debug(
-                    "Elevation: %s°, Height: %s, Light strip width: %s, Resulting shutter height: %s (%s%). Is smaller than max height",
+                    "Elevation: %s°, Height: %s, Light strip width: %s, Resulting shutter height: %s (%s%%). Is smaller than max height",
                     elevation,
                     shutter_overall_height,
                     width_of_light_strip,
@@ -1342,8 +1342,8 @@ class ShadowControlManager:
                 )
             else:
                 self.logger.debug(
-                    "Elevation: %s°, Height: %s, Light strip width: %s, Resulting shutter height (%s%) is bigger or equal than given max "
-                    "height (%s%). Using max height",
+                    "Elevation: %s°, Height: %s, Light strip width: %s, Resulting shutter height (%s%%) is bigger or equal than given max "
+                    "height (%s%%). Using max height",
                     elevation,
                     shutter_overall_height,
                     width_of_light_strip,
@@ -1351,7 +1351,7 @@ class ShadowControlManager:
                     shadow_max_height_percent,
                 )
         else:
-            self.logger.debug("width_of_light_strip is 0. No height calculation required. Using default height %s%.", shutter_height_to_set_percent)
+            self.logger.debug("width_of_light_strip is 0. No height calculation required. Using default height %s%%.", shutter_height_to_set_percent)
 
         return self._handle_shutter_height_stepping(shutter_height_to_set_percent)
 
@@ -1361,7 +1361,7 @@ class ShadowControlManager:
 
         if shutter_stepping_percent is None:
             self.logger.warning(
-                "'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle %s%", calculated_height_percent
+                "'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle %s%%", calculated_height_percent
             )
             return calculated_height_percent
 
@@ -1482,27 +1482,27 @@ class ShadowControlManager:
 
         if shutter_angle_percent_with_stepping < min_shutter_angle_percent:
             final_shutter_angle_percent = min_shutter_angle_percent
-            self.logger.debug("Limiting angle to min: %s%", min_shutter_angle_percent)
+            self.logger.debug("Limiting angle to min: %s%%", min_shutter_angle_percent)
         elif shutter_angle_percent_with_stepping > max_shutter_angle_percent:
             final_shutter_angle_percent = max_shutter_angle_percent
-            self.logger.debug("Limiting angle to max: %s%", max_shutter_angle_percent)
+            self.logger.debug("Limiting angle to max: %s%%", max_shutter_angle_percent)
         else:
             final_shutter_angle_percent = shutter_angle_percent_with_stepping
 
         # Round final angle
         final_shutter_angle_percent = round(final_shutter_angle_percent)
 
-        self.logger.debug("Resulting shutter angle with offset and stepping: %s%", final_shutter_angle_percent)
+        self.logger.debug("Resulting shutter angle with offset and stepping: %s%%", final_shutter_angle_percent)
         return float(final_shutter_angle_percent)
 
     def _handle_shutter_angle_stepping(self, calculated_angle_percent: float) -> float:
         """Modify shutter angle according to configured minimal stepping."""
-        self.logger.debug("Computing shutter angle stepping for %s%", calculated_angle_percent)
+        self.logger.debug("Computing shutter angle stepping for %s%%", calculated_angle_percent)
 
         shutter_stepping_percent = self._facade_config.shutter_stepping_angle
 
         if shutter_stepping_percent is None:
-            self.logger.warning("'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle %s%", calculated_angle_percent)
+            self.logger.warning("'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle %s%%", calculated_angle_percent)
             return calculated_angle_percent
 
         # PHP logic in Python:
@@ -1547,7 +1547,7 @@ class ShadowControlManager:
                             stop_timer=True,
                         )
                         self.logger.debug(
-                            "State %s (%s): Timer finished, brightness above threshold, moving to shadow position (%s%, %s%). Next state: %s",
+                            "State %s (%s): Timer finished, brightness above threshold, moving to shadow position (%s%%, %s%%). Next state: %s",
                             ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING,
                             ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name,
                             target_height,
@@ -1588,7 +1588,7 @@ class ShadowControlManager:
                 stop_timer=True,  # Stop Timer
             )
             self.logger.debug(
-                "State %s (%s): Not in the sun or shadow mode disabled, transitioning to (%s%, %s%) with state %s",
+                "State %s (%s): Not in the sun or shadow mode disabled, transitioning to (%s%%, %s%%) with state %s",
                 ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING,
                 ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name,
                 neutral_height,
@@ -1661,7 +1661,7 @@ class ShadowControlManager:
                 stop_timer=True,  # Stop Timer
             )
             self.logger.debug(
-                "State %s (%s): Not in sun or shadow mode deactivated, moving to neutral position (%s%, %s%) und state %s",
+                "State %s (%s): Not in sun or shadow mode deactivated, moving to neutral position (%s%%, %s%%) und state %s",
                 ShutterState.SHADOW_FULL_CLOSED,
                 ShutterState.SHADOW_FULL_CLOSED.name,
                 neutral_height,
@@ -1714,7 +1714,7 @@ class ShadowControlManager:
                         stop_timer=True,
                     )
                     self.logger.debug(
-                        "State %s (%s): Timer finished, moving to height %s% with neutral slats (%s°) and state %s",
+                        "State %s (%s): Timer finished, moving to height %s%% with neutral slats (%s°) and state %s",
                         ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING,
                         ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name,
                         target_height,
@@ -1745,7 +1745,7 @@ class ShadowControlManager:
                 stop_timer=True,  # Stop Timer
             )
             self.logger.debug(
-                "State %s (%s): Not in the sun or shadow mode disabled, moving to neutral position (%s%, %s%) and state %s",
+                "State %s (%s): Not in the sun or shadow mode disabled, moving to neutral position (%s%%, %s%%) and state %s",
                 ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING,
                 ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name,
                 neutral_height,
@@ -1792,7 +1792,7 @@ class ShadowControlManager:
                         stop_timer=True,
                     )
                     self.logger.debug(
-                        "State %s (%s): Brightness (%s) above threshold (%s), moving to shadow position (%s%, %s%) and state %s",
+                        "State %s (%s): Brightness (%s) above threshold (%s), moving to shadow position (%s%%, %s%%) and state %s",
                         ShutterState.SHADOW_HORIZONTAL_NEUTRAL,
                         ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name,
                         current_brightness,
@@ -1836,7 +1836,7 @@ class ShadowControlManager:
                 stop_timer=True,  # Stop Timer (falls ein Timer aktiv war)
             )
             self.logger.debug(
-                "State %s (%s): Not in sun or shadow mode disabled, moving to neutral position (%s%, %s%) and state %s",
+                "State %s (%s): Not in sun or shadow mode disabled, moving to neutral position (%s%%, %s%%) and state %s",
                 ShutterState.SHADOW_HORIZONTAL_NEUTRAL,
                 ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name,
                 neutral_height,
@@ -1886,7 +1886,7 @@ class ShadowControlManager:
                         stop_timer=True,
                     )
                     self.logger.debug(
-                        "State %s (%s): Timer finished, moving to after-shadow position (%s%, %s°) and state %s",
+                        "State %s (%s): Timer finished, moving to after-shadow position (%s%%, %s°) and state %s",
                         ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING,
                         ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name,
                         height_after_shadow,
@@ -1917,7 +1917,7 @@ class ShadowControlManager:
                 stop_timer=True,  # Stop Timer
             )
             self.logger.debug(
-                "State %s (%s): Not in sun or shadow mode disabled, moving to neutral position (%s%, %s%) and state %s",
+                "State %s (%s): Not in sun or shadow mode disabled, moving to neutral position (%s%%, %s%%) and state %s",
                 ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING,
                 ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name,
                 neutral_height,
@@ -1996,7 +1996,7 @@ class ShadowControlManager:
                     stop_timer=True,
                 )
                 self.logger.debug(
-                    "State %s (%s): Moving to after-shadow position (%s%, %s%)",
+                    "State %s (%s): Moving to after-shadow position (%s%%, %s%%)",
                     ShutterState.SHADOW_NEUTRAL,
                     ShutterState.SHADOW_NEUTRAL.name,
                     height_after_shadow,
@@ -2043,7 +2043,7 @@ class ShadowControlManager:
                 stop_timer=True,  # Stop Timer (falls ein Timer aktiv war)
             )
             self.logger.debug(
-                "State %s (%s): Not in sun or shadow mode disabled or dawn mode not active, moving to neutral position (%s%, %s%) and state %s",
+                "State %s (%s): Not in sun or shadow mode disabled or dawn mode not active, moving to neutral position (%s%%, %s%%) and state %s",
                 ShutterState.SHADOW_NEUTRAL,
                 ShutterState.SHADOW_NEUTRAL.name,
                 neutral_height,
@@ -2118,7 +2118,7 @@ class ShadowControlManager:
                 stop_timer=True,
             )
             self.logger.debug(
-                "State %s (%s): Moving shutter to neutral position (%s%, %s%).",
+                "State %s (%s): Moving shutter to neutral position (%s%%, %s%%).",
                 ShutterState.NEUTRAL,
                 ShutterState.NEUTRAL.name,
                 neutral_height,
@@ -2192,7 +2192,7 @@ class ShadowControlManager:
                     stop_timer=True,
                 )
                 self.logger.debug(
-                    "State %s (%s): Moving shutter to after-dawn position (%s%, %s%).",
+                    "State %s (%s): Moving shutter to after-dawn position (%s%%, %s%%).",
                     ShutterState.DAWN_NEUTRAL,
                     ShutterState.DAWN_NEUTRAL.name,
                     height_after_dawn,
@@ -2235,7 +2235,7 @@ class ShadowControlManager:
                 stop_timer=True,
             )
             self.logger.debug(
-                "State %s (%s): Dawn mode disabled or requirements for shadow not given, moving to neutral position (%s%, %s%)",
+                "State %s (%s): Dawn mode disabled or requirements for shadow not given, moving to neutral position (%s%%, %s%%)",
                 ShutterState.DAWN_NEUTRAL,
                 ShutterState.DAWN_NEUTRAL.name,
                 neutral_height,
@@ -2280,7 +2280,7 @@ class ShadowControlManager:
                         stop_timer=True,
                     )
                     self.logger.debug(
-                        "State %s (%s): Timer finished, moving to dawn height (%s%) with open slats (%s°) and state %s",
+                        "State %s (%s): Timer finished, moving to dawn height (%s%%) with open slats (%s°) and state %s",
                         ShutterState.DAWN_NEUTRAL_TIMER_RUNNING,
                         ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name,
                         dawn_height,
@@ -2311,7 +2311,7 @@ class ShadowControlManager:
                 stop_timer=True,  # Stop Timer
             )
             self.logger.debug(
-                "State %s (%s): Dawn mode disabled, moving to neutral position (%s%, %s%) and state %s",
+                "State %s (%s): Dawn mode disabled, moving to neutral position (%s%%, %s%%) and state %s",
                 ShutterState.DAWN_NEUTRAL_TIMER_RUNNING,
                 ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name,
                 neutral_height,
@@ -2357,7 +2357,7 @@ class ShadowControlManager:
                     stop_timer=False,
                 )
                 self.logger.debug(
-                    "State %s (%s): Dawn brightness (%s) below threshold (%s), moving to dawn height (%s%) with open slats (%s°) and state %s",
+                    "State %s (%s): Dawn brightness (%s) below threshold (%s), moving to dawn height (%s%%) with open slats (%s°) and state %s",
                     ShutterState.DAWN_HORIZONTAL_NEUTRAL,
                     ShutterState.DAWN_HORIZONTAL_NEUTRAL.name,
                     dawn_brightness,
@@ -2394,7 +2394,7 @@ class ShadowControlManager:
                 stop_timer=True,
             )
             self.logger.debug(
-                "State %s (%s): Dawn mode disabled, moving to neutral position (%s%, %s%) and state %s",
+                "State %s (%s): Dawn mode disabled, moving to neutral position (%s%%, %s%%) and state %s",
                 ShutterState.DAWN_HORIZONTAL_NEUTRAL,
                 ShutterState.DAWN_HORIZONTAL_NEUTRAL.name,
                 neutral_height,
@@ -2444,7 +2444,7 @@ class ShadowControlManager:
                         stop_timer=False,
                     )
                     self.logger.debug(
-                        "State %s (%s): Timer finished, moving to dawn height (%s%) with open slats (%s°) and state %s",
+                        "State %s (%s): Timer finished, moving to dawn height (%s%%) with open slats (%s°) and state %s",
                         ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING,
                         ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name,
                         dawn_height,
@@ -2475,7 +2475,7 @@ class ShadowControlManager:
                 stop_timer=True,  # Stop Timer
             )
             self.logger.debug(
-                "State %s (%s): Dawn mode disabled, moving to neutral position (%s%, %s%) and state %s",
+                "State %s (%s): Dawn mode disabled, moving to neutral position (%s%%, %s%%) and state %s",
                 ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING,
                 ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name,
                 neutral_height,
@@ -2533,7 +2533,7 @@ class ShadowControlManager:
                     stop_timer=True,
                 )
                 self.logger.debug(
-                    "State %s (%s): Dawn brightness not above threshold, moving to dawn position (%s%, %s%)",
+                    "State %s (%s): Dawn brightness not above threshold, moving to dawn position (%s%%, %s%%)",
                     ShutterState.DAWN_FULL_CLOSED,
                     ShutterState.DAWN_FULL_CLOSED.name,
                     dawn_height,
@@ -2557,7 +2557,7 @@ class ShadowControlManager:
                 stop_timer=True,  # Stop Timer
             )
             self.logger.debug(
-                "State %s (%s): Dawn handling disabled, moving to neutral position (%s%, %s%) and state %s",
+                "State %s (%s): Dawn handling disabled, moving to neutral position (%s%%, %s%%) and state %s",
                 ShutterState.DAWN_FULL_CLOSED,
                 ShutterState.DAWN_FULL_CLOSED.name,
                 neutral_height,
@@ -2595,7 +2595,7 @@ class ShadowControlManager:
                             stop_timer=True,
                         )
                         self.logger.debug(
-                            "State %s (%s): Timer finished, moving to dawn position (%s%, %s%) and state %s",
+                            "State %s (%s): Timer finished, moving to dawn position (%s%%, %s%%) and state %s",
                             ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING,
                             ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name,
                             dawn_height,
@@ -2636,7 +2636,7 @@ class ShadowControlManager:
                 stop_timer=True,  # Stop Timer
             )
             self.logger.debug(
-                "State %s (%s): Dawn mode disabled, moving to neutral position (%s%, %s%) and state %s",
+                "State %s (%s): Dawn mode disabled, moving to neutral position (%s%%, %s%%) and state %s",
                 ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING,
                 ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name,
                 neutral_height,
