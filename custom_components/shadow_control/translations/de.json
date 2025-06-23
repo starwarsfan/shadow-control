@@ -316,15 +316,21 @@
     "switch": {
       "debug_enabled": {
         "name": "Debug-Modus",
-        "description": "Aktiviert/deaktiviert den Debug-Modus der Integration."
+        "description": {
+          "state": "Aktiviert/deaktiviert den Debug-Modus der Integration."
+        }
       },
       "shadow_control_enabled_static": {
         "name": "Beschattungssteuerung",
-        "description": "Aktiviert/deaktiviert die automatische Beschattung."
+        "description": {
+          "state": "Aktiviert/deaktiviert die automatische Beschattung."
+        }
       },
       "dawn_control_enabled_static": {
         "name": "Dämmerungssteuerung",
-        "description": "Aktiviert/deaktiviert die automatische Steuerung bei Dämmerung."
+        "description": {
+          "state": "Aktiviert/deaktiviert die automatische Steuerung bei Dämmerung."
+        }
       }
     }
   },
