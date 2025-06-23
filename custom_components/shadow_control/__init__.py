@@ -13,8 +13,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_SUPPORTED_FEATURES,
     EVENT_HOMEASSISTANT_STARTED,
-    Platform,
     STATE_ON,
+    Platform,
 )
 from homeassistant.core import Event, HomeAssistant, State, callback
 from homeassistant.helpers import config_validation as cv
