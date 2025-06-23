@@ -315,22 +315,13 @@
     },
     "switch": {
       "debug_enabled": {
-        "name": "Debug Mode",
-        "description": {
-          "state": "Enables/disables the integration's debug mode."
-        }
+        "name": "Debug Mode"
       },
       "shadow_control_enabled_static": {
-        "name": "Shadow Control",
-        "description": {
-          "state": "Enables/disables automatic shadow control."
-        }
+        "name": "Shadow Control"
       },
       "dawn_control_enabled_static": {
-        "name": "Dawn Control",
-        "description": {
-          "state": "Enables/disables automatic control at dawn."
-        }
+        "name": "Dawn Control"
       }
     }
   },

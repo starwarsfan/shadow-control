@@ -315,22 +315,13 @@
     },
     "switch": {
       "debug_enabled": {
-        "name": "Debug-Modus",
-        "description": {
-          "state": "Aktiviert/deaktiviert den Debug-Modus der Integration."
-        }
+        "name": "Debug-Modus"
       },
       "shadow_control_enabled_static": {
-        "name": "Beschattungssteuerung",
-        "description": {
-          "state": "Aktiviert/deaktiviert die automatische Beschattung."
-        }
+        "name": "Beschattungssteuerung"
       },
       "dawn_control_enabled_static": {
-        "name": "Dämmerungssteuerung",
-        "description": {
-          "state": "Aktiviert/deaktiviert die automatische Steuerung bei Dämmerung."
-        }
+        "name": "Dämmerungssteuerung"
       }
     }
   },
