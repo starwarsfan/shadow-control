@@ -45,7 +45,7 @@ async def async_setup_entry(
 
 
 class ShadowControlBooleanSwitch(SwitchEntity, RestoreEntity):
-    """Represent a boolean config option from Shadow Control as a switch."""
+    """Represent a boolean config option from Shadow Control as switch."""
 
     def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry, key: str, translation_key: str, instance_name: str) -> None:
         """Initialize the switch."""
@@ -59,9 +59,13 @@ class ShadowControlBooleanSwitch(SwitchEntity, RestoreEntity):
         self._attr_unique_id = f"{config_entry.entry_id}_{key}"
 
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, config_entry.entry_id)}, name=instance_name, manufacturer="Ihr Name/Organisation", model="Shadow Control"
+            identifiers={(DOMAIN, config_entry.entry_id)},
+            name=instance_name,
+            manufacturer="Yves Schumann",
+            model="Shadow Control",
+            # entry_type=DeviceInfo.EntryType.SERVICE,
         )
-        self._attr_extra_state_attributes = {}
+        self._attr_extra_state_attributes = {}  # For additional attributes if required
 
     @property
     def is_on(self) -> bool | None:
@@ -71,10 +75,12 @@ class ShadowControlBooleanSwitch(SwitchEntity, RestoreEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Switch the switch on."""
+        # Await the asynchronous _set_option call
         await self._set_option(True)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Switch the switch off."""
+        # Await the asynchronous _set_option call
         await self._set_option(False)
 
     async def _set_option(self, value: bool) -> None:
@@ -87,7 +93,7 @@ class ShadowControlBooleanSwitch(SwitchEntity, RestoreEntity):
         self.hass.config_entries.async_update_entry(self._config_entry, options=current_options)
 
     @callback
-    def _handle_options_update(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+    async def _handle_options_update(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Handle option updates from within the config entry."""
         if entry.entry_id == self._config_entry.entry_id:
             # Get the newest value from the option
@@ -100,7 +106,7 @@ class ShadowControlBooleanSwitch(SwitchEntity, RestoreEntity):
         await super().async_added_to_hass()
 
         # Ensure the entity is following changes at the config_entry. Important if changed within
-        # the ConfigFlow and UI should "see" that change too.
+        # the ConfigFlow and UI should \"see\" that change too.
         self._config_entry.async_on_unload(self._config_entry.add_update_listener(self._handle_options_update))
 
         # Restore last state after Home Assistant restart.
