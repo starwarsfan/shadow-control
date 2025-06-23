@@ -1245,10 +1245,7 @@ class ShadowControlManager:
             # Height positioning
             if send_height_command or self._enforce_position_update:
                 if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
-                    self.logger.info("Setting position to %.1f%% (current: %s).",
-                                     shutter_height_percent,
-                                     self._previous_shutter_height
-                                     )
+                    self.logger.info("Setting position to %.1f%% (current: %s).", shutter_height_percent, self._previous_shutter_height)
                     try:
                         await self.hass.services.async_call(
                             "cover", "set_cover_position", {"entity_id": entity, "position": 100 - shutter_height_percent}, blocking=False
@@ -1263,17 +1260,12 @@ class ShadowControlManager:
                         has_pos_service,
                     )
             else:
-                self.logger.debug("Height '%.2f%%' not sent, value was the same or restricted.",
-                                  height_to_set_percent)
+                self.logger.debug("Height '%.2f%%' not sent, value was the same or restricted.", height_to_set_percent)
 
             # Angle positioning
             if send_angle_command or self._enforce_position_update:
                 if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
-                    self.logger.info(
-                        "Setting tilt position to %.1f%% (current: %s).",
-                        shutter_angle_percent,
-                        self._previous_shutter_angle
-                    )
+                    self.logger.info("Setting tilt position to %.1f%% (current: %s).", shutter_angle_percent, self._previous_shutter_angle)
                     try:
                         await self.hass.services.async_call(
                             "cover", "set_cover_tilt_position", {"entity_id": entity, "tilt_position": 100 - shutter_angle_percent}, blocking=False
@@ -1359,10 +1351,7 @@ class ShadowControlManager:
                     shadow_max_height_percent,
                 )
         else:
-            self.logger.debug(
-                "width_of_light_strip is 0. No height calculation required. Using default height %s%%.",
-                              shutter_height_to_set_percent
-            )
+            self.logger.debug("width_of_light_strip is 0. No height calculation required. Using default height %s%%.", shutter_height_to_set_percent)
 
         return self._handle_shutter_height_stepping(shutter_height_to_set_percent)
 
@@ -1372,8 +1361,7 @@ class ShadowControlManager:
 
         if shutter_stepping_percent is None:
             self.logger.warning(
-                "'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle %s%%",
-                calculated_height_percent
+                "'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle %s%%", calculated_height_percent
             )
             return calculated_height_percent
 
@@ -1392,10 +1380,7 @@ class ShadowControlManager:
                 )
                 return adjusted_height
 
-        self.logger.debug(
-            "Shutter height %.2f%% fits stepping or stepping is 0. No adjustment.",
-            calculated_height_percent
-        )
+        self.logger.debug("Shutter height %.2f%% fits stepping or stepping is 0. No adjustment.", calculated_height_percent)
         return calculated_height_percent
 
     def _calculate_shutter_angle(self) -> float:
@@ -1453,8 +1438,7 @@ class ShadowControlManager:
 
         if not (-1 <= asin_arg <= 1):
             self.logger.warning(
-                "Argument for asin() out of valid range (-1 <= arg <= 1). Current value: %s. Unable to compute angle, returning 0.0",
-                asin_arg
+                "Argument for asin() out of valid range (-1 <= arg <= 1). Current value: %s. Unable to compute angle, returning 0.0", asin_arg
             )
             return 0.0
 
@@ -1519,8 +1503,7 @@ class ShadowControlManager:
 
         if shutter_stepping_percent is None:
             self.logger.warning(
-                "'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle %s%%",
-                calculated_angle_percent
+                "'shutter_stepping_angle' is None. Stepping can't be computed, returning initial angle %s%%", calculated_angle_percent
             )
             return calculated_angle_percent
 
@@ -1541,10 +1524,7 @@ class ShadowControlManager:
                 )
                 return adjusted_angle
 
-        self.logger.debug(
-            "Shutter height %.2f%% fits stepping or stepping is 0. No adjustment.",
-            calculated_angle_percent
-        )
+        self.logger.debug("Shutter height %.2f%% fits stepping or stepping is 0. No adjustment.", calculated_angle_percent)
         return calculated_angle_percent
 
     # #######################################################################
