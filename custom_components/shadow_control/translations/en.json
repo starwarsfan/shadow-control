@@ -312,6 +312,20 @@
       "sensor_is_in_sun": {
         "name": "Is in Sun"
       }
+    },
+    "switch": {
+      "debug_enabled": {
+        "name": "Debug Mode",
+        "description": "Enables/disables the integration's debug mode."
+      },
+      "shadow_control_enabled": {
+        "name": "Shadow Control",
+        "description": "Enables/disables automatic shadow control."
+      },
+      "dawn_control_enabled": {
+        "name": "Dawn Control",
+        "description": "Enables/disables automatic control at dawn."
+      }
     }
   },
   "selector": {

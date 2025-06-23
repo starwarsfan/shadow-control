@@ -312,6 +312,20 @@
       "sensor_is_in_sun": {
         "name": "In der Sonne"
       }
+    },
+    "switch": {
+      "debug_enabled": {
+        "name": "Debug-Modus",
+        "description": "Aktiviert/deaktiviert den Debug-Modus der Integration."
+      },
+      "shadow_control_enabled": {
+        "name": "Beschattungssteuerung",
+        "description": "Aktiviert/deaktiviert die automatische Beschattung."
+      },
+      "dawn_control_enabled": {
+        "name": "Dämmerungssteuerung",
+        "description": "Aktiviert/deaktiviert die automatische Steuerung bei Dämmerung."
+      }
     }
   },
   "selector": {
