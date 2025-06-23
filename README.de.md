@@ -80,14 +80,16 @@
       * [Dämmerung: Lamellenwinkel nach Beschattung](#dämmerung-lamellenwinkel-nach-beschattung)
   * [Konfiguration via yaml](#konfiguration-via-yaml)
     * [yaml Beispielkonfiguration](#yaml-beispielkonfiguration)
-* [Status und Rückgabewerte](#status-und-rückgabewerte)
-  * [Zielhöhe](#zielhöhe)
-  * [Zielwinkel](#zielwinkel)
-  * [Zielwinkel in Grad](#zielwinkel-in-grad)
-  * [Aktueller Status](#aktueller-status)
-  * [Sperr-Status](#sperr-status)
-  * [Nächste Behangmodifikation](#nächste-behangmodifikation)
-  * [In der Sonne](#in-der-sonne)
+* [Status, Rückgabewerte und direkte Optionen](#status-rückgabewerte-und-direkte-optionen)
+  * [Status-Werte](#status-werte)
+    * [Zielhöhe](#zielhöhe)
+    * [Zielwinkel](#zielwinkel)
+    * [Zielwinkel in Grad](#zielwinkel-in-grad)
+    * [Aktueller Status](#aktueller-status)
+    * [Sperr-Status](#sperr-status)
+    * [Nächste Behangmodifikation](#nächste-behangmodifikation)
+    * [In der Sonne](#in-der-sonne)
+  * [Direkte Optionen](#direkte-optionen)
 
 # Einführung
 
@@ -608,23 +610,27 @@ shadow_control:
     #dawn_angle_after_dawn_entity:
     dawn_angle_after_dawn_static: 0
 ```
-# Status und Rückgabewerte
+# Status, Rückgabewerte und direkte Optionen
 
-Jede Instanz von **Shadow Control** legt in Home Assistant ein Gerät an, unter dem die folgenden Entitäten zur weiteren Verwendung zur Verfügung stehen:
+Jede Instanz von **Shadow Control** legt in Home Assistant ein Gerät an, unter dem diverse Entitäten zur weiteren Verwendung zur Verfügung stehen. Hier ein Beispiel, wie das aussieht:
 
-## Zielhöhe
+![Sensoren](/images/sensors.png)
+
+## Status-Werte
+
+### Zielhöhe
 `target_height`
 Hier ist die errechnete Höhe des Behangs zu finden.
 
-## Zielwinkel
+### Zielwinkel
 `target_angle`
 Hier ist der errechnete Lamellenwinkel des Behangs zu finden.
 
-## Zielwinkel in Grad
+### Zielwinkel in Grad
 `target_angle_degrees`
 Hier ist der errechnete Lamellenwinkel des Behangs in Grad (°) zu finden.
 
-## Aktueller Status
+### Aktueller Status
 `current_state`
 Hier wird der aktuelle interne Status von **Shadow Control** als numerischer Wert ausgegeben. Dabei sind die folgenden Status resp. Werte möglich, welche für weitere eigenen Automatisierungen verwendet werden können:
 
@@ -642,14 +648,21 @@ Hier wird der aktuelle interne Status von **Shadow Control** als numerischer Wer
 * DAWN_FULL_CLOSED = -5
 * DAWN_FULL_CLOSE_TIMER_RUNNING = -6
 
-## Sperr-Status
+### Sperr-Status
 `lock_state`
 Der Wert ist `True`, wenn die Integration gesperrt ist. Anderenfalls `False`.
 
-## Nächste Behangmodifikation
+### Nächste Behangmodifikation
 `next_shutter_modification`
 Auf dieser Entität steht der Zeitpunkt der nächsten Behang-Positionierung zur Verfügung, sofern gerade ein entsprechender Timer läuft.
 
-## In der Sonne
+### In der Sonne
 `is_in_sun`
 Der Wert ist `True`, wenn sich die Sonne im min-max-Offsetbereich und min-max-Höhenbereich befindet. Anderenfalls `False`.
+
+## Direkte Optionen
+
+Direkt auf der Geräteseite einer Instanz können diverse Optionen direkt geschaltet werden:
+
+![Steuerelemente](/images/switches.png)
+

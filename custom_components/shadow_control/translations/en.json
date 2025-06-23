@@ -312,6 +312,17 @@
       "sensor_is_in_sun": {
         "name": "Is in Sun"
       }
+    },
+    "switch": {
+      "debug_enabled": {
+        "name": "Debug Mode"
+      },
+      "shadow_control_enabled_static": {
+        "name": "Shadow Control"
+      },
+      "dawn_control_enabled_static": {
+        "name": "Dawn Control"
+      }
     }
   },
   "selector": {

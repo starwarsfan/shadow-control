@@ -10,7 +10,7 @@
           "brightness_entity": "Helligkeit",
           "sun_elevation_entity": "Höhe der Sonne",
           "sun_azimuth_entity": "Azimut der Sonne",
-          "debug_enabled": "Debug-Logs"
+          "debug_enabled": "Debug-Modus"
         },
         "data_description": {
           "name": "Eindeutiger Name dieser Shadow Control (SC) Instanz",
@@ -73,7 +73,7 @@
           "facade_offset_sun_out_static": "Ende Sonneneinfall",
           "facade_elevation_sun_min_static": "Minimale Sonnenhöhe",
           "facade_elevation_sun_max_static": "Maximale Sonnenhöhe",
-          "debug_enabled": "Debug-Logs"
+          "debug_enabled": "Debug-Modus"
         },
         "data_description": {
           "name": "Eindeutiger Name dieser Shadow Control (SC) Instanz",
@@ -311,6 +311,17 @@
       },
       "sensor_is_in_sun": {
         "name": "In der Sonne"
+      }
+    },
+    "switch": {
+      "debug_enabled": {
+        "name": "Debug-Modus"
+      },
+      "shadow_control_enabled_static": {
+        "name": "Beschattungssteuerung"
+      },
+      "dawn_control_enabled_static": {
+        "name": "Dämmerungssteuerung"
       }
     }
   },
