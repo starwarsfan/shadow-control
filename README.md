@@ -80,14 +80,16 @@
       * [After dawn angle](#after-dawn-angle)
   * [Configuration by yaml](#configuration-by-yaml)
     * [Example YAML configuration](#example-yaml-configuration)
-* [State and return values](#state-and-return-values)
-  * [Target height](#target-height)
-  * [Target angle](#target-angle)
-  * [Target angle (degrees)](#target-angle-degrees)
-  * [Current state](#current-state)
-  * [Lock state](#lock-state)
-  * [Next shutter modification](#next-shutter-modification)
-  * [Is in the Sun](#is-in-the-sun)
+* [State, return values and direct options](#state-return-values-and-direct-options)
+  * [State and return values](#state-and-return-values)
+    * [Target height](#target-height)
+    * [Target angle](#target-angle)
+    * [Target angle (degrees)](#target-angle-degrees)
+    * [Current state](#current-state)
+    * [Lock state](#lock-state)
+    * [Next shutter modification](#next-shutter-modification)
+    * [Is in the Sun](#is-in-the-sun)
+  * [Direct options](#direct-options)
 
 # Introduction
 
@@ -602,23 +604,27 @@ shadow_control:
     #dawn_angle_after_dawn_entity:
     dawn_angle_after_dawn_static: 0
 ```
-# State and return values
+# State, return values and direct options
 
 Each instance of **Shadow Control** creates a device within Home Assistant, which contains the following entities for further usage: 
 
-## Target height
+![Sensors](/images/sensors.png)
+
+## State and return values
+
+### Target height
 `target_height`
 This entity holds the calculated shutter height.
 
-## Target angle
+### Target angle
 `target_angle`
 This entity holds the calculated shutter angle.
 
-## Target angle (degrees)
+### Target angle (degrees)
 `target_angle_degrees`
 This entity holds the calculated shutter angle in degrees (°).
 
-## Current state
+### Current state
 `current_state`
 This entity holds the current internal state of the integration as a numeric value. The follwoing values will be available here for further usage within other automations:
 
@@ -636,14 +642,20 @@ This entity holds the current internal state of the integration as a numeric val
 * DAWN_FULL_CLOSED = -5
 * DAWN_FULL_CLOSE_TIMER_RUNNING = -6
 
-## Lock state
+### Lock state
 `lock_state`
 This entity is `True`, if the integration is locked. Otherwise `False`.
 
-## Next shutter modification
+### Next shutter modification
 `next_shutter_modification`
 On this entity the integration publishes the next point in time, where a running timer will be finished.
 
-## Is in the Sun
+### Is in the Sun
 `is_in_sun`
 This entity is either `True`, if the sun within the min-max-offset and the min-max-height range. Otherwise `False`.
+
+## Direct options
+
+Right on each device page some options could be switched on/off directly:
+
+![Cirect options](/images/switches.png)
