@@ -13,6 +13,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_SUPPORTED_FEATURES,
     EVENT_HOMEASSISTANT_STARTED,
+    Platform,
     STATE_ON,
 )
 from homeassistant.core import Event, HomeAssistant, State, callback
@@ -46,14 +47,14 @@ if TYPE_CHECKING:
 _GLOBAL_DOMAIN_LOGGER = logging.getLogger(DOMAIN)
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["sensor"]
+PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.SWITCH]
 
 # Get the schema version from constants
 CURRENT_SCHEMA_VERSION = VERSION
 
 CONFIG_SCHEMA = vol.Schema(
     {
-        # Allow multiple instances below domain key
+        # Allow multiple instances below the domain key
         DOMAIN: vol.All(cv.ensure_list, [YAML_CONFIG_SCHEMA])
     },
     extra=vol.ALLOW_EXTRA,  # Allow different sections within configuration.yaml
