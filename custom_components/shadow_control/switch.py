@@ -33,14 +33,14 @@ async def async_setup_entry(
             hass,
             config_entry,
             key=SCShadowInput.CONTROL_ENABLED_STATIC.value,
-            translation_key="shadow_control_enabled",
+            translation_key="shadow_control_enabled_static",
             instance_name=instance_name
         ),
         ShadowControlBooleanSwitch(
             hass,
             config_entry,
             key=SCDawnInput.CONTROL_ENABLED_STATIC.value,
-            translation_key="dawn_control_enabled",
+            translation_key="dawn_control_enabled_static",
             instance_name=instance_name
         )
     ]

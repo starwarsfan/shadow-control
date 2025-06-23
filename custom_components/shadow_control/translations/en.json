@@ -318,11 +318,11 @@
         "name": "Debug Mode",
         "description": "Enables/disables the integration's debug mode."
       },
-      "shadow_control_enabled": {
+      "shadow_control_enabled_static": {
         "name": "Shadow Control",
         "description": "Enables/disables automatic shadow control."
       },
-      "dawn_control_enabled": {
+      "dawn_control_enabled_static": {
         "name": "Dawn Control",
         "description": "Enables/disables automatic control at dawn."
       }
