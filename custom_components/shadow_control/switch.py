@@ -23,7 +23,14 @@ async def async_setup_entry(
     instance_name = config_entry.data.get(SC_CONF_NAME, DOMAIN)
 
     entities = [
-        ShadowControlBooleanSwitch(hass, config_entry, key=DEBUG_ENABLED, translation_key="debug_enabled", instance_name=instance_name),
+        ShadowControlBooleanSwitch(
+            hass,
+            config_entry,
+            key=DEBUG_ENABLED,
+            translation_key="debug_enabled",
+            instance_name=instance_name,
+            icon="mdi:developer-board"
+        ),
         ShadowControlBooleanSwitch(
             hass,
             config_entry,
@@ -47,7 +54,7 @@ async def async_setup_entry(
 class ShadowControlBooleanSwitch(SwitchEntity, RestoreEntity):
     """Represent a boolean config option from Shadow Control as switch."""
 
-    def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry, key: str, translation_key: str, instance_name: str) -> None:
+    def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry, key: str, translation_key: str, instance_name: str, icon: str = None) -> None:
         """Initialize the switch."""
         self.hass = hass
         self._config_entry = config_entry
@@ -66,6 +73,9 @@ class ShadowControlBooleanSwitch(SwitchEntity, RestoreEntity):
             # entry_type=DeviceInfo.EntryType.SERVICE,
         )
         self._attr_extra_state_attributes = {}  # For additional attributes if required
+
+        if icon:
+            self._attr_icon = icon
 
     @property
     def is_on(self) -> bool | None:
