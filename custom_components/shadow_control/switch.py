@@ -17,7 +17,7 @@ async def async_setup_entry(
         hass: HomeAssistant,
         config_entry: ConfigEntry,
         async_add_entities,
-):
+) -> None:
     """Create Shadow Control switches based on config entries."""
     instance_name = config_entry.data.get(SC_CONF_NAME, DOMAIN)
 
