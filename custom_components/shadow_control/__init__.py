@@ -472,11 +472,11 @@ class ShadowControlManager:
         self._is_external_modification_detected: bool = False
         self._external_modification_timestamp: datetime | None = None
 
-        self._recalculation_timer_start_time: datetime | None = None
-        self._recalculation_timer_duration_seconds: float | None = None
+        self._timer_start_time: datetime | None = None
+        self._timer_duration_seconds: float | None = None
 
         self._listeners: list[Callable[[], None]] = []
-        self._recalculation_timer: Callable[[], None] | None = None
+        self._timer: Callable[[], None] | None = None
 
         self.logger.debug("Manager initialized for target: %s.", self._target_cover_entity_id)
 
@@ -629,9 +629,9 @@ class ShadowControlManager:
         # Remove listeners
         # Stop timer
         self.logger.debug("Stopping manager lifecycle...")
-        if self._recalculation_timer:
-            self._recalculation_timer()
-            self._recalculation_timer = None
+        if self._timer:
+            self._timer()
+            self._timer = None
             self.logger.debug("Recalculation timer cancelled.")
 
         for unsub_callback in self._unsub_callbacks:
@@ -1059,7 +1059,7 @@ class ShadowControlManager:
                 | ShutterState.SHADOW_NEUTRAL
             ):
                 self.logger.debug("Shadow handling was disabled, position shutter at neutral height")
-                self._cancel_recalculation_timer()
+                self._cancel_timer()
                 self.current_shutter_state = ShutterState.NEUTRAL
                 self._update_extra_state_attributes()
             case ShutterState.NEUTRAL:
@@ -1079,7 +1079,7 @@ class ShadowControlManager:
                 | ShutterState.DAWN_NEUTRAL
             ):
                 self.logger.debug("Dawn handling was disabled, position shutter at neutral height")
-                self._cancel_recalculation_timer()
+                self._cancel_timer()
                 self.current_shutter_state = ShutterState.NEUTRAL
                 self._update_extra_state_attributes()
             case ShutterState.NEUTRAL:
@@ -1104,7 +1104,7 @@ class ShadowControlManager:
                 await self._process_shutter_state()
         else:
             self.logger.debug("No specific handler for current state or locked. Current lock state: %s", self.current_lock_state.name)
-            self._cancel_recalculation_timer()
+            self._cancel_timer()
             self._update_extra_state_attributes()
 
         self.logger.debug("New shutter state after processing: %s (%s)", self.current_shutter_state.name, self.current_shutter_state.value)
@@ -1122,7 +1122,7 @@ class ShadowControlManager:
         # Always handle timer cancellation if required, regardless of initial run or lock state
         if stop_timer:
             self.logger.debug("Canceling timer.")
-            self._cancel_recalculation_timer()
+            self._cancel_timer()
 
         # --- Phase 1: Update internal states that should always reflect the calculation ---
         # These are the *calculated target* values.
@@ -1580,7 +1580,7 @@ class ShadowControlManager:
                 shadow_threshold_close,
                 ShutterState.SHADOW_NEUTRAL,
             )
-            self._cancel_recalculation_timer()
+            self._cancel_timer()
             return ShutterState.SHADOW_NEUTRAL
         neutral_height = self._facade_config.neutral_pos_height
         neutral_angle = self._facade_config.neutral_pos_angle
@@ -1638,7 +1638,7 @@ class ShadowControlManager:
                     ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING,
                     shadow_open_slat_delay,
                 )
-                await self._start_recalculation_timer(shadow_open_slat_delay)
+                await self._start_timer(shadow_open_slat_delay)
                 return ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
             self.logger.debug(
                 "State %s (%s): Brightness not below threshold, recalculating shadow position",
@@ -1706,7 +1706,7 @@ class ShadowControlManager:
                     shadow_threshold_close,
                     ShutterState.SHADOW_FULL_CLOSED,
                 )
-                self._cancel_recalculation_timer()
+                self._cancel_timer()
                 return ShutterState.SHADOW_FULL_CLOSED
             if self._is_timer_finished():
                 target_height = self._calculate_shutter_height()
@@ -1821,7 +1821,7 @@ class ShadowControlManager:
                     ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING,
                     shadow_open_shutter_delay,
                 )
-                await self._start_recalculation_timer(shadow_open_shutter_delay)
+                await self._start_timer(shadow_open_shutter_delay)
                 return ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING
             self.logger.warning(
                 "State %s (%s): Brightness not above threshold and 'shadow_open_shutter_delay' not configured, staying at %s",
@@ -1879,7 +1879,7 @@ class ShadowControlManager:
                     shadow_threshold_close,
                     ShutterState.SHADOW_FULL_CLOSED,
                 )
-                self._cancel_recalculation_timer()
+                self._cancel_timer()
                 return ShutterState.SHADOW_FULL_CLOSED
             if self._is_timer_finished():
                 if height_after_shadow is not None and angle_after_shadow is not None:
@@ -1972,7 +1972,7 @@ class ShadowControlManager:
                     ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING,
                     shadow_close_delay,
                 )
-                await self._start_recalculation_timer(shadow_close_delay)
+                await self._start_timer(shadow_close_delay)
                 return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
             if (
                 dawn_handling_active
@@ -1990,7 +1990,7 @@ class ShadowControlManager:
                     ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING,
                     dawn_close_delay,
                 )
-                await self._start_recalculation_timer(dawn_close_delay)
+                await self._start_timer(dawn_close_delay)
                 return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
             if height_after_shadow is not None and angle_after_shadow is not None:
                 await self._position_shutter(
@@ -2034,7 +2034,7 @@ class ShadowControlManager:
                     ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING,
                     dawn_close_delay,
                 )
-                await self._start_recalculation_timer(dawn_close_delay)
+                await self._start_timer(dawn_close_delay)
                 return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
 
         neutral_height = self._facade_config.neutral_pos_height
@@ -2087,7 +2087,7 @@ class ShadowControlManager:
                     ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING,
                     shadow_close_delay,
                 )
-                await self._start_recalculation_timer(shadow_close_delay)
+                await self._start_timer(shadow_close_delay)
                 return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
 
         if await self._is_dawn_control_enabled():
@@ -2109,7 +2109,7 @@ class ShadowControlManager:
                     ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING,
                     dawn_close_delay,
                 )
-                await self._start_recalculation_timer(dawn_close_delay)
+                await self._start_timer(dawn_close_delay)
                 return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
 
         neutral_height = self._facade_config.neutral_pos_height
@@ -2167,7 +2167,7 @@ class ShadowControlManager:
                     ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING,
                     dawn_close_delay,
                 )
-                await self._start_recalculation_timer(dawn_close_delay)
+                await self._start_timer(dawn_close_delay)
                 return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
             if (
                 is_in_sun
@@ -2186,7 +2186,7 @@ class ShadowControlManager:
                     ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING,
                     shadow_close_delay,
                 )
-                await self._start_recalculation_timer(shadow_close_delay)
+                await self._start_timer(shadow_close_delay)
                 return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
             if height_after_dawn is not None and angle_after_dawn is not None:
                 await self._position_shutter(
@@ -2228,7 +2228,7 @@ class ShadowControlManager:
                 ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING,
                 shadow_close_delay,
             )
-            await self._start_recalculation_timer(shadow_close_delay)
+            await self._start_timer(shadow_close_delay)
             return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
 
         if neutral_height is not None and neutral_angle is not None:
@@ -2273,7 +2273,7 @@ class ShadowControlManager:
                     dawn_threshold_close,
                     ShutterState.DAWN_FULL_CLOSED,
                 )
-                self._cancel_recalculation_timer()
+                self._cancel_timer()
                 return ShutterState.DAWN_FULL_CLOSED
             if self._is_timer_finished():
                 if dawn_height is not None and dawn_open_slat_angle is not None:
@@ -2379,7 +2379,7 @@ class ShadowControlManager:
                     ShutterState.DAWN_NEUTRAL_TIMER_RUNNING,
                     dawn_open_shutter_delay,
                 )
-                await self._start_recalculation_timer(dawn_open_shutter_delay)
+                await self._start_timer(dawn_open_shutter_delay)
                 return ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
             self.logger.warning(
                 "State %s (%s): Dawn brightness not below threshold and 'dawn_open_shutter_delay' not configured, staying at %s",
@@ -2437,7 +2437,7 @@ class ShadowControlManager:
                     dawn_threshold_close,
                     ShutterState.DAWN_FULL_CLOSED,
                 )
-                self._cancel_recalculation_timer()
+                self._cancel_timer()
                 return ShutterState.DAWN_FULL_CLOSED
             if self._is_timer_finished():
                 if dawn_height is not None and dawn_open_slat_angle is not None:
@@ -2527,7 +2527,7 @@ class ShadowControlManager:
                     ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING,
                     dawn_open_slat_delay,
                 )
-                await self._start_recalculation_timer(dawn_open_slat_delay)
+                await self._start_timer(dawn_open_slat_delay)
                 return ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
             if dawn_height is not None and dawn_angle is not None:
                 await self._position_shutter(
@@ -2628,7 +2628,7 @@ class ShadowControlManager:
                 dawn_threshold_close,
                 ShutterState.DAWN_NEUTRAL,
             )
-            self._cancel_recalculation_timer()
+            self._cancel_timer()
             return ShutterState.DAWN_NEUTRAL
         neutral_height = self._facade_config.neutral_pos_height
         neutral_angle = self._facade_config.neutral_pos_angle
@@ -2835,9 +2835,9 @@ class ShadowControlManager:
         #     "_should_output_be_updated: Unknown value '%s'. Returning new_value (%s)", config_value.name, new_value)
         return new_value
 
-    async def _start_recalculation_timer(self, delay_seconds: float) -> None:
+    async def _start_timer(self, delay_seconds: float) -> None:
         """Start new timer."""
-        self._cancel_recalculation_timer()
+        self._cancel_timer()
 
         if delay_seconds <= 0:
             self.logger.debug("Timer delay is <= 0 (%ss). Trigger immediate recalculation", delay_seconds)
@@ -2846,53 +2846,53 @@ class ShadowControlManager:
             self.next_modification_timestamp = None
             return
 
-        self.logger.debug("Starting recalculation timer for %ss", delay_seconds)
+        self.logger.debug("Starting timer for %ss", delay_seconds)
 
         # Save start time and duration
         current_utc_time = datetime.now(UTC)
-        self._recalculation_timer_start_time = datetime.now(UTC)
-        self._recalculation_timer_duration_seconds = delay_seconds
+        self._timer_start_time = datetime.now(UTC)
+        self._timer_duration_seconds = delay_seconds
 
         self.next_modification_timestamp = current_utc_time + timedelta(seconds=delay_seconds)
         self.logger.debug("Next modification scheduled for: %s", self.next_modification_timestamp)
 
         # Save callback handle from async_call_later to enable timer canceling
-        self._recalculation_timer = async_call_later(self.hass, delay_seconds, self._async_timer_callback)
+        self._timer = async_call_later(self.hass, delay_seconds, self._async_timer_callback)
 
         self._update_extra_state_attributes()
 
-    def _cancel_recalculation_timer(self) -> None:
+    def _cancel_timer(self) -> None:
         """Cancel running timer."""
-        if self._recalculation_timer:
-            self.logger.info("Canceling recalculation timer")
-            self._recalculation_timer()
-            self._recalculation_timer = None
+        if self._timer:
+            self.logger.info("Canceling timer")
+            self._timer()
+            self._timer = None
 
         # Reset timer tracking variables
-        self._recalculation_timer_start_time = None
-        self._recalculation_timer_duration_seconds = None
+        self._timer_start_time = None
+        self._timer_duration_seconds = None
         self.next_modification_timestamp = None
 
     async def _async_timer_callback(self, now) -> None:
         """Trigger position calculation."""
-        self.logger.debug("Recalculation timer finished, triggering recalculation")
+        self.logger.debug("Timer finished, triggering recalculation")
         # Reset vars, as timer is finished
-        self._recalculation_timer = None
-        self._recalculation_timer_start_time = None
-        self._recalculation_timer_duration_seconds = None
+        self._timer = None
+        self._timer_start_time = None
+        self._timer_duration_seconds = None
         await self._async_calculate_and_apply_cover_position(None)
 
     def get_remaining_timer_seconds(self) -> float | None:
         """Return remaining time of running timer or None if no timer is running."""
-        if self._recalculation_timer and self._recalculation_timer_start_time and self._recalculation_timer_duration_seconds is not None:
-            elapsed_time = (datetime.now(UTC) - self._recalculation_timer_start_time).total_seconds()
-            remaining_time = self._recalculation_timer_duration_seconds - elapsed_time
+        if self._timer and self._timer_start_time and self._timer_duration_seconds is not None:
+            elapsed_time = (datetime.now(UTC) - self._timer_start_time).total_seconds()
+            remaining_time = self._timer_duration_seconds - elapsed_time
             return max(0.0, remaining_time)  # Only positive values
         return None
 
     def _is_timer_finished(self) -> bool:
-        """Check if a recalculation timer is running."""
-        return self._recalculation_timer is None
+        """Check if a timer is running."""
+        return self._timer is None
 
     def _calculate_lock_state(self) -> LockState:
         """Calculate the current lock state."""
