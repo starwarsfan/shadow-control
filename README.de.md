@@ -365,12 +365,14 @@ Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration inte
 Dieser Eingang hat Vorrang vor [Integration sperren](#integration-sperren). Werden beide Sperren auf 'on' gesetzt, wird die Zwangsposition angefahren.
 
 #### Sperrhöhe
-`lock_height_static`
+`lock_height_static` / `lock_height_entity`
+
+Diese und die folgende Einstellung ist jeweils in zwei Ausprägungen vorhanden. Einmal als statischer Wert und einmal als Entität. Wird ein Wert fix konfiguriert und soll sich zur Laufzeit nicht ändern, wird das über die statische Konfiguration gemacht. Soll der Wert aber dynamisch angepasst werden, muss er mit einer entsprechenden Entität verknüpft werden.
 
 Anzufahrende Höhe in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
 #### Sperrwinkel
-`lock_angle_static`
+`lock_angle_static` / `lock_angle_entity`
 
 Anzufahrender Lamellenwinkel in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 

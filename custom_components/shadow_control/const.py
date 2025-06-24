@@ -29,8 +29,12 @@ class SCDynamicInput(Enum):
     SHUTTER_CURRENT_HEIGHT_ENTITY = "shutter_current_height_entity"
     SHUTTER_CURRENT_ANGLE_ENTITY = "shutter_current_angle_entity"
     LOCK_INTEGRATION_ENTITY = "lock_integration_entity"
+    LOCK_INTEGRATION_STATIC = "lock_integration_static"
     LOCK_INTEGRATION_WITH_POSITION_ENTITY = "lock_integration_with_position_entity"
+    LOCK_INTEGRATION_WITH_POSITION_STATIC = "lock_integration_with_position_static"
+    LOCK_HEIGHT_ENTITY = "lock_height_entity"
     LOCK_HEIGHT_STATIC = "lock_height_static"
+    LOCK_ANGLE_ENTITY = "lock_angle_entity"
     LOCK_ANGLE_STATIC = "lock_angle_static"
     MOVEMENT_RESTRICTION_HEIGHT_ENTITY = "movement_restriction_height_entity"
     MOVEMENT_RESTRICTION_ANGLE_ENTITY = "movement_restriction_angle_entity"
@@ -308,15 +312,23 @@ STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema(
         # vol.Optional(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value): selector.EntitySelector(
         #     selector.EntitySelectorConfig(domain=["sensor", "input_number"])
         # ),
+        vol.Optional(SCDynamicInput.LOCK_INTEGRATION_STATIC.value, default=False): selector.BooleanSelector(),
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(selector.EntitySelectorConfig(domain="input_boolean")),
+        vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_STATIC.value, default=False): selector.BooleanSelector(),
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain="input_boolean")
         ),
         vol.Optional(SCDynamicInput.LOCK_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
         ),
+        vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+        ),
         vol.Optional(SCDynamicInput.LOCK_ANGLE_STATIC.value, default=0): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
+        ),
+        vol.Optional(SCDynamicInput.LOCK_ANGLE_ENTITY.value): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain=["sensor", "input_number"])
         ),
         vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value, default="no_restriction"): selector.SelectSelector(
             selector.SelectSelectorConfig(
@@ -527,10 +539,14 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): cv.entity_id,
+        vol.Optional(SCDynamicInput.LOCK_INTEGRATION_STATIC.value, default=False): cv.boolean,
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): cv.entity_id,
+        vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_STATIC.value, default=False): cv.boolean,
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.LOCK_HEIGHT_STATIC.value, default=0): vol.Coerce(float),
+        vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.LOCK_ANGLE_STATIC.value, default=0): vol.Coerce(float),
+        vol.Optional(SCDynamicInput.LOCK_ANGLE_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value, default="no_restriction"): vol.In(
             [
                 "no_restriction",

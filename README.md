@@ -362,12 +362,14 @@ If the input is set to 'on,' the integration gets locked. That means the integra
 This input has precedence over 'lock_integration.' If both lock inputs are set 'on,' the shutter will be moved to the configured lock position.
 
 #### Lock height
-`lock_height_static`
+`lock_height_static` / `lock_height_entity`
+
+This one and the following option are available with two flavors for each configuration: Once as a static configuration and once as an entity configuration. If you need to configure something without the possibility to change that value on demand, you should use the static configuration entry. If you need to modify something on demand, use the entity configuration and choose the corresponding entity, which holds the required value. If you change the used entity, it will be taken into account within the next execution of the integration instance.
 
 Height in %, which should be set if integration gets locked by 'lock_integration_with_position.' 
 
 #### Lock angle
-`lock_angle_static`
+`lock_angle_static` / `lock_angle_entity`
 
 Angle in %, which should be set if integration gets locked by 'lock_integration_with_position.'
 
@@ -399,7 +401,7 @@ This input could be wired with a boolean entity. If this entity is switched to "
 
 ### Shadow settings
 
-The following options are available with two flavors for each configuration: Once as a static configuration and once as entity configuration. If you need to configure something without the possibility to change that value on demand, you should use the static configuration entry. If you need to modify something on demand, use the entity configuration and choose the corresponding entity, which holds the required value. If you change the used entity, it will be taken into account within the next execution of the integration instance.
+The following options are available with two flavors for each configuration: Once as a static configuration and once as an entity configuration. If you need to configure something without the possibility to change that value on demand, you should use the static configuration entry. If you need to modify something on demand, use the entity configuration and choose the corresponding entity, which holds the required value. If you change the used entity, it will be taken into account within the next execution of the integration instance.
 
 #### Shadow control enabled
 `shadow_control_enabled_static` / `shadow_control_enabled_entity`
