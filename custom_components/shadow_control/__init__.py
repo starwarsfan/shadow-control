@@ -872,35 +872,39 @@ class ShadowControlManager:
                 self.logger.debug("  Old state: %s", old_state.state if old_state else "None")
                 self.logger.debug("  New state: %s", new_state.state if new_state else "None")
 
-                if entity == SCShadowInput.CONTROL_ENABLED_ENTITY:
-                    self.logger.debug("Shadow control enable changed to %s", new_state.state)
+                if entity == self._config.get(SCShadowInput.CONTROL_ENABLED_ENTITY.value):
+                    self.logger.info("Shadow control enable changed to %s", new_state.state)
                     shadow_handling_was_disabled = new_state.state == "off"
-                elif entity == SCDawnInput.CONTROL_ENABLED_ENTITY:
-                    self.logger.debug("Dawn control enable changed to %s", new_state.state)
+                elif entity == self._config.get(SCDawnInput.CONTROL_ENABLED_ENTITY.value):
+                    self.logger.info("Dawn control enable changed to %s", new_state.state)
                     dawn_handling_was_disabled = new_state.state == "off"
-                elif entity == SCDynamicInput.LOCK_INTEGRATION_ENTITY:
+                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration_with_position:
-                        self.logger.info("Simple lock was disabled and lock with position is already disabled, enforcing position update")
+                        self.logger.info("Simple lock was disabled and lock with position is already disabled -> enforcing position update")
                         self._enforce_position_update = True
+                    elif new_state.state == "off" and self._dynamic_config.lock_integration_with_position:
+                        self.logger.info("Simple lock was disabled but lock with position is already enabled -> no position update")
                     else:
-                        self.logger.info("Simple lock enabled")
-                elif entity == SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY:
+                        self.logger.info("Simple lock enabled -> no position update")
+                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration:
-                        self.logger.info("Lock with position was disabled and simple lock already disabled, enforcing position update")
+                        self.logger.info("Lock with position was disabled and simple lock already disabled -> enforcing position update")
                         self._enforce_position_update = True
+                    elif new_state.state == "off" and self._dynamic_config.lock_integration:
+                        self.logger.info("Lock with position was disabled but simple lock already enabled -> no position update")
                     else:
-                        self.logger.info("Lock with position enabled, enforcing position update")
+                        self.logger.info("Lock with position enabled -> enforcing position update")
                         self._enforce_position_update = True
-                elif entity == SCDynamicInput.ENFORCE_POSITIONING_ENTITY:
+                elif entity == self._config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value):
                     if new_state.state == "on":
                         self.logger.debug("Enforced positioning triggered")
                         self._enforce_position_update = True
             elif event_type == "time_changed":
-                self.logger.debug("Time changed event received")
+                self.logger.info("Time changed event received")
             else:
                 self.logger.debug("Unhandled event type: %s", event_type)
         else:
-            self.logger.debug("No specific event data (likely initial run or manual trigger)")
+            self.logger.info("No specific event data (likely initial run or manual trigger)")
 
         # TODO: Needs to be implemented later
         # self._check_if_position_changed_externally(self._dynamic_config.shutter_current_height, self._dynamic_config.shutter_current_angle)
