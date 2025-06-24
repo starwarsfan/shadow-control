@@ -685,24 +685,23 @@ class ShadowControlManager:
         self._dynamic_config.shutter_current_height = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value, -1.0, float)
         self._dynamic_config.shutter_current_angle = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value, -1.0, float)
 
-        self._dynamic_config.lock_integration = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, False, bool)
-        self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(
-            SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, False, bool
+        lock_integration = self._get_static_value(SCDynamicInput.LOCK_INTEGRATION_STATIC.value, False, bool, log_warning=False)
+        self._dynamic_config.lock_integration = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, lock_integration, bool)
+
+        lock_integration_with_position = self._get_static_value(
+            SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_STATIC.value, False, bool, log_warning=False
         )
+        self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(
+            SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, lock_integration_with_position, bool
+        )
+
         self.current_lock_state = self._calculate_lock_state()
 
-        # Check if the stored value is an entity ID (string) or a static number.
-        lock_height_config_value = self._options.get(SCDynamicInput.LOCK_HEIGHT_STATIC.value)
-        if isinstance(lock_height_config_value, (int, float)):
-            self._dynamic_config.lock_height = lock_height_config_value
-        else:  # Assume it's an entity ID if not a number
-            self._dynamic_config.lock_height = self._get_entity_state_value(SCDynamicInput.LOCK_HEIGHT_STATIC.value, 0.0, float)
+        lock_height_config_value = self._get_static_value(SCDynamicInput.LOCK_HEIGHT_STATIC.value, 0, float, log_warning=False)
+        self._dynamic_config.lock_height = self._get_entity_state_value(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, lock_height_config_value, float)
 
-        lock_angle_config_value = self._options.get(SCDynamicInput.LOCK_ANGLE_STATIC.value)
-        if isinstance(lock_angle_config_value, (int, float)):
-            self._dynamic_config.lock_angle = lock_angle_config_value
-        else:  # Assume it's an entity ID if not a number
-            self._dynamic_config.lock_angle = self._get_entity_state_value(SCDynamicInput.LOCK_ANGLE_STATIC.value, 0.0, float)
+        lock_angle_config_value = self._get_static_value(SCDynamicInput.LOCK_ANGLE_STATIC.value, 0, float, log_warning=False)
+        self._dynamic_config.lock_angle = self._get_entity_state_value(SCDynamicInput.LOCK_ANGLE_ENTITY.value, lock_angle_config_value, float)
 
         # Movement restrictions (Enum values)
         self._dynamic_config.movement_restriction_height = self._get_enum_value(
@@ -878,7 +877,9 @@ class ShadowControlManager:
                 elif entity == self._config.get(SCDawnInput.CONTROL_ENABLED_ENTITY.value):
                     self.logger.info("Dawn control enable changed to %s", new_state.state)
                     dawn_handling_was_disabled = new_state.state == "off"
-                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value):
+                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value) or entity == self._config.get(
+                    SCDynamicInput.LOCK_INTEGRATION_STATIC.value
+                ):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration_with_position:
                         self.logger.info("Simple lock was disabled and lock with position is already disabled -> enforcing position update")
                         self._enforce_position_update = True
@@ -886,7 +887,9 @@ class ShadowControlManager:
                         self.logger.info("Simple lock was disabled but lock with position is already enabled -> no position update")
                     else:
                         self.logger.info("Simple lock enabled -> no position update")
-                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value):
+                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value) or entity == self._config.get(
+                    SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_STATIC.value
+                ):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration:
                         self.logger.info("Lock with position was disabled and simple lock already disabled -> enforcing position update")
                         self._enforce_position_update = True
