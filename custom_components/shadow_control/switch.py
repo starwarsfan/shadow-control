@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.restore_state import RestoreEntity
 
-from .const import DEBUG_ENABLED, DOMAIN, SC_CONF_NAME, SCDawnInput, SCShadowInput
+from .const import DEBUG_ENABLED, DOMAIN, SC_CONF_NAME, SCDawnInput, SCDynamicInput, SCShadowInput
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,6 +38,20 @@ async def async_setup_entry(
             config_entry,
             key=SCDawnInput.CONTROL_ENABLED_STATIC.value,
             translation_key="dawn_control_enabled_static",
+            instance_name=instance_name,
+        ),
+        ShadowControlBooleanSwitch(
+            hass,
+            config_entry,
+            key=SCDynamicInput.LOCK_INTEGRATION_STATIC.value,
+            translation_key="lock_integration_static",
+            instance_name=instance_name,
+        ),
+        ShadowControlBooleanSwitch(
+            hass,
+            config_entry,
+            key=SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_STATIC.value,
+            translation_key="lock_integration_with_position_static",
             instance_name=instance_name,
         ),
     ]
