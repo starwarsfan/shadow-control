@@ -2856,9 +2856,7 @@ class ShadowControlManager:
         self._timer_duration_seconds = delay_seconds
 
         self.next_modification_timestamp = current_utc_time + timedelta(seconds=delay_seconds)
-        self.logger.info("Starting timer for %ss, next modification scheduled for: %s",
-                         delay_seconds,
-                         self.next_modification_timestamp)
+        self.logger.info("Starting timer for %ss, next modification scheduled for: %s", delay_seconds, self.next_modification_timestamp)
 
         # Save callback handle from async_call_later to enable timer canceling
         self._timer = async_call_later(self.hass, delay_seconds, self._async_timer_callback)
