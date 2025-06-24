@@ -880,14 +880,16 @@ class ShadowControlManager:
                     dawn_handling_was_disabled = new_state.state == "off"
                 elif entity == SCDynamicInput.LOCK_INTEGRATION_ENTITY:
                     if new_state.state == "off" and not self._dynamic_config.lock_integration_with_position:
-                        self.logger.debug("Simple lock was disabled and lock with position is already disabled, enforcing position update")
-                        self._enforce_position_update = True
-                elif entity == SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY:
-                    if new_state.state == "off" and not self._dynamic_config.lock_integration:
-                        self.logger.debug("Lock with position was disabled and simple lock already disabled, enforcing position update")
+                        self.logger.info("Simple lock was disabled and lock with position is already disabled, enforcing position update")
                         self._enforce_position_update = True
                     else:
-                        self.logger.debug("Lock with position enabled, enforcing position update")
+                        self.logger.info("Simple lock enabled")
+                elif entity == SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY:
+                    if new_state.state == "off" and not self._dynamic_config.lock_integration:
+                        self.logger.info("Lock with position was disabled and simple lock already disabled, enforcing position update")
+                        self._enforce_position_update = True
+                    else:
+                        self.logger.info("Lock with position enabled, enforcing position update")
                         self._enforce_position_update = True
                 elif entity == SCDynamicInput.ENFORCE_POSITIONING_ENTITY:
                     if new_state.state == "on":
