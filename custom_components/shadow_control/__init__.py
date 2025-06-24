@@ -566,7 +566,7 @@ class ShadowControlManager:
         # Check if state really was changed
         if old_state is None or new_state is None or old_state.state != new_state.state:
             self.logger.debug("Input entity '%s' changed. Triggering recalculation.", entity_id)
-            await self._async_calculate_and_apply_cover_position(None)
+            await self._async_calculate_and_apply_cover_position(event)
         else:
             self.logger.debug("State change for %s detected, but value did not change. No recalculation triggered.", entity_id)
 
