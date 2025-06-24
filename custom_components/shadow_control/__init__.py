@@ -875,7 +875,7 @@ class ShadowControlManager:
                 if entity == SCShadowInput.CONTROL_ENABLED_ENTITY:
                     self.logger.debug("Shadow control enable changed to %s", new_state.state)
                     shadow_handling_was_disabled = new_state.state == "off"
-                elif entity == SCShadowInput.CONTROL_ENABLED_ENTITY:
+                elif entity == SCDawnInput.CONTROL_ENABLED_ENTITY:
                     self.logger.debug("Dawn control enable changed to %s", new_state.state)
                     dawn_handling_was_disabled = new_state.state == "off"
                 elif entity == SCDynamicInput.LOCK_INTEGRATION_ENTITY:
