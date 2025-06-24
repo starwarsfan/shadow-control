@@ -130,10 +130,14 @@
           "sun_azimuth_entity": "Azimut der Sonne",
           "shutter_current_height_entity": "Aktuelle Behanghöhe",
           "shutter_current_angle_entity": "Aktueller Behangwinkel",
-          "lock_integration_entity": "Integration sperren",
-          "lock_integration_with_position_entity": "Integration mit Zwangsposition sperren",
-          "lock_height_static": "Zwangsposition Höhe",
-          "lock_angle_static": "Zwangsposition Lamellenwinkel",
+          "lock_integration_static": "Integration sperren (statisch)",
+          "lock_integration_entity": "Integration sperren (via Entität)",
+          "lock_integration_with_position_static": "Integration mit Zwangsposition sperren (statisch)",
+          "lock_integration_with_position_entity": "Integration mit Zwangsposition sperren (via Entität)",
+          "lock_height_static": "Zwangsposition Höhe (statisch)",
+          "lock_height_entity": "Zwangsposition Höhe (via Entität)",
+          "lock_angle_static": "Zwangsposition Lamellenwinkel (statisch)",
+          "lock_angle_entity": "Zwangsposition Lamellenwinkel (via Entität)",
           "movement_restriction_height_entity": "Höhenveränderung einschränken",
           "movement_restriction_angle_entity": "Winkelveränderung einschränken",
           "enforce_positioning_entity": "Zwangspositionierung auslösen"
@@ -145,10 +149,14 @@
           "sun_azimuth_entity": "Winkel der Sonne via Sun-Entität oder Wetterstation.",
           "shutter_current_height_entity": "Aktuelle Behanghöhe als Rückmeldeobjekt vom Aktor.",
           "shutter_current_angle_entity": "Aktueller Lamellenwinkel als Rückmeldeobjekt von Aktor.",
-          "lock_integration_entity": "Sperren der gesamten Integration, so dass keine Behangpositionierung erfolgt.",
-          "lock_integration_with_position_entity": "Sperren der gesamten Integration mit Anfahren einer Zwangsposition",
-          "lock_height_static": "Anzufahrende Höhe bei Zwangsposition",
-          "lock_angle_static": "Anzufahrender Lamellenwinkel bei Zwangsposition",
+          "lock_integration_static": "Sperren der gesamten Integration, so dass keine Behangpositionierung erfolgt (statisch).",
+          "lock_integration_entity": "Sperren der gesamten Integration, so dass keine Behangpositionierung erfolgt (via Entität).",
+          "lock_integration_with_position_static": "Sperren der gesamten Integration mit Anfahren einer Zwangsposition (statisch)",
+          "lock_integration_with_position_entity": "Sperren der gesamten Integration mit Anfahren einer Zwangsposition (via Entität)",
+          "lock_height_static": "Anzufahrende Höhe bei Zwangsposition (statisch)",
+          "lock_height_entity": "Anzufahrende Höhe bei Zwangsposition (via Entität)",
+          "lock_angle_static": "Anzufahrender Lamellenwinkel bei Zwangsposition (statisch)",
+          "lock_angle_entity": "Anzufahrender Lamellenwinkel bei Zwangsposition (via Entität)",
           "movement_restriction_height_entity": "Einschränkung der Höhenpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
           "movement_restriction_angle_entity": "Einschränkung der Winkelpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
           "enforce_positioning_entity": "Wird dieser Eingang mit 'on' beschrieben, wird erzwungen, den Behang immer auf die aktuell gültige Position zu fahren."
@@ -322,6 +330,12 @@
       },
       "dawn_control_enabled_static": {
         "name": "Dämmerungssteuerung"
+      },
+      "lock_integration_static": {
+        "name": "Sperren"
+      },
+      "lock_integration_with_position_static": {
+        "name": "Sperren mit Zwangsposition"
       }
     }
   },
