@@ -1,5 +1,7 @@
 # Changes
 
+## 0.3.0
+
 ## 0.2.0
 * Added direct controls to dis-/enable right on the instance device page:
   * Shadow control mode
