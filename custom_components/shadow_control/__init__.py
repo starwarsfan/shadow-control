@@ -864,7 +864,7 @@ class ShadowControlManager:
             event_data = event.data
 
             if event_type == "state_changed":
-                entity = event_data.get("entity")
+                entity = event_data.get("entity_id")
                 old_state: State | None = event_data.get("old_state")
                 new_state: State | None = event_data.get("new_state")
 
