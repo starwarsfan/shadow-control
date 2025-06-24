@@ -2846,15 +2846,15 @@ class ShadowControlManager:
             self.next_modification_timestamp = None
             return
 
-        self.logger.debug("Starting timer for %ss", delay_seconds)
-
         # Save start time and duration
         current_utc_time = datetime.now(UTC)
         self._timer_start_time = datetime.now(UTC)
         self._timer_duration_seconds = delay_seconds
 
         self.next_modification_timestamp = current_utc_time + timedelta(seconds=delay_seconds)
-        self.logger.debug("Next modification scheduled for: %s", self.next_modification_timestamp)
+        self.logger.info("Starting timer for %ss, next modification scheduled for: %s",
+                         delay_seconds,
+                         self.next_modification_timestamp)
 
         # Save callback handle from async_call_later to enable timer canceling
         self._timer = async_call_later(self.hass, delay_seconds, self._async_timer_callback)
@@ -2875,7 +2875,7 @@ class ShadowControlManager:
 
     async def _async_timer_callback(self, now) -> None:
         """Trigger position calculation."""
-        self.logger.debug("Timer finished, triggering recalculation")
+        self.logger.info("Timer finished, triggering recalculation")
         # Reset vars, as timer is finished
         self._timer = None
         self._timer_start_time = None
