@@ -517,7 +517,11 @@ class ShadowControlManager:
             SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY,
             SCDynamicInput.ENFORCE_POSITIONING_ENTITY,
             SCShadowInput.CONTROL_ENABLED_ENTITY,
+            SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY,
+            SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY,
             SCDawnInput.CONTROL_ENABLED_ENTITY,
+            SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY,
+            SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY,
         ]:
             # False positive "Expected type 'str' (matched generic type '_KT'), got '() -> Any | () -> Any | () -> Any' instead"
             entity_id = self._config.get(conf_key_enum.value)
