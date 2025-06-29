@@ -856,7 +856,8 @@ class ShadowControlManager:
     async def _async_calculate_and_apply_cover_position(self, event: Event | None) -> None:
         """Calculate and apply cover and tilt position."""
         self.logger.debug("=====================================================================")
-        self.logger.debug("Calculating and applying cover positions")
+        self.logger.debug("Calculating and applying cover position, triggered by event: %s",
+                         event.data if event else "None")
 
         await self._update_input_values()
 
@@ -1255,7 +1256,7 @@ class ShadowControlManager:
             # Height positioning
             if send_height_command or self._enforce_position_update:
                 if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
-                    self.logger.info("Setting position to %.1f%% (current: %s).", shutter_height_percent, self._previous_shutter_height)
+                    self.logger.debug("Setting position to %.1f%% (current: %s) for entity_id %s.", shutter_height_percent, self._previous_shutter_height, entity)
                     try:
                         await self.hass.services.async_call(
                             "cover", "set_cover_position", {"entity_id": entity, "position": 100 - shutter_height_percent}, blocking=False
@@ -1270,12 +1271,12 @@ class ShadowControlManager:
                         has_pos_service,
                     )
             else:
-                self.logger.debug("Height '%.2f%%' not sent, value was the same or restricted.", height_to_set_percent)
+                self.logger.debug("Height '%.2f%%' for entity_id %s not sent, value was the same or restricted.", height_to_set_percent, entity)
 
             # Angle positioning
             if send_angle_command or self._enforce_position_update:
                 if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
-                    self.logger.info("Setting tilt position to %.1f%% (current: %s).", shutter_angle_percent, self._previous_shutter_angle)
+                    self.logger.debug("Setting tilt position to %.1f%% (current: %s) for entity_id %s.", shutter_angle_percent, self._previous_shutter_angle, entity)
                     try:
                         await self.hass.services.async_call(
                             "cover", "set_cover_tilt_position", {"entity_id": entity, "tilt_position": 100 - shutter_angle_percent}, blocking=False
@@ -1290,7 +1291,7 @@ class ShadowControlManager:
                         has_tilt_service,
                     )
             else:
-                self.logger.debug("Angle '%.2f%%' not sent, value was the same or restricted.", angle_to_set_percent)
+                self.logger.debug("Angle '%.2f%%' for entity_id %s not sent, value was the same or restricted.", angle_to_set_percent, entity)
 
         # Always update HA state at the end to reflect the latest internal calculated values and attributes
         self._update_extra_state_attributes()
