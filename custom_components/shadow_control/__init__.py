@@ -855,8 +855,7 @@ class ShadowControlManager:
     async def _async_calculate_and_apply_cover_position(self, event: Event | None) -> None:
         """Calculate and apply cover and tilt position."""
         self.logger.debug("=====================================================================")
-        self.logger.debug("Calculating and applying cover position, triggered by event: %s",
-                         event.data if event else "None")
+        self.logger.debug("Calculating and applying cover position, triggered by event: %s", event.data if event else "None")
 
         await self._update_input_values()
 
@@ -1260,10 +1259,8 @@ class ShadowControlManager:
             if send_height_command or self._enforce_position_update:
                 if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
                     self.logger.debug(
-                        "Setting position to %.1f%% (current: %s) for entity_id %s.",
-                        shutter_height_percent,
-                        self._previous_shutter_height,
-                        entity)
+                        "Setting position to %.1f%% (current: %s) for entity_id %s.", shutter_height_percent, self._previous_shutter_height, entity
+                    )
                     try:
                         await self.hass.services.async_call(
                             "cover", "set_cover_position", {"entity_id": entity, "position": 100 - shutter_height_percent}, blocking=False
@@ -1284,10 +1281,8 @@ class ShadowControlManager:
             if send_angle_command or self._enforce_position_update:
                 if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
                     self.logger.debug(
-                        "Setting tilt position to %.1f%% (current: %s) for entity_id %s.",
-                        shutter_angle_percent,
-                        self._previous_shutter_angle,
-                        entity)
+                        "Setting tilt position to %.1f%% (current: %s) for entity_id %s.", shutter_angle_percent, self._previous_shutter_angle, entity
+                    )
                     try:
                         await self.hass.services.async_call(
                             "cover", "set_cover_tilt_position", {"entity_id": entity, "tilt_position": 100 - shutter_angle_percent}, blocking=False
