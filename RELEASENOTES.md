@@ -1,7 +1,12 @@
 # Changes
 
 ## 0.3.0
+* Own icon and logo within HACS
 * Fixed trigger event handling
+* Added direct controls to dis-/enable right on the instance device page:
+  * Instance lock
+  * Instance lock with forced position
+* Bump ruff from 0.12.0 to 0.12.1
 
 ## 0.2.0
 * Added direct controls to dis-/enable right on the instance device page:
