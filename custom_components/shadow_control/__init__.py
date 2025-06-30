@@ -672,8 +672,17 @@ class ShadowControlManager:
 
         self._facade_config.light_strip_width = self._get_static_value(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value, 0.0, float)
         self._facade_config.shutter_height = self._get_static_value(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value, 1000.0, float)
-        self._facade_config.neutral_pos_height = self._get_static_value(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, 0.0, float)
-        self._facade_config.neutral_pos_angle = self._get_static_value(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, 0.0, float)
+
+        neutral_pos_height_config_value = self._get_static_value(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, 0, float, log_warning=False)
+        self._facade_config.neutral_pos_height = self._get_entity_state_value(
+            SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY.value, neutral_pos_height_config_value, float
+        )
+
+        neutral_pos_angle_config_value = self._get_static_value(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, 0, float, log_warning=False)
+        self._facade_config.neutral_pos_angle = self._get_entity_state_value(
+            SCFacadeConfig.NEUTRAL_POS_ANGLE_ENTITY.value, neutral_pos_angle_config_value, float
+        )
+
         self._facade_config.modification_tolerance_height = self._get_static_value(
             SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, 0.0, float
         )
