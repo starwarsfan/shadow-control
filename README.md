@@ -7,6 +7,8 @@
 
 **A Home Assistant integration to fully automate movement and positioning of rolling shutters.**
 
+Gehe zur [deutschen Version](/README.de.md)
+
 ## Table of content
 
 * [Introduction](#introduction)

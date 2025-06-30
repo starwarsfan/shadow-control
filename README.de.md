@@ -7,6 +7,8 @@
 
 **Eine Home Assistant Integration zur vollständig automatischen Steuerung von Raffstoren.**
 
+Go to the [English version](/README.md)
+
 ## Inhaltsverzeichnis
 
 * [Einführung](#einführung)
