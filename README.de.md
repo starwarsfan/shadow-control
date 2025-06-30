@@ -541,7 +541,9 @@ shadow_control:
     lock_integration_entity: input_boolean.d07_lock_integration
     lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
     lock_height_static: 0
+    #lock_height_entity: input_number.lock_height_entity
     lock_angle_static: 0
+    #lock_angle_entity: input_number.lock_angle_entity
     movement_restriction_height_entity: no_restriction
     movement_restriction_angle_entity: no_restriction
     enforce_positioning_entity: input_boolean.d13_enforce_positioning
@@ -564,7 +566,9 @@ shadow_control:
     facade_light_strip_width_static: 0
     facade_shutter_height_static: 1000
     facade_neutral_pos_height_static: 0
+    #facade_neutral_pos_height_entity: input_number.facade_neutral_pos_height_entity
     facade_neutral_pos_angle_static: 0
+    #facade_neutral_pos_angle_entity: input_number.facade_neutral_pos_angle_entity
     facade_modification_tolerance_height_static: 8
     facade_modification_tolerance_angle_static: 5
 
