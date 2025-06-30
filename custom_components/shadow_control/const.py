@@ -59,7 +59,9 @@ class SCFacadeConfig(Enum):
     LIGHT_STRIP_WIDTH_STATIC = "facade_light_strip_width_static"
     SHUTTER_HEIGHT_STATIC = "facade_shutter_height_static"
     NEUTRAL_POS_HEIGHT_STATIC = "facade_neutral_pos_height_static"
+    NEUTRAL_POS_HEIGHT_ENTITY = "facade_neutral_pos_height_entity"
     NEUTRAL_POS_ANGLE_STATIC = "facade_neutral_pos_angle_static"
+    NEUTRAL_POS_ANGLE_ENTITY = "facade_neutral_pos_angle_entity"
     MODIFICATION_TOLERANCE_HEIGHT_STATIC = "facade_modification_tolerance_height_static"
     MODIFICATION_TOLERANCE_ANGLE_STATIC = "facade_modification_tolerance_angle_static"
 
@@ -252,8 +254,14 @@ STEP_FACADE_SETTINGS_PART2_SCHEMA = vol.Schema(
         vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
         ),
+        vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+        ),
         vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, default=0): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
+        ),
+        vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_ENTITY): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain=["sensor", "input_number"])
         ),
         vol.Optional(SCFacadeConfig.SLAT_WIDTH_STATIC.value, default=95): selector.NumberSelector(
             selector.NumberSelectorConfig(min=20, max=150, step=1, mode=selector.NumberSelectorMode.BOX)
@@ -518,7 +526,9 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value, default=90): vol.Coerce(float),
         vol.Optional(DEBUG_ENABLED, default=False): cv.boolean,
         vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY.value): cv.entity_id,
         vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, default=0): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_ENTITY.value): cv.entity_id,
         vol.Optional(SCFacadeConfig.SLAT_WIDTH_STATIC.value, default=95): vol.Coerce(float),
         vol.Optional(SCFacadeConfig.SLAT_DISTANCE_STATIC.value, default=67): vol.Coerce(float),
         vol.Optional(SCFacadeConfig.SLAT_ANGLE_OFFSET_STATIC.value, default=0): vol.Coerce(float),
