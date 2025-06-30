@@ -484,7 +484,7 @@ Max height of the shutter in case of dawn position in %. Default: 100
 #### Dawn max angle
 `dawn_shutter_max_angle_static` / `dawn_shutter_max_angle_entity`
 
-Max angle of the shutter in case of shadow position in %. Default: 100
+Max angle of the shutter in case of dawn position in %. Default: 100
 
 #### Dawn look through seconds
 `dawn_shutter_look_through_seconds_static` / `dawn_shutter_look_through_seconds_entity`
@@ -504,12 +504,12 @@ This is the shutter slat angle in %, which should be used at the "look through" 
 #### After dawn height
 `dawn_height_after_dawn_static` / `dawn_height_after_dawn_entity`
 
-This is the shutter height in %, which should be set after the shadow position. Default: 0
+This is the shutter height in %, which should be set after the dawn position. Default: 0
 
 #### After dawn angle
 `dawn_angle_after_dawn_static` / `dawn_angle_after_dawn_entity`
 
-This is the shutter angle in %, which should be set after the shadow position. Default: 0
+This is the shutter angle in %, which should be set after the dawn position. Default: 0
 
 ## Configuration by YAML
 
