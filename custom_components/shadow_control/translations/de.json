@@ -91,7 +91,9 @@
         "description": "Hier wird der zweite Teil der Details der zu steuernden Fassade resp. des zu steuernden Fensters konfiguriert.",
         "data": {
           "facade_neutral_pos_height_static": "Neutrale Höhe",
+          "facade_neutral_pos_height_entity": "Neutrale Höhe",
           "facade_neutral_pos_angle_static": "Neutraler Winkel",
+          "facade_neutral_pos_angle_entity": "Neutraler Winkel",
           "facade_slat_width_static": "Breite Raffstorelamellen",
           "facade_slat_distance_static": "Abstand Raffstorelamellen",
           "facade_slat_angle_offset_static": "Lamellenwinkeloffset",
@@ -105,8 +107,10 @@
           "facade_shutter_type_static": "Behangtyp"
         },
         "data_description": {
-          "facade_neutral_pos_height_static": "Anzufahrende Höhe in Neutralposition.",
-          "facade_neutral_pos_angle_static": "Anzufahrender Winkel in Neutralposition.",
+          "facade_neutral_pos_height_static": "Anzufahrende Höhe in Neutralposition (statisch).",
+          "facade_neutral_pos_height_entity": "Anzufahrende Höhe in Neutralposition (via Entität).",
+          "facade_neutral_pos_angle_static": "Anzufahrender Winkel in Neutralposition (statisch).",
+          "facade_neutral_pos_angle_entity": "Anzufahrender Winkel in Neutralposition (via Entität).",
           "facade_slat_width_static": "Breite der Raffstorelamellen in mm.",
           "facade_slat_distance_static": "Abstand der Raffstorelamellen zueinander in mm.",
           "facade_slat_angle_offset_static": "Lamellenwinkeloffset in %. Dieser Wert wird zum berechneten %-Wert der Lamellenstellung im Beschattungsfall addiert und kann verwendet werden, um den errechneten Winkel falls notwendig zu korrigieren",

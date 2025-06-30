@@ -91,7 +91,9 @@
         "description": "Configure the second part of the details for the facade (or even the window), which should be handled by this SC instance",
         "data": {
           "facade_neutral_pos_height_static": "Neutral position height",
+          "facade_neutral_pos_height_entity": "Neutral position height",
           "facade_neutral_pos_angle_static": "Neutral position angle",
+          "facade_neutral_pos_angle_entity": "Neutral position angle",
           "facade_slat_width_static": "Shutter slat width",
           "facade_slat_distance_static": "Shutter slat distance",
           "facade_slat_angle_offset_static": "Shutter angle offset",
@@ -105,8 +107,10 @@
           "facade_shutter_type_static": "Shutter type"
         },
         "data_description": {
-          "facade_neutral_pos_height_static": "Height of shutter in neutral position.",
-          "facade_neutral_pos_angle_static": "Angle of shutter in neutral position.",
+          "facade_neutral_pos_height_static": "Height of shutter in neutral position (static).",
+          "facade_neutral_pos_height_entity": "Height of shutter in neutral position (by entity).",
+          "facade_neutral_pos_angle_static": "Angle of shutter in neutral position (static).",
+          "facade_neutral_pos_angle_entity": "Angle of shutter in neutral position (by entity).",
           "facade_slat_width_static": "Width of shutter slats in mm.",
           "facade_slat_distance_static": "Distance between shutter slats in mm.",
           "facade_slat_angle_offset_static": "Shutter angle offset in %, which will be added to the computed angle in case a correction is required. Default: 0",
