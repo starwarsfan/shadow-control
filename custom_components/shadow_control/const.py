@@ -254,13 +254,13 @@ STEP_FACADE_SETTINGS_PART2_SCHEMA = vol.Schema(
         vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
         ),
-        vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY): selector.EntitySelector(
+        vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["sensor", "input_number"])
         ),
         vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, default=0): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
         ),
-        vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_ENTITY): selector.EntitySelector(
+        vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["sensor", "input_number"])
         ),
         vol.Optional(SCFacadeConfig.SLAT_WIDTH_STATIC.value, default=95): selector.NumberSelector(
