@@ -3,6 +3,7 @@
 ## 0.3.0
 * Own icon and logo within HACS
 * Fixed trigger event handling
+* Added configuration options to use separate entities to set instance lock or instance lock with forced position
 * Added direct controls to dis-/enable right on the instance device page:
   * Instance lock
   * Instance lock with forced position
