@@ -1,5 +1,8 @@
 # Changes
 
+## 0.4.0
+* ...
+
 ## 0.3.0
 * Own icon and logo within HACS
 * Fixed trigger event handling
