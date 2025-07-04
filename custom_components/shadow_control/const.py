@@ -321,10 +321,12 @@ STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema(
         #     selector.EntitySelectorConfig(domain=["sensor", "input_number"])
         # ),
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_STATIC.value, default=False): selector.BooleanSelector(),
-        vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(selector.EntitySelectorConfig(domain="input_boolean")),
+        vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+        ),
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_STATIC.value, default=False): selector.BooleanSelector(),
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value): selector.EntitySelector(
-            selector.EntitySelectorConfig(domain="input_boolean")
+            selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
         ),
         vol.Optional(SCDynamicInput.LOCK_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
@@ -358,7 +360,9 @@ STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema(
                 translation_key="facade_movement_restriction",
             )
         ),
-        vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): selector.EntitySelector(selector.EntitySelectorConfig(domain="input_boolean")),
+        vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+        ),
     }
 )
 
@@ -366,7 +370,9 @@ STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema(
 STEP_SHADOW_SETTINGS_SCHEMA = vol.Schema(
     {
         vol.Optional(SCShadowInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
-        vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(selector.EntitySelectorConfig(domain="input_boolean")),
+        vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+        ),
         # -----------------------------------------------------------------------
         vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_STATIC.value, default=50000): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=300000, step=1, mode=selector.NumberSelectorMode.BOX)
@@ -437,7 +443,9 @@ STEP_SHADOW_SETTINGS_SCHEMA = vol.Schema(
 STEP_DAWN_SETTINGS_SCHEMA = vol.Schema(
     {
         vol.Optional(SCDawnInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
-        vol.Optional(SCDawnInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(selector.EntitySelectorConfig(domain="input_boolean")),
+        vol.Optional(SCDawnInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+        ),
         # -----------------------------------------------------------------------
         vol.Optional(SCDawnInput.BRIGHTNESS_THRESHOLD_STATIC.value, default=500): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=10000, step=1, mode=selector.NumberSelectorMode.BOX)
