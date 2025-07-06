@@ -158,6 +158,7 @@ class ShadowControlCurrentStateTextSensor(SensorEntity):
         self._attr_device_class = SensorDeviceClass.ENUM
         self._attr_translation_key = "sensor_current_state_text"  # translation key
         self._attr_has_entity_name = True
+        self._attr_icon = "mdi:state-machine"
 
         # Possible options as a list of strings (lowercase names of enum members)
         self._attr_options = [state.to_ha_state_string() for state in ShutterState]
