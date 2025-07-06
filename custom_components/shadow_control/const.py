@@ -134,6 +134,9 @@ class ShutterState(IntEnum):
     DAWN_FULL_CLOSED = -5
     DAWN_FULL_CLOSE_TIMER_RUNNING = -6
 
+    def to_ha_state_string(self) -> str:
+        """Return the lowercase name for usage with SensorDeviceClass.ENUM options."""
+        return self.name.lower()
 
 # All known internal lock states
 class LockState(IntEnum):

@@ -2,7 +2,7 @@
 
 import logging
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
@@ -10,7 +10,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import ShadowControlManager
-from .const import DOMAIN, DOMAIN_DATA_MANAGERS, SensorEntries
+from .const import DOMAIN, DOMAIN_DATA_MANAGERS, SensorEntries, ShutterState
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,6 +40,9 @@ async def async_setup_entry(
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.NEXT_SHUTTER_MODIFICATION),
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.IS_IN_SUN),
     ]
+
+    text_sensor = ShadowControlCurrentStateTextSensor(manager, config_entry.entry_id, manager.name)
+    entities_to_add.append(text_sensor)
 
     if entities_to_add:
         async_add_entities(entities_to_add, True)
@@ -138,5 +141,48 @@ class ShadowControlSensor(SensorEntity):
                 self.hass,
                 f"{DOMAIN}_update_{self._manager.name.lower().replace(' ', '_')}",  # Unique signal for this manager
                 self.async_write_ha_state,  # Calls this sensor's method to update its state in HA
+            )
+        )
+
+class ShadowControlCurrentStateTextSensor(SensorEntity):
+    """Sensor for the current state in human-readable form."""
+
+    def __init__(self, manager: ShadowControlManager, config_entry_id: str, instance_name: str) -> None:
+        self._manager = manager
+        self._config_entry_id = config_entry_id
+        self._instance_name = instance_name
+
+        self._attr_name = f"{instance_name} Aktueller Status (Text)"
+        self._attr_unique_id = f"{config_entry_id}_current_state_text"
+        self._attr_device_class = SensorDeviceClass.ENUM
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_translation_key = "sensor_current_state_text" # translation key
+
+        # Possible options as a list of strings (lowercase names of enum members)
+        self._attr_options = [state.to_ha_state_string() for state in ShutterState]
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, config_entry_id)},
+            name=instance_name,
+            model="Shadow Control",
+            manufacturer="Yves Schumann",
+        )
+
+    @property
+    def state(self) -> str | None:
+        """Return "speaking" state of sensor."""
+        return self._manager.current_shutter_state.to_ha_state_string()
+
+    async def async_added_to_hass(self) -> None:
+        """Register callbacks at the entity registry."""
+        await super().async_added_to_hass()
+
+        # Register a dispatcher listener to get updates. Manager needs to send this signal to update
+        # its data. Important to update within the UI if the state changes.
+        self.async_on_remove(
+            async_dispatcher_connect(
+                self.hass,
+                f"{DOMAIN}_update_{self._manager.name.lower().replace(' ', '_')}",
+                self.async_write_ha_state,
             )
         )

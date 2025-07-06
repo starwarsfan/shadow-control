@@ -315,6 +315,25 @@
       "sensor_current_state": {
         "name": "Current State"
       },
+      "sensor_current_state_text": {
+        "name": "Current State",
+        "description": "Current state of Shadow Control.",
+        "options": {
+          "shadow_full_close_timer_running": "Shadow: Close timer running",
+          "shadow_full_closed": "Shadow: Closed",
+          "shadow_horizontal_neutral_timer_running": "Shadow: Timer for horizontal position running",
+          "shadow_horizontal_neutral": "Shadow: Horizontal neutral position (look through)",
+          "shadow_neutral_timer_running": "Shadow: Neutral timer running",
+          "shadow_neutral": "Shadow: Neutral position",
+          "neutral": "Neutral position (no Shadow/Dawn)",
+          "dawn_neutral": "Dawn: Neutral position",
+          "dawn_neutral_timer_running": "Dawn: Neutral timer running",
+          "dawn_horizontal_neutral": "Dawn: Horizontal neutral position (look through)",
+          "dawn_horizontal_neutral_timer_running": "Dawn: Neutral timer running",
+          "dawn_full_closed": "Dawn: Closed",
+          "dawn_full_close_timer_running": "Dawn: Close timer running"
+        }
+      },
       "sensor_lock_state": {
         "name": "Lock State"
       },

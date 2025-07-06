@@ -315,6 +315,25 @@
       "sensor_current_state": {
         "name": "Aktueller Status"
       },
+      "sensor_current_state_text": {
+        "name": "Aktueller Status",
+        "description": "Der aktuelle Betriebsstatus der Behangsteuerung.",
+        "options": {
+          "shadow_full_close_timer_running": "Beschattung: Schliessen-Timer läuft",
+          "shadow_full_closed": "Beschattung: Vollständig geschlossen",
+          "shadow_horizontal_neutral_timer_running": "Beschattung: Horizontaler Neutral-Timer läuft",
+          "shadow_horizontal_neutral": "Beschattung: Horizontal neutral (Durchsicht)",
+          "shadow_neutral_timer_running": "Beschattung: Neutral-Timer läuft",
+          "shadow_neutral": "Beschattung: Neutral",
+          "neutral": "Neutral (Keine Beschattung/Dämmerung)",
+          "dawn_neutral": "Dämmerung: Neutral",
+          "dawn_neutral_timer_running": "Dämmerung: Neutral-Timer läuft",
+          "dawn_horizontal_neutral": "Dämmerung: Horizontal neutral (Durchsicht)",
+          "dawn_horizontal_neutral_timer_running": "Dämmerung: Horizontaler Neutral-Timer läuft",
+          "dawn_full_closed": "Dämmerung: Vollständig geschlossen",
+          "dawn_full_close_timer_running": "Dämmerung: Schliessen-Timer läuft"
+        }
+      },
       "sensor_lock_state": {
         "name": "Sperrstatus"
       },
