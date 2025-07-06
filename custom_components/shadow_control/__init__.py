@@ -52,7 +52,7 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.SWITCH]
 
-SERVICE_DUMP_CONFIG = "dump_config"
+SERVICE_DUMP_CONFIG = "dump_sc_configuration"
 ATTR_INSTANCE_NAME = "instance_name"
 
 # Get the schema version from constants
