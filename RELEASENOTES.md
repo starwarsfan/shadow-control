@@ -7,6 +7,9 @@
   * `lock_integration_entity`
   * `lock_integration_with_position_entity`
   * `enforce_positioning_entity`
+* Implement issue [#3 Show states in translated cleartext](https://github.com/starwarsfan/shadow-control/issues/3)
+  * A new state sensor for each instance represents the textual value of the current state.
+  * The sensor with the numeric state is still available
 
 ## 0.3.0
 * Own icon and logo within HACS
