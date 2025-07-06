@@ -197,22 +197,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 }
             ),
         )
-    # === START: Debugging-Hilfsdienst ===
-    TEST_SERVICE_DUMP_CONFIG = "test_dump_config"
-    # Definiere den Logger für diesen temporären Dienst, damit du die Ausgabe siehst
-    _test_logger = logging.getLogger(f"{DOMAIN}.test_service_dump")
-
-    if not hass.services.has_service(DOMAIN, TEST_SERVICE_DUMP_CONFIG):
-        _test_logger.debug("Registering test service '%s.%s'", DOMAIN, TEST_SERVICE_DUMP_CONFIG)
-        hass.services.async_register(
-            DOMAIN,
-            TEST_SERVICE_DUMP_CONFIG,
-            lambda call: _test_logger.info("Test service '%s.%s' called with instance_name: '%s'", DOMAIN, TEST_SERVICE_DUMP_CONFIG, call.data.get(ATTR_INSTANCE_NAME)),
-            schema=vol.Schema({
-                vol.Required(ATTR_INSTANCE_NAME): str,
-            })
-        )
-    # === END: Debugging-Hilfsdienst ===
 
     _LOGGER.info("[%s] Integration '%s' successfully set up from config entry.", DOMAIN, manager_name)
     return True
