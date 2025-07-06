@@ -461,6 +461,8 @@ This is the shutter angle in %, which should be set after the shadow position. D
 
 ### Dawn settings
 
+Wie die [Beschattungseinstellungen](#beschattungseinstellungen) sind auch die Dämmerungseinstellungen in jeweils in zwei Ausprägungen vorhanden. Einmal als statischer Wert und einmal als Entität. Wird ein Wert fix konfiguriert und soll sich zur Laufzeit nicht ändern, wird das über die statische Konfiguration gemacht. Soll der Wert aber dynamisch angepasst werden, muss er mit einer entsprechenden Entität verknüpft werden.
+
 #### Dawn control enabled
 `dawn_control_enabled_static` / `dawn_control_enabled_entity`
 
@@ -633,8 +635,8 @@ This entity holds the calculated shutter angle.
 This entity holds the calculated shutter angle in degrees (°).
 
 ### Current state
-`current_state`
-This entity holds the current internal state of the integration as a numeric value. The follwoing values will be available here for further usage within other automations:
+`current_state` / `current_state_text` 
+The entity `current_state` holds the current internal state of the integration as a numeric value. The following values will be available here for further usage within other automations:
 
 * SHADOW_FULL_CLOSE_TIMER_RUNNING = 6
 * SHADOW_FULL_CLOSED = 5
@@ -649,6 +651,8 @@ This entity holds the current internal state of the integration as a numeric val
 * DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING = -4
 * DAWN_FULL_CLOSED = -5
 * DAWN_FULL_CLOSE_TIMER_RUNNING = -6
+
+Parallel to `current_state`, the entity `current_state_text` contains a textual representation aka a translated string of the current state. This string could be used right on the UI to show the current state of the corresponding **Shadow Control** instance.
 
 ### Lock state
 `lock_state`

@@ -324,7 +324,7 @@ Der zweite mögliche Behangtyp hat einen Schwenkbereich von ca. 180°, also bei 
 
 ### Dynamische Eingänge
 
-Dieser Abschnitt konfiguriert die dynmischen Eingänge. Damit werden die Werte eingerichtet, welche sich im täglichen Betrieb ändern können wie bspw. der Sonnenstand oder andere Verhaltenseinstellungen der Integration.
+Dieser Abschnitt konfiguriert die dynamischen Eingänge. Damit werden die Werte eingerichtet, welche sich im täglichen Betrieb ändern können wie bspw. der Sonnenstand oder andere Verhaltenseinstellungen der Integration.
 
 #### Helligkeit
 `brightness_entity`
@@ -457,7 +457,6 @@ Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf die hier in 
 `shadow_angle_after_sun_static` / `shadow_angle_after_sun_entity`
 
 Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf den hier in % konfigurierten Lamellenwinkel gefahren. Standardwert: 0
-
 
 
 
@@ -639,8 +638,8 @@ Hier ist der errechnete Lamellenwinkel des Behangs zu finden.
 Hier ist der errechnete Lamellenwinkel des Behangs in Grad (°) zu finden.
 
 ### Aktueller Status
-`current_state`
-Hier wird der aktuelle interne Status von **Shadow Control** als numerischer Wert ausgegeben. Dabei sind die folgenden Status resp. Werte möglich, welche für weitere eigenen Automatisierungen verwendet werden können:
+`current_state` / `current_state_text`
+Der aktuelle interne Status von **Shadow Control** wird unter `current_state` als numerischer Wert ausgegeben. Dabei sind die folgenden Status resp. Werte möglich, welche für weitere eigenen Automatisierungen verwendet werden können:
 
 * SHADOW_FULL_CLOSE_TIMER_RUNNING = 6
 * SHADOW_FULL_CLOSED = 5
@@ -655,6 +654,8 @@ Hier wird der aktuelle interne Status von **Shadow Control** als numerischer Wer
 * DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING = -4
 * DAWN_FULL_CLOSED = -5
 * DAWN_FULL_CLOSE_TIMER_RUNNING = -6
+
+Parallel zu `current_state` wird in der Entität `current_state_text` die Textform des aktuellen Status ausgegeben. Diese Zeichenkette kann direkt auf dem UI verwendet werden, um den momentanen Status einer **Shadow Control** Instanz anzuzeigen.
 
 ### Sperr-Status
 `lock_state`
