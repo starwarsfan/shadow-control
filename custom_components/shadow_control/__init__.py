@@ -5,6 +5,7 @@ import math
 import re
 from datetime import UTC, datetime, timedelta
 from enum import Enum
+from functools import partial
 from typing import TYPE_CHECKING, Any
 
 import voluptuous as vol
@@ -16,9 +17,11 @@ from homeassistant.const import (
     STATE_ON,
     Platform,
 )
-from homeassistant.core import Event, HomeAssistant, State, callback
+from homeassistant.core import Event, HomeAssistant, ServiceCall, State, callback
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import device_registry
 from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.helpers.entity_registry import async_get as async_get_entity_registry
 from homeassistant.helpers.event import async_call_later, async_track_state_change_event
 from homeassistant.helpers.typing import ConfigType
 
@@ -48,6 +51,9 @@ _GLOBAL_DOMAIN_LOGGER = logging.getLogger(DOMAIN)
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.SWITCH]
+
+SERVICE_DUMP_CONFIG = "dump_config"
+ATTR_INSTANCE_NAME = "instance_name"
 
 # Get the schema version from constants
 CURRENT_SCHEMA_VERSION = VERSION
@@ -180,6 +186,34 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Add listeners for update of input values and integration trigger
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
+    if not hass.services.has_service(DOMAIN, SERVICE_DUMP_CONFIG):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_DUMP_CONFIG,
+            partial(handle_dump_config_service, hass),
+            schema=vol.Schema(
+                {
+                    vol.Required(ATTR_INSTANCE_NAME): str,
+                }
+            ),
+        )
+    # === START: Debugging-Hilfsdienst ===
+    TEST_SERVICE_DUMP_CONFIG = "test_dump_config"
+    # Definiere den Logger für diesen temporären Dienst, damit du die Ausgabe siehst
+    _test_logger = logging.getLogger(f"{DOMAIN}.test_service_dump")
+
+    if not hass.services.has_service(DOMAIN, TEST_SERVICE_DUMP_CONFIG):
+        _test_logger.debug("Registering test service '%s.%s'", DOMAIN, TEST_SERVICE_DUMP_CONFIG)
+        hass.services.async_register(
+            DOMAIN,
+            TEST_SERVICE_DUMP_CONFIG,
+            lambda call: _test_logger.info("Test service '%s.%s' called with instance_name: '%s'", DOMAIN, TEST_SERVICE_DUMP_CONFIG, call.data.get(ATTR_INSTANCE_NAME)),
+            schema=vol.Schema({
+                vol.Required(ATTR_INSTANCE_NAME): str,
+            })
+        )
+    # === END: Debugging-Hilfsdienst ===
+
     _LOGGER.info("[%s] Integration '%s' successfully set up from config entry.", DOMAIN, manager_name)
     return True
 
@@ -192,6 +226,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Unload platforms
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
+    if not hass.data.get(DOMAIN_DATA_MANAGERS) or len(hass.data.get(DOMAIN_DATA_MANAGERS)) == 1:  # Prüfen, ob dies die letzte Manager-Instanz ist
+        hass.services.async_remove(DOMAIN, SERVICE_DUMP_CONFIG)
+
     if unload_ok:
         # Stop manager instance
         manager: ShadowControlManager = hass.data[DOMAIN_DATA_MANAGERS].pop(entry.entry_id, None)
@@ -203,6 +240,61 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error("[%s] Failed to unload platforms for entry %s.", DOMAIN, entry.entry_id)
 
     return unload_ok
+
+
+async def handle_dump_config_service(hass: HomeAssistant, call: ServiceCall):
+    """Handle the service call to dump instance configuration."""
+    instance_name = call.data.get(ATTR_INSTANCE_NAME)
+    _LOGGER.debug("Received dump_config service call for instance: %s", instance_name)
+
+    manager: ShadowControlManager | None = None
+    target_config_entry_id: str | None = None
+
+    # Find the Manager by instance name or config_entry_id
+    for entry_id, mgr in hass.data.get(DOMAIN_DATA_MANAGERS, {}).items():
+        if mgr.name == instance_name:
+            manager = mgr
+            target_config_entry_id = entry_id
+            break
+
+    if manager is None:
+        _LOGGER.error("[%s] dump_config service: No manager found for instance name '%s'", DOMAIN, instance_name)
+        return
+
+    _LOGGER.info("[%s] --- DUMPING INSTANCE CONFIGURATION ---", manager.name)
+
+    # 1. Config Entry Optionen
+    _LOGGER.info("[%s] Config Entry Data: %s", manager.name, dict(hass.config_entries.async_get_entry(target_config_entry_id).data))
+    _LOGGER.info("[%s] Config Entry Options: %s", manager.name, dict(hass.config_entries.async_get_entry(target_config_entry_id).options))
+
+    # 2. Manager-interne Konfiguration (falls du solche Attribute hast)
+    # Beispiel: Wenn dein Manager eine Eigenschaft _config hat, die alles enthält
+    if hasattr(manager, "_config"):
+        _LOGGER.info("[%s] Manager Internal Config: %s", manager.name, manager._config)
+
+    entity_registry = async_get_entity_registry(hass)
+
+    # Finde das Device, um alle Entitäten dieses Geräts zu erhalten
+    dev_reg = device_registry.async_get(hass)
+    device = dev_reg.async_get_device(
+        {(DOMAIN, target_config_entry_id)},  # Identifier für dein Gerät
+        set(),  # Keine Verbindungen angeben, wenn nicht benötigt
+    )
+
+    if device:
+        _LOGGER.info("[%s] Associated Device: %s (id: %s)", manager.name, device.name, device.id)
+        _LOGGER.info("[%s] Associated Entities:", manager.name)
+        entities_for_device = entity_registry.async_entries_for_device(device.id)
+        for entity_entry in entities_for_device:
+            state = hass.states.get(entity_entry.entity_id)
+            if state:
+                _LOGGER.info("  - %s: State='%s', Attributes=%s", entity_entry.entity_id, state.state, dict(state.attributes))
+            else:
+                _LOGGER.info("  - %s: Not available or no state", entity_entry.entity_id)
+    else:
+        _LOGGER.warning("[%s] No device found for config entry ID %s. Cannot dump associated entities.", manager.name, target_config_entry_id)
+
+    _LOGGER.info("[%s] --- END INSTANCE CONFIGURATION DUMP ---", manager.name)
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
