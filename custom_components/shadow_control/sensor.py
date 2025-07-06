@@ -144,6 +144,7 @@ class ShadowControlSensor(SensorEntity):
             )
         )
 
+
 class ShadowControlCurrentStateTextSensor(SensorEntity):
     """Sensor for the current state in human-readable form."""
 
@@ -157,7 +158,7 @@ class ShadowControlCurrentStateTextSensor(SensorEntity):
         self._attr_unique_id = f"{config_entry_id}_current_state_text"
         self._attr_device_class = SensorDeviceClass.ENUM
         self._attr_state_class = SensorStateClass.MEASUREMENT
-        self._attr_translation_key = "sensor_current_state_text" # translation key
+        self._attr_translation_key = "sensor_current_state_text"  # translation key
 
         # Possible options as a list of strings (lowercase names of enum members)
         self._attr_options = [state.to_ha_state_string() for state in ShutterState]

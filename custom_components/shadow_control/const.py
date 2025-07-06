@@ -138,6 +138,7 @@ class ShutterState(IntEnum):
         """Return the lowercase name for usage with SensorDeviceClass.ENUM options."""
         return self.name.lower()
 
+
 # All known internal lock states
 class LockState(IntEnum):
     """Enum for the possible states of the lock."""
