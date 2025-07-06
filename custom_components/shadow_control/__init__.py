@@ -264,15 +264,12 @@ async def handle_dump_config_service(hass: HomeAssistant, call: ServiceCall):
 
     # Find the device, to get all its entities
     dev_reg = device_registry.async_get(hass)
-    device = dev_reg.async_get_device(
-        {(DOMAIN, target_config_entry_id)},  # Identifier für dein Gerät
-        set(),  # Keine Verbindungen angeben, wenn nicht benötigt
-    )
+    device = dev_reg.async_get_device({(DOMAIN, target_config_entry_id)})
 
     if device:
         _LOGGER.info("[%s] Associated Device: %s (id: %s)", manager.name, device.name, device.id)
         _LOGGER.info("[%s] Associated Entities:", manager.name)
-        entities_for_device = entity_registry.async_entries_for_device(device.id)
+        entities_for_device = [entry for entry in entity_registry.entities.values() if entry.device_id == device.id]
         for entity_entry in entities_for_device:
             state = hass.states.get(entity_entry.entity_id)
             if state:
