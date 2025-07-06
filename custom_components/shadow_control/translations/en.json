@@ -317,8 +317,7 @@
       },
       "sensor_current_state_text": {
         "name": "Current State",
-        "description": "Current state of Shadow Control.",
-        "options": {
+        "state": {
           "shadow_full_close_timer_running": "Shadow: Close timer running",
           "shadow_full_closed": "Shadow: Closed",
           "shadow_horizontal_neutral_timer_running": "Shadow: Timer for horizontal position running",

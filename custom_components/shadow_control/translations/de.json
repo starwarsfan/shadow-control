@@ -317,8 +317,7 @@
       },
       "sensor_current_state_text": {
         "name": "Aktueller Status",
-        "description": "Der aktuelle Betriebsstatus der Behangsteuerung.",
-        "options": {
+        "state": {
           "shadow_full_close_timer_running": "Beschattung: Schliessen-Timer läuft",
           "shadow_full_closed": "Beschattung: Vollständig geschlossen",
           "shadow_horizontal_neutral_timer_running": "Beschattung: Horizontaler Neutral-Timer läuft",
