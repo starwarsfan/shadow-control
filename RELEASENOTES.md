@@ -2,6 +2,7 @@
 
 ## 0.5.0
 * Improve readme files
+* Add configuration dump service
 
 ## 0.4.0
 * Allow usage of `input_boolean` as well as `binary_sensor` at 
