@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any
 
 import voluptuous as vol
 from homeassistant.components.cover import CoverEntityFeature
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntries, ConfigEntry
 from homeassistant.const import (
     ATTR_SUPPORTED_FEATURES,
     EVENT_HOMEASSISTANT_STARTED,
@@ -53,7 +53,6 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.SWITCH]
 
 SERVICE_DUMP_CONFIG = "dump_sc_configuration"
-ATTR_INSTANCE_NAME = "instance_name"
 
 # Get the schema version from constants
 CURRENT_SCHEMA_VERSION = VERSION
@@ -188,15 +187,43 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Add service to dump instance configuration
     if not hass.services.has_service(DOMAIN, SERVICE_DUMP_CONFIG):
+        instance_names_from_config = [
+            entry.data[SC_CONF_NAME]  # Verwenden Sie SC_CONF_NAME für den Schlüssel 'name'
+            for entry in hass.config_entries.async_entries(DOMAIN)
+            if SC_CONF_NAME in entry.data
+        ]
+
+        dropdown_options = []
+        default_selection = ""
+
+        if instance_names_from_config:
+            # Instances found
+            # Sort them and use the first as default
+            dropdown_options = sorted(instance_names_from_config)
+            default_selection = dropdown_options[0]
+        else:
+            # Fallback if no configured instances found.
+            default_selection = "No instance configured"
+            dropdown_options.append(default_selection)
+            _LOGGER.warning(
+                "[%s] No Shadow Control instances configured. The service 'dump_sc_configuration' "
+                "might not be fully functional without such a instance.",
+                DOMAIN,
+            )
+
+        SERVICE_DUMP_CONFIG_SCHEMA = vol.Schema(
+            {
+                vol.Optional(
+                    SC_CONF_NAME, default=default_selection, description="Name of Shadow Control instance, which configuration should be dumped."
+                ): vol.In(dropdown_options),
+            }
+        )
+
         hass.services.async_register(
             DOMAIN,
             SERVICE_DUMP_CONFIG,
-            partial(handle_dump_config_service, hass),
-            schema=vol.Schema(
-                {
-                    vol.Required(ATTR_INSTANCE_NAME): str,
-                }
-            ),
+            partial(handle_dump_config_service, hass, hass.config_entries),
+            schema=SERVICE_DUMP_CONFIG_SCHEMA,
         )
 
     _LOGGER.info("[%s] Integration '%s' successfully set up from config entry.", DOMAIN, manager_name)
@@ -227,9 +254,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-async def handle_dump_config_service(hass: HomeAssistant, call: ServiceCall):
+async def handle_dump_config_service(hass: HomeAssistant, config_entries: ConfigEntries, call: ServiceCall):
     """Handle the service call to dump instance configuration."""
-    instance_name = call.data.get(ATTR_INSTANCE_NAME)
+    instance_name = call.data.get(SC_CONF_NAME)
     _LOGGER.debug("Received dump_config service call for instance: %s", instance_name)
 
     manager: ShadowControlManager | None = None
