@@ -313,21 +313,21 @@
         "name": "Slat Angle (Degrees)"
       },
       "sensor_current_state": {
-        "name": "Current State"
+        "name": "State (numeric)"
       },
       "sensor_current_state_text": {
-        "name": "Current State",
+        "name": "State",
         "state": {
           "shadow_full_close_timer_running": "Shadow: Close timer running",
           "shadow_full_closed": "Shadow: Closed",
-          "shadow_horizontal_neutral_timer_running": "Shadow: Timer for horizontal position running",
-          "shadow_horizontal_neutral": "Shadow: Horizontal neutral position (look through)",
+          "shadow_horizontal_neutral_timer_running": "Shadow: Look-through timer running",
+          "shadow_horizontal_neutral": "Shadow: Look through",
           "shadow_neutral_timer_running": "Shadow: Neutral timer running",
           "shadow_neutral": "Shadow: Neutral position",
-          "neutral": "Neutral position (no Shadow/Dawn)",
+          "neutral": "Neutral position",
           "dawn_neutral": "Dawn: Neutral position",
           "dawn_neutral_timer_running": "Dawn: Neutral timer running",
-          "dawn_horizontal_neutral": "Dawn: Horizontal neutral position (look through)",
+          "dawn_horizontal_neutral": "Dawn: Look through timer running",
           "dawn_horizontal_neutral_timer_running": "Dawn: Neutral timer running",
           "dawn_full_closed": "Dawn: Closed",
           "dawn_full_close_timer_running": "Dawn: Close timer running"

@@ -313,23 +313,23 @@
         "name": "Lamellenwinkel (Grad)"
       },
       "sensor_current_state": {
-        "name": "Aktueller Status"
+        "name": "Status (numerisch)"
       },
       "sensor_current_state_text": {
-        "name": "Aktueller Status",
+        "name": "Status",
         "state": {
           "shadow_full_close_timer_running": "Beschattung: Schliessen-Timer läuft",
-          "shadow_full_closed": "Beschattung: Vollständig geschlossen",
-          "shadow_horizontal_neutral_timer_running": "Beschattung: Horizontaler Neutral-Timer läuft",
-          "shadow_horizontal_neutral": "Beschattung: Horizontal neutral (Durchsicht)",
+          "shadow_full_closed": "Beschattung: Geschlossen",
+          "shadow_horizontal_neutral_timer_running": "Beschattung: Durchsicht-Timer läuft",
+          "shadow_horizontal_neutral": "Beschattung: Durchsicht",
           "shadow_neutral_timer_running": "Beschattung: Neutral-Timer läuft",
-          "shadow_neutral": "Beschattung: Neutral",
-          "neutral": "Neutral (Keine Beschattung/Dämmerung)",
-          "dawn_neutral": "Dämmerung: Neutral",
+          "shadow_neutral": "Beschattung: Neutralposition",
+          "neutral": "Neutralposition",
+          "dawn_neutral": "Dämmerung: Neutralposition",
           "dawn_neutral_timer_running": "Dämmerung: Neutral-Timer läuft",
-          "dawn_horizontal_neutral": "Dämmerung: Horizontal neutral (Durchsicht)",
-          "dawn_horizontal_neutral_timer_running": "Dämmerung: Horizontaler Neutral-Timer läuft",
-          "dawn_full_closed": "Dämmerung: Vollständig geschlossen",
+          "dawn_horizontal_neutral": "Dämmerung: Durchsicht",
+          "dawn_horizontal_neutral_timer_running": "Dämmerung: Durchsicht-Timer läuft",
+          "dawn_full_closed": "Dämmerung: Geschlossen",
           "dawn_full_close_timer_running": "Dämmerung: Schliessen-Timer läuft"
         }
       },
