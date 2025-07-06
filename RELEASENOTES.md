@@ -10,6 +10,7 @@
 * Implement issue [#3 Show states in translated cleartext](https://github.com/starwarsfan/shadow-control/issues/3)
   * A new state sensor for each instance represents the textual value of the current state.
   * The sensor with the numeric state is still available
+* Bump ruff from 0.12.1 to 0.12.2
 
 ## 0.3.0
 * Own icon and logo within HACS
