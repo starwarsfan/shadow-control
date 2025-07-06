@@ -148,6 +148,7 @@ class ShadowControlCurrentStateTextSensor(SensorEntity):
     """Sensor for the current state in human-readable form."""
 
     def __init__(self, manager: ShadowControlManager, config_entry_id: str, instance_name: str) -> None:
+        """Initialize the sensor."""
         self._manager = manager
         self._config_entry_id = config_entry_id
         self._instance_name = instance_name
