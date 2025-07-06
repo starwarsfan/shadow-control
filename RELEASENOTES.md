@@ -1,5 +1,8 @@
 # Changes
 
+## 0.5.0
+* Improve readme files
+
 ## 0.4.0
 * Allow usage of `input_boolean` as well as `binary_sensor` at 
   * `shadow_control_enabled_entity`
