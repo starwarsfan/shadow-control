@@ -2,7 +2,7 @@
 
 import logging
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
@@ -157,7 +157,6 @@ class ShadowControlCurrentStateTextSensor(SensorEntity):
         self._attr_name = f"{instance_name} Aktueller Status (Text)"
         self._attr_unique_id = f"{config_entry_id}_current_state_text"
         self._attr_device_class = SensorDeviceClass.ENUM
-        self._attr_state_class = SensorStateClass.MEASUREMENT
         self._attr_translation_key = "sensor_current_state_text"  # translation key
 
         # Possible options as a list of strings (lowercase names of enum members)
