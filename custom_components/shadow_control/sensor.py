@@ -154,7 +154,6 @@ class ShadowControlCurrentStateTextSensor(SensorEntity):
         self._config_entry_id = config_entry_id
         self._instance_name = instance_name
 
-        self._attr_name = f"{instance_name} Aktueller Status (Text)"
         self._attr_unique_id = f"{config_entry_id}_current_state_text"
         self._attr_device_class = SensorDeviceClass.ENUM
         self._attr_translation_key = "sensor_current_state_text"  # translation key
