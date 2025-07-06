@@ -37,7 +37,7 @@ Go to the [English version](/README.md)
       * [Neutralwinkel](#neutralwinkel)
       * [Lamellenbreite](#lamellenbreite)
       * [Lamellenabstand](#lamellenabstand)
-      * [Shutter angle offset](#shutter-angle-offset)
+      * [Lamellenwinkeloffset](#lamellenwinkeloffset)
       * [Minimaler Lamellenwinkel](#minimaler-lamellenwinkel)
       * [Schrittweite Höhenpositionierung](#schrittweite-höhenpositionierung)
       * [Schrittweite Lamellenwinkelpositionierung](#schrittweite-lamellenwinkelpositionierung)
@@ -267,7 +267,7 @@ Die Breite der Lamellen in mm. Breite und Abstand werden benötigt, um den Lamel
 
 Der Abstand der Lamellen in mm. Alles andere siehe [Lamellenbreite](#lamellenbreite). Standardwert: 67
 
-#### Shutter angle offset
+#### Lamellenwinkeloffset
 `facade_slat_angle_offset_static`
 
 Lamellenwinkeloffset in %. Dieser Wert wird zum berechneten Lamellenwinkel addiert. Er kann somit verwendet werden, um allfällige Ungenauigkeiten im Grenzbereich der Beschattung zu korrigieren. Das ist bspw. der Fall, wenn der Behang in Beschattungsposition ist aber dennoch ein schmaler Lichtstrahl hindurchfällt. Standardwert: 0
@@ -314,9 +314,9 @@ Toleranzbereich für externe Lamellenwinkelmodifikation, alles weitere siehe [To
 #### Behangtyp
 `facade_shutter_type_static`
 
-Der verwendete Behangtyp. Standardeinstellung ist der 90°-Behangtyp. Bei diesem Typ sind die Lamellen bei 0% waagerecht, also offen und bei 100% (i.d.R. nach aussen) vollständig geschlossen.
+Der verwendete Behangtyp. Standardeinstellung ist der 90°-Behangtyp (yaml: `mode1`). Bei diesem Typ sind die Lamellen bei 0% waagerecht, also offen und bei 100% (i.d.R. nach aussen) vollständig geschlossen.
 
-Der zweite mögliche Behangtyp hat einen Schwenkbereich von ca. 180°, also bei 0% (i.d.R. nach aussen) geschlossen, bei 50% waagerecht offen und bei 100% (i.d.R. nach innen) wiederum geschlossen.
+Der zweite mögliche Behangtyp hat einen Schwenkbereich von ca. 180° (yaml: `mode2`), also bei 0% (i.d.R. nach aussen) geschlossen, bei 50% waagerecht offen und bei 100% (i.d.R. nach innen) wiederum geschlossen.
 
 
 

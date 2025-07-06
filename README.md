@@ -308,9 +308,9 @@ Same as [Tolerance height modification](#tolerance-height-modification) but for 
 
 Configuration of the used shutter type.
 
-Default is pivoting range of 0°-90°. These shutters are fully closed (vertical) at 90° and horizontally open at 0°.
+Default is pivoting range of 0°-90° (yaml: `mode1`). These shutters are fully closed (vertical) at 90° and horizontally open at 0°.
 
-The other possible shutter type has a movement range from 0°-180°, whereas these shutters are closed to the inside at 0°, horizontally open at 90°, and closed to the outside at 180°.
+The other possible shutter type has a movement range from 0°-180° (yaml: `mode2`), whereas these shutters are closed to the inside at 0°, horizontally open at 90°, and closed to the outside at 180°.
 
 
 
