@@ -1,0 +1,10 @@
+# custom_components/shadow_control/services.yaml
+dump_sc_configuration:
+  name: Dump a Shadow Control instance configuration.
+  description: Collect all configuration values of a given Shadow Control instance and dump it to the Home Assistant log.
+  fields:
+    name:
+      name: Instance name
+      description: Name of the Shadow Control instance, from which the configuration should be dumped. If not given, the configuration of the first instance will be used.
+      required: false
+      example: "SC Dummy"
