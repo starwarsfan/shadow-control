@@ -254,7 +254,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-async def handle_dump_config_service(hass: HomeAssistant, config_entries: ConfigEntries, call: ServiceCall):
+async def handle_dump_config_service(hass: HomeAssistant, config_entries: ConfigEntries, call: ServiceCall) -> None:
     """Handle the service call to dump instance configuration."""
     instance_name = call.data.get(SC_CONF_NAME)
     _LOGGER.debug("Received dump_config service call for instance: %s", instance_name)
@@ -284,8 +284,8 @@ async def handle_dump_config_service(hass: HomeAssistant, config_entries: Config
         _LOGGER.warning("[%s] No config entry found for instance %s", manager.name, instance_name)
 
     # 2. Manager internal configuration
-    if hasattr(manager, "_config"):
-        _LOGGER.info("[%s] Manager Internal Config: %s", manager.name, manager._config)
+    # if hasattr(manager, "_config"):
+    #    _LOGGER.info("[%s] Manager Internal Config: %s", manager.name, manager._config)
 
     entity_registry = async_get_entity_registry(hass)
 
