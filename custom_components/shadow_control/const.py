@@ -174,6 +174,7 @@ class ShutterType(Enum):
 
     MODE1 = "mode1"
     MODE2 = "mode2"
+    MODE3 = "mode3"
 
 
 class SensorEntries(Enum):
@@ -198,6 +199,9 @@ class SensorEntries(Enum):
 CFG_MINIMAL_REQUIRED = vol.Schema(
     {
         vol.Optional(SC_CONF_NAME, default=""): selector.TextSelector(selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)),
+        vol.Optional(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, default="mode1"): selector.SelectSelector(
+            selector.SelectSelectorConfig(options=["mode1", "mode2", "mode3"], translation_key="facade_shutter_type")
+        ),
     }
 )
 
@@ -298,9 +302,6 @@ CFG_FACADE_SETTINGS_PART2 = vol.Schema(
         ),
         vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=0): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
-        ),
-        vol.Optional(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, default="mode1"): selector.SelectSelector(
-            selector.SelectSelectorConfig(options=["mode1", "mode2"], translation_key="facade_shutter_type")
         ),
     }
 )
@@ -532,6 +533,13 @@ FULL_OPTIONS_SCHEMA = vol.Schema(
 YAML_CONFIG_SCHEMA = vol.Schema(
     {
         vol.Required(SC_CONF_NAME): cv.string,  # Name ist hier erforderlich und einzigartig
+        vol.Required(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, default="mode1"): vol.In(
+            [
+                "mode1",
+                "mode2",
+                "mode3",
+            ]
+        ),
         vol.Required(TARGET_COVER_ENTITY_ID): vol.All(cv.ensure_list, [cv.entity_id]),
         vol.Optional(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): vol.Coerce(float),
         vol.Optional(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value, default=-90): vol.Coerce(float),
@@ -553,12 +561,6 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value, default=1000): vol.Coerce(float),
         vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): vol.Coerce(float),
         vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=0): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, default="mode1"): vol.In(
-            [
-                "mode1",
-                "mode2",
-            ]
-        ),
         vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): cv.entity_id,

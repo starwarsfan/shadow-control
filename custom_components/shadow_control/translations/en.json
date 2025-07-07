@@ -364,8 +364,9 @@
   "selector": {
     "facade_shutter_type": {
       "options": {
-        "mode1": "single direction (vertical = closed / horizontal = open)",
-        "mode2": "bi-directional (vertical inside = closed / horizontal = open / vertical outside = closed)"
+        "mode1": "Venetian blind single direction (vertical = closed / horizontal = open)",
+        "mode2": "Venetian blind bi-directional (vertical inside = closed / horizontal = open / vertical outside = closed)",
+        "mode3": "Rolling shutter / blind"
       }
     },
     "facade_movement_restriction": {
