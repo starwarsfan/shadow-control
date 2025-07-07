@@ -27,6 +27,7 @@ from .const import (
     VERSION,
     SCDynamicInput,
     SCFacadeConfig,
+    ShutterType,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -136,7 +137,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             options_data_for_entry = {
                 key: value
                 for key, value in user_input.items()
-                if key != SC_CONF_NAME  # Remove instance name
+                if key != SC_CONF_NAME and key != SCFacadeConfig.SHUTTER_TYPE_STATIC.value # Remove instance name and shutter type
             }
 
             # All fine, now perform voluptuous validation
@@ -205,9 +206,6 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
             # Manual validation of input fields to provide possible error messages
             # for each field at once and not step by step.
-            if not user_input.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value):
-                errors[SCFacadeConfig.SHUTTER_TYPE_STATIC.value] = "facade_shutter_type_static"
-
             if not user_input.get(TARGET_COVER_ENTITY_ID):
                 errors[TARGET_COVER_ENTITY_ID] = "target_cover_entity"  # Error code from within strings.json
 
@@ -229,7 +227,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                 )
 
             self.options_data.update(user_input)
-            if user_input.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value) == SCFacadeConfig.SHUTTER_TYPE_MODE3.value:
+            if user_input.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value) == ShutterType.MODE3.value:
                 return await self.async_step_facade_settings_mode3()
             return await self.async_step_facade_settings()
 

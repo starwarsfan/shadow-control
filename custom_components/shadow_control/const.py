@@ -199,15 +199,15 @@ class SensorEntries(Enum):
 CFG_MINIMAL_REQUIRED = vol.Schema(
     {
         vol.Optional(SC_CONF_NAME, default=""): selector.TextSelector(selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)),
+        vol.Optional(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, default="mode1"): selector.SelectSelector(
+            selector.SelectSelectorConfig(options=["mode1", "mode2", "mode3"], translation_key="facade_shutter_type")
+        ),
     }
 )
 
 # Wrapper for minimal options, which will be used and validated within ConfigFlow and OptionFlow
 CFG_MINIMAL_OPTIONS = vol.Schema(
     {
-        vol.Optional(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, default="mode1"): selector.SelectSelector(
-            selector.SelectSelectorConfig(options=["mode1", "mode2", "mode3"], translation_key="facade_shutter_type")
-        ),
         vol.Optional(TARGET_COVER_ENTITY_ID): selector.EntitySelector(selector.EntitySelectorConfig(domain="cover", multiple=True)),
         vol.Optional(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=359, step=1, mode=selector.NumberSelectorMode.BOX)
