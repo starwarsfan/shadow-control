@@ -211,7 +211,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 DOMAIN,
             )
 
-        SERVICE_DUMP_CONFIG_SCHEMA = vol.Schema(
+        service_dump_config_schema = vol.Schema(
             {
                 vol.Optional(
                     SC_CONF_NAME, default=default_selection, description="Name of Shadow Control instance, which configuration should be dumped."
@@ -223,7 +223,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             DOMAIN,
             SERVICE_DUMP_CONFIG,
             partial(handle_dump_config_service, hass, hass.config_entries),
-            schema=SERVICE_DUMP_CONFIG_SCHEMA,
+            schema=service_dump_config_schema,
         )
 
     _LOGGER.info("[%s] Integration '%s' successfully set up from config entry.", DOMAIN, manager_name)
