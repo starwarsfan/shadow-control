@@ -12,13 +12,13 @@ from .const import (
     DOMAIN,
     FULL_OPTIONS_SCHEMA,
     SC_CONF_NAME,
-    STEP_DAWN_SETTINGS_SCHEMA,
-    STEP_DYNAMIC_INPUTS_SCHEMA,
-    STEP_FACADE_SETTINGS_PART1_SCHEMA,
-    STEP_FACADE_SETTINGS_PART2_SCHEMA,
-    STEP_MINIMAL_KONFIGURATION,
-    STEP_MINIMAL_OPTIONS,
-    STEP_SHADOW_SETTINGS_SCHEMA,
+    CFG_DAWN_SETTINGS,
+    CFG_DYNAMIC_INPUTS,
+    CFG_FACADE_SETTINGS_PART1,
+    CFG_FACADE_SETTINGS_PART2,
+    CFG_MINIMAL,
+    CFG_MINIMAL_OPTIONS,
+    CFG_SHADOW_SETTINGS,
     TARGET_COVER_ENTITY_ID,
     VERSION,
     SCDynamicInput,
@@ -110,7 +110,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             if errors:
                 return self.async_show_form(
                     step_id="user",
-                    data_schema=self.add_suggested_values_to_schema(STEP_MINIMAL_KONFIGURATION, form_data),
+                    data_schema=self.add_suggested_values_to_schema(CFG_MINIMAL, form_data),
                     errors=errors,
                 )
 
@@ -120,7 +120,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             for entry in self.hass.config_entries.async_entries(DOMAIN):
                 if entry.data.get(SC_CONF_NAME) == instance_name:
                     errors = {"base": "already_configured"}
-                    return self.async_show_form(step_id="user", data_schema=STEP_MINIMAL_KONFIGURATION, errors=errors)
+                    return self.async_show_form(step_id="user", data_schema=CFG_MINIMAL, errors=errors)
 
             # Immutable configuration data, not available within OptionsFlow
             config_data_for_entry = {SC_CONF_NAME: instance_name}
@@ -134,7 +134,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
             # All fine, now perform voluptuous validation
             try:
-                validated_options_initial = STEP_MINIMAL_OPTIONS(options_data_for_entry)
+                validated_options_initial = CFG_MINIMAL_OPTIONS(options_data_for_entry)
                 _LOGGER.debug("Creating entry with data: %s and options: %s", config_data_for_entry, validated_options_initial)
                 return self.async_create_entry(
                     title=instance_name,
@@ -151,7 +151,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user",
-            data_schema=self.add_suggested_values_to_schema(STEP_MINIMAL_KONFIGURATION, self.config_data),
+            data_schema=self.add_suggested_values_to_schema(CFG_MINIMAL, self.config_data),
             errors=errors,
         )
 
@@ -214,7 +214,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
             if errors:
                 return self.async_show_form(
                     step_id="user",
-                    data_schema=self.add_suggested_values_to_schema(STEP_FACADE_SETTINGS_PART1_SCHEMA, self.options_data),
+                    data_schema=self.add_suggested_values_to_schema(CFG_FACADE_SETTINGS_PART1, self.options_data),
                     errors=errors,
                 )
 
@@ -223,7 +223,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="user",
-            data_schema=self.add_suggested_values_to_schema(STEP_FACADE_SETTINGS_PART1_SCHEMA, self.options_data),
+            data_schema=self.add_suggested_values_to_schema(CFG_FACADE_SETTINGS_PART1, self.options_data),
             errors=errors,
         )
 
@@ -245,7 +245,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
             if errors:
                 return self.async_show_form(
                     step_id="facade_settings",
-                    data_schema=self.add_suggested_values_to_schema(STEP_FACADE_SETTINGS_PART2_SCHEMA, self.options_data),
+                    data_schema=self.add_suggested_values_to_schema(CFG_FACADE_SETTINGS_PART2, self.options_data),
                     errors=errors,
                 )
 
@@ -254,7 +254,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="facade_settings",
-            data_schema=self.add_suggested_values_to_schema(STEP_FACADE_SETTINGS_PART2_SCHEMA, self.options_data),
+            data_schema=self.add_suggested_values_to_schema(CFG_FACADE_SETTINGS_PART2, self.options_data),
             errors=errors,
         )
 
@@ -279,7 +279,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
             if errors:
                 return self.async_show_form(
                     step_id="dynamic_inputs",
-                    data_schema=self.add_suggested_values_to_schema(STEP_DYNAMIC_INPUTS_SCHEMA, self.options_data),
+                    data_schema=self.add_suggested_values_to_schema(CFG_DYNAMIC_INPUTS, self.options_data),
                     errors=errors,
                 )
 
@@ -288,7 +288,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="dynamic_inputs",
-            data_schema=self.add_suggested_values_to_schema(STEP_DYNAMIC_INPUTS_SCHEMA, self.options_data),
+            data_schema=self.add_suggested_values_to_schema(CFG_DYNAMIC_INPUTS, self.options_data),
             errors=errors,
         )
 
@@ -301,7 +301,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="shadow_settings",
-            data_schema=self.add_suggested_values_to_schema(STEP_SHADOW_SETTINGS_SCHEMA, self.options_data),
+            data_schema=self.add_suggested_values_to_schema(CFG_SHADOW_SETTINGS, self.options_data),
             errors=errors,
         )
 
@@ -331,7 +331,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="dawn_settings",
-            data_schema=self.add_suggested_values_to_schema(STEP_DAWN_SETTINGS_SCHEMA, self.options_data),
+            data_schema=self.add_suggested_values_to_schema(CFG_DAWN_SETTINGS, self.options_data),
             errors=errors,
         )
 

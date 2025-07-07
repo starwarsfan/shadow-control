@@ -195,14 +195,14 @@ class SensorEntries(Enum):
 # other options will be stored as `options`.
 
 # Wrapper for minimal configuration, which will be stored within `data`
-STEP_MINIMAL_DATA = vol.Schema(
+CFG_MINIMAL_REQUIRED = vol.Schema(
     {
         vol.Optional(SC_CONF_NAME, default=""): selector.TextSelector(selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)),
     }
 )
 
 # Wrapper for minimal options, which will be used and validated within ConfigFlow and OptionFlow
-STEP_MINIMAL_OPTIONS = vol.Schema(
+CFG_MINIMAL_OPTIONS = vol.Schema(
     {
         vol.Optional(TARGET_COVER_ENTITY_ID): selector.EntitySelector(selector.EntitySelectorConfig(domain="cover", multiple=True)),
         vol.Optional(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): selector.NumberSelector(
@@ -221,7 +221,7 @@ STEP_MINIMAL_OPTIONS = vol.Schema(
 )
 
 # Wrapper for minimal configuration, which is used to show initial ConfigFlow
-STEP_MINIMAL_KONFIGURATION = vol.Schema(STEP_MINIMAL_DATA.schema | STEP_MINIMAL_OPTIONS.schema)
+CFG_MINIMAL = vol.Schema(CFG_MINIMAL_REQUIRED.schema | CFG_MINIMAL_OPTIONS.schema)
 # End of minimal configuration schema
 # =================================================================================================
 
@@ -230,7 +230,7 @@ STEP_MINIMAL_KONFIGURATION = vol.Schema(STEP_MINIMAL_DATA.schema | STEP_MINIMAL_
 # Voluptuous schemas for options
 #
 # --- STEP 2: 1st part of facade configuration  ---
-STEP_FACADE_SETTINGS_PART1_SCHEMA = vol.Schema(
+CFG_FACADE_SETTINGS_PART1 = vol.Schema(
     {
         vol.Optional(TARGET_COVER_ENTITY_ID): selector.EntitySelector(selector.EntitySelectorConfig(domain="cover", multiple=True)),
         vol.Optional(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): selector.NumberSelector(
@@ -252,8 +252,10 @@ STEP_FACADE_SETTINGS_PART1_SCHEMA = vol.Schema(
     }
 )
 
+####################################################################################################
+# === Mode1 / Mode2
 # --- STEP 3: 2nd part of facade configuration ---
-STEP_FACADE_SETTINGS_PART2_SCHEMA = vol.Schema(
+CFG_FACADE_SETTINGS_PART2 = vol.Schema(
     {
         vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
@@ -304,7 +306,7 @@ STEP_FACADE_SETTINGS_PART2_SCHEMA = vol.Schema(
 )
 
 # --- STEP 4: Dynamic settings ---
-STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema(
+CFG_DYNAMIC_INPUTS = vol.Schema(
     {
         vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["sensor", "input_number"])
@@ -371,7 +373,7 @@ STEP_DYNAMIC_INPUTS_SCHEMA = vol.Schema(
 )
 
 # --- STEP 5: Shadow settings ---
-STEP_SHADOW_SETTINGS_SCHEMA = vol.Schema(
+CFG_SHADOW_SETTINGS = vol.Schema(
     {
         vol.Optional(SCShadowInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
         vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
@@ -444,7 +446,7 @@ STEP_SHADOW_SETTINGS_SCHEMA = vol.Schema(
 )
 
 # --- STEP 6: Dawn settings ---
-STEP_DAWN_SETTINGS_SCHEMA = vol.Schema(
+CFG_DAWN_SETTINGS = vol.Schema(
     {
         vol.Optional(SCDawnInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
         vol.Optional(SCDawnInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
@@ -518,11 +520,11 @@ STEP_DAWN_SETTINGS_SCHEMA = vol.Schema(
 
 # Combined schema for OptionsFlow
 FULL_OPTIONS_SCHEMA = vol.Schema(
-    STEP_FACADE_SETTINGS_PART1_SCHEMA.schema
-    | STEP_FACADE_SETTINGS_PART2_SCHEMA.schema
-    | STEP_DYNAMIC_INPUTS_SCHEMA.schema
-    | STEP_SHADOW_SETTINGS_SCHEMA.schema
-    | STEP_DAWN_SETTINGS_SCHEMA.schema
+    CFG_FACADE_SETTINGS_PART1.schema
+    | CFG_FACADE_SETTINGS_PART2.schema
+    | CFG_DYNAMIC_INPUTS.schema
+    | CFG_SHADOW_SETTINGS.schema
+    | CFG_DAWN_SETTINGS.schema
 )
 # End of Voluptuous schemas for options
 # =================================================================================================
