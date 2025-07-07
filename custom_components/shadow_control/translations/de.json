@@ -295,7 +295,8 @@
       "dawn_open_seconds_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Dauer bis zum Öffnen des Behangs nach der Durchblick-Position an.",
       "dawn_look_through_angle_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Durchblick-Winkel der Dämmerungssteuerung an.",
       "dawn_height_after_dawn_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für die Höhe nach dem Öffnen an.",
-      "dawn_angle_after_dawn_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Winkel nach dem Öffnen an."
+      "dawn_angle_after_dawn_missing": "Bitte geben Sie entweder einen statischen Wert oder eine Entität für den Winkel nach dem Öffnen an.",
+      "facade_shutter_type_static": "Bitte den Behangtyp konfigurieren."
     },
     "abort": {
       "already_configured": "This entry is already configured."

@@ -55,7 +55,8 @@
       "dawn_open_seconds_missing": "Please use a static value or a entity for the timeout until open after look-through position.",
       "dawn_look_through_angle_missing": "Please use a static value or a entity for look-through shutter slat angle.",
       "dawn_height_after_sun_missing": "Please use a static value or a entity for the shutter height after dawn position.",
-      "dawn_angle_after_sun_missing": "Please use a static value or a entity for the shutter slat angle after dawn position."
+      "dawn_angle_after_sun_missing": "Please use a static value or a entity for the shutter slat angle after dawn position.",
+      "facade_shutter_type_static": "Please configure the shutter type."
     },
     "abort": {
       "already_configured": "This entry is already configured."
