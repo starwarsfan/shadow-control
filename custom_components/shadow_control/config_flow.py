@@ -22,6 +22,7 @@ from .const import (
     CFG_SHADOW_SETTINGS_MODE3,
     DOMAIN,
     FULL_OPTIONS_SCHEMA,
+    FULL_OPTIONS_SCHEMA_MODE3,
     SC_CONF_NAME,
     TARGET_COVER_ENTITY_ID,
     VERSION,
@@ -61,14 +62,18 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         # all the rest into 'options'.
         # Must be the same as in __init__.py!
         config_data_for_entry = {
-            SC_CONF_NAME: import_config.pop(SC_CONF_NAME)  # Remove name from import_config
+            SC_CONF_NAME: import_config.pop(SC_CONF_NAME),  # Remove name from import_config
+            SCFacadeConfig.SHUTTER_TYPE_STATIC.value: import_config.pop(SCFacadeConfig.SHUTTER_TYPE_STATIC.value),
         }
         # All the rest into 'options'
         options_data_for_entry = import_config
 
         # Optional validation against FULL_OPTIONS_SCHEMA to verify the yaml data
         try:
-            validated_options = FULL_OPTIONS_SCHEMA(options_data_for_entry)
+            if config_data_for_entry.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value) == ShutterType.MODE3.value:
+                validated_options = FULL_OPTIONS_SCHEMA_MODE3(options_data_for_entry)
+            else:
+                validated_options = FULL_OPTIONS_SCHEMA(options_data_for_entry)
         except vol.Invalid:
             _LOGGER.exception("Validation error during YAML import for '%s'", instance_name)
             return self.async_abort(reason="invalid_yaml_config")
@@ -131,13 +136,16 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     return self.async_show_form(step_id="user", data_schema=CFG_MINIMAL, errors=errors)
 
             # Immutable configuration data, not available within OptionsFlow
-            config_data_for_entry = {SC_CONF_NAME: instance_name}
+            config_data_for_entry = {
+                SC_CONF_NAME: instance_name,
+                SCFacadeConfig.SHUTTER_TYPE_STATIC.value: user_input.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, ""),
+            }
 
             # Create list of options, which are visible and editable within OptionsFlow
             options_data_for_entry = {
                 key: value
                 for key, value in user_input.items()
-                if key != SC_CONF_NAME and key != SCFacadeConfig.SHUTTER_TYPE_STATIC.value # Remove instance name and shutter type
+                if key != SC_CONF_NAME and key != SCFacadeConfig.SHUTTER_TYPE_STATIC.value  # Remove instance name and shutter type
             }
 
             # All fine, now perform voluptuous validation
@@ -187,19 +195,25 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self) -> None:
         """Initialize options flow."""
         self.options_data = None
+        self.shutter_type = None
+        self.is_mode3 = False
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Manage the options."""
         # Initialize options_data from config_entry.options, with all editable options
         self.options_data = dict(self.config_entry.options)
+        self.shutter_type = self.config_entry.data.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value)
+        if self.shutter_type == ShutterType.MODE3.value:
+            self.is_mode3 = True
 
-        _LOGGER.debug("Initial options_data: %s", self.options_data)
+        _LOGGER.info("Initial options_data: %s, shutter type: %s", self.options_data, self.shutter_type)
 
         # Redirect to the first specific options step
         return await self.async_step_user(user_input)
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle general data options."""
+        _LOGGER.debug("[OptionsFlow] -> async_step_user")
         errors: dict[str, str] = {}
         if user_input is not None:
             _LOGGER.debug("[OptionsFlow] Received user_input: %s", user_input)
@@ -227,8 +241,9 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                 )
 
             self.options_data.update(user_input)
-            if user_input.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value) == ShutterType.MODE3.value:
-                return await self.async_step_facade_settings_mode3()
+            _LOGGER.debug("[OptionsFlow] Shutter type: %s", self.shutter_type)
+            # if self.shutter_type == ShutterType.MODE3.value:
+            #     return await self.async_step_facade_settings_mode3()
             return await self.async_step_facade_settings()
 
         return self.async_show_form(
@@ -239,6 +254,11 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_facade_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle facade settings options."""
+        _LOGGER.debug("[OptionsFlow] -> async_step_facade_settings")
+        data_schema = CFG_FACADE_SETTINGS_PART2
+        if self.is_mode3:
+            data_schema = CFG_FACADE_SETTINGS_PART2_MODE3
+
         errors: dict[str, str] = {}
         if user_input is not None:
             _LOGGER.debug("[OptionsFlow] Received user_input: %s", user_input)
@@ -247,9 +267,10 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
             # for each field at once and not step by step.
             slat_width = user_input.get(SCFacadeConfig.SLAT_WIDTH_STATIC.value)
             slat_distance = user_input.get(SCFacadeConfig.SLAT_DISTANCE_STATIC.value)
-            if slat_width <= slat_distance:
-                errors[SCFacadeConfig.SLAT_WIDTH_STATIC.value] = "slatWidthSmallerThanDistance"
-                errors[SCFacadeConfig.SLAT_DISTANCE_STATIC.value] = "slatWidthSmallerThanDistance"
+            if slat_width is not None and slat_distance is not None:
+                if slat_width <= slat_distance:
+                    errors[SCFacadeConfig.SLAT_WIDTH_STATIC.value] = "slatWidthSmallerThanDistance"
+                    errors[SCFacadeConfig.SLAT_DISTANCE_STATIC.value] = "slatWidthSmallerThanDistance"
 
             # If configuration errors found, show the config form again
             if errors:
@@ -270,6 +291,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_dynamic_inputs(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle dynamic inputs options."""
+        _LOGGER.debug("[OptionsFlow] -> async_step_dynamic_inputs")
         errors: dict[str, str] = {}
         if user_input is not None:
             _LOGGER.debug("[OptionsFlow] Received user_input: %s", user_input)
@@ -304,6 +326,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_shadow_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle shadow settings options."""
+        _LOGGER.debug("[OptionsFlow] -> async_step_shadow_settings")
         errors: dict[str, str] = {}
         if user_input is not None:
             self.options_data.update(self._clean_number_inputs(user_input))
@@ -317,6 +340,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_dawn_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle dawn settings options (final options step)."""
+        _LOGGER.debug("[OptionsFlow] -> async_step_dawn_settings")
         errors: dict[str, str] = {}
         if user_input is not None:
             self.options_data.update(self._clean_number_inputs(user_input))
@@ -347,6 +371,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_facade_settings_mode3(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle facade settings options."""
+        _LOGGER.debug("[OptionsFlow] -> async_step_facade_settings_mode3")
         errors: dict[str, str] = {}
         if user_input is not None:
             _LOGGER.debug("[OptionsFlow] Received user_input: %s", user_input)
@@ -357,7 +382,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
             # If configuration errors found, show the config form again
             if errors:
                 return self.async_show_form(
-                    step_id="facade_settings",
+                    step_id="facade_settings_mode3",
                     data_schema=self.add_suggested_values_to_schema(CFG_FACADE_SETTINGS_PART2_MODE3, self.options_data),
                     errors=errors,
                 )
@@ -366,13 +391,14 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_dynamic_inputs_mode3()
 
         return self.async_show_form(
-            step_id="facade_settings",
+            step_id="facade_settings_mode3",
             data_schema=self.add_suggested_values_to_schema(CFG_FACADE_SETTINGS_PART2_MODE3, self.options_data),
             errors=errors,
         )
 
     async def async_step_dynamic_inputs_mode3(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle dynamic inputs options."""
+        _LOGGER.debug("[OptionsFlow] -> async_step_dynamic_inputs_mode3")
         errors: dict[str, str] = {}
         if user_input is not None:
             _LOGGER.debug("[OptionsFlow] Received user_input: %s", user_input)
@@ -391,7 +417,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
             # If configuration errors found, show the config form again
             if errors:
                 return self.async_show_form(
-                    step_id="dynamic_inputs",
+                    step_id="dynamic_inputs_mode3",
                     data_schema=self.add_suggested_values_to_schema(CFG_DYNAMIC_INPUTS_MODE3, self.options_data),
                     errors=errors,
                 )
@@ -400,26 +426,28 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_shadow_settings_mode3()
 
         return self.async_show_form(
-            step_id="dynamic_inputs",
+            step_id="dynamic_inputs_mode3",
             data_schema=self.add_suggested_values_to_schema(CFG_DYNAMIC_INPUTS_MODE3, self.options_data),
             errors=errors,
         )
 
     async def async_step_shadow_settings_mode3(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle shadow settings options."""
+        _LOGGER.debug("[OptionsFlow] -> async_step_shadow_settings_mode3")
         errors: dict[str, str] = {}
         if user_input is not None:
             self.options_data.update(self._clean_number_inputs(user_input))
             return await self.async_step_dawn_settings_mode3()
 
         return self.async_show_form(
-            step_id="shadow_settings",
+            step_id="shadow_settings_mode3",
             data_schema=self.add_suggested_values_to_schema(CFG_SHADOW_SETTINGS_MODE3, self.options_data),
             errors=errors,
         )
 
     async def async_step_dawn_settings_mode3(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle dawn settings options (final options step)."""
+        _LOGGER.debug("[OptionsFlow] -> async_step_dawn_settings_mode3")
         errors: dict[str, str] = {}
         if user_input is not None:
             self.options_data.update(self._clean_number_inputs(user_input))
@@ -427,7 +455,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
             try:
                 # Validate the entire options configuration using the combined schema
-                validated_options = FULL_OPTIONS_SCHEMA(self.options_data)
+                validated_options = FULL_OPTIONS_SCHEMA_MODE3(self.options_data)
                 _LOGGER.debug("Validated options data: %s", validated_options)
 
                 self.hass.config_entries.async_update_entry(self.config_entry, data=self.config_entry.data, options=validated_options)
@@ -443,7 +471,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                         errors["base"] = "unknown_error"
 
         return self.async_show_form(
-            step_id="dawn_settings",
+            step_id="dawn_settings_mode3",
             data_schema=self.add_suggested_values_to_schema(CFG_DAWN_SETTINGS_MODE3, self.options_data),
             errors=errors,
         )
