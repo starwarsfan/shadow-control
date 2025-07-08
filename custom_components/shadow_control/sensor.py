@@ -10,7 +10,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import ShadowControlManager
-from .const import DOMAIN, DOMAIN_DATA_MANAGERS, SensorEntries, ShutterState
+from .const import DOMAIN, DOMAIN_DATA_MANAGERS, SCFacadeConfig, SensorEntries, ShutterState, ShutterType
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,15 +31,25 @@ async def async_setup_entry(
 
     _LOGGER.debug("[%s] Creating sensors for manager: %s (from entry %s)", DOMAIN, manager.name, config_entry.entry_id)
 
+    shutter_type_value = config_entry.data.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value)
+    _LOGGER.debug("[%s] Shutter type for instance %s is %s", DOMAIN, manager.name, shutter_type_value)
+
     entities_to_add = [
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_HEIGHT),
-        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_ANGLE),
-        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_ANGLE_DEGREES),
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.CURRENT_STATE),
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.LOCK_STATE),
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.NEXT_SHUTTER_MODIFICATION),
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.IS_IN_SUN),
     ]
+
+    if shutter_type_value != ShutterType.MODE3.value:
+        # Sensoren, die nur für MODE3 relevant sind (Jalousien mit Neigungswinkelsteuerung)
+        entities_to_add.extend(
+            [
+                ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_ANGLE),
+                ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_ANGLE_DEGREES),
+            ]
+        )
 
     text_sensor = ShadowControlCurrentStateTextSensor(manager, config_entry.entry_id, manager.name)
     entities_to_add.append(text_sensor)

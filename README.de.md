@@ -638,11 +638,11 @@ Hier ist die errechnete Höhe des Behangs zu finden.
 
 ### Zielwinkel
 `target_angle`
-Hier ist der errechnete Lamellenwinkel des Behangs zu finden.
+Hier ist der errechnete Lamellenwinkel des Behangs zu finden. Diese Entität ist nur bei Behangtyp `mode1` und `mode2` verfügbar.
 
 ### Zielwinkel in Grad
 `target_angle_degrees`
-Hier ist der errechnete Lamellenwinkel des Behangs in Grad (°) zu finden.
+Hier ist der errechnete Lamellenwinkel des Behangs in Grad (°) zu finden. Diese Entität ist nur bei Behangtyp `mode1` und `mode2` verfügbar.
 
 ### Aktueller Status
 `current_state` / `current_state_text`

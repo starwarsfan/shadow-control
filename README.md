@@ -633,11 +633,11 @@ This entity holds the calculated shutter height.
 
 ### Target angle
 `target_angle`
-This entity holds the calculated shutter angle.
+This entity holds the calculated shutter angle. This entity is only available with shutter type `mode1` and `mode2`.
 
 ### Target angle (degrees)
 `target_angle_degrees`
-This entity holds the calculated shutter angle in degrees (°).
+This entity holds the calculated shutter angle in degrees (°). This entity is only available with shutter type `mode1` and `mode2`.
 
 ### Current state
 `current_state` / `current_state_text` 
