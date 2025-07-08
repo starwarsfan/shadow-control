@@ -18,6 +18,7 @@ Go to the [English version](/README.md)
 * [Konfiguration](#konfiguration)
   * [Initiale Instanzkonfiguration](#initiale-instanzkonfiguration)
     * [Name der Instanz](#name-der-instanz)
+    * [Behangtyp](#behangtyp)
     * [Zu automatisierende Rollläden](#zu-automatisierende-rollläden)
     * [Azimut der Fassade](#azimut-der-fassade)
     * [Helligkeit](#helligkeit)
@@ -45,7 +46,6 @@ Go to the [English version](/README.md)
       * [Gesamthöhe](#gesamthöhe)
       * [Toleranz Höhenpositionierung](#toleranz-höhenpositionierung)
       * [Toleranz Lamellenwinkelpositionierung](#toleranz-lamellenwinkelpositionierung)
-      * [Behangtyp](#behangtyp)
     * [Dynamische Eingänge](#dynamische-eingänge)
       * [Helligkeit](#brightness)
       * [Helligkeit Dawn](#brightness-Dawn)
@@ -161,6 +161,18 @@ Die initiale Instanzkonfiguration ist sehr minimalistisch und benötigt nur die 
 `name`
 
 Ein beschreibender und eindeutiger Name für diese **Shadow Control** Instanz. Eine bereinigte Version dieses Namens wird zur Kennzeichnung der Log-Einträge in der Home Assistant Logdatei verwendet.
+
+#### Behangtyp
+`facade_shutter_type_static`
+
+Der verwendete Behangtyp. Standardeinstellung ist der 90°-Behangtyp (yaml: `mode1`). Bei diesem Typ sind die Lamellen bei 0% waagerecht, also offen und bei 100% (i.d.R. nach aussen) vollständig geschlossen.
+
+Weitere unterstützte Typen:
+
+* Der zweite mögliche Behangtyp hat einen Schwenkbereich von ca. 180° (yaml: `mode2`), also bei 0% (i.d.R. nach aussen) geschlossen, bei 50% waagerecht offen und bei 100% (i.d.R. nach innen) wiederum geschlossen.
+* Der dritte Behangtyp sind Jalousien bzw. Rollos (yaml: `mode3`). Bei diesem Typ werden sämtliche Winkeleinstellunge ausgeblendet.
+
+Der Behangtyp kann im Nachhinein nicht geändert werden. Um ihn zu ändern, muss die jeweilige **Shutter Control** Instanz gelöscht und neu angelegt werden.
 
 ### Zu automatisierende Rollläden
 `target_cover_entity`
@@ -311,13 +323,6 @@ Toleranzbereich für externe Höhenmodifikation. Weicht die kalkulierte Höhe vo
 _Wird aktuell noch nicht ausgewertet!_
 
 Toleranzbereich für externe Lamellenwinkelmodifikation, alles weitere siehe [Toleranz Höhenpositionierung](#toleranz-höhenpositionierung). Standardwert: 5
-
-#### Behangtyp
-`facade_shutter_type_static`
-
-Der verwendete Behangtyp. Standardeinstellung ist der 90°-Behangtyp (yaml: `mode1`). Bei diesem Typ sind die Lamellen bei 0% waagerecht, also offen und bei 100% (i.d.R. nach aussen) vollständig geschlossen.
-
-Der zweite mögliche Behangtyp hat einen Schwenkbereich von ca. 180° (yaml: `mode2`), also bei 0% (i.d.R. nach aussen) geschlossen, bei 50% waagerecht offen und bei 100% (i.d.R. nach innen) wiederum geschlossen.
 
 
 
@@ -528,9 +533,12 @@ Die Einträge der Konfiguration folgen den oben in der Dokumentation jeweils gen
 ```yaml
 shadow_control:
   - name: "Büro West"
-    debug_enabled: false
+    # Either 'mode1', 'mode2' or 'mode3'
+    # All *_angle_* settings will be ignored on mode3
+    facade_shutter_type_static: mode1
     target_cover_entity:
       - cover.fenster_buro_west
+    debug_enabled: false
 
     # =======================================================================
     # Dynamic configuration inputs
@@ -561,8 +569,6 @@ shadow_control:
     facade_slat_min_angle_static: 0
     facade_shutter_stepping_height_static: 5
     facade_shutter_stepping_angle_static: 5
-    # Either 'mode1' or 'mode2'
-    facade_shutter_type_static: mode1
     facade_light_strip_width_static: 0
     facade_shutter_height_static: 1000
     facade_neutral_pos_height_static: 0
@@ -703,8 +709,15 @@ Da die **Shadow Control** Konfiguration sehr umfangreich ist, gibt es einen spez
 2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] --- END INSTANCE CONFIGURATION DUMP ---
 ```
 
-Wird auf die yaml-Konfiguration des Services umgeschaltet, kann die auszugebende Konfiguration durch Angabe des entsprechenden Namens wie folgt angegeben werden:
+Die auszugebende Konfiguration kann durch Angabe des entsprechenden Namens wie folgt angegeben werden:
 
+
+## UI-Modus
+```
+name: SC Dummy 3
+```
+
+## Yaml-Modus
 ```yaml
 action: shadow_control.dump_sc_configuration
 data:

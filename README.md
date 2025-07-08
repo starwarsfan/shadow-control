@@ -18,6 +18,7 @@ Gehe zur [deutschen Version](/README.de.md)
 * [Configuration](#configuration)
   * [Initial instance configuration](#initial-instance-configuration)
     * [Instance name ](#instance-name-)
+    * [Shutter type](#shutter-type)
     * [Covers to maintain](#covers-to-maintain)
     * [Facade azimuth](#facade-azimuth)
     * [Brightness](#brightness)
@@ -45,7 +46,6 @@ Gehe zur [deutschen Version](/README.de.md)
       * [Overall shutter height](#overall-shutter-height)
       * [Tolerance height modification](#tolerance-height-modification)
       * [Tolerance angle modification](#tolerance-angle-modification)
-      * [Shutter type](#shutter-type)
     * [Dynamic input entities](#dynamic-input-entities)
       * [Brightness](#brightness)
       * [Brightness Dawn](#brightness-Dawn)
@@ -158,6 +158,18 @@ The initial instance configuration is very minimalistic and requires only the fo
 `name`
 
 A descriptive and unique name for this **Shadow Control** (SC) instance. A sanitized version of this name will be used to mark corresponding log entries of this instance within the Home Assistant main log file.
+
+#### Shutter type
+`facade_shutter_type_static`
+
+Configuration of the used shutter type. Default is pivoting range of 0°-90° (yaml: `mode1`). These shutters are fully closed (vertical) at 90° and horizontally open at 0°.
+
+Other supported types:
+
+* Shutter type with a movement range from 0°-180° (yaml: `mode2`), whereas these shutters are closed to the inside at 0°, horizontally open at 90°, and closed to the outside at 180°.
+* Vertical blinds (yaml: `mode3`). With this type all the angle settings will be suppressed.
+
+This setting can't be changed later on. To do so, you need to remove the instance of the shutter and recreate it from scratch.
 
 ### Covers to maintain
 `target_cover_entity`
@@ -303,15 +315,6 @@ Tolerance range for external shutter height modification. If the calculated heig
 `facade_modification_tolerance_angle_static`
 
 Same as [Tolerance height modification](#tolerance-height-modification) but for the shutter slat angle. Default: 5
-
-#### Shutter type
-`facade_shutter_type_static`
-
-Configuration of the used shutter type.
-
-Default is pivoting range of 0°-90° (yaml: `mode1`). These shutters are fully closed (vertical) at 90° and horizontally open at 0°.
-
-The other possible shutter type has a movement range from 0°-180° (yaml: `mode2`), whereas these shutters are closed to the inside at 0°, horizontally open at 90°, and closed to the outside at 180°.
 
 
 
@@ -525,9 +528,12 @@ The entries within the configuration follow the mentioned keywords within the do
 ```yaml
 shadow_control:
   - name: "Büro West"
-    debug_enabled: false
+    # Either 'mode1', 'mode2' or 'mode3'
+    # All *_angle_* settings will be ignored on mode3
+    facade_shutter_type_static: mode1
     target_cover_entity:
       - cover.fenster_buro_west
+    debug_enabled: false
 
     # =======================================================================
     # Dynamic configuration inputs
@@ -558,8 +564,6 @@ shadow_control:
     facade_slat_min_angle_static: 0
     facade_shutter_stepping_height_static: 5
     facade_shutter_stepping_angle_static: 5
-    # Either 'mode1' or 'mode2'
-    facade_shutter_type_static: mode1
     facade_light_strip_width_static: 0
     facade_shutter_height_static: 1000
     facade_neutral_pos_height_static: 0
@@ -675,7 +679,6 @@ Right on each device page some options could be switched on/off directly:
 
 # Configuration export
 
-
 As the **Shadow Control** configuration might be very extensive, there is a special service to write the current configuration using JSON format to the Home Assistant log. This service is available via `Developer tools -> Actions` by searching for `dump_sc_config`. If the service is triggered without further modification, the configuration of the first **Shadow Control** instance will be dumped to the log. That might look like this:
 
 ```
@@ -702,6 +705,14 @@ As the **Shadow Control** configuration might be very extensive, there is a spec
 ```
 
 After switching to the YAML configuration of the service, the name of the configuration which should be exported can be given by the parameter `name`:
+
+## UI mode
+
+```
+name: SC Dummy 3
+```
+
+## YAML mode
 
 ```yaml
 action: shadow_control.dump_sc_configuration
