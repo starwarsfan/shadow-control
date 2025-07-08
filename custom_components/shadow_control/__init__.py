@@ -364,7 +364,11 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
         if SCFacadeConfig.SHUTTER_TYPE_STATIC.value in new_options:
             new_data[SCFacadeConfig.SHUTTER_TYPE_STATIC.value] = new_options.pop(SCFacadeConfig.SHUTTER_TYPE_STATIC.value)
-            _LOGGER.debug("[%s] Migrated: Moved shutter type '%s' from config options to config data.", DOMAIN, new_data[SCFacadeConfig.SHUTTER_TYPE_STATIC.value])
+            _LOGGER.debug(
+                "[%s] Migrated: Moved shutter type '%s' from config options to config data.",
+                DOMAIN,
+                new_data[SCFacadeConfig.SHUTTER_TYPE_STATIC.value],
+            )
 
         try:
             validated_options = FULL_OPTIONS_SCHEMA(new_options)
