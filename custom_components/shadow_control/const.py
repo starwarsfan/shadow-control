@@ -12,7 +12,7 @@ DEFAULT_NAME = "Shadow Control"
 SC_CONF_COVERS = "covers"  # Constant for 'covers' key within configuration
 
 # Config schema version
-VERSION = 2
+VERSION = 3
 
 SC_CONF_NAME = "name"
 DEBUG_ENABLED = "debug_enabled"

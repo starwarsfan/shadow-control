@@ -359,6 +359,33 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         _LOGGER.info("[%s] Config entry '%s' successfully migrated to version %s.", DOMAIN, config_entry.entry_id, CURRENT_SCHEMA_VERSION)
         return True
 
+    if config_entry.version == 2:
+        # Migrate SHUTTER_TYPE_STATIC from config options to config data
+
+        if SCFacadeConfig.SHUTTER_TYPE_STATIC.value in new_options:
+            new_data[SCFacadeConfig.SHUTTER_TYPE_STATIC.value] = new_options.pop(SCFacadeConfig.SHUTTER_TYPE_STATIC.value)
+            _LOGGER.debug("[%s] Migrated: Moved shutter type '%s' from config options to config data.", DOMAIN, new_data[SCFacadeConfig.SHUTTER_TYPE_STATIC.value])
+
+        try:
+            validated_options = FULL_OPTIONS_SCHEMA(new_options)
+            _LOGGER.debug("[%s] Migrated configuration successfully validated. Result: %s", DOMAIN, validated_options)
+            _LOGGER.debug("[%s] Type of validated_options: %s", DOMAIN, type(validated_options))
+        except vol.Invalid:
+            _LOGGER.exception(
+                "[%s] Validation failed after migration to version %s for entry %s", DOMAIN, CURRENT_SCHEMA_VERSION, config_entry.entry_id
+            )
+            return False
+
+        _LOGGER.debug("[%s] Preparing to call hass.config_entries.async_update_entry with:", DOMAIN)
+        _LOGGER.debug("[%s]   Arg 'config_entry' type: %s", DOMAIN, type(config_entry))
+        _LOGGER.debug("[%s]   Arg 'data' type: %s, value: %s", DOMAIN, type(new_data), new_data)
+        _LOGGER.debug("[%s]   Arg 'options' type: %s, value: %s", DOMAIN, type(validated_options), validated_options)
+        _LOGGER.debug("[%s]   Arg 'version' type: %s, value: %s", DOMAIN, type(CURRENT_SCHEMA_VERSION), CURRENT_SCHEMA_VERSION)
+
+        hass.config_entries.async_update_entry(config_entry, data=new_data, options=validated_options, version=CURRENT_SCHEMA_VERSION)
+        _LOGGER.info("[%s] Config entry '%s' successfully migrated to version %s.", DOMAIN, config_entry.entry_id, CURRENT_SCHEMA_VERSION)
+        return True
+
     _LOGGER.error("[%s] Unknown config entry version %s for migration. This should not happen.", DOMAIN, config_entry.version)
     return False
 
