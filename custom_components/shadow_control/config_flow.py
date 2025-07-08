@@ -145,7 +145,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             options_data_for_entry = {
                 key: value
                 for key, value in user_input.items()
-                if key != SC_CONF_NAME and key != SCFacadeConfig.SHUTTER_TYPE_STATIC.value  # Remove instance name and shutter type
+                if key not in {SC_CONF_NAME, SCFacadeConfig.SHUTTER_TYPE_STATIC.value}  # Remove instance name and shutter type
             }
 
             # All fine, now perform voluptuous validation
@@ -268,10 +268,9 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                 # for each field at once and not step by step.
                 slat_width = user_input.get(SCFacadeConfig.SLAT_WIDTH_STATIC.value)
                 slat_distance = user_input.get(SCFacadeConfig.SLAT_DISTANCE_STATIC.value)
-                if slat_width is not None and slat_distance is not None:
-                    if slat_width <= slat_distance:
-                        errors[SCFacadeConfig.SLAT_WIDTH_STATIC.value] = "slatWidthSmallerThanDistance"
-                        errors[SCFacadeConfig.SLAT_DISTANCE_STATIC.value] = "slatWidthSmallerThanDistance"
+                if slat_width is not None and slat_distance is not None and slat_width <= slat_distance:
+                    errors[SCFacadeConfig.SLAT_WIDTH_STATIC.value] = "slatWidthSmallerThanDistance"
+                    errors[SCFacadeConfig.SLAT_DISTANCE_STATIC.value] = "slatWidthSmallerThanDistance"
 
             # If configuration errors found, show the config form again
             if errors:
