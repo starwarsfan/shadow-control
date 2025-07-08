@@ -699,20 +699,26 @@ CFG_DAWN_SETTINGS_MODE3 = vol.Schema(
 
 # Combined schema for OptionsFlow mode1/mode2
 FULL_OPTIONS_SCHEMA = vol.Schema(
-    CFG_FACADE_SETTINGS_PART1.schema
-    | CFG_FACADE_SETTINGS_PART2.schema
-    | CFG_DYNAMIC_INPUTS.schema
-    | CFG_SHADOW_SETTINGS.schema
-    | CFG_DAWN_SETTINGS.schema
+    {
+        **CFG_FACADE_SETTINGS_PART1.schema,
+        **CFG_FACADE_SETTINGS_PART2.schema,
+        **CFG_DYNAMIC_INPUTS.schema,
+        **CFG_SHADOW_SETTINGS.schema,
+        **CFG_DAWN_SETTINGS.schema,
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 
 # Combined schema for OptionsFlow mode1/mode2
 FULL_OPTIONS_SCHEMA_MODE3 = vol.Schema(
-    CFG_FACADE_SETTINGS_PART1.schema
-    | CFG_FACADE_SETTINGS_PART2_MODE3.schema
-    | CFG_DYNAMIC_INPUTS_MODE3.schema
-    | CFG_SHADOW_SETTINGS_MODE3.schema
-    | CFG_DAWN_SETTINGS_MODE3.schema
+    {
+        **CFG_FACADE_SETTINGS_PART1.schema,
+        **CFG_FACADE_SETTINGS_PART2_MODE3.schema,
+        **CFG_DYNAMIC_INPUTS_MODE3.schema,
+        **CFG_SHADOW_SETTINGS_MODE3.schema,
+        **CFG_DAWN_SETTINGS_MODE3.schema,
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 # End of Voluptuous schemas for options
 # =================================================================================================
