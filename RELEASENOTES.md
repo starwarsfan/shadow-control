@@ -1,5 +1,8 @@
 # Changes
 
+## 0.6.0
+* ...
+
 ## 0.5.0
 * Add configuration dump service
 * Implement new shutter type "Rolling shutter / blind"
