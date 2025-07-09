@@ -103,10 +103,11 @@ Within further description:
 * The word "facade" is similar to "window" or "door," as it simply references the azimuth of an object in the sense of viewing direction from within that object to the outside.
 * The word "shutter" references rolling shutters. In the Home Assistant terminology, this is called a "cover". From the pov of this integration it's the same.
 * The whole internal logic was initially developed to interact with a KNX system, so the main difference is the handling of %-values. **Shadow Control** will interact with Home Assistant correct, but the configuration as well as the log output is using 0% as fully open and 100% as fully closed.
+* Most options are available with two flavors for each configuration: Once as a static configuration and once as an entity configuration. If you need to configure something without the possibility to change that value on demand, you should use the static configuration entry. If you need to modify something on demand, use the entity configuration and choose the corresponding entity, which holds the required value. If you change the used entity, it will be taken into account within the next execution of the integration instance.
 
 ## TL;DR – in short
 
-* Control venetian blinds based on brightness thresholds and timers
+* Control venetian blinds or vertical blinds based on brightness thresholds and timers
 * Height and slat angle are separately configurable for shadow and dawn
   * Shadow respectively dawn position after a brightness threshold plus time X
   * Look through position after a brightness threshold plus time Y
@@ -370,8 +371,6 @@ This input has precedence over 'lock_integration.' If both lock inputs are set '
 #### Lock height
 `lock_height_static` / `lock_height_entity`
 
-This one and the following option are available with two flavors for each configuration: Once as a static configuration and once as an entity configuration. If you need to configure something without the possibility to change that value on demand, you should use the static configuration entry. If you need to modify something on demand, use the entity configuration and choose the corresponding entity, which holds the required value. If you change the used entity, it will be taken into account within the next execution of the integration instance.
-
 Height in %, which should be set if integration gets locked by 'lock_integration_with_position.' 
 
 #### Lock angle
@@ -406,8 +405,6 @@ This input could be wired with a boolean entity. If this entity is switched to "
 
 
 ### Shadow settings
-
-The following options are available with two flavors for each configuration: Once as a static configuration and once as an entity configuration. If you need to configure something without the possibility to change that value on demand, you should use the static configuration entry. If you need to modify something on demand, use the entity configuration and choose the corresponding entity, which holds the required value. If you change the used entity, it will be taken into account within the next execution of the integration instance.
 
 #### Shadow control enabled
 `shadow_control_enabled_static` / `shadow_control_enabled_entity`
@@ -464,8 +461,6 @@ This is the shutter angle in %, which should be set after the shadow position. D
 
 
 ### Dawn settings
-
-Wie die [Beschattungseinstellungen](#beschattungseinstellungen) sind auch die Dämmerungseinstellungen in jeweils in zwei Ausprägungen vorhanden. Einmal als statischer Wert und einmal als Entität. Wird ein Wert fix konfiguriert und soll sich zur Laufzeit nicht ändern, wird das über die statische Konfiguration gemacht. Soll der Wert aber dynamisch angepasst werden, muss er mit einer entsprechenden Entität verknüpft werden.
 
 #### Dawn control enabled
 `dawn_control_enabled_static` / `dawn_control_enabled_entity`

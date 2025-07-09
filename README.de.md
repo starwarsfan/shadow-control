@@ -5,7 +5,7 @@
 
 # Shadow Control
 
-**Eine Home Assistant Integration zur vollständig automatischen Steuerung von Raffstoren.**
+**Eine Home Assistant Integration zur vollständig automatischen Steuerung von Raffstoren und Jalousien.**
 
 Go to the [English version](/README.md)
 
@@ -103,12 +103,13 @@ In den folgenden Abschnitten gilt Folgendes:
 * Das Wort "Fassade" ist gleichbedeutend mit "Fenster" oder "Tür", da es hier lediglich den Bezug zum Azimut eines Objektes in Blickrichtung von innen nach aussen darstellt.
 * Das Wort "Behang" bezieht sich auf Raffstoren. In der Home Assistant Terminologie ist das ein "cover", was aus Sicht dieser Integration das Gleiche ist.
 * Die gesamte interne Logik wurde ursprünglich für die Interaktion mit KNX-Systemen entwickelt. Der Hauptunterschied ist daher die Handhabung von Prozentwerten. **Shadow Control** wird mit Home Assistant korrekt interagieren aber die Konfiguration sowie die Logausgaben verwenden 0 % als geöffnet und 100 % als geschlossen.
+* Viele Einstellungen sind jeweils in zwei Ausprägungen vorhanden. Einmal als statischer Wert und einmal als Entität. Wird ein Wert fix konfiguriert und soll sich zur Laufzeit nicht ändern, wird das über die statische Konfiguration gemacht. Soll der Wert aber dynamisch angepasst werden könenn, muss er mit einer entsprechenden Entität verknüpft werden.
 
 # Was macht **Shadow Control**?
 
 ## TL;DR – Kurzform
 
-* Raffstoren-Steuerung basierend auf Helligkeitsschwellwerten und verschiedenen Timern
+* Raffstoren- und Jalousie-Steuerung basierend auf Helligkeitsschwellwerten und verschiedenen Timern
 * Höhe und Lamellenwinkel für Beschattung und Dämmerung separat konfigurierbar
   * Beschattungs- resp. Dämmerungsposition nach Helligkeitsschwellwert und Zeit X
   * Durchsicht-Position nach Helligkeitsschwellwert und Zeit Y
@@ -149,7 +150,7 @@ Es wird empfohlen, **Shadow Control** via HACS zu installieren. Dazu bitte das R
 
 # Konfiguration
 
-Die Konfiguration ist unterteilt in die minimalistische Initialkonfiguration sowie in eine separate Detailkonfiguration. Die Initialkonfiguration führt bereits zu einer vollständig funktionieren Behangautomatisierung, welche über die Detailkonfiguration bei Bedarf jederzeit angepasst werden kann.
+Die Konfiguration ist unterteilt in die minimalistische Initialkonfiguration sowie in eine separate Detailkonfiguration. Die Initialkonfiguration führt bereits zu einer vollständig funktionierenden Behangautomatisierung, welche über die Detailkonfiguration bei Bedarf jederzeit angepasst werden kann.
 
 
 
@@ -170,14 +171,14 @@ Der verwendete Behangtyp. Standardeinstellung ist der 90°-Behangtyp (yaml: `mod
 Weitere unterstützte Typen:
 
 * Der zweite mögliche Behangtyp hat einen Schwenkbereich von ca. 180° (yaml: `mode2`), also bei 0% (i.d.R. nach aussen) geschlossen, bei 50% waagerecht offen und bei 100% (i.d.R. nach innen) wiederum geschlossen.
-* Der dritte Behangtyp sind Jalousien bzw. Rollos (yaml: `mode3`). Bei diesem Typ werden sämtliche Winkeleinstellunge ausgeblendet.
+* Der dritte Behangtyp sind Jalousien bzw. Rollos (yaml: `mode3`). Bei diesem Typ werden sämtliche Winkeleinstellungen ausgeblendet.
 
 Der Behangtyp kann im Nachhinein nicht geändert werden. Um ihn zu ändern, muss die jeweilige **Shutter Control** Instanz gelöscht und neu angelegt werden.
 
 ### Zu automatisierende Rollläden
 `target_cover_entity`
 
-Hier werden die zu steuernden Behang-Entitäten verbunden. Es können beliebig viele davon gleichzeitig gesteuert werden. Allerdings empfiehlt es sich, nur die Storen zu steuern, welche sich auf der gleichen Fassade befinden, also das gleiche Azimut haben. Für die alle weiteren internen Berechnungen wird der erste konfigurierte Behang herangezogen. Alle anderen Storen werden identisch positioniert.
+Hier werden die zu steuernden Behang-Entitäten verbunden. Es können beliebig viele davon gleichzeitig gesteuert werden. Allerdings empfiehlt es sich, nur die Storen zu steuern, welche sich auf der gleichen Fassade befinden, also das gleiche Azimut haben. Für die weiteren internen Berechnungen wird der erste konfigurierte Behang herangezogen. Alle anderen Storen werden identisch positioniert.
 
 ### Azimut der Fassade
 `facade_azimuth_static`
@@ -209,7 +210,7 @@ Hier wird der aktuelle Winkel (Azimut) der Sonne konfiguriert. Dieser Wert kommt
 
 ## Optionale Konfiguration
 
-The following options will be available by a separate config flow, which will open up with a click on "Configure" at the desired instance right on Settings > Integrations > **Shadow Control**.
+Die folgenden Optionen sind über den separaten ConfigFlow verfügbar, welcher mit einem Klick auf das Zahnrad-Symbol der jeweiligen Instanz unter Einstellungen > Geräte und Dienste > **Shadow Control** geöffnet wird..
 
 ### Fassadenkonfiguration - Teil 1
 
@@ -303,7 +304,7 @@ Schrittweite der Lamellenwinkelpositionierung. Details siehe [Schrittweite Höhe
 #### Lichtstreifenbreite
 `facade_light_strip_width_static`
 
-Breite eines nicht zu beschattenden Lichtstreifens am Boden. Mit dieser Einstellung wird festgelegt, wie tief oder weit die Sonne in den Raum hinein scheinen soll. Dementsprechend wird der Behang in der Höhe nicht 100% geschlossen sondern auf die Höhe gefahren, welche in den hier definierten Lichtstreifen resultiert. Standardwert: 0
+Breite eines nicht zu beschattenden Lichtstreifens am Boden. Mit dieser Einstellung wird festgelegt, wie tief oder weit die Sonne in den Raum hinein scheinen soll. Dementsprechend wird der Behang in der Höhe nicht 100% geschlossen, sondern auf die Höhe gefahren, welche in den hier definierten Lichtstreifen resultiert. Standardwert: 0
 
 #### Gesamthöhe
 `facade_shutter_height_static`
@@ -322,7 +323,7 @@ Toleranzbereich für externe Höhenmodifikation. Weicht die kalkulierte Höhe vo
 
 _Wird aktuell noch nicht ausgewertet!_
 
-Toleranzbereich für externe Lamellenwinkelmodifikation, alles weitere siehe [Toleranz Höhenpositionierung](#toleranz-höhenpositionierung). Standardwert: 5
+Toleranzbereich für externe Lamellenwinkelmodifikation, alles Weitere siehe [Toleranz Höhenpositionierung](#toleranz-höhenpositionierung). Standardwert: 5
 
 
 
@@ -344,7 +345,7 @@ Hier kann eine separate Helligkeit für die Dämmerungssteuerung eingestellt wer
 
 In diesem Fall sollte über eine separate Automation bspw. der Mittelwert aus allen Helligkeiten berechnet und hier verknüpft werden. Damit werden alle Raffstoren gleichzeitig in die Dämmerungsposition gefahren.
 
-Wenn nur eine Helligkeit für das gesamte Gebäude vorhanden ist, muss dieser Eingang leer bleiben.
+Wenn nur eine Helligkeit für das gesamte Gebäude vorhanden ist, kann dieser Eingang leer bleiben.
 
 #### Höhe der Sonne
 `sun_elevation_entity`
@@ -359,23 +360,21 @@ Siehe Beschreibung unter [Azimut der Sonne](#sun-azimuth).
 #### Integration sperren
 `lock_integration_entity`
 
-Mit diesem Eingang kann die gesamte Integration gesperrt werden. Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, solange nicht [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) aktiv ist.
+Mit diesem Eingang kann die gesamte Integration gesperrt werden. Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration intern normal weiter, aktualisiert aber den verbundenen Behang nicht. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann.
 
-Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration intern normal weiter, aktualisiert aber den verbundenen Behang nicht. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann. 
+Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, solange nicht [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) aktiv ist.
 
 #### Integration sperren mit Zwangsposition
 `lock_integration_with_position_entity`
 
-Mit diesem Eingang kann die gesamte Integration gesperrt und eine Zwangsposition angefahren werden. Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, solange nicht [Integration sperren](#integration-sperren) aktiv ist.
+Mit diesem Eingang kann die gesamte Integration gesperrt und eine Zwangsposition angefahren werden. Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration intern normal weiter, fährt aber den Behang auf die via [Sperrhöhe](#sperrhöhe)/[Sperrwinkel](#sperrwinkel) konfigurierte Position. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann.
 
-Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration intern normal weiter, fährt aber den Behang auf die via [Sperrhöhe](#sperrhöhe)/[Sperrwinkel](#sperrwinkel) konfigurierte Position. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann.
+Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, solange nicht [Integration sperren](#integration-sperren) aktiv ist.
 
 Dieser Eingang hat Vorrang vor [Integration sperren](#integration-sperren). Werden beide Sperren auf 'on' gesetzt, wird die Zwangsposition angefahren.
 
 #### Sperrhöhe
 `lock_height_static` / `lock_height_entity`
-
-Diese und die folgende Einstellung ist jeweils in zwei Ausprägungen vorhanden. Einmal als statischer Wert und einmal als Entität. Wird ein Wert fix konfiguriert und soll sich zur Laufzeit nicht ändern, wird das über die statische Konfiguration gemacht. Soll der Wert aber dynamisch angepasst werden, muss er mit einer entsprechenden Entität verknüpft werden.
 
 Anzufahrende Höhe in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
@@ -396,7 +395,7 @@ Mit diesem Setting kann die Bewegungsrichtung der Höhenpositionierung wie folgt
 * "Nur öffnen"
   Im Vergleich zur aktuellen Position werden nur weiter öffnende Positionen angefahren.
 
-Das kann dafür verwendet werden, dass der Behang nicht nach der Beschattung hoch gefahren und kurze Zeit später durch schnell einsetzende Dämmerung wieder heruntergefahren wird. Durch eine separate, bspw. tageszeitabhängige Automation, kann dieser Eingang entsprechend modifiziert werden.
+Das kann dafür verwendet werden, dass der Behang nach der Beschattung nicht zunächst geöffnet und kurze Zeit später durch schnell einsetzende Dämmerung wieder geschlossen wird. Durch eine separate, bspw. tageszeitabhängige Automation, kann dieser Eingang entsprechend modifiziert werden.
 
 #### Bewegungseinschränkung Lamellenwinkelpositionierung
 `movement_restriction_angle_entity`
@@ -411,8 +410,6 @@ Dieser Eingang kann mit einer Boolean-Entität verknüpft werden. Wird diese Ent
 
 
 ### Beschattungseinstellungen
-
-Die folgenden Einstellungen sind jeweils in zwei Ausprägungen vorhanden. Einmal als statischer Wert und einmal als Entität. Wird ein Wert fix konfiguriert und soll sich zur Laufzeit nicht ändern, wird das über die statische Konfiguration gemacht. Soll der Wert aber dynamisch angepasst werden, muss er mit einer entsprechenden Entität verknüpft werden.
 
 #### Beschattungssteuerung aktiviert
 `shadow_control_enabled_static` / `shadow_control_enabled_entity`
@@ -469,8 +466,6 @@ Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf den hier in 
 
 
 ### Dämmerungseinstellungen
-
-Wie die [Beschattungseinstellungen](#beschattungseinstellungen) sind auch die Dämmerungseinstellungen in jeweils in zwei Ausprägungen vorhanden. Einmal als statischer Wert und einmal als Entität. Wird ein Wert fix konfiguriert und soll sich zur Laufzeit nicht ändern, wird das über die statische Konfiguration gemacht. Soll der Wert aber dynamisch angepasst werden, muss er mit einer entsprechenden Entität verknüpft werden.
 
 #### Dämmerungssteuerung aktiviert
 `dawn_control_enabled_static` / `dawn_control_enabled_entity`
