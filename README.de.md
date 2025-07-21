@@ -144,7 +144,7 @@ Der konfigurierte Behang wird nur dann neu positioniert, wenn sich die berechnet
 
 # Installation
 
-Es wird empfohlen, **Shadow Control** via HACS zu installieren. Dazu bitte das Repository https://github.com/starwarsfan/shadow-control als _Benutzerdefiniertes Repository_ zu HACS hinzufügen. Danach in HACS **Shadow Control** suchen, herunterladen und Home-Assistant neu starten. Im Anschluss kann die Integration unter _Einstellungen > Geräte und Dienste_ hinzugefügt werden.
+Es wird empfohlen, **Shadow Control** via HACS zu installieren. Danach in HACS **Shadow Control** suchen, herunterladen und Home-Assistant neu starten. Im Anschluss kann die Integration unter _Einstellungen > Geräte und Dienste_ hinzugefügt werden.
 
 
 
