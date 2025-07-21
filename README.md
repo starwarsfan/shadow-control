@@ -12,9 +12,9 @@ Gehe zur [deutschen Version](/README.de.md)
 ## Table of content
 
 * [Introduction](#introduction)
-* [What it does](#what-it-does)
   * [TL;DR – in short](#tldr--in-short)
   * [What it does - long version](#what-it-does---long-version)
+* [Installation](#installation)
 * [Configuration](#configuration)
   * [Initial instance configuration](#initial-instance-configuration)
     * [Instance name ](#instance-name-)
@@ -143,7 +143,7 @@ The configured cover entity will only be updated if a value has changed since th
 
 # Installation
 
-Install **Shadow Control** using HACS is recommended. To do so, add https://github.com/starwarsfan/shadow-control as custom repository to HACS. Search and download **Shadow Control** within HACS. After that, restart Home-Assistant and add the integration.
+**Shadow Control** is a default HACS integration, so you can install the integration by searching for it within HACS. After that, restart Home-Assistant and add the integration.
 
 # Configuration
 

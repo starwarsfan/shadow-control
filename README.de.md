@@ -12,9 +12,9 @@ Go to the [English version](/README.md)
 ## Inhaltsverzeichnis
 
 * [Einführung](#einführung)
-* [Was macht **Shadow Control**?](#was-macht-shadow-control)
   * [TL;DR – Kurzform](#tldr--kurzform)
   * [Beschreibung – Langform](#beschreibung--langform)
+* [Installation](#installation)
 * [Konfiguration](#konfiguration)
   * [Initiale Instanzkonfiguration](#initiale-instanzkonfiguration)
     * [Name der Instanz](#name-der-instanz)
@@ -105,8 +105,6 @@ In den folgenden Abschnitten gilt Folgendes:
 * Die gesamte interne Logik wurde ursprünglich für die Interaktion mit KNX-Systemen entwickelt. Der Hauptunterschied ist daher die Handhabung von Prozentwerten. **Shadow Control** wird mit Home Assistant korrekt interagieren aber die Konfiguration sowie die Logausgaben verwenden 0 % als geöffnet und 100 % als geschlossen.
 * Viele Einstellungen sind jeweils in zwei Ausprägungen vorhanden. Einmal als statischer Wert und einmal als Entität. Wird ein Wert fix konfiguriert und soll sich zur Laufzeit nicht ändern, wird das über die statische Konfiguration gemacht. Soll der Wert aber dynamisch angepasst werden könenn, muss er mit einer entsprechenden Entität verknüpft werden.
 
-# Was macht **Shadow Control**?
-
 ## TL;DR – Kurzform
 
 * Raffstoren- und Jalousie-Steuerung basierend auf Helligkeitsschwellwerten und verschiedenen Timern
@@ -144,7 +142,7 @@ Der konfigurierte Behang wird nur dann neu positioniert, wenn sich die berechnet
 
 # Installation
 
-Es wird empfohlen, **Shadow Control** via HACS zu installieren. Dazu bitte das Repository https://github.com/starwarsfan/shadow-control als _Benutzerdefiniertes Repository_ zu HACS hinzufügen. Danach in HACS **Shadow Control** suchen, herunterladen und Home-Assistant neu starten. Im Anschluss kann die Integration unter _Einstellungen > Geräte und Dienste_ hinzugefügt werden.
+**Shadow Control** ist eine Default-Integration in HACS. Zur Installation genügt es also, in HACS danach zu suchen, die Integration hinzuzufügen und Home-Assistant neu zu starten. Im Anschluss kann die Integration unter _Einstellungen > Geräte und Dienste_ hinzugefügt werden.
 
 
 

@@ -1,6 +1,7 @@
 # Changes
 
 ## 0.6.0
+* Readme finetuning
 * ...
 
 ## 0.5.0
