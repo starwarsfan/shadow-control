@@ -143,7 +143,7 @@ The configured cover entity will only be updated if a value has changed since th
 
 # Installation
 
-Install **Shadow Control** using HACS is recommended. To do so, add https://github.com/starwarsfan/shadow-control as custom repository to HACS. Search and download **Shadow Control** within HACS. After that, restart Home-Assistant and add the integration.
+Install **Shadow Control** using HACS is recommended. Search and download **Shadow Control** within HACS. After that, restart Home-Assistant and add the integration.
 
 # Configuration
 
