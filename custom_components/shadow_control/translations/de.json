@@ -344,6 +344,14 @@
         "name": "In der Sonne"
       }
     },
+    "select": {
+      "movement_restriction_height_entity": {
+        "name": "Höhenveränderung einschränken"
+      },
+      "movement_restriction_angle_entity": {
+        "name": "Winkelveränderung einschränken"
+      }
+    },
     "switch": {
       "debug_enabled": {
         "name": "Debug-Modus"

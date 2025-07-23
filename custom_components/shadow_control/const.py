@@ -167,6 +167,10 @@ class MovementRestricted(Enum):
     ONLY_CLOSE = "only_close"
     ONLY_OPEN = "only_open"
 
+    def to_ha_state_string(self) -> str:
+        """Return the lowercase name for usage with selection."""
+        return self.name.lower()
+
 
 # Configuration values of known shutter types
 class ShutterType(Enum):

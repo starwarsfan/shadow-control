@@ -344,6 +344,14 @@
         "name": "Is in Sun"
       }
     },
+    "select": {
+      "movement_restriction_height_entity": {
+        "name": "Restrict height movement"
+      },
+      "movement_restriction_angle_entity": {
+        "name": "Restrict angle movement"
+      }
+    },
     "switch": {
       "debug_enabled": {
         "name": "Debug Mode"
