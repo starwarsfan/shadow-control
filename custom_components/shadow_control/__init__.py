@@ -684,6 +684,8 @@ class ShadowControlManager:
             SCDynamicInput.LOCK_INTEGRATION_ENTITY,
             SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY,
             SCDynamicInput.ENFORCE_POSITIONING_ENTITY,
+            SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY,
+            SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY,
             SCShadowInput.CONTROL_ENABLED_ENTITY,
             SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY,
             SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY,
@@ -695,18 +697,6 @@ class ShadowControlManager:
             entity_id = self._config.get(conf_key_enum.value)
             if entity_id:
                 tracked_inputs.append(entity_id)
-
-        # Handle movement restriction entities separately as they have a 'no_restriction' value
-        if (
-            self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value)
-            and self._config[SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value] != "no_restriction"
-        ):
-            tracked_inputs.append(self._config[SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value])
-        if (
-            self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value)
-            and self._config[SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value] != "no_restriction"
-        ):
-            tracked_inputs.append(self._config[SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value])
 
         if tracked_inputs:
             self.logger.debug("Tracking input entities: %s", tracked_inputs)
