@@ -390,6 +390,39 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         _LOGGER.info("[%s] Config entry '%s' successfully migrated to version %s.", DOMAIN, config_entry.entry_id, CURRENT_SCHEMA_VERSION)
         return True
 
+    if config_entry.version == 3:
+        # Prüfen und migrieren für MOVEMENT_RESTRICTION_HEIGHT_ENTITY
+        old_height_restriction_key = SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value
+        if old_height_restriction_key in new_options:
+            new_options.pop(old_height_restriction_key)
+            _LOGGER.info("Removed old key '%s' from options for entry %s.", old_height_restriction_key, config_entry.entry_id)
+
+        # Prüfen und migrieren für MOVEMENT_RESTRICTION_ANGLE_ENTITY
+        old_angle_restriction_key = SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value
+        if old_angle_restriction_key in new_options:
+            new_options.pop(old_angle_restriction_key)
+            _LOGGER.info("Removed old key '%s' from options for entry %s.", old_angle_restriction_key, config_entry.entry_id)
+
+        try:
+            validated_options = FULL_OPTIONS_SCHEMA(new_options)
+            _LOGGER.debug("[%s] Migrated configuration successfully validated. Result: %s", DOMAIN, validated_options)
+            _LOGGER.debug("[%s] Type of validated_options: %s", DOMAIN, type(validated_options))
+        except vol.Invalid:
+            _LOGGER.exception(
+                "[%s] Validation failed after migration to version %s for entry %s", DOMAIN, CURRENT_SCHEMA_VERSION, config_entry.entry_id
+            )
+            return False
+
+        _LOGGER.debug("[%s] Preparing to call hass.config_entries.async_update_entry with:", DOMAIN)
+        _LOGGER.debug("[%s]   Arg 'config_entry' type: %s", DOMAIN, type(config_entry))
+        _LOGGER.debug("[%s]   Arg 'data' type: %s, value: %s", DOMAIN, type(new_data), new_data)
+        _LOGGER.debug("[%s]   Arg 'options' type: %s, value: %s", DOMAIN, type(validated_options), validated_options)
+        _LOGGER.debug("[%s]   Arg 'version' type: %s, value: %s", DOMAIN, type(CURRENT_SCHEMA_VERSION), CURRENT_SCHEMA_VERSION)
+
+        hass.config_entries.async_update_entry(config_entry, data=new_data, options=validated_options, version=CURRENT_SCHEMA_VERSION)
+        _LOGGER.info("[%s] Config entry '%s' successfully migrated to version %s.", DOMAIN, config_entry.entry_id, CURRENT_SCHEMA_VERSION)
+        return True
+
     _LOGGER.error("[%s] Unknown config entry version %s for migration. This should not happen.", DOMAIN, config_entry.version)
     return False
 
