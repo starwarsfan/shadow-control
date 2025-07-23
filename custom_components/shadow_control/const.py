@@ -347,25 +347,11 @@ CFG_DYNAMIC_INPUTS = vol.Schema(
         vol.Optional(SCDynamicInput.LOCK_ANGLE_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["sensor", "input_number"])
         ),
-        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value, default="no_restriction"): selector.SelectSelector(
-            selector.SelectSelectorConfig(
-                options=[
-                    "no_restriction",
-                    "only_close",
-                    "only_open",
-                ],
-                translation_key="facade_movement_restriction",
-            )
+        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain=["input_text", "select", "sensor"])
         ),
-        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value, default="no_restriction"): selector.SelectSelector(
-            selector.SelectSelectorConfig(
-                options=[
-                    "no_restriction",
-                    "only_close",
-                    "only_open",
-                ],
-                translation_key="facade_movement_restriction",
-            )
+        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain=["input_text", "select", "sensor"])
         ),
         vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
@@ -577,15 +563,8 @@ CFG_DYNAMIC_INPUTS_MODE3 = vol.Schema(
         vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["sensor", "input_number"])
         ),
-        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value, default="no_restriction"): selector.SelectSelector(
-            selector.SelectSelectorConfig(
-                options=[
-                    "no_restriction",
-                    "only_close",
-                    "only_open",
-                ],
-                translation_key="facade_movement_restriction",
-            )
+        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain=["input_text", "select", "sensor"])
         ),
         vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
@@ -766,20 +745,8 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.LOCK_ANGLE_STATIC.value, default=0): vol.Coerce(float),
         vol.Optional(SCDynamicInput.LOCK_ANGLE_ENTITY.value): cv.entity_id,
-        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value, default="no_restriction"): vol.In(
-            [
-                "no_restriction",
-                "only_close",
-                "only_open",
-            ]
-        ),
-        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value, default="no_restriction"): vol.In(
-            [
-                "no_restriction",
-                "only_close",
-                "only_open",
-            ]
-        ),
+        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value): cv.entity_id,
+        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): cv.entity_id,
         vol.Optional(SCShadowInput.CONTROL_ENABLED_STATIC.value, default=True): cv.boolean,
         vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value): cv.entity_id,

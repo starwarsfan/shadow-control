@@ -852,11 +852,11 @@ class ShadowControlManager:
         self._dynamic_config.lock_angle = self._get_entity_state_value(SCDynamicInput.LOCK_ANGLE_ENTITY.value, lock_angle_config_value, float)
 
         # Movement restrictions (Enum values)
-        self._dynamic_config.movement_restriction_height = self._get_enum_value(
-            SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value, MovementRestricted, MovementRestricted.NO_RESTRICTION
+        self._dynamic_config.movement_restriction_height = self._get_entity_state_value(
+            SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value, MovementRestricted.NO_RESTRICTION, MovementRestricted
         )
-        self._dynamic_config.movement_restriction_angle = self._get_enum_value(
-            SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value, MovementRestricted, MovementRestricted.NO_RESTRICTION
+        self._dynamic_config.movement_restriction_angle = self._get_entity_state_value(
+            SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value, MovementRestricted.NO_RESTRICTION, MovementRestricted
         )
 
         self._enforce_position_update = self._get_entity_state_value(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value, False, bool)
