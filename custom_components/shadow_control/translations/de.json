@@ -143,7 +143,9 @@
           "lock_angle_static": "Zwangsposition Lamellenwinkel",
           "lock_angle_entity": "Zwangsposition Lamellenwinkel",
           "movement_restriction_height_entity": "Höhenveränderung einschränken",
+          "movement_restriction_height_mode": "Höhenveränderung einschränken",
           "movement_restriction_angle_entity": "Winkelveränderung einschränken",
+          "movement_restriction_angle_mode": "Winkelveränderung einschränken",
           "enforce_positioning_entity": "Zwangspositionierung auslösen"
         },
         "data_description": {
@@ -161,8 +163,10 @@
           "lock_height_entity": "Anzufahrende Höhe bei Zwangsposition (via Entität)",
           "lock_angle_static": "Anzufahrender Lamellenwinkel bei Zwangsposition (statisch)",
           "lock_angle_entity": "Anzufahrender Lamellenwinkel bei Zwangsposition (via Entität)",
-          "movement_restriction_height_entity": "Einschränkung der Höhenpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
-          "movement_restriction_angle_entity": "Einschränkung der Winkelpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
+          "movement_restriction_height_entity": "Einschränkung der Höhenpositionierung via Entität, um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
+          "movement_restriction_height_mode": "Manuelle Einschränkung der Höhenpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
+          "movement_restriction_angle_entity": "Einschränkung der Winkelpositionierung via Entität, um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
+          "movement_restriction_angle_mode": "Manuelle Einschränkung der Winkelpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
           "enforce_positioning_entity": "Wird dieser Eingang mit 'on' beschrieben, wird erzwungen, den Behang immer auf die aktuell gültige Position zu fahren."
         }
       },
@@ -345,11 +349,21 @@
       }
     },
     "select": {
-      "movement_restriction_height_entity": {
-        "name": "Höhenveränderung einschränken"
+      "movement_restriction_height_mode": {
+        "name": "Höhenveränderung einschränken",
+        "options": {
+          "no_restriction": "Keine Beschränkung",
+          "only_close": "Nur schließen",
+          "only_open": "Nur öffnen"
+        }
       },
-      "movement_restriction_angle_entity": {
-        "name": "Winkelveränderung einschränken"
+      "movement_restriction_angle_mode": {
+        "name": "Winkelveränderung einschränken",
+        "options": {
+          "no_restriction": "Keine Beschränkung",
+          "only_close": "Nur schließen",
+          "only_open": "Nur öffnen"
+        }
       }
     },
     "switch": {
@@ -382,6 +396,20 @@
       "options": {
         "no_restriction": "Keine Einschränkung",
         "only_close": "Nur schliessen",
+        "only_open": "Nur öffnen"
+      }
+    },
+    "movement_restriction_height_mode": {
+      "options": {
+        "no_restriction": "Keine Beschränkung",
+        "only_close": "Nur schließen",
+        "only_open": "Nur öffnen"
+      }
+    },
+    "movement_restriction_angle_mode": {
+      "options": {
+        "no_restriction": "Keine Beschränkung",
+        "only_close": "Nur schließen",
         "only_open": "Nur öffnen"
       }
     }

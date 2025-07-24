@@ -144,7 +144,9 @@
           "lock_angle_static": "Enforced position slat angle",
           "lock_angle_entity": "Enforced position slat angle",
           "movement_restriction_height_entity": "Restrict height movement",
+          "movement_restriction_height_mode": "Restrict height movement",
           "movement_restriction_angle_entity": "Restrict angle movement",
+          "movement_restriction_angle_mode": "Restrict angle movement",
           "enforce_positioning_entity": "Enforce shutter positioning"
         },
         "data_description": {
@@ -162,8 +164,10 @@
           "lock_height_entity": "Enforced lock shutter height (by entity).",
           "lock_angle_static": "Enforced lock shutter slat angle (static).",
           "lock_angle_entity": "Enforced lock shutter slat angle (by entity).",
-          "movement_restriction_height_entity": "Restrict height positioning to prevent redundant shutter movements e. g. between shadow and dawn.",
-          "movement_restriction_angle_entity": "Restrict angle positioning to prevent redundant shutter movements e. g. between shadow and dawn.",
+          "movement_restriction_height_entity": "Restrict height positioning to prevent redundant shutter movements e. g. between shadow and dawn by using the configured entity.",
+          "movement_restriction_height_mode": "Manually restrict height positioning to prevent redundant shutter movements e. g. between shadow and dawn.",
+          "movement_restriction_angle_entity": "Restrict angle positioning to prevent redundant shutter movements e. g. between shadow and dawn by using the configured entity.",
+          "movement_restriction_angle_mode": "Manually restrict angle positioning to prevent redundant shutter movements e. g. between shadow and dawn.",
           "enforce_positioning_entity": "If the connected entity is switched to 'on', the positioning of the shutter will be enforced."
         }
       },
@@ -345,11 +349,21 @@
       }
     },
     "select": {
-      "movement_restriction_height_entity": {
-        "name": "Restrict height movement"
+      "movement_restriction_height_mode": {
+        "name": "Restrict height movement",
+        "options": {
+          "no_restriction": "No restriction",
+          "only_close": "Only close",
+          "only_open": "Only open"
+        }
       },
-      "movement_restriction_angle_entity": {
-        "name": "Restrict angle movement"
+      "movement_restriction_angle_mode": {
+        "name": "Restrict angle movement",
+        "options": {
+          "no_restriction": "No restriction",
+          "only_close": "Only close",
+          "only_open": "Only open"
+        }
       }
     },
     "switch": {
@@ -379,6 +393,20 @@
       }
     },
     "facade_movement_restriction": {
+      "options": {
+        "no_restriction": "No restriction",
+        "only_close": "Only close",
+        "only_open": "Only open"
+      }
+    },
+    "movement_restriction_height_mode": {
+      "options": {
+        "no_restriction": "No restriction",
+        "only_close": "Only close",
+        "only_open": "Only open"
+      }
+    },
+    "movement_restriction_angle_mode": {
       "options": {
         "no_restriction": "No restriction",
         "only_close": "Only close",
