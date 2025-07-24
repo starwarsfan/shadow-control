@@ -25,15 +25,15 @@ async def async_setup_entry(
         ShadowControlSelect(
             hass,
             config_entry,
-            key=SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value,
-            translation_key="movement_restriction_height_entity",
+            key=SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_MODE.value,
+            translation_key="movement_restriction_height_mode",
             instance_name=instance_name,
         ),
         ShadowControlSelect(
             hass,
             config_entry,
-            key=SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value,
-            translation_key="movement_restriction_angle_entity",
+            key=SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_MODE.value,
+            translation_key="movement_restriction_angle_mode",
             instance_name=instance_name,
         ),
     ]
