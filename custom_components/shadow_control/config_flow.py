@@ -26,6 +26,7 @@ from .const import (
     SC_CONF_NAME,
     TARGET_COVER_ENTITY_ID,
     VERSION,
+    MovementRestricted,
     SCDynamicInput,
     SCFacadeConfig,
     ShutterType,
@@ -358,6 +359,16 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         errors: dict[str, str] = {}
         if user_input is not None:
             self.options_data.update(self._clean_number_inputs(user_input))
+
+            # Check for old style movement restriction configuration and remove it
+            if self.options_data.get(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value) in [state.value for state in MovementRestricted]:
+                _LOGGER.debug("Removing old style movement restriction height configuration from options data.")
+                self.options_data.pop(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value)
+
+            if self.options_data.get(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value) in [state.value for state in MovementRestricted]:
+                _LOGGER.debug("Removing old style movement restriction angle configuration from options data.")
+                self.options_data.pop(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value)
+
             _LOGGER.debug("Final options data before update: %s", self.options_data)
 
             try:
