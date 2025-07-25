@@ -554,8 +554,55 @@ class ShadowControlManager:
         self._dynamic_config.lock_integration_with_position = config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value)
         self._dynamic_config.lock_height = config.get(SCDynamicInput.LOCK_HEIGHT_STATIC.value)
         self._dynamic_config.lock_angle = config.get(SCDynamicInput.LOCK_ANGLE_STATIC.value)
-        self._dynamic_config.movement_restriction_height = config.get(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value)
-        self._dynamic_config.movement_restriction_angle = config.get(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value)
+
+        # Helper to get configured value for movement restriction
+        def _get_final_movement_restriction_value(mode_key: SCDynamicInput, entity_key: SCDynamicInput) -> MovementRestricted:
+            """Determine final movement restriction value by prioritizing the entity state if configured."""
+            # 1. Get primary mode from configuration by using a default value if not set
+            mode_value_str = self._config.get(mode_key.value, MovementRestricted.NO_RESTRICTION.value)
+
+            try:
+                final_enum_value = MovementRestricted(mode_value_str)
+            except ValueError:
+                self.logger.warning(
+                    "Invalid mode value '%s' für %s. Using default '%s'.", mode_value_str, mode_key.value, MovementRestricted.NO_RESTRICTION.value
+                )
+                final_enum_value = MovementRestricted.NO_RESTRICTION
+
+            # 2. Check if external entity is configured
+            entity_id = self._config.get(entity_key.value)
+
+            if entity_id:
+                entity_state: State | None = self.hass.states.get(entity_id)
+
+                if entity_state and entity_state.state not in ("unavailable", "unknown", "none"):
+                    try:
+                        # Convert state of external entity to MovementRestricted enum
+                        overriding_enum_value = MovementRestricted(entity_state.state)
+                        self.logger.debug("Entity '%s' has valid state '%s' for %s. Using it.", entity_id, entity_state.state, mode_key.value)
+                        final_enum_value = overriding_enum_value
+                    except ValueError:
+                        self.logger.warning(
+                            "State '%s' of entity '%s' is not a valid movement restriction value. Using configured mode '%s' instead.",
+                            entity_state.state,
+                            entity_id,
+                            final_enum_value.value,
+                        )
+                else:
+                    self.logger.debug(
+                        "Entity '%s' for %s is not available, unknown or has no state. Using configured mode '%s' instead.",
+                        entity_id,
+                        mode_key.value,
+                        final_enum_value.value,
+                    )
+            return final_enum_value
+
+        self._dynamic_config.movement_restriction_height = _get_final_movement_restriction_value(
+            SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_MODE, SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY
+        )
+        self._dynamic_config.movement_restriction_angle = _get_final_movement_restriction_value(
+            SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_MODE, SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY
+        )
         self._dynamic_config.enforce_positioning_entity = config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value)
 
         # === Get general facade configuration
