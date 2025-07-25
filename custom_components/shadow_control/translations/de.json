@@ -350,20 +350,10 @@
     },
     "select": {
       "movement_restriction_height_mode": {
-        "name": "Höhenveränderung einschränken",
-        "options": {
-          "no_restriction": "Keine Beschränkung",
-          "only_close": "Nur schließen",
-          "only_open": "Nur öffnen"
-        }
+        "name": "Höhenveränderung einschränken"
       },
       "movement_restriction_angle_mode": {
-        "name": "Winkelveränderung einschränken",
-        "options": {
-          "no_restriction": "Keine Beschränkung",
-          "only_close": "Nur schließen",
-          "only_open": "Nur öffnen"
-        }
+        "name": "Winkelveränderung einschränken"
       }
     },
     "switch": {

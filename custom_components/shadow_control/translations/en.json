@@ -350,20 +350,10 @@
     },
     "select": {
       "movement_restriction_height_mode": {
-        "name": "Restrict height movement",
-        "options": {
-          "no_restriction": "No restriction",
-          "only_close": "Only close",
-          "only_open": "Only open"
-        }
+        "name": "Restrict height movement"
       },
       "movement_restriction_angle_mode": {
-        "name": "Restrict angle movement",
-        "options": {
-          "no_restriction": "No restriction",
-          "only_close": "Only close",
-          "only_open": "Only open"
-        }
+        "name": "Restrict angle movement"
       }
     },
     "switch": {
