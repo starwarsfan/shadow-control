@@ -143,9 +143,9 @@
           "lock_angle_static": "Zwangsposition Lamellenwinkel",
           "lock_angle_entity": "Zwangsposition Lamellenwinkel",
           "movement_restriction_height_entity": "Höhenveränderung einschränken",
-          "movement_restriction_height_mode": "Höhenveränderung einschränken",
+          "movement_restriction_height_static": "Höhenveränderung einschränken",
           "movement_restriction_angle_entity": "Winkelveränderung einschränken",
-          "movement_restriction_angle_mode": "Winkelveränderung einschränken",
+          "movement_restriction_angle_static": "Winkelveränderung einschränken",
           "enforce_positioning_entity": "Zwangspositionierung auslösen"
         },
         "data_description": {
@@ -164,9 +164,9 @@
           "lock_angle_static": "Anzufahrender Lamellenwinkel bei Zwangsposition (statisch)",
           "lock_angle_entity": "Anzufahrender Lamellenwinkel bei Zwangsposition (via Entität)",
           "movement_restriction_height_entity": "Einschränkung der Höhenpositionierung via Entität, um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
-          "movement_restriction_height_mode": "Manuelle Einschränkung der Höhenpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
+          "movement_restriction_height_static": "Manuelle Einschränkung der Höhenpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
           "movement_restriction_angle_entity": "Einschränkung der Winkelpositionierung via Entität, um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
-          "movement_restriction_angle_mode": "Manuelle Einschränkung der Winkelpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
+          "movement_restriction_angle_static": "Manuelle Einschränkung der Winkelpositionierung um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
           "enforce_positioning_entity": "Wird dieser Eingang mit 'on' beschrieben, wird erzwungen, den Behang immer auf die aktuell gültige Position zu fahren."
         }
       },
@@ -349,10 +349,10 @@
       }
     },
     "select": {
-      "movement_restriction_height_mode": {
+      "movement_restriction_height_static": {
         "name": "Höhenveränderung einschränken"
       },
-      "movement_restriction_angle_mode": {
+      "movement_restriction_angle_static": {
         "name": "Winkelveränderung einschränken"
       }
     },
@@ -389,14 +389,14 @@
         "only_open": "Nur öffnen"
       }
     },
-    "movement_restriction_height_mode": {
+    "movement_restriction_height_static": {
       "options": {
         "no_restriction": "Keine Beschränkung",
         "only_close": "Nur schließen",
         "only_open": "Nur öffnen"
       }
     },
-    "movement_restriction_angle_mode": {
+    "movement_restriction_angle_static": {
       "options": {
         "no_restriction": "Keine Beschränkung",
         "only_close": "Nur schließen",

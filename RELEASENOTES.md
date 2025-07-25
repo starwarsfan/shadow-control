@@ -1,8 +1,8 @@
 # Changes
 
 ## 0.6.0
+* Implement usage of entities to restrict the height and angle movement direction
 * Readme finetuning
-* ...
 
 ## 0.5.0
 * Add configuration dump service

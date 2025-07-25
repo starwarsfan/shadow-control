@@ -37,9 +37,9 @@ class SCDynamicInput(Enum):
     LOCK_ANGLE_ENTITY = "lock_angle_entity"
     LOCK_ANGLE_STATIC = "lock_angle_static"
     MOVEMENT_RESTRICTION_HEIGHT_ENTITY = "movement_restriction_height_entity"
-    MOVEMENT_RESTRICTION_HEIGHT_MODE = "movement_restriction_height_mode"
+    MOVEMENT_RESTRICTION_HEIGHT_STATIC = "movement_restriction_height_static"
     MOVEMENT_RESTRICTION_ANGLE_ENTITY = "movement_restriction_angle_entity"
-    MOVEMENT_RESTRICTION_ANGLE_MODE = "movement_restriction_angle_mode"
+    MOVEMENT_RESTRICTION_ANGLE_STATIC = "movement_restriction_angle_static"
     ENFORCE_POSITIONING_ENTITY = "enforce_positioning_entity"
 
 
@@ -353,17 +353,17 @@ CFG_DYNAMIC_INPUTS = vol.Schema(
         vol.Optional(SCDynamicInput.LOCK_ANGLE_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["sensor", "input_number"])
         ),
+        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_STATIC.value, default=MovementRestricted.NO_RESTRICTION.value): vol.In(
+            [state.value for state in MovementRestricted]
+        ),
         vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["input_text", "input_select", "select", "sensor"])
         ),
-        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_MODE.value, default=MovementRestricted.NO_RESTRICTION.value): vol.In(
+        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_STATIC.value, default=MovementRestricted.NO_RESTRICTION.value): vol.In(
             [state.value for state in MovementRestricted]
         ),
         vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["input_text", "input_select", "select", "sensor"])
-        ),
-        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_MODE.value, default=MovementRestricted.NO_RESTRICTION.value): vol.In(
-            [state.value for state in MovementRestricted]
         ),
         vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
@@ -578,7 +578,7 @@ CFG_DYNAMIC_INPUTS_MODE3 = vol.Schema(
         vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["input_text", "input_select", "select", "sensor"])
         ),
-        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_MODE.value, default=MovementRestricted.NO_RESTRICTION.value): vol.In(
+        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_STATIC.value, default=MovementRestricted.NO_RESTRICTION.value): vol.In(
             [state.value for state in MovementRestricted]
         ),
         vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): selector.EntitySelector(

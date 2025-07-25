@@ -391,13 +391,11 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         return True
 
     if config_entry.version == 3:
-        # Prüfen und migrieren für MOVEMENT_RESTRICTION_HEIGHT_ENTITY
         old_height_restriction_key = SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value
         if old_height_restriction_key in new_options:
             new_options.pop(old_height_restriction_key)
             _LOGGER.info("Removed old key '%s' from options for entry %s.", old_height_restriction_key, config_entry.entry_id)
 
-        # Prüfen und migrieren für MOVEMENT_RESTRICTION_ANGLE_ENTITY
         old_angle_restriction_key = SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value
         if old_angle_restriction_key in new_options:
             new_options.pop(old_angle_restriction_key)
@@ -598,10 +596,10 @@ class ShadowControlManager:
             return final_enum_value
 
         self._dynamic_config.movement_restriction_height = _get_final_movement_restriction_value(
-            SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_MODE, SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY
+            SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_STATIC, SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY
         )
         self._dynamic_config.movement_restriction_angle = _get_final_movement_restriction_value(
-            SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_MODE, SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY
+            SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_STATIC, SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY
         )
         self._dynamic_config.enforce_positioning_entity = config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value)
 
@@ -931,7 +929,7 @@ class ShadowControlManager:
             )
         else:
             # No entity configured, use mode value from config
-            mode_value_str = self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_MODE.value, MovementRestricted.NO_RESTRICTION.value)
+            mode_value_str = self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_STATIC.value, MovementRestricted.NO_RESTRICTION.value)
             try:
                 self._dynamic_config.movement_restriction_height = MovementRestricted(mode_value_str)
             except ValueError:
@@ -949,7 +947,7 @@ class ShadowControlManager:
             )
         else:
             # No entity configured, use mode value from config
-            mode_value_str = self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_MODE.value, MovementRestricted.NO_RESTRICTION.value)
+            mode_value_str = self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_STATIC.value, MovementRestricted.NO_RESTRICTION.value)
             try:
                 self._dynamic_config.movement_restriction_angle = MovementRestricted(mode_value_str)
             except ValueError:
