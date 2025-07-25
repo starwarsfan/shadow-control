@@ -382,7 +382,7 @@ Anzufahrende Höhe in %, wenn die Integration via [Integration sperren mit Zwang
 Anzufahrender Lamellenwinkel in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
 #### Bewegungseinschränkung Höhenpositionierung
-`movement_restriction_height_entity`
+`movement_restriction_height_static` / `movement_restriction_height_entity`
 
 Mit diesem Setting kann die Bewegungsrichtung der Höhenpositionierung wie folgt eingeschränkt werden
 
@@ -396,7 +396,7 @@ Mit diesem Setting kann die Bewegungsrichtung der Höhenpositionierung wie folgt
 Das kann dafür verwendet werden, dass der Behang nach der Beschattung nicht zunächst geöffnet und kurze Zeit später durch schnell einsetzende Dämmerung wieder geschlossen wird. Durch eine separate, bspw. tageszeitabhängige Automation, kann dieser Eingang entsprechend modifiziert werden.
 
 #### Bewegungseinschränkung Lamellenwinkelpositionierung
-`movement_restriction_angle_entity`
+`movement_restriction_angle_static` / `movement_restriction_angle_entity`
 
 Siehe [Bewegungseinschränkung Höhenpositionierung](#bewegungseinschränkung-höhenpositionierung), hier nur für den Lamellenwinkel.
 

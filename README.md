@@ -379,7 +379,7 @@ Height in %, which should be set if integration gets locked by 'lock_integration
 Angle in %, which should be set if integration gets locked by 'lock_integration_with_position.'
 
 #### Movement restriction height
-`movement_restriction_height_entity`
+`movement_restriction_height_static` / `movement_restriction_height_entity`
 
 With this setting, the movement direction could be restricted:
 
@@ -393,7 +393,7 @@ With this setting, the movement direction could be restricted:
 This could be used to prevent shutters from being opened after the sun goes down and close them some minutes later because of starting dawn. This setting might be modified using a timer clock or other appropriate automation.
 
 #### Movement restriction angle
-`movement_restriction_angle_entity`
+`movement_restriction_angle_static` / `movement_restriction_angle_entity`
 
 Same as [Movement restriction height](#movement-restriction-height) but for the shutter slat angle.
 
