@@ -542,8 +542,10 @@ shadow_control:
     #lock_height_entity: input_number.lock_height_entity
     lock_angle_static: 0
     #lock_angle_entity: input_number.lock_angle_entity
-    movement_restriction_height_entity: no_restriction
-    movement_restriction_angle_entity: no_restriction
+    movement_restriction_height_static: no_restriction
+    #movement_restriction_height_entity:
+    movement_restriction_angle_static: no_restriction
+    #movement_restriction_angle_entity:
     enforce_positioning_entity: input_boolean.d13_enforce_positioning
 
     # =======================================================================

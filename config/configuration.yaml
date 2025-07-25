@@ -71,8 +71,10 @@ shadow_control:
     lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
     lock_height_static: 50
     lock_angle_static: 50
-    movement_restriction_height_entity: no_restriction
-    movement_restriction_angle_entity: no_restriction
+    #movement_restriction_height_entity:
+    movement_restriction_height_static: no_restriction
+    #movement_restriction_angle_entity:
+    movement_restriction_angle_static: no_restriction
     enforce_positioning_entity: input_boolean.d13_enforce_positioning
 
     # General facade configuration

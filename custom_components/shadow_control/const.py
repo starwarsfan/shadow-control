@@ -760,7 +760,21 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.LOCK_ANGLE_STATIC.value, default=0): vol.Coerce(float),
         vol.Optional(SCDynamicInput.LOCK_ANGLE_ENTITY.value): cv.entity_id,
+        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_STATIC.value, default="no_restriction"): vol.In(
+            [
+                "no_restriction",
+                "only_open",
+                "only_close",
+            ]
+        ),
         vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value): cv.entity_id,
+        vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_STATIC.value, default="no_restriction"): vol.In(
+            [
+                "no_restriction",
+                "only_open",
+                "only_close",
+            ]
+        ),
         vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): cv.entity_id,
         vol.Optional(SCShadowInput.CONTROL_ENABLED_STATIC.value, default=True): cv.boolean,
