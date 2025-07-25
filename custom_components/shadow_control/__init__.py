@@ -1489,6 +1489,8 @@ class ShadowControlManager:
             send_angle_command = True
 
         # Position all configured shutters
+        self._previous_shutter_height = height_to_set_percent
+        self._previous_shutter_angle = angle_to_set_percent
         for entity in self._target_cover_entity_id:
             current_cover_state: State | None = self.hass.states.get(entity)
 
@@ -1508,7 +1510,6 @@ class ShadowControlManager:
                         )
                     except Exception:
                         self.logger.exception("Failed to set position:")
-                    self._previous_shutter_height = shutter_height_percent
                 else:
                     self.logger.debug(
                         "Skipping position set. Supported: %s, Service Found: %s.",
@@ -1530,7 +1531,6 @@ class ShadowControlManager:
                         )
                     except Exception:
                         self.logger.exception("Failed to set tilt position:")
-                    self._previous_shutter_angle = shutter_angle_percent
                 else:
                     self.logger.debug(
                         "Skipping tilt set. Supported: %s, Service Found: %s.",
