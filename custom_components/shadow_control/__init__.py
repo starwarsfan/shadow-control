@@ -3039,9 +3039,9 @@ class ShadowControlManager:
 
     def _should_output_be_updated(self, config_value: MovementRestricted, new_value: float, previous_value: float | None) -> float:
         """Perform output update check."""
-        self.logger.debug(
-            "_should_output_be_updated: config_value=%s, new_value=%s, previous_value=%s", config_value.name,
-            new_value, previous_value)
+        # self.logger.debug(
+        #     "_should_output_be_updated: config_value=%s, new_value=%s, previous_value=%s", config_value.name,
+        #     new_value, previous_value)
 
         # Check if the output should be updated, depending on given MovementRestricted configuration.
         # New value is returned for one of the following cases:
@@ -3050,44 +3050,44 @@ class ShadowControlManager:
         # - config_value is 'NO_RESTRICTION' or everything else
         # All other cases will return the previous value.
         if previous_value is None:
-            self.logger.debug(
-                "_should_output_be_updated: previous_value is None. Returning new value (%s)", new_value)
+            # self.logger.debug(
+            #     "_should_output_be_updated: previous_value is None. Returning new value (%s)", new_value)
             return new_value
 
         # Check if the value was changed at all
         # by using a small tolerance to prevent redundant movements.
         if abs(new_value - previous_value) < 0.001:
-            self.logger.debug(
-                "_should_output_be_updated: new_value (%s) is nearly identical to previous_value (%s). Returning previous_value",
-                new_value, previous_value)
+            # self.logger.debug(
+            #     "_should_output_be_updated: new_value (%s) is nearly identical to previous_value (%s). Returning previous_value",
+            #     new_value, previous_value)
             return previous_value
 
         if config_value == MovementRestricted.ONLY_CLOSE:
             if new_value > previous_value:
-                self.logger.debug(
-                    "_should_output_be_updated: ONLY_CLOSE -> new_value (%s) > previous_value (%s). Returning new_value",
-                    new_value, previous_value)
+                # self.logger.debug(
+                #     "_should_output_be_updated: ONLY_CLOSE -> new_value (%s) > previous_value (%s). Returning new_value",
+                #     new_value, previous_value)
                 return new_value
-            self.logger.debug(
-                "_should_output_be_updated: ONLY_CLOSE -> new_value (%s) <= previous_value (%s). Returning previous_value",
-                new_value, previous_value)
+            # self.logger.debug(
+            #     "_should_output_be_updated: ONLY_CLOSE -> new_value (%s) <= previous_value (%s). Returning previous_value",
+            #     new_value, previous_value)
             return previous_value
         if config_value == MovementRestricted.ONLY_OPEN:
             if new_value < previous_value:
-                self.logger.debug(
-                    "_should_output_be_updated: ONLY_OPEN -> new_value (%s) < previous_value (%s). Returning new_value",
-                    new_value, previous_value)
+                # self.logger.debug(
+                #     "_should_output_be_updated: ONLY_OPEN -> new_value (%s) < previous_value (%s). Returning new_value",
+                #     new_value, previous_value)
                 return new_value
-            self.logger.debug(
-                "_should_output_be_updated: ONLY_OPEN -> new_value (%s) >= previous_value (%s). Returning previous_value",
-                new_value, previous_value)
+            # self.logger.debug(
+            #     "_should_output_be_updated: ONLY_OPEN -> new_value (%s) >= previous_value (%s). Returning previous_value",
+            #     new_value, previous_value)
             return previous_value
         if config_value == MovementRestricted.NO_RESTRICTION:
-            self.logger.debug(
-                "_should_output_be_updated: NO_RESTRICTION -> Returning new_value (%s)", new_value)
+            # self.logger.debug(
+            #     "_should_output_be_updated: NO_RESTRICTION -> Returning new_value (%s)", new_value)
             return new_value
-        self.logger.warning(
-            "_should_output_be_updated: Unknown value '%s'. Returning new_value (%s)", config_value.name, new_value)
+        # self.logger.warning(
+        #     "_should_output_be_updated: Unknown value '%s'. Returning new_value (%s)", config_value.name, new_value)
         return new_value
 
     async def _start_timer(self, delay_seconds: float) -> None:
