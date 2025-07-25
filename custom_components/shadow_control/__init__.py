@@ -729,8 +729,6 @@ class ShadowControlManager:
             SCDynamicInput.LOCK_INTEGRATION_ENTITY,
             SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY,
             SCDynamicInput.ENFORCE_POSITIONING_ENTITY,
-            SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY,
-            SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY,
             SCShadowInput.CONTROL_ENABLED_ENTITY,
             SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY,
             SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY,
