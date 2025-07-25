@@ -386,12 +386,12 @@ Anzufahrender Lamellenwinkel in %, wenn die Integration via [Integration sperren
 
 Mit diesem Setting kann die Bewegungsrichtung der Höhenpositionierung wie folgt eingeschränkt werden
 
-* "Keine Einschränkung" (Default)
+* "Keine Einschränkung" (UI) bzw. `no_restriction` (yaml, Entität; Standardwert)
   Keine Einschränkung der Höhenpositionierung. Die Integration wird den Behang öffnen oder schliessen.
-* "Nur schliessen"
-  Im Vergleich zur aktuellen Position werden nur weiter schliessende Positionen angefahren.
-* "Nur öffnen"
-  Im Vergleich zur aktuellen Position werden nur weiter öffnende Positionen angefahren.
+* "Nur schliessen" (UI) bzw. `only_close` (yaml, Entität)
+  Im Vergleich zur letzten (vorherigen) Positionierung werden nur weiter schliessende Positionen angefahren.
+* "Nur öffnen" (UI) bzw. `only_open` (yaml, Entität)
+  Im Vergleich zur letzten (vorherigen) Positionierung werden nur weiter öffnende Positionen angefahren.
 
 Das kann dafür verwendet werden, dass der Behang nach der Beschattung nicht zunächst geöffnet und kurze Zeit später durch schnell einsetzende Dämmerung wieder geschlossen wird. Durch eine separate, bspw. tageszeitabhängige Automation, kann dieser Eingang entsprechend modifiziert werden.
 
@@ -545,9 +545,9 @@ shadow_control:
     #lock_height_entity: input_number.lock_height_entity
     lock_angle_static: 0
     #lock_angle_entity: input_number.lock_angle_entity
-    movement_restriction_height_static: no_restriction
+    #movement_restriction_height_static: no_restriction|only_open|only_close
     #movement_restriction_height_entity:
-    movement_restriction_angle_static: no_restriction
+    #movement_restriction_angle_static: no_restriction|only_open|only_close
     #movement_restriction_angle_entity:
     enforce_positioning_entity: input_boolean.d13_enforce_positioning
 

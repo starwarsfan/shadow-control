@@ -383,12 +383,12 @@ Angle in %, which should be set if integration gets locked by 'lock_integration_
 
 With this setting, the movement direction could be restricted:
 
-* "No restriction" (Default)
-  No striction on shutter movement. The automation will open or close the shutter.
-* "Only close"
-  In comparison to the current position, only closing positions will be activated.
-* "Only open"
-  In comparison to the current position, only opening positions will be activated.
+* "No restriction" (UI) or `no_restriction` (yaml, entity; default value)
+  No restriction on shutter movement. The automation will open or close the shutter.
+* "Only close" (UI) or `only_close` (yaml, entity)
+  In comparison to the last (previous) position, only closing positions will be activated.
+* "Only open" (UI) or `only_open` (yaml, entity)
+  In comparison to the last (previous) position, only opening positions will be activated.
 
 This could be used to prevent shutters from being opened after the sun goes down and close them some minutes later because of starting dawn. This setting might be modified using a timer clock or other appropriate automation.
 
@@ -542,9 +542,9 @@ shadow_control:
     #lock_height_entity: input_number.lock_height_entity
     lock_angle_static: 0
     #lock_angle_entity: input_number.lock_angle_entity
-    movement_restriction_height_static: no_restriction
+    #movement_restriction_height_static: no_restriction|only_open|only_close
     #movement_restriction_height_entity:
-    movement_restriction_angle_static: no_restriction
+    #movement_restriction_angle_static: no_restriction|only_open|only_close
     #movement_restriction_angle_entity:
     enforce_positioning_entity: input_boolean.d13_enforce_positioning
 
