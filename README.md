@@ -153,12 +153,12 @@ The configuration is split into a minimalistic initial configuration, which resu
 
 ## Initial instance configuration
 
-The initial instance configuration is very minimalistic and requires only the following configuration entries. Everything else will be setup up with default values, which you might tweak to your needs afterward. See section "Optional configuration."
+The initial instance configuration is very minimalistic and requires only the following configuration entries. Everything else will be setup up with default values, which you might tweak to your needs afterward. See section [Additional options](#additional-options).
 
 ### Instance name 
 `name`
 
-A descriptive and unique name for this **Shadow Control** (SC) instance. A sanitized version of this name will be used to mark corresponding log entries of this instance within the Home Assistant main log file.
+A descriptive and unique name for this **Shadow Control** instance. A sanitized version of this name will be used to mark corresponding log entries of this instance within the Home Assistant main log file.
 
 #### Shutter type
 `facade_shutter_type_static`
@@ -175,7 +175,7 @@ This setting can't be changed later on. To do so, you need to remove the instanc
 ### Covers to maintain
 `target_cover_entity`
 
-The cover entities, which should be handled by this **Shadow Control** (SC) instance. You can add as many covers as you like, but the recommendation is to use only these covers, which have at least the same azimuth. For any further calculation, only the first configured cover will be used. All other covers will just be positioned as the first one.
+The cover entities, which should be handled by this **Shadow Control** instance. You can add as many covers as you like, but the recommendation is to use only these covers, which have at least the same azimuth. For any further calculation, only the first configured cover will be used. All other covers will just be positioned as the first one.
 
 ### Facade azimuth
 `facade_azimuth_static`
@@ -529,25 +529,45 @@ shadow_control:
     target_cover_entity:
       - cover.fenster_buro_west
     debug_enabled: false
-
+    #
     # =======================================================================
     # Dynamic configuration inputs
+    #
+    # Entity which holds the current brightness
     brightness_entity: input_number.d01_brightness
+    # Entity which holds the current dawn brightness. See the description above.
     #brightness_dawn_entity: input_number.d02_brightness_dawn
+    #
+    # Entities holding the current sun position
     sun_elevation_entity: input_number.d03_sun_elevation
     sun_azimuth_entity: input_number.d04_sun_azimuth
+    #
+    # Entities to lock the integration
     lock_integration_entity: input_boolean.d07_lock_integration
     lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
+    #
+    # Statically configured lock position
     lock_height_static: 0
-    #lock_height_entity: input_number.lock_height_entity
     lock_angle_static: 0
+    #
+    # Lock position entities
+    #lock_height_entity: input_number.lock_height_entity
     #lock_angle_entity: input_number.lock_angle_entity
-    #movement_restriction_height_static: no_restriction|only_open|only_close
+    #
+    # One of 'no_restriction', 'only_open' or 'only_close' must be given, if this option is used.
+    # But in fact it makes no sense to configure something here as the shutter will not be moved 
+    # anymore as soon as the final position is reached. This option is mainly used at the
+    # maintenance page of a configured instance, to temporarily restrict the movement manually.
+    #movement_restriction_height_static: no_restriction
+    #movement_restriction_angle_static: no_restriction
+    #
+    # Entities to restrict the movement direction
     #movement_restriction_height_entity:
-    #movement_restriction_angle_static: no_restriction|only_open|only_close
     #movement_restriction_angle_entity:
+    #
+    # Entity to enforce the shutter positioning
     enforce_positioning_entity: input_boolean.d13_enforce_positioning
-
+    #
     # =======================================================================
     # General facade configuration
     facade_azimuth_static: 180
@@ -564,12 +584,12 @@ shadow_control:
     facade_light_strip_width_static: 0
     facade_shutter_height_static: 1000
     facade_neutral_pos_height_static: 0
-    #facade_neutral_pos_height_entity: input_number.facade_neutral_pos_height_entity
     facade_neutral_pos_angle_static: 0
+    #facade_neutral_pos_height_entity: input_number.facade_neutral_pos_height_entity
     #facade_neutral_pos_angle_entity: input_number.facade_neutral_pos_angle_entity
     facade_modification_tolerance_height_static: 8
     facade_modification_tolerance_angle_static: 5
-
+    #
     # =======================================================================
     # Shadow configuration
     #shadow_control_enabled_entity:
@@ -592,7 +612,7 @@ shadow_control:
     shadow_height_after_sun_static: 0
     #shadow_angle_after_sun_entity:
     shadow_angle_after_sun_static: 0
-
+    #
     # =======================================================================
     # Dawn configuration
     #dawn_control_enabled_entity:
