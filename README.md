@@ -692,7 +692,9 @@ This entity is either `True`, if the sun within the min-max-offset and the min-m
 
 Right on each device page some options could be switched on/off directly:
 
-![Cirect options](/images/switches.png)
+![Controls](/images/controls.png)
+
+Modifying these options is the same as modifying them within the configuration flow.
 
 # Configuration export
 

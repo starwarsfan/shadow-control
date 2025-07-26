@@ -695,7 +695,7 @@ Der Wert ist `True`, wenn sich die Sonne im min-max-Offsetbereich und min-max-H�
 
 Direkt auf der Geräteseite einer Instanz können diverse Optionen direkt geschaltet werden:
 
-![Steuerelemente](/images/switches.png)
+![Steuerelemente](/images/controls.png)
 
 # Konfiguration-Export
 
