@@ -154,7 +154,7 @@ Die Konfiguration ist unterteilt in die minimalistische Initialkonfiguration sow
 
 ## Initiale Instanzkonfiguration
 
-Die initiale Instanzkonfiguration ist sehr minimalistisch und benötigt nur die folgenden Konfigurationswerte. Alle anderen Einstellungen werden mit Standardwerten vorbelegt, welche im Nachhinein an die persönlichen Wünsche angepasst werden können. Siehe dazu den Abschnitt ["Optionale Konfiguration"](#optionale-konfiguration).
+Die initiale Instanzkonfiguration ist sehr minimalistisch und benötigt nur die folgenden Konfigurationswerte. Alle anderen Einstellungen werden mit Standardwerten vorbelegt, welche im Nachhinein an die persönlichen Wünsche angepasst werden können. Siehe dazu den Abschnitt [Optionale Konfiguration](#optionale-konfiguration).
 
 ### Name der Instanz
 `name`
