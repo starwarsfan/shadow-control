@@ -1410,7 +1410,7 @@ class ShadowControlManager:
         # This ensures that calculations still happen, but outputs are skipped.
         is_locked = self.current_lock_state != LockState.UNLOCKED
         if is_locked:
-            self.logger.info("Integration is locked (%s). Calculations are running, but physical outputs are skipped.", self.current_lock_state.name)
+            self.logger.debug("Integration is locked (%s). Calculations are running, but physical outputs are skipped.", self.current_lock_state.name)
             # Update internal _previous values here to reflect that if it *were* unlocked,
             # it would have moved to these calculated positions.
             # This prepares for a smooth transition when unlocked.
@@ -1427,7 +1427,7 @@ class ShadowControlManager:
 
                     shutter_height_percent = self._dynamic_config.lock_height
                     shutter_angle_percent = self._dynamic_config.lock_angle
-                    self.logger.info(
+                    self.logger.debug(
                         "Integration set to locked with forced position, setting position to %.1f%%/%.1f%%",
                         shutter_height_percent,
                         shutter_angle_percent,
