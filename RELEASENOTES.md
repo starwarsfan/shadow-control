@@ -1,5 +1,8 @@
 # Changes
 
+## 0.7.0
+* Improve log dump service to generate c&p ready YAML output
+
 ## 0.6.0
 * Implement usage of entities to restrict the height and angle movement direction
 * Readme finetuning

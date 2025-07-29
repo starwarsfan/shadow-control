@@ -698,13 +698,23 @@ Modifying these options is the same as modifying them within the configuration f
 
 # Configuration export
 
-As the **Shadow Control** configuration might be very extensive, there is a special service to write the current configuration using JSON format to the Home Assistant log. This service is available via `Developer tools -> Actions` by searching for `dump_sc_config`. If the service is triggered without further modification, the configuration of the first **Shadow Control** instance will be dumped to the log. That might look like this:
+As the **Shadow Control** configuration might be very extensive, there is a special service to write the current configuration using YAML format to the Home Assistant log. This service is available via `Developer tools -> Actions` by searching for `dump_sc_config`. If the service is triggered without further modification, the configuration of the first **Shadow Control** instance will be dumped to the log. That might look like this:
 
 ```
-2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] --- DUMPING INSTANCE CONFIGURATION ---
-2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Config Entry Data: {'name': 'SC Dummy'}
-2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Config Entry Options: {'brightness_enti...
-2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Manager Internal Config: {'name': 'SC D...
+2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] === DUMPING INSTANCE CONFIGURATION ===
+2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Full configuration:
+--- YAML dump start ---
+brightness_entity: input_number.d01_brightness
+dawn_after_seconds_static: 10.0
+dawn_angle_after_dawn_static: 80.0
+...
+name: SC Dummy
+...
+sun_azimuth_entity: input_number.d04_sun_azimuth
+sun_elevation_entity: input_number.d03_sun_elevation
+target_cover_entity:
+- cover.sc_dummy
+--- YAML dump end ---
 2025-07-06 21:12:57.137 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Associated Device: SC Dummy (id: 8d9324...
 2025-07-06 21:12:57.137 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Associated Entities:
 2025-07-06 21:12:57.137 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - sensor.sc_dummy_hohe: State='80.0', A...
@@ -720,10 +730,11 @@ As the **Shadow Control** configuration might be very extensive, there is a spec
 2025-07-06 21:12:57.138 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - switch.sc_dummy_dammerungssteuerung: ...
 2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - switch.sc_dummy_sperren: State='off',...
 2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - switch.sc_dummy_sperren_mit_zwangspos...
-2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] --- END INSTANCE CONFIGURATION DUMP ---
+2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] === END INSTANCE CONFIGURATION DUMP ===
 ```
+Between the two marker lines `--- YAML dump start ---` and `--- YAML dump end ---` is the complete configuration of the instance in YAML format. This can be copied and saved or used as a basis for additional instances.
 
-After switching to the YAML configuration of the service, the name of the configuration which should be exported can be given by the parameter `name`:
+The name of the configuration which should be exported can be given by the parameter `name`:
 
 ## UI mode
 

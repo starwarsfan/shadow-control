@@ -1,5 +1,7 @@
 """Integration for Shadow Control."""
 
+# Used for json dumping, see handle_dump_config_service
+# import json
 import logging
 import math
 import re
@@ -9,6 +11,7 @@ from functools import partial
 from typing import TYPE_CHECKING, Any
 
 import voluptuous as vol
+import yaml
 from homeassistant.components.cover import CoverEntityFeature
 from homeassistant.config_entries import ConfigEntries, ConfigEntry
 from homeassistant.const import (
@@ -273,13 +276,22 @@ async def handle_dump_config_service(hass: HomeAssistant, config_entries: Config
         _LOGGER.error("[%s] dump_config service: No manager found for instance name '%s'", DOMAIN, instance_name)
         return
 
-    _LOGGER.info("[%s] --- DUMPING INSTANCE CONFIGURATION - START ---", manager.name)
+    _LOGGER.info("[%s] === DUMPING INSTANCE CONFIGURATION - START ===", manager.name)
 
     # 1. Config entry options
     config_entry = hass.config_entries.async_get_entry(target_config_entry_id)
     if config_entry:
-        _LOGGER.info("[%s] Config Entry Data: %s", manager.name, dict(config_entry.data))
-        _LOGGER.info("[%s] Config Entry Options: %s", manager.name, dict(config_entry.options))
+        merged_config = {**dict(config_entry.data), **dict(config_entry.options)}
+        # _LOGGER.info(
+        #     "[%s] Full configuration:\n--- JSON dump start ---\n%s\n--- JSON dump end ---",
+        #     manager.name,
+        #     json.dumps(merged_config, indent=2, sort_keys=True),
+        # )
+        _LOGGER.info(
+            "[%s] Full configuration:\n--- YAML dump start ---\n%s--- YAML dump end ---",
+            manager.name,
+            yaml.dump(merged_config, sort_keys=True, allow_unicode=True),
+        )
     else:
         _LOGGER.warning("[%s] No config entry found for instance %s", manager.name, instance_name)
 
@@ -306,7 +318,7 @@ async def handle_dump_config_service(hass: HomeAssistant, config_entries: Config
     else:
         _LOGGER.warning("[%s] No device found for config entry ID %s. Cannot dump associated entities.", manager.name, target_config_entry_id)
 
-    _LOGGER.info("[%s] --- DUMPING INSTANCE CONFIGURATION - END ---", manager.name)
+    _LOGGER.info("[%s] === DUMPING INSTANCE CONFIGURATION - END ===", manager.name)
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:

@@ -697,15 +697,27 @@ Direkt auf der Geräteseite einer Instanz können diverse Optionen direkt gescha
 
 ![Steuerelemente](/images/controls.png)
 
+Das Ändern dieser Optionen entspricht dem Ändern der Konfiguration im ConfigFlow. Die Änderungen werden sofort übernommen und die Behangpositionierung wird entsprechend angepasst.
+
 # Konfiguration-Export
 
-Da die **Shadow Control** Konfiguration sehr umfangreich ist, gibt es einen speziellen Service, um die aktuelle Konfiguration im json-Format im Log auszugeben. Dieser Service ist via `Entwicklerwerkzeuge -> Aktionen` und dort der Suche nach `dump_sc_config` zu finden. Wird der Service ohne weitere Konfiguration ausgeführt, wird die Konfiguration der ersten **Shadow Control** Instanz im Log ausgegeben. Das sieht in etwa wie folgt aus:
+Da die **Shadow Control** Konfiguration sehr umfangreich ist, gibt es einen speziellen Service, um die aktuelle Konfiguration im YAML-Format im Log auszugeben. Dieser Service ist via `Entwicklerwerkzeuge -> Aktionen` und dort der Suche nach `dump_sc_config` zu finden. Wird der Service ohne weitere Konfiguration ausgeführt, wird die Konfiguration der ersten **Shadow Control** Instanz im Log ausgegeben. Das sieht (gekürzt) in etwa wie folgt aus:
 
 ```
-2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] --- DUMPING INSTANCE CONFIGURATION ---
-2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Config Entry Data: {'name': 'SC Dummy'}
-2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Config Entry Options: {'brightness_enti...
-2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Manager Internal Config: {'name': 'SC D...
+2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] === DUMPING INSTANCE CONFIGURATION ===
+2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Full configuration:
+--- YAML dump start ---
+brightness_entity: input_number.d01_brightness
+dawn_after_seconds_static: 10.0
+dawn_angle_after_dawn_static: 80.0
+...
+name: SC Dummy
+...
+sun_azimuth_entity: input_number.d04_sun_azimuth
+sun_elevation_entity: input_number.d03_sun_elevation
+target_cover_entity:
+- cover.sc_dummy
+--- YAML dump end ---
 2025-07-06 21:12:57.137 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Associated Device: SC Dummy (id: 8d9324...
 2025-07-06 21:12:57.137 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Associated Entities:
 2025-07-06 21:12:57.137 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - sensor.sc_dummy_hohe: State='80.0', A...
@@ -721,11 +733,12 @@ Da die **Shadow Control** Konfiguration sehr umfangreich ist, gibt es einen spez
 2025-07-06 21:12:57.138 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - switch.sc_dummy_dammerungssteuerung: ...
 2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - switch.sc_dummy_sperren: State='off',...
 2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - switch.sc_dummy_sperren_mit_zwangspos...
-2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] --- END INSTANCE CONFIGURATION DUMP ---
+2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] === END INSTANCE CONFIGURATION DUMP ===
 ```
 
-Die auszugebende Konfiguration kann durch Angabe des entsprechenden Namens wie folgt angegeben werden:
+Zwischen den beiden Marker-Zeilen `--- YAML dump start ---` und `--- YAML dump end ---` befindet sich die gesamte Konfiguration der Instanz im YAML-Format. Diese kann kopiert und gesichert oder auch als Basis für weitere Instanzen verwendet werden.
 
+Die auszugebende Konfiguration kann durch Angabe des entsprechenden Namens wie folgt angegeben werden:
 
 ## UI-Modus
 ```
@@ -733,6 +746,7 @@ name: SC Dummy 3
 ```
 
 ## Yaml-Modus
+
 ```yaml
 action: shadow_control.dump_sc_configuration
 data:
