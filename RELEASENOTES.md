@@ -1,5 +1,8 @@
 # Changes
 
+## 0.8.0
+* Reduce log output during normal operation
+
 ## 0.7.0
 * Improve log dump service to generate c&p ready YAML output
 
