@@ -27,6 +27,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.entity_registry import async_get as async_get_entity_registry
 from homeassistant.helpers.event import async_call_later, async_track_state_change_event
 from homeassistant.helpers.typing import ConfigType
+from homeassistant.util import dt as dt_util
 
 from .const import (
     DEBUG_ENABLED,
@@ -3119,7 +3120,9 @@ class ShadowControlManager:
         self._timer_duration_seconds = delay_seconds
 
         self.next_modification_timestamp = current_utc_time + timedelta(seconds=delay_seconds)
-        self.logger.info("Starting timer for %ss, next modification scheduled for: %s", delay_seconds, self.next_modification_timestamp)
+        # Internal stay at UTC but use local time for logging
+        local_next_modification = dt_util.as_local(self.next_modification_timestamp)
+        self.logger.info("Starting timer for %ss, next modification scheduled for: %s", delay_seconds, local_next_modification)
 
         # Save callback handle from async_call_later to enable timer canceling
         self._timer = async_call_later(self.hass, delay_seconds, self._async_timer_callback)
