@@ -1533,25 +1533,29 @@ class ShadowControlManager:
                 self.logger.debug("Height '%.2f%%' for entity_id %s not sent, value was the same or restricted.", height_to_set_percent, entity)
 
             # Angle positioning
-            if send_angle_command or self._enforce_position_update:
-                if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
-                    self.logger.debug(
-                        "Setting tilt position to %.1f%% (current: %s) for entity_id %s.", angle_to_set_percent, self._previous_shutter_angle, entity
-                    )
-                    try:
-                        await self.hass.services.async_call(
-                            "cover", "set_cover_tilt_position", {"entity_id": entity, "tilt_position": 100 - angle_to_set_percent}, blocking=False
+            if self._facade_config.shutter_type is not ShutterType.MODE3:
+                if send_angle_command or self._enforce_position_update:
+                    if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
+                        self.logger.debug(
+                            "Setting tilt position to %.1f%% (current: %s) for entity_id %s.",
+                            angle_to_set_percent,
+                            self._previous_shutter_angle,
+                            entity,
                         )
-                    except Exception:
-                        self.logger.exception("Failed to set tilt position:")
+                        try:
+                            await self.hass.services.async_call(
+                                "cover", "set_cover_tilt_position", {"entity_id": entity, "tilt_position": 100 - angle_to_set_percent}, blocking=False
+                            )
+                        except Exception:
+                            self.logger.exception("Failed to set tilt position:")
+                    else:
+                        self.logger.debug(
+                            "Skipping tilt set. Supported: %s, Service Found: %s.",
+                            supported_features & CoverEntityFeature.SET_TILT_POSITION,
+                            has_tilt_service,
+                        )
                 else:
-                    self.logger.debug(
-                        "Skipping tilt set. Supported: %s, Service Found: %s.",
-                        supported_features & CoverEntityFeature.SET_TILT_POSITION,
-                        has_tilt_service,
-                    )
-            else:
-                self.logger.debug("Angle '%.2f%%' for entity_id %s not sent, value was the same or restricted.", angle_to_set_percent, entity)
+                    self.logger.debug("Angle '%.2f%%' for entity_id %s not sent, value was the same or restricted.", angle_to_set_percent, entity)
 
         # Always update HA state at the end to reflect the latest internal calculated values and attributes
         self._update_extra_state_attributes()
@@ -1666,9 +1670,11 @@ class ShadowControlManager:
         shutter_angle_offset = self._facade_config.slat_angle_offset
         min_shutter_angle_percent = self._facade_config.slat_min_angle
         max_shutter_angle_percent = self._shadow_config.shutter_max_angle
-        shutter_type = self._facade_config.shutter_type  # String "90_degree_slats" or "180_degree_slats"
-
+        shutter_type = self._facade_config.shutter_type
         effective_elevation = self._effective_elevation
+
+        if shutter_type == ShutterType.MODE3:
+            return 0.0  # Nothing to calculate at mode3 as there is no angle which could be modified
 
         if (
             elevation is None

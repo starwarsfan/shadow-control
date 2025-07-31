@@ -3,6 +3,9 @@
 ## 0.8.0
 * Reduce log output during normal operation
 * Use local timezone for log statements regarding next shutter position update
+* Shutter mode 3:
+  * Fixed warning messages within the log
+  * Disabled some obsolete internal calculations
 
 ## 0.7.0
 * Improve log dump service to generate c&p ready YAML output
