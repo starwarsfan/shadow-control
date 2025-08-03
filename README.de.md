@@ -93,6 +93,10 @@ Go to the [English version](/README.md)
     * [In der Sonne](#in-der-sonne)
   * [Direkte Optionen](#direkte-optionen)
 * [Konfiguration-Export](#konfiguration-export)
+  * [Vorarbeiten](#vorarbeiten)
+  * [Anwendung des Service](#anwendung-des-service)
+  * [UI-Modus](#ui-modus)
+  * [YAML-Modus](#yaml-modus)
 
 # Einführung
 
@@ -701,7 +705,27 @@ Das Ändern dieser Optionen entspricht dem Ändern der Konfiguration im ConfigFl
 
 # Konfiguration-Export
 
-Da die **Shadow Control** Konfiguration sehr umfangreich ist, gibt es einen speziellen Service, um die aktuelle Konfiguration im YAML-Format im Log auszugeben. Dieser Service ist via `Entwicklerwerkzeuge -> Aktionen` und dort der Suche nach `dump_sc_config` zu finden. Wird der Service ohne weitere Konfiguration ausgeführt, wird die Konfiguration der ersten **Shadow Control** Instanz im Log ausgegeben. Das sieht (gekürzt) in etwa wie folgt aus:
+Da die **Shadow Control** Konfiguration sehr umfangreich ist, gibt es einen speziellen Service, um die aktuelle Konfiguration im YAML-Format im Log auszugeben. 
+
+## Vorarbeiten
+Damit das funktioniert, muss der Log-Modus von Home Assistant mindestens auf `info` stehen. In `configuration.yaml` muss dazu der folgende Eintrag vorhanden sein:
+
+```yaml
+logger:
+  default: info
+```
+
+Am einfachsten kommt man an die Log-Ausgabe über das Terminal oder die Home Assistant Konsole. Dort kann der folgende Befehl ausgeführt werden, um das Home Assistant Log kontinuierlich auszugeben:
+
+```bash
+tail -F ~/config/home-assistant.log
+```
+
+Sobald die Log-Ausgabe läuft, den Dump-Service ausführen und die Ausgabe im Terminal beobachten. Die Ausgabe des Log kann mit im Anschluss mit `Ctrl+C` beendet werden.
+
+## Anwendung des Service
+
+Der Service ist via `Entwicklerwerkzeuge -> Aktionen` und dort mit der Suche nach `dump_sc_config` zu finden. Wird der Service ohne weitere Konfiguration ausgeführt, wird die Konfiguration der ersten **Shadow Control** Instanz im Log ausgegeben. Das sieht (gekürzt) in etwa wie folgt aus:
 
 ```
 2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] === DUMPING INSTANCE CONFIGURATION ===

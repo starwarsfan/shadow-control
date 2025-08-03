@@ -93,6 +93,10 @@ Gehe zur [deutschen Version](/README.de.md)
     * [Is in the Sun](#is-in-the-sun)
   * [Direct options](#direct-options)
 * [Configuration export](#configuration-export)
+  * [Preparation](#preparation)
+  * [Usage](#usage)
+  * [UI mode](#ui-mode)
+  * [YAML mode](#yaml-mode)
 
 # Introduction
 
@@ -698,7 +702,28 @@ Modifying these options is the same as modifying them within the configuration f
 
 # Configuration export
 
-As the **Shadow Control** configuration might be very extensive, there is a special service to write the current configuration using YAML format to the Home Assistant log. This service is available via `Developer tools -> Actions` by searching for `dump_sc_config`. If the service is triggered without further modification, the configuration of the first **Shadow Control** instance will be dumped to the log. That might look like this:
+As the **Shadow Control** configuration might be very extensive, there is a special service to write the current configuration using YAML format to the Home Assistant log. 
+
+## Preparation
+
+For this to work, the log level of Home Assistant must be set to at least `info`. The following entry must be present in `configuration.yaml`:
+
+```yaml
+logger:
+  default: info
+```
+
+The easiest way to access the log output is via the terminal or the Home Assistant console. There, you can run the following command to continuously display the Home Assistant log:
+
+```bash
+tail -F ~/config/home-assistant.log
+```
+
+Once the log output is running, execute the dump service and monitor the output in the terminal. You can stop the log output afterward with `Ctrl+C`.
+
+## Usage
+
+This service is available via `Developer tools -> Actions` by searching for `dump_sc_config`. If the service is triggered without further modification, the configuration of the first **Shadow Control** instance will be dumped to the log. That might look like this:
 
 ```
 2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] === DUMPING INSTANCE CONFIGURATION ===
