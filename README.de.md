@@ -7,7 +7,7 @@
 
 **Eine Home Assistant Integration zur vollständig automatischen Steuerung von Raffstoren und Jalousien.**
 
-Go to the [English version](/README.md)
+Go to the [English version](/README.md) or <a href="https://coff.ee/starwarsfan" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/white_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
 
 ## Inhaltsverzeichnis
 
