@@ -1,5 +1,8 @@
 # Changes
 
+## 0.9.0
+* ...
+
 ## 0.8.0
 * Reduce log output during normal operation
 * Use local timezone for log statements regarding the next shutter position update
