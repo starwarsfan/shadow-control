@@ -15,8 +15,21 @@ coverage.xml
 
 # Home Assistant configuration
 config/*
-!config/shadow_control/*
+!config/automations/
+!config/automations/**
+!config/input_boolean/
+!config/input_boolean/**
+!config/input_number/
+!config/input_number/**
+!config/input_select/
+!config/input_select/**
+!config/knx/
+!config/knx/**
+!config/shadow_control/
+!config/shadow_control/**
 !config/configuration.yaml
 !config/scripts.yaml
+!config/template/
+!config/template/**
 
 talk/
