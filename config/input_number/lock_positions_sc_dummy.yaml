@@ -1,0 +1,16 @@
+# =========================================================================
+# Behangposition bei Sperre mit Zwangsposition
+lock_height_sc_dummy:
+  name: "Sperrhöhe SC-Dummy"
+  min: 0
+  max: 100
+  step: 1
+  mode: slider
+  unit_of_measurement: "%"
+lock_angle_sc_dummy:
+  name: "Sperrwinkel SC-Dummy"
+  min: 0
+  max: 100
+  step: 1
+  mode: slider
+  unit_of_measurement: "%"

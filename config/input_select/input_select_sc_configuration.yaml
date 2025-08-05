@@ -1,0 +1,48 @@
+  # =========================================================================
+  # Dynamic inputs
+  # ...
+  # Dynamic inputs end
+  # =========================================================================
+  # General settings
+#  g12_shutter_type:
+#    #[e#30           =Typ, Schwenkbereich (0/1)               #init=0      ]
+#    name: "G12: Shutter type"
+#    options:
+#      - "mode1"
+#      - "mode2"
+#      - "mode3"
+#    #initial: "mode1"
+  g17_movement_restriction_height:
+    #[e#36           =Bwg Hoehe einschraenken (0/1/2)         #init=0      ]
+    name: "G17: Move restriction height"
+    options:
+      - "no_restriction"
+      - "only_close"
+      - "only_open"
+    #initial: "No restriction"
+  g18_movement_restriction_angle:
+    #[e#37           =Bwg Winkel einschraenken (0/1/2)        #init=0      ]
+    name: "G18: Move restriction angle"
+    options:
+      - "no_restriction"
+      - "only_close"
+      - "only_open"
+    #initial: "No restriction"
+  g19_update_lock_output:
+    #[e#38           =Update Sperrausgang (0/1/2)             #init=0      ]
+    name: "G19: Update lock output"
+    options:
+      - "0"
+      - "1"
+      - "2"
+    #initial: "0"
+  # General settings end
+  # =========================================================================
+  # Shadow settings
+  # ...
+  # Shadow settings end
+  # =========================================================================
+  # Dawn settings
+  # ...
+  # Dawn settings end
+  # =========================================================================

@@ -1,0 +1,139 @@
+- id: 'sc_dummy_behang_nach_offnungsstatus'
+  alias: 'SC-Dummy Behang nach Öffnungsstatus'
+  triggers:
+    - trigger: state
+      entity_id:
+        - sensor.status_sc_dummy
+  actions:
+    - variables:
+        input_value_shadow_height: "{{ states('input_number.s04_shadow_max_height') | float(0) }}"
+        input_value_shadow_angle: "{{ states('input_number.s05_shadow_max_angle') | float(0) }}"
+        input_value_dawn_height: "{{ states('input_number.sd04_dawn_max_height') | float(0) }}"
+        input_value_dawn_angle: "{{ states('input_number.sd05_dawn_max_angle') | float(0) }}"
+        fenster_status: "{{ states('sensor.status_sc_dummy') }}"
+
+#    - action: system_log.write
+#      data:
+#        level: info
+#        message: >
+#          Automation 'sc_dummy_behang_nach_offnungsstatus' ausgelöst.
+#          input_value_dawn_height: {{ input_value_dawn_height }},
+#          input_value_dawn_angle: {{ input_value_dawn_angle }},
+#          fenster_status: {{ fenster_status }}.
+
+    - choose:
+        - conditions: "{{ fenster_status == 'Geöffnet' }}"
+          sequence:
+            - action: system_log.write
+              data:
+                level: info
+                message: "Fenster geöffnet, setze Positionen auf 0% (offen)"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_shadow_max_height_sc_dummy
+              data:
+                value: "0"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_shadow_max_angle_sc_dummy
+              data:
+                value: "0"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_dawn_max_height_sc_dummy
+              data:
+                value: "0"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_dawn_max_angle_sc_dummy
+              data:
+                value: "0"
+        - conditions: "{{ fenster_status == 'Geschlossen' }}"
+          sequence:
+            - action: system_log.write
+              data:
+                level: info
+                message: >
+                  Fenster geschlossen, verwende unveränderte Positionen:
+                  Shadow: {{ input_value_shadow_height | round(0) }}%/{{ input_value_shadow_angle | round(0) }}%,
+                  Dawn: {{ input_value_dawn_height | round(0) }}%/{{ input_value_dawn_angle | round(0) }}%.
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_shadow_max_height_sc_dummy
+              data:
+                value: "{{ input_value_shadow_height | round(0) }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_shadow_max_angle_sc_dummy
+              data:
+                value: "{{ input_value_shadow_angle | round(0) }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_dawn_max_height_sc_dummy
+              data:
+                value: "{{ input_value_dawn_height | round(0) }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_dawn_max_angle_sc_dummy
+              data:
+                value: "{{ input_value_dawn_angle | round(0) }}"
+        - conditions: "{{ fenster_status == 'Gekippt' }}"
+          sequence:
+            - action: system_log.write
+              data:
+                level: info
+                message: >
+                  Fenster gekippt, setze Position auf
+                  Shadow: {{ input_value_shadow_height | round(0) }}%/{{ input_value_shadow_angle | round(0) }}%,
+                  Dawn: {{ input_value_dawn_height | round(0) }}/{{ (input_value_dawn_angle * 0.8) | round(0) }}% (80% from {{ input_value_dawn_angle | round(0) }}).
+            # Shadow position: no change if window tilt
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_shadow_max_height_sc_dummy
+              data:
+                value: "{{ input_value_shadow_height | round(0) }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_shadow_max_angle_sc_dummy
+              data:
+                value: "{{ input_value_shadow_angle | round(0) }}"
+            # Dawn position: Modify slat angle
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_dawn_max_height_sc_dummy
+              data:
+                value: "{{ input_value_dawn_height | round(0) }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_dawn_max_angle_sc_dummy
+              data:
+                value: "{{ (input_value_dawn_angle * 0.8) | round(0) }}"
+        - conditions: []
+          sequence:
+            - action: system_log.write
+              data:
+                level: info
+                message: >
+                  Fensterstatus unbekannt, verwende unveränderte Positionen:
+                  Shadow: {{ input_value_shadow_height | round(0) }}%/{{ input_value_shadow_angle | round(0) }}%,
+                  Dawn: {{ input_value_dawn_height | round(0) }}%/{{ input_value_dawn_angle | round(0) }}%.
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_shadow_max_height_sc_dummy
+              data:
+                value: "{{ input_value_shadow_height | round(0) }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_shadow_max_angle_sc_dummy
+              data:
+                value: "{{ input_value_shadow_angle | round(0) }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_dawn_max_height_sc_dummy
+              data:
+                value: "{{ input_value_dawn_height | round(0) }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.automation_dawn_max_angle_sc_dummy
+              data:
+                value: "{{ input_value_dawn_angle | round(0) }}"

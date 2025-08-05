@@ -1,0 +1,22 @@
+sensor:
+  - name: "Status SC-Dummy"
+    state: >-
+      {% if is_state('input_boolean.sc_dummy_offen', 'on') and is_state('input_boolean.sc_dummy_nicht_gekippt', 'on') %}
+        Geöffnet
+      {% elif is_state('input_boolean.sc_dummy_offen', 'on') and is_state('input_boolean.sc_dummy_nicht_gekippt', 'off') %}
+        Gekippt
+      {% elif is_state('input_boolean.sc_dummy_offen', 'off') and is_state('input_boolean.sc_dummy_nicht_gekippt', 'on') %}
+        Geschlossen
+      {% else %}
+        Unbekannt
+      {% endif %}
+    icon: >-
+      {% if is_state('input_boolean.sc_dummy_offen', 'on') and is_state('input_boolean.sc_dummy_nicht_gekippt', 'on') %}
+        kuf:fts_window_2w_open
+      {% elif is_state('input_boolean.sc_dummy_offen', 'on') and is_state('input_boolean.sc_dummy_nicht_gekippt', 'off') %}
+        kuf:fts_window_2w_tilt
+      {% elif is_state('input_boolean.sc_dummy_offen', 'off') and is_state('input_boolean.sc_dummy_nicht_gekippt', 'on') %}
+        kuf:fts_window_2w
+      {% else %}
+        kuf:info_warning
+      {% endif %}

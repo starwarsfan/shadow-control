@@ -1,0 +1,65 @@
+# =========================================================================
+# Shadow inputs
+shadow_brightness_threshold:
+  name: "Beschattung: Helligkeitsschwellwert"
+  min: 1
+  max: 200000
+  step: 100
+  mode: slider
+  unit_of_measurement: "lux"
+shadow_after_x_minutes:
+  name: "Beschattung nach x Minuten"
+  min: 0
+  max: 3600
+  step: 1
+  mode: slider
+  unit_of_measurement: "min"
+shadow_max_height:
+  name: "Beschattung: Maximale Höhe"
+  min: 0
+  max: 100
+  step: 1
+  mode: slider
+  unit_of_measurement: "%"
+shadow_max_angle:
+  name: "Beschattung: Maximaler Lamellenwinkel"
+  min: 0
+  max: 100
+  step: 1
+  mode: slider
+  unit_of_measurement: "%"
+shadow_look_through_after_x_minutes:
+  name: "Beschattung: Durchsicht nach x Minuten"
+  min: 0
+  max: 3600
+  step: 1
+  mode: slider
+  unit_of_measurement: "min"
+shadow_open_after_x_minutes:
+  name: "Beschattung: Öffnen nach x Minuten"
+  min: 0
+  max: 3600
+  step: 1
+  mode: slider
+  unit_of_measurement: "min"
+shadow_look_through_angle:
+  name: "Beschattung: Durchsicht-Lamellenwinkel"
+  min: 0
+  max: 100
+  step: 1
+  mode: slider
+  unit_of_measurement: "%"
+shadow_height_after_shadow:
+  name: "Beschattung: Höhe nach Beschattung"
+  min: 0
+  max: 100
+  step: 1
+  mode: slider
+  unit_of_measurement: "%"
+shadow_angle_after_shadow:
+  name: "Beschattung: Lamellenwinkel nach Beschattung"
+  min: 0
+  max: 100
+  step: 1
+  mode: slider
+  unit_of_measurement: "%"

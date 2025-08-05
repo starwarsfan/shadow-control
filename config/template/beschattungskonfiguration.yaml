@@ -1,0 +1,19 @@
+sensor:
+  - name: "Beschattung nach x Sekunden"
+    unique_id: "shadow_after_x_seconds"
+    unit_of_measurement: "s"
+    state_class: measurement
+    device_class: duration
+    state: "{{ states('input_number.shadow_after_x_minutes') | float(0) * 60 }}"
+  - name: "Beschattung: Durchsicht nach x Sekunden"
+    unique_id: "shadow_look_through_after_x_seconds"
+    unit_of_measurement: "s"
+    state_class: measurement
+    device_class: duration
+    state: "{{ states('input_number.shadow_look_through_after_x_minutes') | float(0) * 60 }}"
+  - name: "Beschattung: Öffnen nach x Sekunden"
+    unique_id: "shadow_open_after_x_seconds"
+    unit_of_measurement: "s"
+    state_class: measurement
+    device_class: duration
+    state: "{{ states('input_number.shadow_open_after_x_minutes') | float(0) * 60 }}"

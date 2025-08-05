@@ -1,0 +1,63 @@
+- name: "Fenster Büro West"
+  move_long_address: 1/0/17     # Fenster Büro West auf/ab
+  stop_address: 1/1/17     # Jalousie Fenster Büro West stop
+  position_address: 1/2/17     # Jalousie Fenster Büro West Höhe anfahren
+  position_state_address: 1/3/217     # Jalousie Fenster Büro West Position Status
+  angle_address: 1/2/117     # Jalousie Fenster Büro West Lamellenwinkel anfahren
+  angle_state_address: 1/3/117     # Jalousie Fenster Büro West Lamellenverstellung Status
+  travelling_time_down: 50
+  travelling_time_up: 60
+- name: "Fenster Büro Ost"
+  move_long_address: 1/0/18     # Fenster Büro Ost auf/ab
+  stop_address: 1/1/18     # Jalousie Fenster Büro Ost stop
+  position_address: 1/2/18     # Jalousie Fenster Büro Ost Höhe anfahren
+  position_state_address: 1/3/218     # Jalousie Fenster Büro Ost Position Status
+  angle_address: 1/2/118     # Jalousie Fenster Büro Ost Lamellenwinkel anfahren
+  angle_state_address: 1/3/118     # Jalousie Fenster Büro Ost Lamellenverstellung Status
+  travelling_time_down: 50
+  travelling_time_up: 60
+- name: "Terassentür Schlafzimmer"
+  move_long_address: 1/0/13     # Terassentür Schlafzimmer auf/ab
+  stop_address: 1/1/13     # Jalousie Terassentür Schlafzimmer stop
+  position_address: 1/2/13     # Jalousie Terassentür Schlafzimmer Höhe anfahren
+  position_state_address: 1/3/213     # Jalousie Terassentür Schlafzimmer Position Status
+  angle_address: 1/2/113     # Jalousie Terassentür Schlafzimmer Lamellenwinkel anfahren
+  angle_state_address: 1/3/113     # Jalousie Terassentür Schlafzimmer Lamellenverstellung Status
+  travelling_time_down: 50
+  travelling_time_up: 60
+- name: Fenster KiZi
+  move_long_address: 1/0/14     # Fenster KiZi auf/ab
+  stop_address: 1/1/14     # Jalousie Fenster KiZi stop
+  position_address: 1/2/14     # Jalousie Fenster KiZi Höhe anfahren
+  position_state_address: 1/3/214     # Jalousie Fenster KiZi Position Status
+  angle_address: 1/2/114     # Jalousie Fenster KiZi Lamellenwinkel anfahren
+  angle_state_address: 1/3/114     # Jalousie Fenster KiZi Lamellenverstellung Status
+  travelling_time_down: 50
+  travelling_time_up: 60
+- name: SC-Dummy
+  move_long_address: 1/0/201
+  stop_address: 1/1/201
+  position_address: 1/2/201
+  position_state_address: 1/3/201
+  angle_address: 1/4/201
+  angle_state_address: 1/5/201
+  travelling_time_down: 8
+  travelling_time_up: 8
+- name: SC-Dummy2
+  move_long_address: 1/0/202
+  stop_address: 1/1/202
+  position_address: 1/2/202
+  position_state_address: 1/3/202
+  angle_address: 1/4/202
+  angle_state_address: 1/5/202
+  travelling_time_down: 8
+  travelling_time_up: 8
+- name: SC-Dummy3
+  move_long_address: 1/0/203
+  stop_address: 1/1/203
+  position_address: 1/2/203
+  position_state_address: 1/3/203
+  angle_address: 1/4/203
+  angle_state_address: 1/5/203
+  travelling_time_down: 8
+  travelling_time_up: 8

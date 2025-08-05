@@ -1,0 +1,26 @@
+  # =========================================================================
+  # Dynamic inputs
+  d07_lock_integration:
+    #[e#12 trigger   =Bausteinsperre (0/1)                    #init=0      ]
+    name: "D07: Locked"
+  d08_lock_integration_with_position:
+    #[e#13 trigger   =Sperre mit Zwangsposition (0/1)         #init=0      ]
+    name: "D08: Locked with position constraint"
+  d13_enforce_positioning:
+    name: "D13: Enforce positioning"
+  # Dynamic inputs end
+  # =========================================================================
+  # Shadow settings
+  s01_shadow_control_enabled:
+    #[e#40 trigger   =Beschattungssteuerung aktiv (0/1)       #init=1      ]
+    name: "S01: Shadow control"
+    #initial: on
+  # Shadow settings end
+  # =========================================================================
+  # Dawn settings
+  sd01_dawn_control_enabled:
+    #[e#60 trigger   =Daemmerungssteuerung aktiv (0/1)        #init=1      ]
+    name: "SD01: Dawn control"
+    #initial: on
+  # Dawn settings end
+  # =========================================================================

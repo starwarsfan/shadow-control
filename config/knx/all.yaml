@@ -1,0 +1,5 @@
+#light: !include knx_lights.yaml
+#sensor: !include knx_sensors.yaml
+#cover: !include knx_covers.yaml
+cover: !include development.yaml
+#climate: !include knx_climate.yaml

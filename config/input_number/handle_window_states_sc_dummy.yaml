@@ -1,0 +1,28 @@
+automation_shadow_max_height_sc_dummy:
+  name: "Automation: Shadow max height SC Dummy (%)"
+  min: 0
+  max: 100
+  step: 1
+  mode: slider
+  #initial: 100
+automation_shadow_max_angle_sc_dummy:
+  name: "Automation: Shadow max angle SC Dummy (%)"
+  min: 0
+  max: 100
+  step: 1
+  mode: slider
+  #initial: 100
+automation_dawn_max_height_sc_dummy:
+  name: "Automation: Dawn max height SC Dummy (%)"
+  min: 0
+  max: 100
+  step: 1
+  mode: slider
+  #initial: 100
+automation_dawn_max_angle_sc_dummy:
+  name: "Automation: Dawn max angle SC Dummy (%)"
+  min: 0
+  max: 100
+  step: 1
+  mode: slider
+  #initial: 100
