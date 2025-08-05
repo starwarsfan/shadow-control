@@ -1,7 +1,9 @@
 # Changes
 
 ## 0.9.0
-* Internal: Automate release creation using GitHub Actions
+* Internals: 
+  * Automate release creation using GitHub Actions
+  * Add full configuration example
 
 ## 0.8.0
 * Reduce log output during normal operation
