@@ -938,11 +938,13 @@ class ShadowControlManager:
                 MovementRestricted.NO_RESTRICTION,  # Fallback to default
                 MovementRestricted,
             )
+            self.logger.debug("Movement restriction height entity configured, using value %s", self._dynamic_config.movement_restriction_height)
         else:
             # No entity configured, use mode value from config
             mode_value_str = self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_STATIC.value, MovementRestricted.NO_RESTRICTION.value)
             try:
                 self._dynamic_config.movement_restriction_height = MovementRestricted(mode_value_str)
+                self.logger.debug("Movement restriction height entity NOT configured, using value %s", self._dynamic_config.movement_restriction_height)
             except ValueError:
                 self.logger.warning(
                     "Invalid mode value '%s' for height movement restriction (no entity configured). Using default '%s'.",
@@ -956,11 +958,13 @@ class ShadowControlManager:
             self._dynamic_config.movement_restriction_angle = self._get_entity_state_value(
                 SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value, MovementRestricted.NO_RESTRICTION, MovementRestricted
             )
+            self.logger.debug("Movement restriction angle entity configured, using value %s", self._dynamic_config.movement_restriction_angle)
         else:
             # No entity configured, use mode value from config
             mode_value_str = self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_STATIC.value, MovementRestricted.NO_RESTRICTION.value)
             try:
                 self._dynamic_config.movement_restriction_angle = MovementRestricted(mode_value_str)
+                self.logger.debug("Movement restriction angle entity NOT configured, using value %s", self._dynamic_config.movement_restriction_angle)
             except ValueError:
                 self.logger.warning(
                     "Invalid mode value '%s' for angle movement restriction (no entity configured). Using default '%s'.",
