@@ -1472,10 +1472,10 @@ class ShadowControlManager:
         async_dispatcher_send(self.hass, f"{DOMAIN}_update_{self.name.lower().replace(' ', '_')}")
 
         # Height Handling
-        height_to_set_percent = self._handle_shutter_height_stepping(shutter_height_percent)
+        # height_to_set_percent = self._handle_shutter_height_stepping(shutter_height_percent)
         height_to_set_percent = self._should_output_be_updated(
             config_value=self._dynamic_config.movement_restriction_height,
-            new_value=height_to_set_percent,
+            new_value=shutter_height_percent,
             previous_value=self._previous_shutter_height,
         )
 
