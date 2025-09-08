@@ -1604,10 +1604,10 @@ class ShadowControlManager:
             # Python's round() rounds to next even number at 0.5 ('bankers rounding').
             # For traders round one would need to use math.floor(x + 0.5) or decimal.
             # For the shutter position, the difference would be minimal, so we're using round().
-            shutter_height_to_set = round(shutter_height_from_bottom_raw)
+            shutter_height_from_bottom = round(shutter_height_from_bottom_raw)
 
             # PHP: 100 - round($shutterHeightToSet * 100 / $shutterOverallHeight);
-            new_shutter_height = 100 - round((shutter_height_to_set * 100) / shutter_overall_height)
+            new_shutter_height = 100 - round((shutter_height_from_bottom * 100) / shutter_overall_height)
 
             if new_shutter_height < shadow_max_height_percent:
                 shutter_height_to_set_percent = new_shutter_height
@@ -1616,7 +1616,7 @@ class ShadowControlManager:
                     elevation,
                     shutter_overall_height,
                     width_of_light_strip,
-                    shutter_height_to_set,
+                    shutter_height_from_bottom,
                     shutter_height_to_set_percent,
                 )
             else:
