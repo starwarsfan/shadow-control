@@ -823,7 +823,7 @@ class ShadowControlManager:
                 self.next_modification_timestamp = None  # Reset for next external change
                 return
 
-            self.logger.debug("External change detected on target cover '%s'. (Updating lock state not implemented yet)", entity_id)
+            #self.logger.debug("External change detected on target cover '%s'. (Updating lock state not implemented yet)", entity_id)
 
             # TODO: Implement logic for LockState handling e.g. manager.update_lock_state(LockState.LOCKED_BY_EXTERNAL_MODIFICATION)
 
