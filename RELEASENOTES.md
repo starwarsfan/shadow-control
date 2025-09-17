@@ -1,6 +1,7 @@
 # Changes
 
 ## 0.9.0
+* Bugfix: Fixed position handling if movement is restricted and integration gets unlocked
 * Internals: 
   * Automate release creation using GitHub Actions
   * Add full configuration example
