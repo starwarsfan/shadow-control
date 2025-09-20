@@ -1,5 +1,8 @@
 # Changes
 
+## 0.10.0
+* Bugfix: Fixed position handling if movement is restricted and integration gets unlocked
+
 ## 0.9.0
 * Bugfix: Fixed position handling if movement is restricted and integration gets unlocked
 * Internals: 
