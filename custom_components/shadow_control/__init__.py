@@ -685,9 +685,16 @@ class ShadowControlManager:
         # Persistant vars
         self.current_shutter_state: ShutterState = ShutterState.NEUTRAL
         self.current_lock_state: LockState = LockState.UNLOCKED
+
+        # The "used_*" values are the finally used values, where lock and movements restriction is taken into account
+        self.used_shutter_angle_degrees: float | None = None
+        self.used_shutter_height: float = 0.0
+        self.used_shutter_angle: float = 0.0
+
+        # The "calculated_*" vales are the results of position calculation based on current sun position
         self.calculated_shutter_height: float = 0.0
         self.calculated_shutter_angle: float = 0.0
-        self.calculated_shutter_angle_degrees: float | None = None
+
         self._effective_elevation: float | None = None
         self._previous_shutter_height: float | None = None
         self._previous_shutter_angle: float | None = None
@@ -1324,10 +1331,12 @@ class ShadowControlManager:
     def _update_extra_state_attributes(self) -> None:
         """Update the persistent values."""
         self._attr_extra_state_attributes = {
-            "current_shutter_state": self.current_shutter_state,
+            "used_shutter_height": self.used_shutter_height,
+            "used_shutter_angle": self.used_shutter_angle,
+            "used_shutter_angle_degrees": self.used_shutter_angle_degrees,
             "calculated_shutter_height": self.calculated_shutter_height,
             "calculated_shutter_angle": self.calculated_shutter_angle,
-            "calculated_shutter_angle_degrees": self.calculated_shutter_angle_degrees,
+            "current_shutter_state": self.current_shutter_state,
             "current_lock_state": self.current_lock_state,
             "next_modification_timestamp": self.next_modification_timestamp,
         }
@@ -1413,7 +1422,9 @@ class ShadowControlManager:
         # These are the *calculated target* values.
         self.calculated_shutter_height = shutter_height_percent
         self.calculated_shutter_angle = shutter_angle_percent
-        self.calculated_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(shutter_angle_percent)
+        self.used_shutter_height = shutter_height_percent
+        self.used_shutter_angle = shutter_angle_percent
+        self.used_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(shutter_angle_percent)
 
         # --- Phase 2: Handle initial run special logic ---
         if self._is_initial_run:
@@ -1448,6 +1459,9 @@ class ShadowControlManager:
 
                     shutter_height_percent = self._dynamic_config.lock_height
                     shutter_angle_percent = self._dynamic_config.lock_angle
+                    self.used_shutter_height = shutter_height_percent
+                    self.used_shutter_angle = shutter_angle_percent
+                    self.used_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(shutter_angle_percent)
                     self.logger.debug(
                         "Integration set to locked with forced position, setting position to %.1f%%/%.1f%%",
                         shutter_height_percent,

@@ -186,9 +186,11 @@ class ShutterType(Enum):
 class SensorEntries(Enum):
     """Enum for the possible sensor entries."""
 
-    TARGET_HEIGHT = "target_height"
-    TARGET_ANGLE = "target_angle"
-    TARGET_ANGLE_DEGREES = "target_angle_degrees"
+    USED_HEIGHT = "target_height"
+    USED_ANGLE = "target_angle"
+    USED_ANGLE_DEGREES = "target_angle_degrees"
+    COMPUTED_HEIGHT = "computed_height"
+    COMPUTED_ANGLE = "computed_angle"
     CURRENT_STATE = "current_state"
     LOCK_STATE = "lock_state"
     NEXT_SHUTTER_MODIFICATION = "next_shutter_modification"

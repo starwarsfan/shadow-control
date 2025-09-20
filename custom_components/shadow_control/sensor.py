@@ -35,7 +35,8 @@ async def async_setup_entry(
     _LOGGER.debug("[%s] Shutter type for instance %s is %s", DOMAIN, manager.name, shutter_type_value)
 
     entities_to_add = [
-        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_HEIGHT),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.USED_HEIGHT),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.COMPUTED_HEIGHT),
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.CURRENT_STATE),
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.LOCK_STATE),
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.NEXT_SHUTTER_MODIFICATION),
@@ -46,8 +47,9 @@ async def async_setup_entry(
         # Sensoren, die nur für MODE3 relevant sind (Jalousien mit Neigungswinkelsteuerung)
         entities_to_add.extend(
             [
-                ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_ANGLE),
-                ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.TARGET_ANGLE_DEGREES),
+                ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.USED_ANGLE),
+                ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.USED_ANGLE_DEGREES),
+                ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.COMPUTED_ANGLE),
             ]
         )
 
@@ -82,15 +84,15 @@ class ShadowControlSensor(SensorEntity):
         self._attr_translation_key = f"sensor_{self._sensor_entry_type.value}"
 
         # Define attributes based on the sensor type
-        if self._sensor_entry_type == SensorEntries.TARGET_HEIGHT:
+        if self._sensor_entry_type == SensorEntries.USED_HEIGHT:
             self._attr_native_unit_of_measurement = "%"
             self._attr_icon = "mdi:pan-vertical"
             self._attr_state_class = "measurement"
-        elif self._sensor_entry_type == SensorEntries.TARGET_ANGLE:
+        elif self._sensor_entry_type == SensorEntries.USED_ANGLE:
             self._attr_native_unit_of_measurement = "%"
             self._attr_icon = "mdi:rotate-3d"
             self._attr_state_class = "measurement"
-        elif self._sensor_entry_type == SensorEntries.TARGET_ANGLE_DEGREES:
+        elif self._sensor_entry_type == SensorEntries.USED_ANGLE_DEGREES:
             self._attr_native_unit_of_measurement = "°"
             self._attr_icon = "mdi:rotate-3d"
             self._attr_state_class = "measurement"
@@ -119,12 +121,16 @@ class ShadowControlSensor(SensorEntity):
     @property
     def native_value(self):  # noqa: ANN201
         """Return the state of the sensor from the manager."""
-        if self._sensor_entry_type == SensorEntries.TARGET_HEIGHT:
+        if self._sensor_entry_type == SensorEntries.USED_HEIGHT:
+            return self._manager.used_shutter_height
+        if self._sensor_entry_type == SensorEntries.USED_ANGLE:
+            return self._manager.used_shutter_angle
+        if self._sensor_entry_type == SensorEntries.USED_ANGLE_DEGREES:
+            return self._manager.used_shutter_angle_degrees
+        if self._sensor_entry_type == SensorEntries.COMPUTED_HEIGHT:
             return self._manager.calculated_shutter_height
-        if self._sensor_entry_type == SensorEntries.TARGET_ANGLE:
+        if self._sensor_entry_type == SensorEntries.COMPUTED_ANGLE:
             return self._manager.calculated_shutter_angle
-        if self._sensor_entry_type == SensorEntries.TARGET_ANGLE_DEGREES:
-            return self._manager.calculated_shutter_angle_degrees
         if self._sensor_entry_type == SensorEntries.CURRENT_STATE:
             return (
                 self._manager.current_shutter_state.value
