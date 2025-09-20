@@ -1390,7 +1390,7 @@ class ShadowControlManager:
 
         self.logger.debug("New shutter state after processing: %s (%s)", self.current_shutter_state.name, self.current_shutter_state.value)
 
-    async def _position_shutter(self, shutter_height_percent: float, shutter_angle_percent: float, shadow_position: bool, stop_timer: bool) -> None:
+    async def _position_shutter(self, shutter_height_percent: float, shutter_angle_percent: float, stop_timer: bool) -> None:
         """Evaluate and perform final shutter positioning commands."""
         self.logger.debug(
             "Starting _position_shutter with target height %.2f%% and angle %.2f%% (is_initial_run: %s, lock_state: %s)",
@@ -1838,7 +1838,6 @@ class ShadowControlManager:
                         await self._position_shutter(
                             target_height,
                             target_angle,
-                            shadow_position=True,
                             stop_timer=True,
                         )
                         self.logger.debug(
@@ -1879,8 +1878,7 @@ class ShadowControlManager:
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                shadow_position=False,
-                stop_timer=True,  # Stop Timer
+                stop_timer=True,
             )
             self.logger.debug(
                 "State %s (%s): Not in the sun or shadow mode disabled, transitioning to (%s%%, %s%%) with state %s",
@@ -1942,7 +1940,6 @@ class ShadowControlManager:
                 await self._position_shutter(
                     target_height,
                     target_angle,
-                    shadow_position=True,
                     stop_timer=False,
                 )
             return ShutterState.SHADOW_FULL_CLOSED
@@ -1952,8 +1949,7 @@ class ShadowControlManager:
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                shadow_position=False,
-                stop_timer=True,  # Stop Timer
+                stop_timer=True,
             )
             self.logger.debug(
                 "State %s (%s): Not in sun or shadow mode deactivated, moving to neutral position (%s%%, %s%%) und state %s",
@@ -2005,7 +2001,6 @@ class ShadowControlManager:
                     await self._position_shutter(
                         target_height,
                         float(shadow_open_slat_angle),
-                        shadow_position=False,
                         stop_timer=True,
                     )
                     self.logger.debug(
@@ -2036,8 +2031,7 @@ class ShadowControlManager:
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                shadow_position=False,
-                stop_timer=True,  # Stop Timer
+                stop_timer=True,
             )
             self.logger.debug(
                 "State %s (%s): Not in the sun or shadow mode disabled, moving to neutral position (%s%%, %s%%) and state %s",
@@ -2083,7 +2077,6 @@ class ShadowControlManager:
                     await self._position_shutter(
                         target_height,
                         target_angle,
-                        shadow_position=True,
                         stop_timer=True,
                     )
                     self.logger.debug(
@@ -2127,8 +2120,7 @@ class ShadowControlManager:
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                shadow_position=False,
-                stop_timer=True,  # Stop Timer (falls ein Timer aktiv war)
+                stop_timer=True,
             )
             self.logger.debug(
                 "State %s (%s): Not in sun or shadow mode disabled, moving to neutral position (%s%%, %s%%) and state %s",
@@ -2177,7 +2169,6 @@ class ShadowControlManager:
                     await self._position_shutter(
                         float(height_after_shadow),
                         float(angle_after_shadow),
-                        shadow_position=False,
                         stop_timer=True,
                     )
                     self.logger.debug(
@@ -2208,8 +2199,7 @@ class ShadowControlManager:
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                shadow_position=False,
-                stop_timer=True,  # Stop Timer
+                stop_timer=True,
             )
             self.logger.debug(
                 "State %s (%s): Not in sun or shadow mode disabled, moving to neutral position (%s%%, %s%%) and state %s",
@@ -2287,7 +2277,6 @@ class ShadowControlManager:
                 await self._position_shutter(
                     float(height_after_shadow),
                     float(angle_after_shadow),
-                    shadow_position=False,
                     stop_timer=True,
                 )
                 self.logger.debug(
@@ -2334,8 +2323,7 @@ class ShadowControlManager:
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                shadow_position=False,
-                stop_timer=True,  # Stop Timer (falls ein Timer aktiv war)
+                stop_timer=True,
             )
             self.logger.debug(
                 "State %s (%s): Not in sun or shadow mode disabled or dawn mode not active, moving to neutral position (%s%%, %s%%) and state %s",
@@ -2409,7 +2397,6 @@ class ShadowControlManager:
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                shadow_position=False,
                 stop_timer=True,
             )
             self.logger.debug(
@@ -2483,7 +2470,6 @@ class ShadowControlManager:
                 await self._position_shutter(
                     float(height_after_dawn),
                     float(angle_after_dawn),
-                    shadow_position=False,
                     stop_timer=True,
                 )
                 self.logger.debug(
@@ -2526,7 +2512,6 @@ class ShadowControlManager:
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                shadow_position=False,
                 stop_timer=True,
             )
             self.logger.debug(
@@ -2571,7 +2556,6 @@ class ShadowControlManager:
                     await self._position_shutter(
                         float(dawn_height),
                         float(dawn_open_slat_angle),
-                        shadow_position=False,
                         stop_timer=True,
                     )
                     self.logger.debug(
@@ -2602,8 +2586,7 @@ class ShadowControlManager:
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                shadow_position=False,
-                stop_timer=True,  # Stop Timer
+                stop_timer=True,
             )
             self.logger.debug(
                 "State %s (%s): Dawn mode disabled, moving to neutral position (%s%%, %s%%) and state %s",
@@ -2648,7 +2631,6 @@ class ShadowControlManager:
                 await self._position_shutter(
                     float(dawn_height),
                     float(dawn_open_slat_angle),
-                    shadow_position=False,
                     stop_timer=False,
                 )
                 self.logger.debug(
@@ -2685,7 +2667,6 @@ class ShadowControlManager:
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                shadow_position=False,
                 stop_timer=True,
             )
             self.logger.debug(
@@ -2735,7 +2716,6 @@ class ShadowControlManager:
                     await self._position_shutter(
                         float(dawn_height),
                         float(dawn_open_slat_angle),
-                        shadow_position=False,
                         stop_timer=False,
                     )
                     self.logger.debug(
@@ -2766,8 +2746,7 @@ class ShadowControlManager:
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                shadow_position=False,
-                stop_timer=True,  # Stop Timer
+                stop_timer=True,
             )
             self.logger.debug(
                 "State %s (%s): Dawn mode disabled, moving to neutral position (%s%%, %s%%) and state %s",
@@ -2824,7 +2803,6 @@ class ShadowControlManager:
                 await self._position_shutter(
                     float(dawn_height),
                     float(dawn_angle),
-                    shadow_position=False,
                     stop_timer=True,
                 )
                 self.logger.debug(
@@ -2848,8 +2826,7 @@ class ShadowControlManager:
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                shadow_position=False,
-                stop_timer=True,  # Stop Timer
+                stop_timer=True,
             )
             self.logger.debug(
                 "State %s (%s): Dawn handling disabled, moving to neutral position (%s%%, %s%%) and state %s",
@@ -2886,7 +2863,6 @@ class ShadowControlManager:
                         await self._position_shutter(
                             float(dawn_height),
                             float(dawn_angle),
-                            shadow_position=False,
                             stop_timer=True,
                         )
                         self.logger.debug(
@@ -2927,8 +2903,7 @@ class ShadowControlManager:
             await self._position_shutter(
                 float(neutral_height),
                 float(neutral_angle),
-                shadow_position=False,
-                stop_timer=True,  # Stop Timer
+                stop_timer=True,
             )
             self.logger.debug(
                 "State %s (%s): Dawn mode disabled, moving to neutral position (%s%%, %s%%) and state %s",
