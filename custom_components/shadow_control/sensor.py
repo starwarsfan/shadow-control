@@ -96,6 +96,14 @@ class ShadowControlSensor(SensorEntity):
             self._attr_native_unit_of_measurement = "°"
             self._attr_icon = "mdi:rotate-3d"
             self._attr_state_class = "measurement"
+        if self._sensor_entry_type == SensorEntries.COMPUTED_HEIGHT:
+            self._attr_native_unit_of_measurement = "%"
+            self._attr_icon = "mdi:pan-vertical"
+            self._attr_state_class = "measurement"
+        elif self._sensor_entry_type == SensorEntries.COMPUTED_ANGLE:
+            self._attr_native_unit_of_measurement = "%"
+            self._attr_icon = "mdi:rotate-3d"
+            self._attr_state_class = "measurement"
         elif self._sensor_entry_type == SensorEntries.CURRENT_STATE:
             self._attr_icon = "mdi:state-machine"
             # States for enums are usually handled directly by HA or via attribute in translation
