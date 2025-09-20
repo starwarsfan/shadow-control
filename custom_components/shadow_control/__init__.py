@@ -1502,8 +1502,8 @@ class ShadowControlManager:
         async_dispatcher_send(self.hass, f"{DOMAIN}_update_{self.name.lower().replace(' ', '_')}")
 
         # Height Handling
-        # height_to_set_percent = self._handle_shutter_height_stepping(shutter_height_percent)
-        height_to_set_percent = self._should_output_be_updated(
+        # self.used_shutter_height = self._handle_shutter_height_stepping(shutter_height_percent)
+        self.used_shutter_height = self._should_output_be_updated(
             config_value=self._dynamic_config.movement_restriction_height,
             new_value=shutter_height_percent,
             previous_value=self._previous_shutter_height,
@@ -1516,18 +1516,18 @@ class ShadowControlManager:
             (-0.001 < abs(shutter_height_percent - self._previous_shutter_height) > 0.001) if self._previous_shutter_height is not None else True
         )
 
-        angle_to_set_percent = self._should_output_be_updated(
+        self.used_shutter_angle = self._should_output_be_updated(
             config_value=self._dynamic_config.movement_restriction_angle, new_value=shutter_angle_percent, previous_value=self._previous_shutter_angle
         )
 
         # --- Phase 5: Send commands if values actually changed (only if not initial run AND not locked) ---
         send_height_command = (
-            -0.001 < abs(height_to_set_percent - self._previous_shutter_height) > 0.001 if self._previous_shutter_height is not None else True
+            -0.001 < abs(self.used_shutter_height - self._previous_shutter_height) > 0.001 if self._previous_shutter_height is not None else True
         )
 
         # Send angle command if the angle changed OR if height changed significantly
         send_angle_command = (
-            -0.001 < abs(angle_to_set_percent - self._previous_shutter_angle) > 0.001 if self._previous_shutter_angle is not None else True
+            -0.001 < abs(self.used_shutter_angle - self._previous_shutter_angle) > 0.001 if self._previous_shutter_angle is not None else True
         ) or height_calculated_different_from_previous
 
         if self._enforce_position_update:
@@ -1536,8 +1536,9 @@ class ShadowControlManager:
             send_angle_command = True
 
         # Position all configured shutters
-        self._previous_shutter_height = height_to_set_percent
-        self._previous_shutter_angle = angle_to_set_percent
+        self._previous_shutter_height = self.used_shutter_height
+        self._previous_shutter_angle = self.used_shutter_angle
+        self.used_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(self.used_shutter_angle)
         for entity in self._target_cover_entity_id:
             current_cover_state: State | None = self.hass.states.get(entity)
 
@@ -1546,14 +1547,14 @@ class ShadowControlManager:
                 continue
 
             # Height positioning
-            if send_height_command or self._enforce_position_update:
+            if send_height_command:
                 if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
                     self.logger.debug(
-                        "Setting position to %.1f%% (current: %s) for entity_id %s.", height_to_set_percent, self._previous_shutter_height, entity
+                        "Setting position to %.1f%% (current: %s) for entity_id %s.", self.used_shutter_height, self._previous_shutter_height, entity
                     )
                     try:
                         await self.hass.services.async_call(
-                            "cover", "set_cover_position", {"entity_id": entity, "position": 100 - height_to_set_percent}, blocking=False
+                            "cover", "set_cover_position", {"entity_id": entity, "position": 100 - self.used_shutter_height}, blocking=False
                         )
                     except Exception:
                         self.logger.exception("Failed to set position:")
@@ -1564,21 +1565,24 @@ class ShadowControlManager:
                         has_pos_service,
                     )
             else:
-                self.logger.debug("Height '%.2f%%' for entity_id %s not sent, value was the same or restricted.", height_to_set_percent, entity)
+                self.logger.debug("Height '%.2f%%' for entity_id %s not sent, value was the same or restricted.", self.used_shutter_height, entity)
 
             # Angle positioning
             if self._facade_config.shutter_type is not ShutterType.MODE3:
-                if send_angle_command or self._enforce_position_update:
+                if send_angle_command:
                     if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
                         self.logger.debug(
                             "Setting tilt position to %.1f%% (current: %s) for entity_id %s.",
-                            angle_to_set_percent,
+                            self.used_shutter_angle,
                             self._previous_shutter_angle,
                             entity,
                         )
                         try:
                             await self.hass.services.async_call(
-                                "cover", "set_cover_tilt_position", {"entity_id": entity, "tilt_position": 100 - angle_to_set_percent}, blocking=False
+                                "cover",
+                                "set_cover_tilt_position",
+                                {"entity_id": entity, "tilt_position": 100 - self.used_shutter_angle},
+                                blocking=False,
                             )
                         except Exception:
                             self.logger.exception("Failed to set tilt position:")
@@ -1589,7 +1593,7 @@ class ShadowControlManager:
                             has_tilt_service,
                         )
                 else:
-                    self.logger.debug("Angle '%.2f%%' for entity_id %s not sent, value was the same or restricted.", angle_to_set_percent, entity)
+                    self.logger.debug("Angle '%.2f%%' for entity_id %s not sent, value was the same or restricted.", self.used_shutter_angle, entity)
 
         # Always update HA state at the end to reflect the latest internal calculated values and attributes
         self._update_extra_state_attributes()
