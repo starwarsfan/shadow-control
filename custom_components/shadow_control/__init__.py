@@ -1147,6 +1147,7 @@ class ShadowControlManager:
                     SCDynamicInput.LOCK_INTEGRATION_STATIC.value
                 ):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration_with_position:
+                        # Lock DISABLED
                         self.logger.info("Simple lock was disabled and lock with position is already disabled -> enforcing position update")
                         self._enforce_position_update = True
                         self._previous_shutter_height = self._height_during_lock_state
@@ -1154,6 +1155,7 @@ class ShadowControlManager:
                     elif new_state.state == "off" and self._dynamic_config.lock_integration_with_position:
                         self.logger.info("Simple lock was disabled but lock with position is already enabled -> no position update")
                     else:
+                        # Lock ENABLED
                         self.logger.info("Simple lock enabled -> no position update, storing current position")
                         self._height_during_lock_state = self._previous_shutter_height
                         self._angle_during_lock_state = self._previous_shutter_angle
@@ -1161,6 +1163,7 @@ class ShadowControlManager:
                     SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_STATIC.value
                 ):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration:
+                        # Lock DISABLED
                         self.logger.info("Lock with position was disabled and simple lock already disabled -> enforcing position update")
                         self._enforce_position_update = True
                         self._previous_shutter_height = self._height_during_lock_state
@@ -1168,6 +1171,7 @@ class ShadowControlManager:
                     elif new_state.state == "off" and self._dynamic_config.lock_integration:
                         self.logger.info("Lock with position was disabled but simple lock already enabled -> no position update")
                     else:
+                        # Lock ENABLED
                         self.logger.info("Lock with position enabled -> storing current position and enforcing position update")
                         self._enforce_position_update = True
                         self._height_during_lock_state = self._dynamic_config.lock_height
