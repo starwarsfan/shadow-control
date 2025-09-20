@@ -2,6 +2,7 @@
 
 ## 0.10.0
 * Bugfix: Fixed position handling if movement is restricted and integration gets unlocked
+* Additional sensor values to show computed height and angle in contrast to used height and angle. The values may differ because of movement restrictions or locking.
 
 ## 0.9.0
 * Bugfix: Fixed position handling if movement is restricted and integration gets unlocked

@@ -651,15 +651,23 @@ Each instance of **Shadow Control** creates a device within Home Assistant, whic
 
 ### Target height
 `target_height`
-This entity holds the calculated shutter height.
+This entity holds the used shutter height.
 
 ### Target angle
 `target_angle`
-This entity holds the calculated shutter angle. This entity is only available with shutter type `mode1` and `mode2`.
+This entity holds the used shutter angle. This entity is only available with shutter type `mode1` and `mode2`.
 
 ### Target angle (degrees)
 `target_angle_degrees`
-This entity holds the calculated shutter angle in degrees (°). This entity is only available with shutter type `mode1` and `mode2`.
+This entity holds the used shutter angle in degrees (°). This entity is only available with shutter type `mode1` and `mode2`.
+
+### Computed height
+`computed_height`
+Here you can find the calculated height of the cover. This value may differ from the actual height reached, for example if a movement restriction is active.
+
+### Computed angle
+`computed_angle`
+Here you can find the calculated slat angle of the cover. This value may differ from the actual slat angle reached, for example if a movement restriction is active. This entity is only available for cover type `mode1` and `mode2`.
 
 ### Current state
 `current_state` / `current_state_text` 

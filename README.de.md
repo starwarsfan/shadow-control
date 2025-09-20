@@ -87,6 +87,8 @@ Go to the [English version](/README.md) or <a href="https://coff.ee/starwarsfan"
     * [Zielhöhe](#zielhöhe)
     * [Zielwinkel](#zielwinkel)
     * [Zielwinkel in Grad](#zielwinkel-in-grad)
+    * [Kalkulatorische Zielhöhe](#kalkulatorische-zielhöhe)
+    * [Kalkulatorischer Zielwinkel](#kalkulatorischer-zielwinkel)
     * [Aktueller Status](#aktueller-status)
     * [Sperr-Status](#sperr-status)
     * [Nächste Behangmodifikation](#nächste-behangmodifikation)
@@ -653,15 +655,23 @@ Jede Instanz von **Shadow Control** legt in Home Assistant ein Gerät an, unter 
 
 ### Zielhöhe
 `target_height`
-Hier ist die errechnete Höhe des Behangs zu finden.
+Hier ist die verwendete Höhe des Behangs zu finden.
 
 ### Zielwinkel
 `target_angle`
-Hier ist der errechnete Lamellenwinkel des Behangs zu finden. Diese Entität ist nur bei Behangtyp `mode1` und `mode2` verfügbar.
+Hier ist der verwendete Lamellenwinkel des Behangs zu finden. Diese Entität ist nur bei Behangtyp `mode1` und `mode2` verfügbar.
 
 ### Zielwinkel in Grad
 `target_angle_degrees`
-Hier ist der errechnete Lamellenwinkel des Behangs in Grad (°) zu finden. Diese Entität ist nur bei Behangtyp `mode1` und `mode2` verfügbar.
+Hier ist der verwendete Lamellenwinkel des Behangs in Grad (°) zu finden. Diese Entität ist nur bei Behangtyp `mode1` und `mode2` verfügbar.
+
+### Kalkulatorische Zielhöhe
+`computed_height`
+Hier ist die errechnete Höhe des Behangs zu finden. Dieser Wert kann sich von der tatsächlich angefahrenen Höhe unterscheiden, wenn bspw. eine Bewegungseinschränkung aktiv ist.
+
+### Kalkulatorischer Zielwinkel
+`computed_angle`
+Hier ist der errechnete Lamellenwinkel des Behangs zu finden. Dieser Wert kann sich von dem tatsächlich angefahrenen Lamellenwinkel unterscheiden, wenn bspw. eine Bewegungseinschränkung aktiv ist. Diese Entität ist nur bei Behangtyp `mode1` und `mode2` verfügbar.
 
 ### Aktueller Status
 `current_state` / `current_state_text`
