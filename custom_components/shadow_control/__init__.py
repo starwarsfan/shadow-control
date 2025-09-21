@@ -1422,9 +1422,6 @@ class ShadowControlManager:
         # These are the *calculated target* values.
         self.calculated_shutter_height = shutter_height_percent
         self.calculated_shutter_angle = shutter_angle_percent
-        self.used_shutter_height = shutter_height_percent
-        self.used_shutter_angle = shutter_angle_percent
-        self.used_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(shutter_angle_percent)
 
         # --- Phase 2: Handle initial run special logic ---
         if self._is_initial_run:
