@@ -312,16 +312,16 @@
         "name": "Höhe"
       },
       "sensor_target_angle": {
-        "name": "Lamellenwinkel"
+        "name": "Winkel"
       },
       "sensor_target_angle_degrees": {
-        "name": "Lamellenwinkel (Grad)"
+        "name": "Winkel (Grad)"
       },
       "sensor_computed_height": {
         "name": "Höhe (kalkulatorisch)"
       },
       "sensor_computed_angle": {
-        "name": "Lamellenwinkel (kalkulatorisch)"
+        "name": "Winkel (kalkulatorisch)"
       },
       "sensor_current_state": {
         "name": "Status (numerisch)"

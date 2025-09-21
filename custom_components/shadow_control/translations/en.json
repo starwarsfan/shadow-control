@@ -312,16 +312,16 @@
         "name": "Height"
       },
       "sensor_target_angle": {
-        "name": "Slat Angle"
+        "name": "Angle"
       },
       "sensor_target_angle_degrees": {
-        "name": "Slat Angle (Degrees)"
+        "name": "Angle (Degrees)"
       },
       "sensor_computed_height": {
         "name": "Height (computed)"
       },
       "sensor_computed_angle": {
-        "name": "Slat Angle (computed)"
+        "name": "Angle (computed)"
       },
       "sensor_current_state": {
         "name": "State (numeric)"
