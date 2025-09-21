@@ -1440,11 +1440,6 @@ class ShadowControlManager:
         is_locked = self.current_lock_state != LockState.UNLOCKED
         if is_locked:
             self.logger.debug("Integration is locked (%s). Calculations are running, but physical outputs are skipped.", self.current_lock_state.name)
-            # Update internal _previous values here to reflect that if it *were* unlocked,
-            # it would have moved to these calculated positions.
-            # This prepares for a smooth transition when unlocked.
-            self._previous_shutter_height = shutter_height_percent
-            self._previous_shutter_angle = shutter_angle_percent
 
             if self.current_lock_state == LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION:
                 for entity in self._target_cover_entity_id:
