@@ -137,6 +137,7 @@ class ShadowControlConfigBooleanSwitch(SwitchEntity, RestoreEntity):
             # The `is_on` property is already reading the value from `_config_entry.options`.
             # If the key is not within `options` the default value (False) is used.
 
+
 class ShadowControlRuntimeBooleanSwitch(SwitchEntity, RestoreEntity):
     """Represent a boolean option from Shadow Control as switch."""
 
