@@ -23,31 +23,31 @@ async def async_setup_entry(
     instance_name = config_entry.data.get(SC_CONF_NAME, DOMAIN)
 
     entities = [
-        ShadowControlBooleanSwitch(
+        ShadowControlConfigBooleanSwitch(
             hass, config_entry, key=DEBUG_ENABLED, translation_key="debug_enabled", instance_name=instance_name, icon="mdi:developer-board"
         ),
-        ShadowControlBooleanSwitch(
+        ShadowControlConfigBooleanSwitch(
             hass,
             config_entry,
             key=SCShadowInput.CONTROL_ENABLED_STATIC.value,
             translation_key="shadow_control_enabled_static",
             instance_name=instance_name,
         ),
-        ShadowControlBooleanSwitch(
+        ShadowControlConfigBooleanSwitch(
             hass,
             config_entry,
             key=SCDawnInput.CONTROL_ENABLED_STATIC.value,
             translation_key="dawn_control_enabled_static",
             instance_name=instance_name,
         ),
-        ShadowControlBooleanSwitch(
+        ShadowControlRuntimeBooleanSwitch(
             hass,
             config_entry,
             key=SCDynamicInput.LOCK_INTEGRATION_STATIC.value,
             translation_key="lock_integration_static",
             instance_name=instance_name,
         ),
-        ShadowControlBooleanSwitch(
+        ShadowControlRuntimeBooleanSwitch(
             hass,
             config_entry,
             key=SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_STATIC.value,
@@ -60,7 +60,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class ShadowControlBooleanSwitch(SwitchEntity, RestoreEntity):
+class ShadowControlConfigBooleanSwitch(SwitchEntity, RestoreEntity):
     """Represent a boolean config option from Shadow Control as switch."""
 
     def __init__(
@@ -136,3 +136,58 @@ class ShadowControlBooleanSwitch(SwitchEntity, RestoreEntity):
             _LOGGER.debug("[%s] Restoring last state for %s: %s", DOMAIN, self.name, last_state.state)
             # The `is_on` property is already reading the value from `_config_entry.options`.
             # If the key is not within `options` the default value (False) is used.
+
+class ShadowControlRuntimeBooleanSwitch(SwitchEntity, RestoreEntity):
+    """Represent a boolean option from Shadow Control as switch."""
+
+    def __init__(
+        self, hass: HomeAssistant, config_entry: ConfigEntry, key: str, translation_key: str, instance_name: str, icon: str | None = None
+    ) -> None:
+        """Initialize the switch."""
+        self.hass = hass
+        self._config_entry = config_entry
+        self._key = key
+
+        self._attr_translation_key = translation_key
+        self._attr_has_entity_name = True
+
+        self._attr_unique_id = f"{config_entry.entry_id}_{key}"
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, config_entry.entry_id)},
+            name=instance_name,
+            manufacturer="Yves Schumann",
+            model="Shadow Control",
+            # entry_type=DeviceInfo.EntryType.SERVICE,
+        )
+        self._attr_extra_state_attributes = {}  # For additional attributes if required
+
+        if icon:
+            self._attr_icon = icon
+
+        self._state = False
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return true if the switch is on."""
+        return self._state
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Switch the switch on."""
+        self._state = True
+        self.async_write_ha_state()
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Switch the switch off."""
+        self._state = False
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        """Register callbacks with entity registration at HA."""
+        await super().async_added_to_hass()
+
+        # Restore last state after Home Assistant restart.
+        last_state = await self.async_get_last_state()
+        if last_state:
+            _LOGGER.debug("[%s] Restoring last state for %s: %s", DOMAIN, self.name, last_state.state)
+            self._state = last_state.state == "on"
