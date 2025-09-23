@@ -1,6 +1,7 @@
 """Shadow Control switch implementation."""
 
 import logging
+import re
 from typing import Any
 
 from homeassistant.components.switch import SwitchEntity
@@ -9,7 +10,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.restore_state import RestoreEntity
 
-from .const import DEBUG_ENABLED, DOMAIN, SC_CONF_NAME, SCDawnInput, SCDynamicInput, SCShadowInput
+from .const import DEBUG_ENABLED, DOMAIN, DOMAIN_DATA_MANAGERS, SC_CONF_NAME, SCDawnInput, SCDynamicInput, SCShadowInput
 
 _LOGGER = logging.getLogger(__name__)
 
