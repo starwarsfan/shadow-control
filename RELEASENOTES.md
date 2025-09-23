@@ -1,5 +1,13 @@
 # Changes
 
+## 0.11.0
+* Breaking change:
+  * Remove configuration options for the following entities, as they are automatically created by the integration:
+    * `lock_integration_entity`
+    * `lock_integration_static`
+    * `lock_integration_with_position_entity`
+    * `lock_integration_with_position_static`
+
 ## 0.10.0
 * Bugfix: Fixed position handling if movement is restricted and integration gets unlocked
 * Additional sensor values to show computed height and angle in contrast to used height and angle. The values may differ because of movement restrictions or locking.
