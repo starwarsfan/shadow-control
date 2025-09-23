@@ -368,7 +368,7 @@
       "dawn_control_enabled_static": {
         "name": "Dawn Control"
       },
-      "lock_integration_static": {
+      "lock_integration_entity": {
         "name": "Lock"
       },
       "lock_integration_with_position_entity": {

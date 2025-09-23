@@ -368,7 +368,7 @@
       "dawn_control_enabled_static": {
         "name": "Dämmerungssteuerung"
       },
-      "lock_integration_static": {
+      "lock_integration_entity": {
         "name": "Sperren"
       },
       "lock_integration_with_position_entity": {
