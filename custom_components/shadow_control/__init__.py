@@ -770,7 +770,7 @@ class ShadowControlManager:
         # Will be called after instantiation of the manager.
         self.logger.debug("Starting manager lifecycle...")
         self._async_register_listeners()
-        await self._async_calculate_and_apply_cover_position(None)
+        await self.async_calculate_and_apply_cover_position(None)
         self.logger.debug("Manager lifecycle started.")
 
     def _async_register_listeners(self) -> None:
@@ -841,7 +841,7 @@ class ShadowControlManager:
         # Check if state really was changed
         if old_state is None or new_state is None or old_state.state != new_state.state:
             self.logger.debug("Input entity '%s' changed. Triggering recalculation.", entity_id)
-            await self._async_calculate_and_apply_cover_position(event)
+            await self.async_calculate_and_apply_cover_position(event)
         else:
             self.logger.debug("State change for %s detected, but value did not change. No recalculation triggered.", entity_id)
 
@@ -897,7 +897,7 @@ class ShadowControlManager:
     async def _async_home_assistant_started(self, event: Event) -> None:
         """Calculate positions after start of Home Assistant."""
         self.logger.debug("Home Assistant started event received. Performing initial calculation.")
-        await self._async_calculate_and_apply_cover_position(None)
+        await self.async_calculate_and_apply_cover_position(None)
 
     async def async_stop(self) -> None:
         """Stop ShadowControlManager."""
@@ -1167,9 +1167,9 @@ class ShadowControlManager:
         """Handle changes to any relevant input entity for this specific cover."""
         self.logger.debug("Input change detected. Event: %s", event)
 
-        await self._async_calculate_and_apply_cover_position(event)
+        await self.async_calculate_and_apply_cover_position(event)
 
-    async def _async_calculate_and_apply_cover_position(self, event: Event | None) -> None:
+    async def async_calculate_and_apply_cover_position(self, event: Event | None) -> None:
         """Calculate and apply cover and tilt position."""
         self.logger.debug("=====================================================================")
         self.logger.debug("Calculating and applying cover position, triggered by event: %s", event.data if event else "None")
@@ -3164,7 +3164,7 @@ class ShadowControlManager:
 
         if delay_seconds <= 0:
             self.logger.debug("Timer delay is <= 0 (%ss). Trigger immediate recalculation", delay_seconds)
-            await self._async_calculate_and_apply_cover_position(None)
+            await self.async_calculate_and_apply_cover_position(None)
             # At immediate recalculation, there is no new timer
             self.next_modification_timestamp = None
             return
@@ -3203,7 +3203,7 @@ class ShadowControlManager:
         self._timer = None
         self._timer_start_time = None
         self._timer_duration_seconds = None
-        await self._async_calculate_and_apply_cover_position(None)
+        await self.async_calculate_and_apply_cover_position(None)
 
     def get_remaining_timer_seconds(self) -> float | None:
         """Return remaining time of running timer or None if no timer is running."""
