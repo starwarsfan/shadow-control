@@ -135,9 +135,7 @@
           "sun_azimuth_entity": "Sun azimuth",
           "shutter_current_height_entity": "Current shutter height",
           "shutter_current_angle_entity": "Current shutter slat angle",
-          "lock_integration_static": "Lock integration",
           "lock_integration_entity": "Lock integration",
-          "lock_integration_with_position_static": "Lock integration with enforced position",
           "lock_integration_with_position_entity": "Lock integration with enforced position",
           "lock_height_static": "Enforced position height",
           "lock_height_entity": "Enforced position height",
@@ -156,9 +154,7 @@
           "sun_azimuth_entity": "Azimuth of the sun, usually from sun entity or a weather station.",
           "shutter_current_height_entity": "Current shutter height as the returned value from the used actor.",
           "shutter_current_angle_entity": "Current shutter angle as the returned value from the used actor.",
-          "lock_integration_static": "Lock the whole integration to prevent any shutter position modification (static).",
           "lock_integration_entity": "Lock the whole integration to prevent any shutter position modification (by entity).",
-          "lock_integration_with_position_static": "Lock the whole integration by moving the shutter to a dedicated position (static).",
           "lock_integration_with_position_entity": "Lock the whole integration by moving the shutter to a dedicated position (by entity).",
           "lock_height_static": "Enforced lock shutter height (static).",
           "lock_height_entity": "Enforced lock shutter height (by entity).",
@@ -375,7 +371,7 @@
       "lock_integration_static": {
         "name": "Lock"
       },
-      "lock_integration_with_position_static": {
+      "lock_integration_with_position_entity": {
         "name": "Lock with position"
       }
     }
