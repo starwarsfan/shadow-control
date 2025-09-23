@@ -969,15 +969,15 @@ class ShadowControlManager:
         self._dynamic_config.shutter_current_height = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value, -1.0, float)
         self._dynamic_config.shutter_current_angle = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value, -1.0, float)
 
-        lock_integration = self._get_static_value(SCDynamicInput.LOCK_INTEGRATION_STATIC.value, False, bool, log_warning=False)
-        self._dynamic_config.lock_integration = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, lock_integration, bool)
+        entity_id = f"switch.{self.sanitized_name}_shadow_control_{self.sanitized_name}_{SCDynamicInput.LOCK_INTEGRATION_ENTITY.value}"
+        state = self.hass.states.get(entity_id)
+        self.logger.debug("Lock integration entity ID: %s, state: %s", entity_id, state)
+        self._dynamic_config.lock_integration = state and state.state == "on"
 
-        lock_integration_with_position = self._get_static_value(
-            SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_STATIC.value, False, bool, log_warning=False
-        )
-        self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(
-            SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, lock_integration_with_position, bool
-        )
+        entity_id = f"switch.{self.sanitized_name}_shadow_control_{self.sanitized_name}_{SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value}"
+        state = self.hass.states.get(entity_id)
+        self.logger.debug("Lock integration with position entity ID: %s, state: %s", entity_id, state)
+        self._dynamic_config.lock_integration_with_position = state and state.state == "on"
 
         self.current_lock_state = self._calculate_lock_state()
 
