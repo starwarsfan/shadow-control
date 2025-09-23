@@ -202,3 +202,6 @@ class ShadowControlRuntimeBooleanSwitch(SwitchEntity, RestoreEntity):
         if last_state:
             _LOGGER.debug("[%s] Restoring last state for %s: %s", DOMAIN, self.name, last_state.state)
             self._state = last_state.state == "on"
+
+    async def _notify_integration(self) -> None:
+        await self.hass.data[DOMAIN_DATA_MANAGERS][self._config_entry.entry_id].update_input_values()
