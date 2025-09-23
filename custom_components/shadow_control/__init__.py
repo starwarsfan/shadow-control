@@ -1198,9 +1198,7 @@ class ShadowControlManager:
                 elif entity == self._config.get(SCDawnInput.CONTROL_ENABLED_ENTITY.value):
                     self.logger.info("Dawn control enable changed to %s", new_state.state)
                     dawn_handling_was_disabled = new_state.state == "off"
-                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value) or entity == self._config.get(
-                    SCDynamicInput.LOCK_INTEGRATION_STATIC.value
-                ):
+                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration_with_position:
                         # Lock DISABLED
                         self.logger.info("Simple lock was disabled and lock with position is already disabled -> enforcing position update")
@@ -1214,9 +1212,7 @@ class ShadowControlManager:
                         self.logger.info("Simple lock enabled -> no position update, storing current position")
                         self._height_during_lock_state = self._previous_shutter_height
                         self._angle_during_lock_state = self._previous_shutter_angle
-                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value) or entity == self._config.get(
-                    SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_STATIC.value
-                ):
+                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration:
                         # Lock DISABLED
                         self.logger.info("Lock with position was disabled and simple lock already disabled -> enforcing position update")
