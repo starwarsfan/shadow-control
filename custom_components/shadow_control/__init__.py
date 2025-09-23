@@ -916,7 +916,7 @@ class ShadowControlManager:
 
         self.logger.debug("Manager lifecycle stopped.")
 
-    async def _update_input_values(self, event: Event | None = None) -> None:
+    async def update_input_values(self, event: Event | None = None) -> None:
         """Update all relevant input values from configuration or Home Assistant states."""
         # self.logger.debug("Updating all input values")
 
@@ -1174,7 +1174,7 @@ class ShadowControlManager:
         self.logger.debug("=====================================================================")
         self.logger.debug("Calculating and applying cover position, triggered by event: %s", event.data if event else "None")
 
-        await self._update_input_values()
+        await self.update_input_values()
 
         shadow_handling_was_disabled = False
         dawn_handling_was_disabled = False
