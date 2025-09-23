@@ -574,6 +574,15 @@ class ShadowControlManager:
         self.name = config[SC_CONF_NAME]
         self._target_cover_entity_id = config[TARGET_COVER_ENTITY_ID]
 
+        # Sanitize instance name
+        # 1. Replace spaces with underscores
+        # 2. All lowercase
+        # 3. Remove all characters that are not alphanumeric or underscores
+        sanitized_instance_name = re.sub(r"\s+", "_", self.name).lower()
+        sanitized_instance_name = re.sub(r"[^a-z0-9_]", "", sanitized_instance_name)
+        self.sanitized_name = sanitized_instance_name
+        self.logger.debug("Sanitized instance name from %s to %s", self.name, self.sanitized_name)
+
         # Check if critical values are missing, even if this might be done within async_setup_entry
         if not self.name:
             self.logger.warning("Manager init: Manager name is missing in config for entry %s. Using fallback.", entry_id)
