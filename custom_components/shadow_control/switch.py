@@ -169,7 +169,7 @@ class ShadowControlRuntimeBooleanSwitch(SwitchEntity, RestoreEntity):
         self._attr_translation_key = description.key
         self._attr_has_entity_name = True
 
-        self._attr_unique_id = f"{config_entry.entry_id}_{key}"
+        self._attr_unique_id = f"{instance_name}_{key}"
 
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, config_entry.entry_id)},
@@ -207,6 +207,13 @@ class ShadowControlRuntimeBooleanSwitch(SwitchEntity, RestoreEntity):
     async def async_added_to_hass(self) -> None:
         """Register callbacks with entity registration at HA."""
         await super().async_added_to_hass()
+
+        # Ensure the mapping dictionary exists
+        if "unique_id_map" not in self.hass.data.setdefault(DOMAIN, {}):
+            self.hass.data[DOMAIN]["unique_id_map"] = {}
+
+        # Store the mapping
+        self.hass.data[DOMAIN]["unique_id_map"][self.unique_id] = self.entity_id
 
         # Restore last state after Home Assistant restart.
         last_state = await self.async_get_last_state()
