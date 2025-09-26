@@ -972,9 +972,11 @@ class ShadowControlManager:
         self._dynamic_config.shutter_current_angle = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value, -1.0, float)
 
         # Get lock states and calculate overall integration lock state
-        self._dynamic_config.lock_integration = await self._get_switch_state_by_translation_key(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value)
-        self._dynamic_config.lock_integration_with_position = await self._get_switch_state_by_translation_key(
-            SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value
+        self._dynamic_config.lock_integration = self._get_entity_state_value(
+            f"{self.sanitized_name}_{SCDynamicInput.LOCK_INTEGRATION_ENTITY.value}", False, bool
+        )
+        self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(
+            f"{self.sanitized_name}_{SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value}", False, bool
         )
         self.current_lock_state = self._calculate_lock_state()
 
@@ -3015,6 +3017,10 @@ class ShadowControlManager:
         """Extract dynamic value from an entity state."""
         # Type conversion and default will be handled
         entity_id = self._options.get(key)  # This will be the string entity_id or None
+
+        if entity_id is None or not isinstance(entity_id, str) or entity_id == "":
+            unique_id_map = self.hass.data.get(DOMAIN, {}).get("unique_id_map", {})
+            entity_id = unique_id_map.get(key)
 
         if entity_id is None or not isinstance(entity_id, str) or entity_id == "":
             # if log_warning:
