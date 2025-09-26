@@ -27,6 +27,7 @@ from homeassistant.helpers.device_registry import async_get as async_get_device_
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.entity_registry import async_get as async_get_entity_registry
 from homeassistant.helpers.event import async_call_later, async_track_state_change_event
+from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import dt as dt_util
 
@@ -970,40 +971,11 @@ class ShadowControlManager:
         self._dynamic_config.shutter_current_height = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value, -1.0, float)
         self._dynamic_config.shutter_current_angle = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value, -1.0, float)
 
-        _entity_registry = async_get_entity_registry(self.hass)
-        _device_registry = async_get_device_registry(self.hass)
-        device = _device_registry.async_get_device({(DOMAIN, self._entry_id)})
-
-        switch_entity_id = None
-        translated_name = "Sperren"  # Or fetch from your translation logic
-        if device:
-            for entity in _entity_registry.entities.values():
-                if entity.device_id == device.id and entity.domain == "switch" and entity.original_name == translated_name:
-                    switch_entity_id = entity.entity_id
-                    break
-        if switch_entity_id:
-            state = self.hass.states.get(switch_entity_id)
-            self.logger.debug("Lock integration with position entity ID: %s, state: %s", switch_entity_id, state)
-            self._dynamic_config.lock_integration = state and state.state == "on"
-        else:
-            self.logger.warning("Could not find switch entity for translated name: %s", translated_name)
-            self._dynamic_config.lock_integration = False
-
-        switch_entity_id = None
-        translated_name = "Sperren mit Zwangsposition"  # Or fetch from your translation logic
-        if device:
-            for entity in _entity_registry.entities.values():
-                if entity.device_id == device.id and entity.domain == "switch" and entity.original_name == translated_name:
-                    switch_entity_id = entity.entity_id
-                    break
-        if switch_entity_id:
-            state = self.hass.states.get(switch_entity_id)
-            self.logger.debug("Lock integration with position entity ID: %s, state: %s", switch_entity_id, state)
-            self._dynamic_config.lock_integration_with_position = state and state.state == "on"
-        else:
-            self.logger.warning("Could not find switch entity for translated name: %s", translated_name)
-            self._dynamic_config.lock_integration_with_position = False
-
+        # Get lock states and calculate overall integration lock state
+        self._dynamic_config.lock_integration = await self._get_switch_state_by_translation_key(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value)
+        self._dynamic_config.lock_integration_with_position = await self._get_switch_state_by_translation_key(
+            SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value
+        )
         self.current_lock_state = self._calculate_lock_state()
 
         lock_height_config_value = self._get_static_value(SCDynamicInput.LOCK_HEIGHT_STATIC.value, 0, float, log_warning=False)
@@ -3249,6 +3221,32 @@ class ShadowControlManager:
         if self._dynamic_config.lock_integration:
             return LockState.LOCKED_MANUALLY
         return LockState.UNLOCKED
+
+    async def _get_switch_state_by_translation_key(self, translation_key: str) -> bool | None:
+        """Get the state of a switch entity by its translation key."""
+        _entity_registry = async_get_entity_registry(self.hass)
+        _device_registry = async_get_device_registry(self.hass)
+        device = _device_registry.async_get_device({(DOMAIN, self._entry_id)})
+        language = getattr(self.hass.config, "language", "en")
+        translations = await async_get_translations(self.hass, language, "entity", [DOMAIN])
+
+        # Build the translation key string
+        key = f"component.{DOMAIN}.entity.switch.{translation_key}.name"
+        translated_name = translations.get(key)
+        # self.logger.debug("Translated name for key '%s': %s", key, translated_name)
+
+        if not translated_name or not device:
+            self.logger.warning("Could not find translation for key %s or device is None", key)
+            return None
+
+        for entity in _entity_registry.entities.values():
+            if entity.device_id == device.id and entity.domain == "switch" and entity.original_name == translated_name:
+                state = self.hass.states.get(entity.entity_id)
+                self.logger.debug("Found switch entity: %s, state: %s", entity.entity_id, state)
+                return state and state.state == "on"
+
+        self.logger.warning("Could not find switch entity for translated name: %s", translated_name)
+        return None
 
 
 # Helper for dynamic log output
