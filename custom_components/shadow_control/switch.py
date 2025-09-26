@@ -4,7 +4,7 @@ import logging
 import re
 from typing import Any
 
-from homeassistant.components.switch import SwitchEntity
+from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
@@ -50,15 +50,21 @@ async def async_setup_entry(
             hass,
             config_entry,
             key=SCDynamicInput.LOCK_INTEGRATION_ENTITY.value,
-            translation_key=SCDynamicInput.LOCK_INTEGRATION_ENTITY.value,
             instance_name=sanitized_instance_name,
+            description=SwitchEntityDescription(
+                key=SCDynamicInput.LOCK_INTEGRATION_ENTITY.value,
+                name="Lock",  # default (English) fallback if no translation found
+            ),
         ),
         ShadowControlRuntimeBooleanSwitch(
             hass,
             config_entry,
             key=SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value,
-            translation_key=SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value,
             instance_name=sanitized_instance_name,
+            description=SwitchEntityDescription(
+                key=SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value,
+                name="Lock with position",  # default (English) fallback if no translation found
+            ),
         ),
     ]
 
@@ -148,14 +154,19 @@ class ShadowControlRuntimeBooleanSwitch(SwitchEntity, RestoreEntity):
     """Represent a boolean option from Shadow Control as switch."""
 
     def __init__(
-        self, hass: HomeAssistant, config_entry: ConfigEntry, key: str, translation_key: str, instance_name: str, icon: str | None = None
+        self,
+        hass: HomeAssistant,
+        config_entry: ConfigEntry,
+        key: str,
+        description: SwitchEntityDescription,
+        instance_name: str,
+        icon: str | None = None,
     ) -> None:
         """Initialize the switch."""
         self.hass = hass
+        self.entity_description = description
         self._config_entry = config_entry
-        self._key = key
-        self._attr_name = key
-        self._attr_translation_key = translation_key
+        self._attr_translation_key = description.key
         self._attr_has_entity_name = True
 
         self._attr_unique_id = f"{config_entry.entry_id}_{key}"
