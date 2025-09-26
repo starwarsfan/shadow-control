@@ -23,6 +23,7 @@ from homeassistant.const import (
 from homeassistant.core import Event, HomeAssistant, ServiceCall, State, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry
+from homeassistant.helpers.device_registry import async_get as async_get_device_registry
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.entity_registry import async_get as async_get_entity_registry
 from homeassistant.helpers.event import async_call_later, async_track_state_change_event
@@ -969,15 +970,39 @@ class ShadowControlManager:
         self._dynamic_config.shutter_current_height = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value, -1.0, float)
         self._dynamic_config.shutter_current_angle = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value, -1.0, float)
 
-        entity_id = f"switch.{self.sanitized_name}_{SCDynamicInput.LOCK_INTEGRATION_ENTITY.value}"
-        state = self.hass.states.get(entity_id)
-        self.logger.debug("Lock integration entity ID: %s, state: %s", entity_id, state)
-        self._dynamic_config.lock_integration = state and state.state == "on"
+        _entity_registry = async_get_entity_registry(self.hass)
+        _device_registry = async_get_device_registry(self.hass)
+        device = _device_registry.async_get_device({(DOMAIN, self._entry_id)})
 
-        entity_id = f"switch.{self.sanitized_name}_{SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value}"
-        state = self.hass.states.get(entity_id)
-        self.logger.debug("Lock integration with position entity ID: %s, state: %s", entity_id, state)
-        self._dynamic_config.lock_integration_with_position = state and state.state == "on"
+        switch_entity_id = None
+        translated_name = "Sperren"  # Or fetch from your translation logic
+        if device:
+            for entity in _entity_registry.entities.values():
+                if entity.device_id == device.id and entity.domain == "switch" and entity.original_name == translated_name:
+                    switch_entity_id = entity.entity_id
+                    break
+        if switch_entity_id:
+            state = self.hass.states.get(switch_entity_id)
+            self.logger.debug("Lock integration with position entity ID: %s, state: %s", switch_entity_id, state)
+            self._dynamic_config.lock_integration = state and state.state == "on"
+        else:
+            self.logger.warning("Could not find switch entity for translated name: %s", translated_name)
+            self._dynamic_config.lock_integration = False
+
+        switch_entity_id = None
+        translated_name = "Sperren mit Zwangsposition"  # Or fetch from your translation logic
+        if device:
+            for entity in _entity_registry.entities.values():
+                if entity.device_id == device.id and entity.domain == "switch" and entity.original_name == translated_name:
+                    switch_entity_id = entity.entity_id
+                    break
+        if switch_entity_id:
+            state = self.hass.states.get(switch_entity_id)
+            self.logger.debug("Lock integration with position entity ID: %s, state: %s", switch_entity_id, state)
+            self._dynamic_config.lock_integration_with_position = state and state.state == "on"
+        else:
+            self.logger.warning("Could not find switch entity for translated name: %s", translated_name)
+            self._dynamic_config.lock_integration_with_position = False
 
         self.current_lock_state = self._calculate_lock_state()
 
