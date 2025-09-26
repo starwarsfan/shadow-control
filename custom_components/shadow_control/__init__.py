@@ -3228,32 +3228,6 @@ class ShadowControlManager:
             return LockState.LOCKED_MANUALLY
         return LockState.UNLOCKED
 
-    async def _get_switch_state_by_translation_key(self, translation_key: str) -> bool | None:
-        """Get the state of a switch entity by its translation key."""
-        _entity_registry = async_get_entity_registry(self.hass)
-        _device_registry = async_get_device_registry(self.hass)
-        device = _device_registry.async_get_device({(DOMAIN, self._entry_id)})
-        language = getattr(self.hass.config, "language", "en")
-        translations = await async_get_translations(self.hass, language, "entity", [DOMAIN])
-
-        # Build the translation key string
-        key = f"component.{DOMAIN}.entity.switch.{translation_key}.name"
-        translated_name = translations.get(key)
-        # self.logger.debug("Translated name for key '%s': %s", key, translated_name)
-
-        if not translated_name or not device:
-            self.logger.warning("Could not find translation for key %s or device is None", key)
-            return None
-
-        for entity in _entity_registry.entities.values():
-            if entity.device_id == device.id and entity.domain == "switch" and entity.original_name == translated_name:
-                state = self.hass.states.get(entity.entity_id)
-                self.logger.debug("Found switch entity: %s, state: %s", entity.entity_id, state)
-                return state and state.state == "on"
-
-        self.logger.warning("Could not find switch entity for translated name: %s", translated_name)
-        return None
-
 
 # Helper for dynamic log output
 def _format_config_object_for_logging(obj, prefix: str = "") -> str:
