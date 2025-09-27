@@ -1,6 +1,7 @@
 """Shadow Control select implementation."""
 
 import logging
+from typing import TYPE_CHECKING
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
@@ -8,9 +9,10 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.restore_state import RestoreEntity
 
-from .const import DOMAIN, SC_CONF_NAME, MovementRestricted, SCDynamicInput
+if TYPE_CHECKING:
+    from . import ShadowControlManager
 
-_LOGGER = logging.getLogger(__name__)
+from .const import DOMAIN, DOMAIN_DATA_MANAGERS, SC_CONF_NAME, MovementRestricted, SCDynamicInput
 
 
 async def async_setup_entry(
@@ -19,6 +21,9 @@ async def async_setup_entry(
     async_add_entities,
 ) -> None:
     """Create Shadow Control selection based on config entries."""
+    # Get the manager and use its logger
+    manager: ShadowControlManager | None = hass.data.get(DOMAIN_DATA_MANAGERS, {}).get(config_entry.entry_id)
+    instance_logger = manager.logger
     instance_name = config_entry.data.get(SC_CONF_NAME, DOMAIN)
 
     entities = [
@@ -28,6 +33,7 @@ async def async_setup_entry(
             key=SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_STATIC.value,
             translation_key="movement_restriction_height_static",
             instance_name=instance_name,
+            logger=instance_logger,
         ),
         ShadowControlSelect(
             hass,
@@ -35,6 +41,7 @@ async def async_setup_entry(
             key=SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_STATIC.value,
             translation_key="movement_restriction_angle_static",
             instance_name=instance_name,
+            logger=instance_logger,
         ),
     ]
 
@@ -46,10 +53,18 @@ class ShadowControlSelect(SelectEntity, RestoreEntity):
     """Represent a boolean config option from Shadow Control as selection."""
 
     def __init__(
-        self, hass: HomeAssistant, config_entry: ConfigEntry, key: str, translation_key: str, instance_name: str, icon: str | None = None
+        self,
+        hass: HomeAssistant,
+        config_entry: ConfigEntry,
+        key: str,
+        logger: logging.Logger,
+        translation_key: str,
+        instance_name: str,
+        icon: str | None = None,
     ) -> None:
         """Initialize the selection."""
         self.hass = hass
+        self.logger = logger
         self._config_entry = config_entry
         self._key = key
 
@@ -81,18 +96,18 @@ class ShadowControlSelect(SelectEntity, RestoreEntity):
         """Return the current selected option."""
         # Get the current value from the config entry options
         current_value = self._config_entry.options.get(self._key, MovementRestricted.NO_RESTRICTION.value)
-        _LOGGER.debug("[%s] Current option for '%s': %s", DOMAIN, self._key, current_value)
+        self.logger.debug("Current option for '%s': %s",  self._key, current_value)
         return current_value
 
     def select_option(self, option: str) -> None:
         """Change the selected option, delegate to async."""
-        _LOGGER.debug("[%s] Synchronous select_option called for '%s' with value '%s'. Scheduling async update.", DOMAIN, self._key, option)
+        self.logger.debug("Synchronous select_option called for '%s' with value '%s'. Scheduling async update.",  self._key, option)
         # Planen Sie die asynchrone Methode im Event-Loop
         self.hass.loop.create_task(self.async_select_option(option))
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option asynchronously."""
-        _LOGGER.debug("[%s] Setting option '%s' to %s for entry '%s'", DOMAIN, self._key, option, self._config_entry.entry_id)
+        self.logger.debug("Setting option '%s' to %s for entry '%s'",  self._key, option, self._config_entry.entry_id)
         current_options = self._config_entry.options.copy()
         current_options[self._key] = option
 
@@ -101,7 +116,7 @@ class ShadowControlSelect(SelectEntity, RestoreEntity):
 
     async def _set_option(self, value: str) -> None:
         """Update a config option within ConfigEntry."""
-        _LOGGER.debug("[%s] Setting option '%s' to %s for entry '%s'", DOMAIN, self._key, value, self._config_entry.entry_id)
+        self.logger.debug("Setting option '%s' to %s for entry '%s'",  self._key, value, self._config_entry.entry_id)
         current_options = self._config_entry.options.copy()
         current_options[self._key] = value
 
@@ -128,6 +143,6 @@ class ShadowControlSelect(SelectEntity, RestoreEntity):
         # Restore last state after Home Assistant restart.
         last_state = await self.async_get_last_state()
         if last_state:
-            _LOGGER.debug("[%s] Restoring last state for %s: %s", DOMAIN, self.name, last_state.state)
+            self.logger.debug("Restoring last state for %s: %s",  self.name, last_state.state)
             if self.current_option != last_state.state:
                 self.async_write_ha_state()

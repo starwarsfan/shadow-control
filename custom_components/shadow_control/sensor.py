@@ -1,7 +1,5 @@
 """Shadow Control sensor implementation."""
 
-import logging
-
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -12,8 +10,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import ShadowControlManager
 from .const import DOMAIN, DOMAIN_DATA_MANAGERS, SCFacadeConfig, SensorEntries, ShutterState, ShutterType
 
-_LOGGER = logging.getLogger(__name__)
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -21,18 +17,19 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Shadow Control sensor platform from a config entry."""
-    _LOGGER.debug("[%s] Setting up sensor platform from config entry: %s", DOMAIN, config_entry.entry_id)
-
+    # Get the manager and use its logger
     manager: ShadowControlManager | None = hass.data.get(DOMAIN_DATA_MANAGERS, {}).get(config_entry.entry_id)
+    instance_logger = manager.logger
+    instance_logger.debug("Setting up sensor platform from config entry: %s", config_entry.entry_id)
 
     if manager is None:
-        _LOGGER.error("[%s] No Shadow Control manager found for config entry %s. Cannot set up sensors.", DOMAIN, config_entry.entry_id)
+        instance_logger.error("No Shadow Control manager found for config entry %s. Cannot set up sensors.", config_entry.entry_id)
         return
 
-    _LOGGER.debug("[%s] Creating sensors for manager: %s (from entry %s)", DOMAIN, manager.name, config_entry.entry_id)
+    instance_logger.debug("Creating sensors for manager: %s (from entry %s)", manager.name, config_entry.entry_id)
 
     shutter_type_value = config_entry.data.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value)
-    _LOGGER.debug("[%s] Shutter type for instance %s is %s", DOMAIN, manager.name, shutter_type_value)
+    instance_logger.debug("Shutter type for instance %s is %s", manager.name, shutter_type_value)
 
     entities_to_add = [
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.USED_HEIGHT),
@@ -58,9 +55,9 @@ async def async_setup_entry(
 
     if entities_to_add:
         async_add_entities(entities_to_add, True)
-        _LOGGER.info("[%s] Successfully added %s Shadow Control sensor entities for '%s'.", DOMAIN, len(entities_to_add), manager.name)
+        instance_logger.info("Successfully added %s Shadow Control sensor entities for '%s'.", len(entities_to_add), manager.name)
     else:
-        _LOGGER.warning("[%s] No sensor entities created for manager '%s'.", DOMAIN, manager.name)
+        instance_logger.warning("No sensor entities created for manager '%s'.", manager.name)
 
 
 class ShadowControlSensor(SensorEntity):
