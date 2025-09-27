@@ -19,6 +19,18 @@ DEBUG_ENABLED = "debug_enabled"
 TARGET_COVER_ENTITY_ID = "target_cover_entity"
 
 
+class SCInternal(Enum):
+    """Instance specific internal Shadow Control entities."""
+
+    LOCK_INTEGRATION_ENTITY = "{instance}_lock_integration_entity"
+    LOCK_INTEGRATION_WITH_POSITION_ENTITY = "{instance}_lock_integration_with_position_entity"
+
+    @classmethod
+    def get_entity_id(cls, key, sanitized_instance_name) -> str:
+        """Return the formatted entity_id for the given key and sanitized instance name."""
+        return cls[key].value.format(instance=sanitized_instance_name)
+
+
 class SCDynamicInput(Enum):
     """Dynamic configuration input enums."""
 
