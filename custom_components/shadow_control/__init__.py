@@ -3017,8 +3017,8 @@ class ShadowControlManager:
         entity_id = self._options.get(key)  # This will be the string entity_id or None
 
         if entity_id is None or not isinstance(entity_id, str) or entity_id == "":
-            unique_id_map = self.hass.data.get(DOMAIN, {}).get("unique_id_map", {})
-            entity_id = unique_id_map.get(key)
+            # Try to find by unique_id as it could be one of the internal entities
+            entity_id = self._get_entity_id_by_unique_id(key)
 
         if entity_id is None or not isinstance(entity_id, str) or entity_id == "":
             # if log_warning:
@@ -3052,6 +3052,11 @@ class ShadowControlManager:
                     default,
                 )
             return default
+
+    def _get_entity_id_by_unique_id(self, unique_id: str) -> Any:
+        """Get entity_id by unique_id from the unique_id_map stored in hass.data."""
+        unique_id_map = self.hass.data.get(DOMAIN, {}).get("unique_id_map", {})
+        return unique_id_map.get(unique_id)
 
     def _get_enum_value(self, key: str, enum_class: type, default_enum_member: Enum, log_warning: bool = True) -> Enum:
         """Get enum member from string value stored in options."""
