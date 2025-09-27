@@ -3071,7 +3071,7 @@ class ShadowControlManager:
                 )
             return default
 
-    def _get_entity_id_by_unique_id(self, unique_id: str) -> Any:
+    def _get_entity_id_by_unique_id(self, unique_id: str) -> str:
         """Get entity_id by unique_id from the unique_id_map stored in hass.data."""
         unique_id_map = self.hass.data.get(DOMAIN, {}).get("unique_id_map", {})
         return unique_id_map.get(unique_id)
