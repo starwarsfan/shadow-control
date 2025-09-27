@@ -3,7 +3,7 @@
 import logging
 from typing import TYPE_CHECKING
 
-from homeassistant.components.select import SelectEntity
+from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
@@ -12,7 +12,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 if TYPE_CHECKING:
     from . import ShadowControlManager
 
-from .const import DOMAIN, DOMAIN_DATA_MANAGERS, SC_CONF_NAME, MovementRestricted, SCDynamicInput
+from .const import DOMAIN, DOMAIN_DATA_MANAGERS, MovementRestricted, SCDynamicInput
 
 
 async def async_setup_entry(
@@ -24,24 +24,32 @@ async def async_setup_entry(
     # Get the manager and use its logger
     manager: ShadowControlManager | None = hass.data.get(DOMAIN_DATA_MANAGERS, {}).get(config_entry.entry_id)
     instance_logger = manager.logger
-    instance_name = config_entry.data.get(SC_CONF_NAME, DOMAIN)
+    sanitized_instance_name = manager.sanitized_name
 
     entities = [
         ShadowControlSelect(
             hass,
             config_entry,
-            key=SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_STATIC.value,
-            translation_key="movement_restriction_height_static",
-            instance_name=instance_name,
+            key=SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value,
+            instance_name=sanitized_instance_name,
             logger=instance_logger,
+            description=SelectEntityDescription(
+                key=SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value,
+                name="Restrict height movement",
+                translation_key=SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value,
+            ),
         ),
         ShadowControlSelect(
             hass,
             config_entry,
-            key=SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_STATIC.value,
-            translation_key="movement_restriction_angle_static",
-            instance_name=instance_name,
+            key=SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value,
+            instance_name=sanitized_instance_name,
             logger=instance_logger,
+            description=SelectEntityDescription(
+                key=SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value,
+                name="Restrict angle movement",
+                translation_key=SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value,
+            ),
         ),
     ]
 
@@ -57,21 +65,21 @@ class ShadowControlSelect(SelectEntity, RestoreEntity):
         hass: HomeAssistant,
         config_entry: ConfigEntry,
         key: str,
-        logger: logging.Logger,
-        translation_key: str,
+        description: SelectEntityDescription,
         instance_name: str,
+        logger: logging.Logger,
         icon: str | None = None,
     ) -> None:
         """Initialize the selection."""
         self.hass = hass
         self.logger = logger
-        self._config_entry = config_entry
+        self.entity_description = description
         self._key = key
-
-        self._attr_translation_key = translation_key
+        self._config_entry = config_entry
+        self._attr_translation_key = description.key
         self._attr_has_entity_name = True
 
-        self._attr_unique_id = f"{config_entry.entry_id}_{key}"
+        self._attr_unique_id = f"{instance_name}_{key}"
 
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, config_entry.entry_id)},
