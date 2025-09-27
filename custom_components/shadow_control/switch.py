@@ -1,8 +1,7 @@
 """Shadow Control switch implementation."""
 
 import logging
-import re
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.config_entries import ConfigEntry
@@ -10,9 +9,10 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.restore_state import RestoreEntity
 
-from .const import DEBUG_ENABLED, DOMAIN, DOMAIN_DATA_MANAGERS, SC_CONF_NAME, SCDawnInput, SCDynamicInput, SCShadowInput
+if TYPE_CHECKING:
+    from . import ShadowControlManager
 
-_LOGGER = logging.getLogger(__name__)
+from .const import DEBUG_ENABLED, DOMAIN, DOMAIN_DATA_MANAGERS, SCDawnInput, SCDynamicInput, SCShadowInput
 
 
 async def async_setup_entry(
@@ -21,16 +21,20 @@ async def async_setup_entry(
     async_add_entities,
 ) -> None:
     """Create Shadow Control switches based on config entries."""
-    # Sanitize instance name
-    # 1. Replace spaces with underscores
-    # 2. All lowercase
-    # 3. Remove all characters that are not alphanumeric or underscores
-    sanitized_instance_name = re.sub(r"\s+", "_", config_entry.data.get(SC_CONF_NAME, DOMAIN)).lower()
-    sanitized_instance_name = re.sub(r"[^a-z0-9_]", "", sanitized_instance_name)
+    # Get the manager and use its logger and sanitized name
+    manager: ShadowControlManager | None = hass.data.get(DOMAIN_DATA_MANAGERS, {}).get(config_entry.entry_id)
+    instance_logger = manager.logger
+    sanitized_instance_name = manager.sanitized_name
 
     entities = [
         ShadowControlConfigBooleanSwitch(
-            hass, config_entry, key=DEBUG_ENABLED, translation_key="debug_enabled", instance_name=sanitized_instance_name, icon="mdi:developer-board"
+            hass,
+            config_entry,
+            key=DEBUG_ENABLED,
+            translation_key="debug_enabled",
+            instance_name=sanitized_instance_name,
+            icon="mdi:developer-board",
+            logger=instance_logger,
         ),
         ShadowControlConfigBooleanSwitch(
             hass,
@@ -38,6 +42,7 @@ async def async_setup_entry(
             key=SCShadowInput.CONTROL_ENABLED_STATIC.value,
             translation_key="shadow_control_enabled_static",
             instance_name=sanitized_instance_name,
+            logger=instance_logger,
         ),
         ShadowControlConfigBooleanSwitch(
             hass,
@@ -45,12 +50,14 @@ async def async_setup_entry(
             key=SCDawnInput.CONTROL_ENABLED_STATIC.value,
             translation_key="dawn_control_enabled_static",
             instance_name=sanitized_instance_name,
+            logger=instance_logger,
         ),
         ShadowControlRuntimeBooleanSwitch(
             hass,
             config_entry,
             key=SCDynamicInput.LOCK_INTEGRATION_ENTITY.value,
             instance_name=sanitized_instance_name,
+            logger=instance_logger,
             description=SwitchEntityDescription(
                 key=SCDynamicInput.LOCK_INTEGRATION_ENTITY.value,
                 name="Lock",  # default (English) fallback if no translation found
@@ -61,6 +68,7 @@ async def async_setup_entry(
             config_entry,
             key=SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value,
             instance_name=sanitized_instance_name,
+            logger=instance_logger,
             description=SwitchEntityDescription(
                 key=SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value,
                 name="Lock with position",  # default (English) fallback if no translation found
@@ -76,10 +84,18 @@ class ShadowControlConfigBooleanSwitch(SwitchEntity, RestoreEntity):
     """Represent a boolean config option from Shadow Control as switch."""
 
     def __init__(
-        self, hass: HomeAssistant, config_entry: ConfigEntry, key: str, translation_key: str, instance_name: str, icon: str | None = None
+        self,
+        hass: HomeAssistant,
+        config_entry: ConfigEntry,
+        key: str,
+        translation_key: str,
+        logger: logging.Logger,
+        instance_name: str,
+        icon: str | None = None,
     ) -> None:
         """Initialize the switch."""
         self.hass = hass
+        self.logger = logger
         self._config_entry = config_entry
         self._key = key
 
@@ -118,7 +134,7 @@ class ShadowControlConfigBooleanSwitch(SwitchEntity, RestoreEntity):
 
     async def _set_option(self, value: bool) -> None:
         """Update a config option within ConfigEntry."""
-        _LOGGER.debug("[%s] Setting option '%s' to %s for entry '%s'", DOMAIN, self._key, value, self._config_entry.entry_id)
+        self.logger.debug("Setting option '%s' to %s for entry '%s'",  self._key, value, self._config_entry.entry_id)
         current_options = self._config_entry.options.copy()
         current_options[self._key] = value
 
@@ -145,7 +161,7 @@ class ShadowControlConfigBooleanSwitch(SwitchEntity, RestoreEntity):
         # Restore last state after Home Assistant restart.
         last_state = await self.async_get_last_state()
         if last_state:
-            _LOGGER.debug("[%s] Restoring last state for %s: %s", DOMAIN, self.name, last_state.state)
+            self.logger.debug("Restoring last state for %s: %s",  self.name, last_state.state)
             # The `is_on` property is already reading the value from `_config_entry.options`.
             # If the key is not within `options` the default value (False) is used.
 
@@ -160,10 +176,12 @@ class ShadowControlRuntimeBooleanSwitch(SwitchEntity, RestoreEntity):
         key: str,
         description: SwitchEntityDescription,
         instance_name: str,
+        logger: logging.Logger,
         icon: str | None = None,
     ) -> None:
         """Initialize the switch."""
         self.hass = hass
+        self.logger = logger
         self.entity_description = description
         self._config_entry = config_entry
         self._attr_translation_key = description.key
@@ -218,7 +236,7 @@ class ShadowControlRuntimeBooleanSwitch(SwitchEntity, RestoreEntity):
         # Restore last state after Home Assistant restart.
         last_state = await self.async_get_last_state()
         if last_state:
-            _LOGGER.debug("[%s] Restoring last state for %s: %s", DOMAIN, self.name, last_state.state)
+            self.logger.debug("Restoring last state for %s: %s",  self.name, last_state.state)
             self._state = last_state.state == "on"
 
     async def _notify_integration(self) -> None:
