@@ -969,14 +969,27 @@ class ShadowControlManager:
         self._dynamic_config.shutter_current_height = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value, -1.0, float)
         self._dynamic_config.shutter_current_angle = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value, -1.0, float)
 
+        # =============================================================
         # Get lock states and calculate overall integration lock state
-        self._dynamic_config.lock_integration = self._get_entity_state_value(
-            f"{self.sanitized_name}_{SCDynamicInput.LOCK_INTEGRATION_ENTITY.value}", False, bool
-        )
-        self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(
+        # 1: Lock
+        # 1.1: Get our own entity
+        lock_integration = self._get_entity_state_value(f"{self.sanitized_name}_{SCDynamicInput.LOCK_INTEGRATION_ENTITY.value}", False, bool)
+        # 1.2: Get configured external entity and overwrite our own entity with it
+        self._dynamic_config.lock_integration = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, lock_integration, bool)
+
+        # 2: Lock with position
+        # 2.1: Get our own entity
+        lock_integration_with_position = self._get_entity_state_value(
             f"{self.sanitized_name}_{SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value}", False, bool
         )
+        # 2.2: Get configured external entity and overwrite our own entity with it
+        self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(
+            SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, lock_integration_with_position, bool
+        )
+
+        # 3: Calc overal lock state
         self.current_lock_state = self._calculate_lock_state()
+        # =============================================================
 
         lock_height_config_value = self._get_static_value(SCDynamicInput.LOCK_HEIGHT_STATIC.value, 0, float, log_warning=False)
         self._dynamic_config.lock_height = self._get_entity_state_value(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, lock_height_config_value, float)
