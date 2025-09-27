@@ -43,6 +43,7 @@ from .const import (
     SCDawnInput,
     SCDynamicInput,
     SCFacadeConfig,
+    SCInternal,
     SCShadowInput,
     ShutterState,
     ShutterType,
@@ -973,14 +974,14 @@ class ShadowControlManager:
         # Get lock states and calculate overall integration lock state
         # 1: Lock
         # 1.1: Get our own entity
-        lock_integration = self._get_entity_state_value(f"{self.sanitized_name}_{SCDynamicInput.LOCK_INTEGRATION_ENTITY.value}", False, bool)
+        lock_integration = self._get_entity_state_value(self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_ENTITY.name), False, bool)
         # 1.2: Get configured external entity and overwrite our own entity with it
         self._dynamic_config.lock_integration = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, lock_integration, bool)
 
         # 2: Lock with position
         # 2.1: Get our own entity
         lock_integration_with_position = self._get_entity_state_value(
-            f"{self.sanitized_name}_{SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value}", False, bool
+            self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_ENTITY.name), False, bool
         )
         # 2.2: Get configured external entity and overwrite our own entity with it
         self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(
@@ -1209,7 +1210,7 @@ class ShadowControlManager:
                     self.logger.info("Dawn control enable changed to %s", new_state.state)
                     dawn_handling_was_disabled = new_state.state == "off"
                 elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value) or entity == self.hass.states.get(
-                    self._get_entity_id_by_unique_id(f"{self.sanitized_name}_{SCDynamicInput.LOCK_INTEGRATION_ENTITY.value}")
+                    self._get_entity_id_by_unique_id(self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_ENTITY.name))
                 ):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration_with_position:
                         # Lock DISABLED
@@ -1225,7 +1226,7 @@ class ShadowControlManager:
                         self._height_during_lock_state = self._previous_shutter_height
                         self._angle_during_lock_state = self._previous_shutter_angle
                 elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value) or entity == self.hass.states.get(
-                    self._get_entity_id_by_unique_id(f"{self.sanitized_name}_{SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value}")
+                    self._get_entity_id_by_unique_id(self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_ENTITY.name))
                 ):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration:
                         # Lock DISABLED
@@ -3247,6 +3248,10 @@ class ShadowControlManager:
         if self._dynamic_config.lock_integration:
             return LockState.LOCKED_MANUALLY
         return LockState.UNLOCKED
+
+    def _get_internal_entity_id(self, entity_key: str) -> str:
+        """Get the internal entity_id for this instance."""
+        return SCInternal.get_entity_id(entity_key, self.sanitized_name)
 
 
 # Helper for dynamic log output
