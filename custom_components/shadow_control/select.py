@@ -96,18 +96,18 @@ class ShadowControlSelect(SelectEntity, RestoreEntity):
         """Return the current selected option."""
         # Get the current value from the config entry options
         current_value = self._config_entry.options.get(self._key, MovementRestricted.NO_RESTRICTION.value)
-        self.logger.debug("Current option for '%s': %s",  self._key, current_value)
+        self.logger.debug("Current option for '%s': %s", self._key, current_value)
         return current_value
 
     def select_option(self, option: str) -> None:
         """Change the selected option, delegate to async."""
-        self.logger.debug("Synchronous select_option called for '%s' with value '%s'. Scheduling async update.",  self._key, option)
+        self.logger.debug("Synchronous select_option called for '%s' with value '%s'. Scheduling async update.", self._key, option)
         # Planen Sie die asynchrone Methode im Event-Loop
         self.hass.loop.create_task(self.async_select_option(option))
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option asynchronously."""
-        self.logger.debug("Setting option '%s' to %s for entry '%s'",  self._key, option, self._config_entry.entry_id)
+        self.logger.debug("Setting option '%s' to %s for entry '%s'", self._key, option, self._config_entry.entry_id)
         current_options = self._config_entry.options.copy()
         current_options[self._key] = option
 
@@ -116,7 +116,7 @@ class ShadowControlSelect(SelectEntity, RestoreEntity):
 
     async def _set_option(self, value: str) -> None:
         """Update a config option within ConfigEntry."""
-        self.logger.debug("Setting option '%s' to %s for entry '%s'",  self._key, value, self._config_entry.entry_id)
+        self.logger.debug("Setting option '%s' to %s for entry '%s'", self._key, value, self._config_entry.entry_id)
         current_options = self._config_entry.options.copy()
         current_options[self._key] = value
 
@@ -143,6 +143,6 @@ class ShadowControlSelect(SelectEntity, RestoreEntity):
         # Restore last state after Home Assistant restart.
         last_state = await self.async_get_last_state()
         if last_state:
-            self.logger.debug("Restoring last state for %s: %s",  self.name, last_state.state)
+            self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
             if self.current_option != last_state.state:
                 self.async_write_ha_state()

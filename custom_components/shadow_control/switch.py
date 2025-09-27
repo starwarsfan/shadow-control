@@ -134,7 +134,7 @@ class ShadowControlConfigBooleanSwitch(SwitchEntity, RestoreEntity):
 
     async def _set_option(self, value: bool) -> None:
         """Update a config option within ConfigEntry."""
-        self.logger.debug("Setting option '%s' to %s for entry '%s'",  self._key, value, self._config_entry.entry_id)
+        self.logger.debug("Setting option '%s' to %s for entry '%s'", self._key, value, self._config_entry.entry_id)
         current_options = self._config_entry.options.copy()
         current_options[self._key] = value
 
@@ -161,7 +161,7 @@ class ShadowControlConfigBooleanSwitch(SwitchEntity, RestoreEntity):
         # Restore last state after Home Assistant restart.
         last_state = await self.async_get_last_state()
         if last_state:
-            self.logger.debug("Restoring last state for %s: %s",  self.name, last_state.state)
+            self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
             # The `is_on` property is already reading the value from `_config_entry.options`.
             # If the key is not within `options` the default value (False) is used.
 
@@ -236,7 +236,7 @@ class ShadowControlRuntimeBooleanSwitch(SwitchEntity, RestoreEntity):
         # Restore last state after Home Assistant restart.
         last_state = await self.async_get_last_state()
         if last_state:
-            self.logger.debug("Restoring last state for %s: %s",  self.name, last_state.state)
+            self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
             self._state = last_state.state == "on"
 
     async def _notify_integration(self) -> None:
