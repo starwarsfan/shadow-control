@@ -103,9 +103,7 @@ class ShadowControlSelect(SelectEntity, RestoreEntity):
     def current_option(self) -> str:
         """Return the current selected option."""
         # Get the current value from the config entry options
-        current_value = self.hass.data[DOMAIN].get("select_states", {}).get(self.unique_id, MovementRestricted.NO_RESTRICTION.value)
-        self.logger.debug("Current option for '%s': %s", self._key, current_value)
-        return current_value
+        return self.hass.data[DOMAIN].get("select_states", {}).get(self.unique_id, MovementRestricted.NO_RESTRICTION.value)
 
     def select_option(self, option: str) -> None:
         """Change the selected option, delegate to async."""
