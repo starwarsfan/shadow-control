@@ -974,15 +974,19 @@ class ShadowControlManager:
         # Get lock states and calculate overall integration lock state
         # 1: Lock
         # 1.1: Get our own entity
-        lock_integration = self._get_entity_state_value(self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_ENTITY.name), False, bool)
+        entity_id_lock = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_ENTITY)
+        lock_integration = self._get_internal_entity_state_value(entity_id_lock, False, bool) if entity_id_lock else False
+
         # 1.2: Get configured external entity and overwrite our own entity with it
         self._dynamic_config.lock_integration = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, lock_integration, bool)
 
         # 2: Lock with position
         # 2.1: Get our own entity
-        lock_integration_with_position = self._get_entity_state_value(
-            self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_ENTITY.name), False, bool
+        entity_id_lock_with_position = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_ENTITY)
+        lock_integration_with_position = (
+            self._get_internal_entity_state_value(entity_id_lock_with_position, False, bool) if entity_id_lock_with_position else False
         )
+
         # 2.2: Get configured external entity and overwrite our own entity with it
         self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(
             SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, lock_integration_with_position, bool
@@ -3033,11 +3037,13 @@ class ShadowControlManager:
         """Extract dynamic value from an entity state."""
         # Type conversion and default will be handled
         entity_id = self._options.get(key)  # This will be the string entity_id or None
+        return self._get_state_value(entity_id=entity_id, default=default, expected_type=expected_type, log_warning=log_warning)
 
-        if entity_id is None or not isinstance(entity_id, str) or entity_id == "":
-            # Try to find by unique_id as it could be one of the internal entities
-            entity_id = self._get_entity_id_by_unique_id(key)
+    def _get_internal_entity_state_value(self, entity_id: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
+        """Extract dynamic value from an entity state."""
+        return self._get_state_value(entity_id=entity_id, default=default, expected_type=expected_type, log_warning=log_warning)
 
+    def _get_state_value(self, entity_id: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
         if entity_id is None or not isinstance(entity_id, str) or entity_id == "":
             # if log_warning:
             #     self.logger.debug("No valid entity_id configured for key '%s' ('%s'). Using default: %s", key, entity_id, default)
@@ -3047,7 +3053,7 @@ class ShadowControlManager:
 
         if state is None or state.state in ["unavailable", "unknown", "none"]:  # 'none' can happen for input_number if not set
             if log_warning:
-                self.logger.debug("Entity '%s' for key '%s' is unavailable or unknown. Using default: %s", entity_id, key, default)
+                self.logger.debug("Entity '%s' is unavailable or unknown. Using default: %s", entity_id, default)
             return default
 
         try:
@@ -3062,9 +3068,8 @@ class ShadowControlManager:
         except (ValueError, TypeError):
             if log_warning:
                 self.logger.warning(
-                    "State of entity '%s' for key '%s' ('%s') cannot be converted to %s. Using default: %s",
+                    "State of entity '%s' ('%s') cannot be converted to %s. Using default: %s",
                     entity_id,
-                    key,
                     state.state,
                     expected_type,
                     default,
