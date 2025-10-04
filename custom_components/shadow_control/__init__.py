@@ -3032,11 +3032,6 @@ class ShadowControlManager:
                 )
             return default
 
-    def _get_entity_id_by_unique_id(self, unique_id: str) -> str:
-        """Get entity_id by unique_id from the unique_id_map stored in hass.data."""
-        unique_id_map = self.hass.data.get(DOMAIN, {}).get("unique_id_map", {})
-        return unique_id_map.get(unique_id)
-
     def _get_enum_value(self, key: str, enum_class: type, default_enum_member: Enum, log_warning: bool = True) -> Enum:
         """Get enum member from string value stored in options."""
         value_str = self._options.get(key)
