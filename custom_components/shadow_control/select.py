@@ -79,7 +79,7 @@ class ShadowControlSelect(SelectEntity, RestoreEntity):
         self._attr_translation_key = description.key
         self._attr_has_entity_name = True
 
-        self._attr_unique_id = f"{instance_name}_{key}"
+        self._attr_unique_id = f"{self._config_entry.entry_id}_{key}"
 
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, config_entry.entry_id)},
