@@ -1163,14 +1163,17 @@ class ShadowControlManager:
                 self.logger.debug("  Old state: %s", old_state.state if old_state else "None")
                 self.logger.debug("  New state: %s", new_state.state if new_state else "None")
 
+                entity_id_lock = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_ENTITY)
+                entity_id_lock_with_position = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_ENTITY)
+
                 if entity == self._config.get(SCShadowInput.CONTROL_ENABLED_ENTITY.value):
                     self.logger.info("Shadow control enable changed to %s", new_state.state)
                     shadow_handling_was_disabled = new_state.state == "off"
                 elif entity == self._config.get(SCDawnInput.CONTROL_ENABLED_ENTITY.value):
                     self.logger.info("Dawn control enable changed to %s", new_state.state)
                     dawn_handling_was_disabled = new_state.state == "off"
-                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value) or entity == self.hass.states.get(
-                    self._get_entity_id_by_unique_id(self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_ENTITY.name))
+                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value) or entity == (
+                    self.hass.states.get(entity_id_lock) if entity_id_lock is not None else None
                 ):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration_with_position:
                         # Lock DISABLED
@@ -1185,8 +1188,8 @@ class ShadowControlManager:
                         self.logger.info("Simple lock enabled -> no position update, storing current position")
                         self._height_during_lock_state = self._previous_shutter_height
                         self._angle_during_lock_state = self._previous_shutter_angle
-                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value) or entity == self.hass.states.get(
-                    self._get_entity_id_by_unique_id(self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_ENTITY.name))
+                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value) or entity == (
+                    self.hass.states.get(entity_id_lock_with_position) if entity_id_lock_with_position is not None else None
                 ):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration:
                         # Lock DISABLED
