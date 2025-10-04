@@ -22,7 +22,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import Event, HomeAssistant, ServiceCall, State, callback
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers import device_registry
+from homeassistant.helpers import device_registry, entity_registry
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.entity_registry import async_get as async_get_entity_registry
 from homeassistant.helpers.event import async_call_later, async_track_state_change_event
