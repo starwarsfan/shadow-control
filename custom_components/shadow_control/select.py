@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.restore_state import RestoreEntity
 
@@ -103,54 +103,43 @@ class ShadowControlSelect(SelectEntity, RestoreEntity):
     def current_option(self) -> str:
         """Return the current selected option."""
         # Get the current value from the config entry options
-        current_value = self._config_entry.options.get(self._key, MovementRestricted.NO_RESTRICTION.value)
+        current_value = self.hass.data[DOMAIN].get("select_states", {}).get(self.unique_id, MovementRestricted.NO_RESTRICTION.value)
         self.logger.debug("Current option for '%s': %s", self._key, current_value)
         return current_value
 
     def select_option(self, option: str) -> None:
         """Change the selected option, delegate to async."""
         self.logger.debug("Synchronous select_option called for '%s' with value '%s'. Scheduling async update.", self._key, option)
-        # Planen Sie die asynchrone Methode im Event-Loop
         self.hass.loop.create_task(self.async_select_option(option))
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option asynchronously."""
         self.logger.debug("Setting option '%s' to %s for entry '%s'", self._key, option, self._config_entry.entry_id)
-        current_options = self._config_entry.options.copy()
-        current_options[self._key] = option
-
-        # Update config entry by triggering listeners
-        self.hass.config_entries.async_update_entry(self._config_entry, options=current_options)
+        if "select_states" not in self.hass.data[DOMAIN]:
+            self.hass.data[DOMAIN]["select_states"] = {}
+        self.hass.data[DOMAIN]["select_states"][self.unique_id] = option
+        self.async_write_ha_state()
 
     async def _set_option(self, value: str) -> None:
         """Update a config option within ConfigEntry."""
         self.logger.debug("Setting option '%s' to %s for entry '%s'", self._key, value, self._config_entry.entry_id)
-        current_options = self._config_entry.options.copy()
-        current_options[self._key] = value
-
-        # Update config entry by triggering listeners
-        self.hass.config_entries.async_update_entry(self._config_entry, options=current_options)
-
-    @callback
-    async def _handle_options_update(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
-        """Handle option updates from within the config entry."""
-        if entry.entry_id == self._config_entry.entry_id:
-            # Get the newest value from the option
-            new_value = self._config_entry.options.get(self._key, MovementRestricted.NO_RESTRICTION.value)
-            if self.current_option != new_value:
-                self.async_write_ha_state()
+        self.hass.data[DOMAIN]["select_states"][self.unique_id] = value
 
     async def async_added_to_hass(self) -> None:
         """Register callbacks with entity registration at HA."""
         await super().async_added_to_hass()
 
-        # Ensure the entity is following changes at the config_entry. Important if changed within
-        # the ConfigFlow and UI should \"see\" that change too.
-        self._config_entry.async_on_unload(self._config_entry.add_update_listener(self._handle_options_update))
+        if "unique_id_map" not in self.hass.data.setdefault(DOMAIN, {}):
+            self.hass.data[DOMAIN]["unique_id_map"] = {}
 
-        # Restore last state after Home Assistant restart.
+        self.hass.data[DOMAIN]["unique_id_map"][self.unique_id] = self.entity_id
+
         last_state = await self.async_get_last_state()
         if last_state:
             self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
-            if self.current_option != last_state.state:
-                self.async_write_ha_state()
+            # Restore the selection state in hass.data
+            self.hass.data[DOMAIN].setdefault("select_states", {})[self.unique_id] = last_state.state
+            self.async_write_ha_state()
+
+    async def _notify_integration(self) -> None:
+        await self.hass.data[DOMAIN_DATA_MANAGERS][self._config_entry.entry_id].async_calculate_and_apply_cover_position(None)
