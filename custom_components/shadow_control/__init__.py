@@ -3210,9 +3210,13 @@ class ShadowControlManager:
             return LockState.LOCKED_MANUALLY
         return LockState.UNLOCKED
 
-    def _get_internal_entity_id(self, entity_key: str) -> str:
+    def _get_internal_entity_id(self, internal_enum: SCInternal) -> str:
         """Get the internal entity_id for this instance."""
-        return SCInternal.get_entity_id(entity_key, self.sanitized_name)
+        registry = entity_registry.async_get(self.hass)
+        unique_id = f"{self._entry_id}_{internal_enum.name.lower()}"
+        entity_id = registry.async_get_entity_id(internal_enum.domain, "shadow_control", unique_id)
+        self.logger.debug("Looking up internal entity_id for unique_id: %s -> %s", unique_id, entity_id)
+        return entity_id
 
 
 # Helper for dynamic log output
