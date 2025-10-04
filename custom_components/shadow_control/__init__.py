@@ -3199,6 +3199,11 @@ class ShadowControlManager:
 
     def _calculate_lock_state(self) -> LockState:
         """Calculate the current lock state."""
+        self.logger.debug(
+            "Calculating overall lock state based on lock=%s and lock_with_position=%s",
+            self._dynamic_config.lock_integration,
+            self._dynamic_config.lock_integration_with_position,
+        )
         if self._dynamic_config.lock_integration_with_position:
             return LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
         if self._dynamic_config.lock_integration:
