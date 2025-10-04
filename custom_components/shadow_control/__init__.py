@@ -976,7 +976,6 @@ class ShadowControlManager:
         # 1.1: Get our own entity
         entity_id_lock = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_ENTITY)
         lock_integration = self._get_internal_entity_state_value(entity_id_lock, False, bool) if entity_id_lock else False
-
         # 1.2: Get configured external entity and overwrite our own entity with it
         self._dynamic_config.lock_integration = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, lock_integration, bool)
 
@@ -986,23 +985,22 @@ class ShadowControlManager:
         lock_integration_with_position = (
             self._get_internal_entity_state_value(entity_id_lock_with_position, False, bool) if entity_id_lock_with_position else False
         )
-
         # 2.2: Get configured external entity and overwrite our own entity with it
         self._dynamic_config.lock_integration_with_position = self._get_entity_state_value(
             SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, lock_integration_with_position, bool
         )
 
-        # 3: Calc overal lock state
+        # 3: Calc overal lock state and get lock positions
         self.current_lock_state = self._calculate_lock_state()
-        # =============================================================
-
         lock_height_config_value = self._get_static_value(SCDynamicInput.LOCK_HEIGHT_STATIC.value, 0, float, log_warning=False)
         self._dynamic_config.lock_height = self._get_entity_state_value(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, lock_height_config_value, float)
-
         lock_angle_config_value = self._get_static_value(SCDynamicInput.LOCK_ANGLE_STATIC.value, 0, float, log_warning=False)
         self._dynamic_config.lock_angle = self._get_entity_state_value(SCDynamicInput.LOCK_ANGLE_ENTITY.value, lock_angle_config_value, float)
+        # End of lock states handling
+        # =============================================================
 
-        # Movement restrictions (Enum values)
+        # =============================================================
+        # Handle movement restrictions (Enum values)
         configured_height_entity_id = self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value)
         if configured_height_entity_id:
             self._dynamic_config.movement_restriction_height = self._get_entity_state_value(
