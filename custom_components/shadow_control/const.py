@@ -366,14 +366,8 @@ CFG_DYNAMIC_INPUTS = vol.Schema(
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
         ),
-        vol.Optional(SCDynamicInput.LOCK_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
-            selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
-        ),
         vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["sensor", "input_number"])
-        ),
-        vol.Optional(SCDynamicInput.LOCK_ANGLE_STATIC.value, default=0): selector.NumberSelector(
-            selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
         ),
         vol.Optional(SCDynamicInput.LOCK_ANGLE_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["sensor", "input_number"])
@@ -586,9 +580,6 @@ CFG_DYNAMIC_INPUTS_MODE3 = vol.Schema(
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
         ),
-        vol.Optional(SCDynamicInput.LOCK_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
-            selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
-        ),
         vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["sensor", "input_number"])
         ),
@@ -768,9 +759,7 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value): cv.entity_id,
-        vol.Optional(SCDynamicInput.LOCK_HEIGHT_STATIC.value, default=0): vol.Coerce(float),
         vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value): cv.entity_id,
-        vol.Optional(SCDynamicInput.LOCK_ANGLE_STATIC.value, default=0): vol.Coerce(float),
         vol.Optional(SCDynamicInput.LOCK_ANGLE_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value): cv.entity_id,
