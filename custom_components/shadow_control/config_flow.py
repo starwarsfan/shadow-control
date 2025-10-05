@@ -120,20 +120,20 @@ def get_cfg_facade_settings_part1() -> vol.Schema:
 # CFG_FACADE_SETTINGS_PART2 = vol.Schema(
 def get_cfg_facade_settings_part2(hass) -> vol.Schema:
     """Get facade configuration schema with static and entity options."""
-    entity_options = get_entity_options(hass)
+    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
     return vol.Schema(
         {
             vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             vol.Optional(SCFacadeConfig.SLAT_WIDTH_STATIC.value, default=95): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=20, max=150, step=1, mode=selector.NumberSelectorMode.BOX)
@@ -172,14 +172,16 @@ def get_cfg_facade_settings_part2(hass) -> vol.Schema:
 # --- STEP 4: Dynamic settings ---
 def get_cfg_dynamic_inputs(hass) -> vol.Schema:
     """Get dynamic input configuration schema with entity options."""
-    entity_options = get_entity_options(hass)
+    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
+    entity_options_boolean = get_entity_options(hass, ["input_boolean", "binary_sensor"])
+    entity_options_select = get_entity_options(hass, ["sensor", "select", "input_select", "input_text"])
     return vol.Schema(
         {
             vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
@@ -193,26 +195,26 @@ def get_cfg_dynamic_inputs(hass) -> vol.Schema:
             # vol.Optional(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value): selector.EntitySelector(
             #     selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             # ),
-            vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+            vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, default="none"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=entity_options_boolean)
             ),
-            vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+            vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, default="none"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=entity_options_boolean)
             ),
             vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             vol.Optional(SCDynamicInput.LOCK_ANGLE_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
-            vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_text", "input_select", "select", "sensor"])
+            vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value, default="none"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=entity_options_select)
             ),
-            vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_text", "input_select", "select", "sensor"])
+            vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value, default="none"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=entity_options_select)
             ),
-            vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+            vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value, default="none"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=entity_options_boolean)
             ),
         }
     )
@@ -222,75 +224,76 @@ def get_cfg_dynamic_inputs(hass) -> vol.Schema:
 # CFG_SHADOW_SETTINGS = vol.Schema(
 def get_cfg_shadow_settings(hass) -> vol.Schema:
     """Get shadow configuration schema with static and entity options."""
-    entity_options = get_entity_options(hass)
+    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
+    entity_options_boolean = get_entity_options(hass, ["input_boolean", "binary_sensor"])
     return vol.Schema(
         {
             vol.Optional(SCShadowInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
-            vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+            vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value, default="none"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=entity_options_boolean)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_STATIC.value, default=50000): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=300000, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.AFTER_SECONDS_STATIC.value, default=15): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCShadowInput.AFTER_SECONDS_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value, default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, default=15): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.SHUTTER_OPEN_SECONDS_STATIC.value, default=15): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
         }
     )
@@ -300,75 +303,76 @@ def get_cfg_shadow_settings(hass) -> vol.Schema:
 # CFG_DAWN_SETTINGS = vol.Schema(
 def get_cfg_dawn_settings(hass) -> vol.Schema:
     """Get dawn configuration schema with static and entity options."""
-    entity_options = get_entity_options(hass)
+    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
+    entity_options_boolean = get_entity_options(hass, ["input_boolean", "binary_sensor"])
     return vol.Schema(
         {
             vol.Optional(SCDawnInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
-            vol.Optional(SCDawnInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+            vol.Optional(SCDawnInput.CONTROL_ENABLED_ENTITY.value, default="none"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=entity_options_boolean)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.BRIGHTNESS_THRESHOLD_STATIC.value, default=500): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=10000, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.AFTER_SECONDS_STATIC.value, default=15): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCDawnInput.AFTER_SECONDS_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value, default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, default=15): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.SHUTTER_OPEN_SECONDS_STATIC.value, default=15): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
         }
     )
@@ -380,14 +384,14 @@ def get_cfg_dawn_settings(hass) -> vol.Schema:
 # CFG_FACADE_SETTINGS_PART2_MODE3 = vol.Schema(
 def get_cfg_facade_settings_part2_mode3(hass) -> vol.Schema:
     """Get facade configuration schema for mode3 with static and entity options."""
-    entity_options = get_entity_options(hass)
+    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
     return vol.Schema(
         {
             vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=5): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=1, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
@@ -409,14 +413,16 @@ def get_cfg_facade_settings_part2_mode3(hass) -> vol.Schema:
 # CFG_DYNAMIC_INPUTS_MODE3 = vol.Schema(
 def get_cfg_dynamic_inputs_mode3(hass) -> vol.Schema:
     """Get dynamic input configuration schema for mode3 with entity options."""
-    entity_options = get_entity_options(hass)
+    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
+    entity_options_boolean = get_entity_options(hass, ["input_boolean", "binary_sensor"])
+    entity_options_select = get_entity_options(hass, ["sensor", "select", "input_select", "input_text"])
     return vol.Schema(
         {
             vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
@@ -427,20 +433,20 @@ def get_cfg_dynamic_inputs_mode3(hass) -> vol.Schema:
             # vol.Optional(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value): selector.EntitySelector(
             #     selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             # ),
-            vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+            vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, default="none"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=entity_options_boolean)
             ),
-            vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+            vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, default="none"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=entity_options_boolean)
             ),
             vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
-            vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_text", "input_select", "select", "sensor"])
+            vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value, default="none"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=entity_options_select)
             ),
-            vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+            vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value, default="none"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=entity_options_boolean)
             ),
         }
     )
@@ -450,54 +456,55 @@ def get_cfg_dynamic_inputs_mode3(hass) -> vol.Schema:
 # CFG_SHADOW_SETTINGS_MODE3 = vol.Schema(
 def get_cfg_shadow_settings_mode3(hass) -> vol.Schema:
     """Get shadow configuration schema for mode3 with static and entity options."""
-    entity_options = get_entity_options(hass)
+    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
+    entity_options_boolean = get_entity_options(hass, ["input_boolean", "binary_sensor"])
     return vol.Schema(
         {
             vol.Optional(SCShadowInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
-            vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+            vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value, default="none"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=entity_options_boolean)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_STATIC.value, default=50000): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=300000, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.AFTER_SECONDS_STATIC.value, default=15): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCShadowInput.AFTER_SECONDS_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, default=15): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.SHUTTER_OPEN_SECONDS_STATIC.value, default=15): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
         }
     )
@@ -507,54 +514,55 @@ def get_cfg_shadow_settings_mode3(hass) -> vol.Schema:
 # CFG_DAWN_SETTINGS_MODE3 = vol.Schema(
 def get_cfg_dawn_settings_mode3(hass) -> vol.Schema:
     """Get dawn configuration schema for mode3 with static and entity options."""
-    entity_options = get_entity_options(hass)
+    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
+    entity_options_boolean = get_entity_options(hass, ["input_boolean", "binary_sensor"])
     return vol.Schema(
         {
             vol.Optional(SCDawnInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
-            vol.Optional(SCDawnInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+            vol.Optional(SCDawnInput.CONTROL_ENABLED_ENTITY.value, default="none"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=entity_options_boolean)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.BRIGHTNESS_THRESHOLD_STATIC.value, default=500): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=10000, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.AFTER_SECONDS_STATIC.value, default=15): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCDawnInput.AFTER_SECONDS_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value, default=100): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, default=15): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.SHUTTER_OPEN_SECONDS_STATIC.value, default=15): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=7200, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
             # -----------------------------------------------------------------------
             vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.SLIDER)
             ),
             vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value, default="none"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=entity_options)
+                selector.SelectSelectorConfig(options=entity_options_number)
             ),
         }
     )
@@ -902,9 +910,9 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_facade_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle facade settings options."""
         _LOGGER.debug("[OptionsFlow] -> async_step_facade_settings")
-        data_schema = get_cfg_facade_settings_part2()
+        data_schema = get_cfg_facade_settings_part2(self.hass)
         if self.is_mode3:
-            data_schema = get_cfg_facade_settings_part2_mode3()
+            data_schema = get_cfg_facade_settings_part2_mode3(self.hass)
 
         errors: dict[str, str] = {}
         if user_input is not None:
@@ -941,7 +949,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.debug("[OptionsFlow] -> async_step_dynamic_inputs")
         data_schema = get_cfg_dynamic_inputs(self.hass)
         if self.is_mode3:
-            data_schema = get_cfg_dynamic_inputs_mode3()
+            data_schema = get_cfg_dynamic_inputs_mode3(self.hass)
 
         errors: dict[str, str] = {}
         if user_input is not None:
@@ -978,9 +986,9 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_shadow_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle shadow settings options."""
         _LOGGER.debug("[OptionsFlow] -> async_step_shadow_settings")
-        data_schema = get_cfg_shadow_settings()
+        data_schema = get_cfg_shadow_settings(self.hass)
         if self.is_mode3:
-            data_schema = get_cfg_shadow_settings_mode3()
+            data_schema = get_cfg_shadow_settings_mode3(self.hass)
 
         errors: dict[str, str] = {}
         if user_input is not None:
@@ -996,10 +1004,10 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_dawn_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle dawn settings options (final options step)."""
         _LOGGER.debug("[OptionsFlow] -> async_step_dawn_settings")
-        data_schema = get_cfg_dawn_settings()
+        data_schema = get_cfg_dawn_settings(self.hass)
         validation_schema = get_full_options_schema(self.hass)
         if self.is_mode3:
-            data_schema = get_cfg_dawn_settings_mode3()
+            data_schema = get_cfg_dawn_settings_mode3(self.hass)
             validation_schema = get_full_options_schema_mode3(self.hass)
 
         errors: dict[str, str] = {}
