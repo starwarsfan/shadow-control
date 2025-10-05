@@ -29,15 +29,14 @@ from homeassistant.helpers.event import async_call_later, async_track_state_chan
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import dt as dt_util
 
+from .config_flow import YAML_CONFIG_SCHEMA, get_full_options_schema
 from .const import (
     DEBUG_ENABLED,
     DOMAIN,
     DOMAIN_DATA_MANAGERS,
-    FULL_OPTIONS_SCHEMA,
     SC_CONF_NAME,
     TARGET_COVER_ENTITY_ID,
     VERSION,
-    YAML_CONFIG_SCHEMA,
     LockState,
     MovementRestricted,
     SCDawnInput,
@@ -355,7 +354,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             _LOGGER.debug("[%s] Set default value for '%s'.", DOMAIN, lock_angle_static_key)
 
         try:
-            validated_options = FULL_OPTIONS_SCHEMA(new_options)
+            validated_options = get_full_options_schema(hass)(new_options)
             _LOGGER.debug("[%s] Migrated options successfully validated. Result: %s", DOMAIN, validated_options)
             _LOGGER.debug("[%s] Type of validated_options: %s", DOMAIN, type(validated_options))
         except vol.Invalid:
@@ -386,7 +385,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             )
 
         try:
-            validated_options = FULL_OPTIONS_SCHEMA(new_options)
+            validated_options = get_full_options_schema(hass)(new_options)
             _LOGGER.debug("[%s] Migrated configuration successfully validated. Result: %s", DOMAIN, validated_options)
             _LOGGER.debug("[%s] Type of validated_options: %s", DOMAIN, type(validated_options))
         except vol.Invalid:
@@ -417,7 +416,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             _LOGGER.info("Removed old key '%s' from options for entry %s.", old_angle_restriction_key, config_entry.entry_id)
 
         try:
-            validated_options = FULL_OPTIONS_SCHEMA(new_options)
+            validated_options = get_full_options_schema(hass)(new_options)
             _LOGGER.debug("[%s] Migrated configuration successfully validated. Result: %s", DOMAIN, validated_options)
             _LOGGER.debug("[%s] Type of validated_options: %s", DOMAIN, type(validated_options))
         except vol.Invalid:
@@ -456,7 +455,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             _LOGGER.debug("[%s] Removed '%s' from configuration.", DOMAIN, field_to_remove)
 
         try:
-            validated_options = FULL_OPTIONS_SCHEMA(new_options)
+            validated_options = get_full_options_schema(hass)(new_options)
             _LOGGER.debug("[%s] Migrated options successfully validated. Result: %s", DOMAIN, validated_options)
             _LOGGER.debug("[%s] Type of validated_options: %s", DOMAIN, type(validated_options))
         except vol.Invalid:
