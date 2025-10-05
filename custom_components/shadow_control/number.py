@@ -36,10 +36,10 @@ async def async_setup_entry(
             description=NumberEntityDescription(
                 key=SCInternal.LOCK_HEIGHT_ENTITY.value,
                 name="Height",  # default (English) fallback if no translation found
-                min_value=0.0,
-                max_value=100.0,
-                step=1.0,
-                unit_of_measurement="%",
+                native_min_value=0.0,
+                native_max_value=100.0,
+                native_step=1.0,
+                native_unit_of_measurement="%",
             ),
         ),
         ShadowControlNumber(
@@ -51,10 +51,10 @@ async def async_setup_entry(
             description=NumberEntityDescription(
                 key=SCInternal.LOCK_ANGLE_ENTITY.value,
                 name="Angle",  # default (English) fallback if no translation found
-                min_value=0.0,
-                max_value=100.0,
-                step=1.0,
-                unit_of_measurement="%",
+                native_min_value=0.0,
+                native_max_value=100.0,
+                native_step=1.0,
+                native_unit_of_measurement="%",
             ),
         ),
     ]
@@ -104,7 +104,7 @@ class ShadowControlNumber(NumberEntity, RestoreEntity):
         """Return the unit of measurement."""
         return self.entity_description.unit_of_measurement
 
-    async def async_set_value(self, value: float) -> None:
+    async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         self._value = value
         self.async_write_ha_state()
