@@ -34,10 +34,10 @@ _LOGGER = logging.getLogger(__name__)
 # other options will be stored as `options`.
 
 
-def get_entity_options(hass) -> list[str]:
-    """Get list of entities for entity selector options."""
+def get_entity_options(hass, domains: list[str]) -> list[str]:
+    """Get list of entities for entity selector options for given domains."""
     entity_reg = er.async_get(hass)
-    entities = [e.entity_id for e in entity_reg.entities.values() if e.domain in ["sensor", "input_number"]]
+    entities = [e.entity_id for e in entity_reg.entities.values() if e.domain in domains]
     return ["none", *entities]
 
 
