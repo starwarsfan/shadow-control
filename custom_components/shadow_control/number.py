@@ -7,6 +7,7 @@ from homeassistant.components.number import NumberEntity, NumberEntityDescriptio
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.restore_state import RestoreEntity
 
 if TYPE_CHECKING:
     from . import ShadowControlManager
@@ -58,7 +59,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class ShadowControlNumber(NumberEntity):
+class ShadowControlNumber(NumberEntity, RestoreEntity):
     """Representation of a Shadow Control number entity."""
 
     def __init__(
@@ -100,3 +101,20 @@ class ShadowControlNumber(NumberEntity):
         """Set new value."""
         self._value = value
         self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        """Register callbacks with entity registration at HA."""
+        await super().async_added_to_hass()
+
+        # Ensure the mapping dictionary exists
+        if "unique_id_map" not in self.hass.data.setdefault(DOMAIN, {}):
+            self.hass.data[DOMAIN]["unique_id_map"] = {}
+
+        # Store the mapping
+        self.hass.data[DOMAIN]["unique_id_map"][self.unique_id] = self.entity_id
+
+        # Restore last state after Home Assistant restart.
+        last_state = await self.async_get_last_state()
+        if last_state:
+            self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
+            self._value = float(last_state.state)
