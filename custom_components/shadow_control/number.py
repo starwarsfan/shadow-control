@@ -39,6 +39,7 @@ async def async_setup_entry(
                 min_value=0.0,
                 max_value=100.0,
                 step=1.0,
+                unit_of_measurement="%",
             ),
         ),
         ShadowControlNumber(
@@ -53,6 +54,7 @@ async def async_setup_entry(
                 min_value=0.0,
                 max_value=100.0,
                 step=1.0,
+                unit_of_measurement="%",
             ),
         ),
     ]
@@ -93,9 +95,14 @@ class ShadowControlNumber(NumberEntity, RestoreEntity):
         self._value = 0.0
 
     @property
-    def value(self) -> float:
+    def native_value(self) -> float:
         """Return the current value."""
         return self._value
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        """Return the unit of measurement."""
+        return self.entity_description.unit_of_measurement
 
     async def async_set_value(self, value: float) -> None:
         """Set new value."""
