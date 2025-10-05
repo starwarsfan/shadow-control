@@ -333,11 +333,12 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     new_options = config_entry.options.copy()
 
     if config_entry.version == 1:
+        # Migrate old keys...
         old_lock_height_key = "lock_height_entity"
         old_lock_angle_key = "lock_angle_entity"
-
-        lock_height_static_key = SCDynamicInput.LOCK_HEIGHT_STATIC.value
-        lock_angle_static_key = SCDynamicInput.LOCK_ANGLE_STATIC.value
+        # ... to new keys
+        lock_height_static_key = "lock_height_static"
+        lock_angle_static_key = "lock_angle_static"
 
         if old_lock_height_key in new_options:
             new_options[lock_height_static_key] = new_options.pop(old_lock_height_key)
@@ -610,10 +611,10 @@ class ShadowControlManager:
         self._dynamic_config.sun_azimuth = config.get(SCDynamicInput.SUN_AZIMUTH_ENTITY.value)
         self._dynamic_config.shutter_current_height = config.get(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value)
         self._dynamic_config.shutter_current_angle = config.get(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value)
-        self._dynamic_config.lock_integration = config.get(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value)
-        self._dynamic_config.lock_integration_with_position = config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value)
-        self._dynamic_config.lock_height = config.get(SCDynamicInput.LOCK_HEIGHT_STATIC.value)
-        self._dynamic_config.lock_angle = config.get(SCDynamicInput.LOCK_ANGLE_STATIC.value)
+        self._dynamic_config.lock_integration = config.get(SCInternal.LOCK_INTEGRATION_ENTITY.value)
+        self._dynamic_config.lock_integration_with_position = config.get(SCInternal.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value)
+        self._dynamic_config.lock_height = config.get(SCInternal.LOCK_HEIGHT_ENTITY.value)
+        self._dynamic_config.lock_angle = config.get(SCInternal.LOCK_ANGLE_ENTITY.value)
 
         self._handle_movement_restriction()
 
@@ -994,9 +995,9 @@ class ShadowControlManager:
 
         # 3: Calc overal lock state and get lock positions
         self.current_lock_state = self._calculate_lock_state()
-        lock_height_config_value = self._get_static_value(SCDynamicInput.LOCK_HEIGHT_STATIC.value, 0, float, log_warning=False)
+        lock_height_config_value = self._get_static_value(SCInternal.LOCK_HEIGHT_ENTITY.value, 0, float, log_warning=False)
         self._dynamic_config.lock_height = self._get_entity_state_value(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, lock_height_config_value, float)
-        lock_angle_config_value = self._get_static_value(SCDynamicInput.LOCK_ANGLE_STATIC.value, 0, float, log_warning=False)
+        lock_angle_config_value = self._get_static_value(SCInternal.LOCK_ANGLE_ENTITY.value, 0, float, log_warning=False)
         self._dynamic_config.lock_angle = self._get_entity_state_value(SCDynamicInput.LOCK_ANGLE_ENTITY.value, lock_angle_config_value, float)
         # End of lock states handling
         # =============================================================

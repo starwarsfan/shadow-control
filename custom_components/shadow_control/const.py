@@ -24,6 +24,8 @@ class SCInternal(Enum):
 
     LOCK_INTEGRATION_ENTITY = "lock_integration_entity"
     LOCK_INTEGRATION_WITH_POSITION_ENTITY = "lock_integration_with_position_entity"
+    LOCK_HEIGHT_ENTITY = "lock_height_entity"
+    LOCK_ANGLE_ENTITY = "lock_angle_entity"
     MOVEMENT_RESTRICTION_HEIGHT_ENTITY = "movement_restriction_height_entity"
     MOVEMENT_RESTRICTION_ANGLE_ENTITY = "movement_restriction_angle_entity"
 
@@ -40,6 +42,11 @@ class SCInternal(Enum):
             SCInternal.MOVEMENT_RESTRICTION_ANGLE_ENTITY,
         ):
             return "select"
+        if self in (
+            SCInternal.LOCK_HEIGHT_ENTITY,
+            SCInternal.LOCK_ANGLE_ENTITY,
+        ):
+            return "number"
         return "select"  # default/fallback
 
 
@@ -55,9 +62,7 @@ class SCDynamicInput(Enum):
     LOCK_INTEGRATION_ENTITY = "lock_integration_entity"
     LOCK_INTEGRATION_WITH_POSITION_ENTITY = "lock_integration_with_position_entity"
     LOCK_HEIGHT_ENTITY = "lock_height_entity"
-    LOCK_HEIGHT_STATIC = "lock_height_static"
     LOCK_ANGLE_ENTITY = "lock_angle_entity"
-    LOCK_ANGLE_STATIC = "lock_angle_static"
     MOVEMENT_RESTRICTION_HEIGHT_ENTITY = "movement_restriction_height_entity"
     MOVEMENT_RESTRICTION_ANGLE_ENTITY = "movement_restriction_angle_entity"
     ENFORCE_POSITIONING_ENTITY = "enforce_positioning_entity"
