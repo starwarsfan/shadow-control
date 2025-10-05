@@ -993,11 +993,16 @@ class ShadowControlManager:
             SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value, lock_integration_with_position, bool
         )
 
-        # 3: Calc overal lock state and get lock positions
+        # 3: Calc overal lock state
         self.current_lock_state = self._calculate_lock_state()
-        lock_height_config_value = self._get_static_value(SCInternal.LOCK_HEIGHT_ENTITY.value, 0, float, log_warning=False)
+
+        # 4: Get lock height and angle values
+        entity_id_lock_height = self._get_internal_entity_id(SCInternal.LOCK_HEIGHT_ENTITY)
+        lock_height_config_value = self._get_internal_entity_state_value(entity_id_lock_height, 0, float) if entity_id_lock_height else 0
         self._dynamic_config.lock_height = self._get_entity_state_value(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, lock_height_config_value, float)
-        lock_angle_config_value = self._get_static_value(SCInternal.LOCK_ANGLE_ENTITY.value, 0, float, log_warning=False)
+
+        entity_id_lock_angle = self._get_internal_entity_id(SCInternal.LOCK_ANGLE_ENTITY)
+        lock_angle_config_value = self._get_internal_entity_state_value(entity_id_lock_angle, 0, float) if entity_id_lock_angle else 0
         self._dynamic_config.lock_angle = self._get_entity_state_value(SCDynamicInput.LOCK_ANGLE_ENTITY.value, lock_angle_config_value, float)
         # End of lock states handling
         # =============================================================
