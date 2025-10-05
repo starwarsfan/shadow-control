@@ -41,9 +41,9 @@ shadow_control:
     sun_azimuth_entity: input_number.d04_sun_azimuth
     lock_integration_entity: input_boolean.d07_lock_integration
     lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
-    lock_height_static: 50
+    #lock_height_static: 50
     lock_height_entity: input_number.lock_height_sc_dummy
-    lock_angle_static: 50
+    #lock_angle_static: 50
     lock_angle_entity: input_number.lock_angle_sc_dummy
     #movement_restriction_height_entity: no_restriction
     #movement_restriction_angle_entity: no_restriction
@@ -124,9 +124,9 @@ shadow_control:
     sun_azimuth_entity: input_number.d04_sun_azimuth
     #lock_integration_entity: input_boolean.d07_lock_integration
     #lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
-    lock_height_static: 0
+    #lock_height_static: 0
     #lock_height_entity: input_number.lock_height_sc_dummy2
-    lock_angle_static: 0
+    #lock_angle_static: 0
     #lock_angle_entity: input_number.lock_angle_sc_dummy2
     #movement_restriction_height_entity: no_restriction
     #movement_restriction_angle_entity: no_restriction
@@ -207,7 +207,7 @@ shadow_control:
     sun_azimuth_entity: input_number.d04_sun_azimuth
     #lock_integration_entity: input_boolean.d07_lock_integration
     #lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
-    lock_height_static: 0
+    #lock_height_static: 0
     #lock_height_entity: input_number.lock_height_sc_dummy3
     #movement_restriction_height_entity: no_restriction
     enforce_positioning_entity: input_boolean.d13_enforce_positioning
