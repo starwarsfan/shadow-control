@@ -295,6 +295,14 @@
     }
   },
   "entity": {
+    "number": {
+      "lock_height_entity": {
+        "name": "Enforced position height"
+      },
+      "lock_angle_entity": {
+        "name": "Enforced position slat angle"
+      }
+    },
     "sensor": {
       "sensor_target_height": {
         "name": "Height"

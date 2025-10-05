@@ -295,6 +295,14 @@
     }
   },
   "entity": {
+    "number": {
+      "lock_height_entity": {
+        "name": "Zwangsposition Höhe"
+      },
+      "lock_angle_entity": {
+        "name": "Zwangsposition Lamellenwinkel"
+      }
+    },
     "sensor": {
       "sensor_target_height": {
         "name": "Höhe"
