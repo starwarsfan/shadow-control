@@ -378,12 +378,12 @@ Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, sola
 Dieser Eingang hat Vorrang vor [Integration sperren](#integration-sperren). Werden beide Sperren auf 'on' gesetzt, wird die Zwangsposition angefahren.
 
 #### Sperrhöhe
-`lock_height_static` / `lock_height_entity`
+`lock_height_entity`
 
 Anzufahrende Höhe in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
 #### Sperrwinkel
-`lock_angle_static` / `lock_angle_entity`
+`lock_angle_entity`
 
 Anzufahrender Lamellenwinkel in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
@@ -556,8 +556,8 @@ shadow_control:
     lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
     #
     # Statically configured lock position
-    lock_height_static: 0
-    lock_angle_static: 0
+    #lock_height_static: 0
+    #lock_angle_static: 0
     #
     # Lock position entities
     #lock_height_entity: input_number.lock_height_entity
