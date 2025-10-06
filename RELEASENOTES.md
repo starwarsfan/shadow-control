@@ -2,11 +2,24 @@
 
 ## 0.11.0
 * Breaking change:
-  * Remove configuration options for the following entities, as they are automatically created by the integration:
-    * `lock_integration_entity`
+  * Remove configuration options for the following entities:
     * `lock_integration_static`
-    * `lock_integration_with_position_entity`
     * `lock_integration_with_position_static`
+    * `lock_height_static`
+    * `lock_angle_static`
+    * `movement_restriction_height_static`
+    * `movement_restriction_angle_static`
+  * Previously used configuration entries are now dynamically created as instance entities. See readme for naming of the entities.
+    * switch entities:
+      * `lock_integration_manual`
+      * `lock_integration_with_position_manual`
+    * input_number entities:
+      * `lock_height_manual`
+      * `lock_angle_manual`
+    * select entities:
+      * `movement_restriction_height_manual`
+      * `movement_restriction_angle_manual`
+
 
 ## 0.10.0
 * Bugfix: Fixed position handling if movement is restricted and integration gets unlocked

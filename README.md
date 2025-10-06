@@ -560,14 +560,17 @@ shadow_control:
     sun_azimuth_entity: input_number.d04_sun_azimuth
     #
     # Entities to lock the integration
-    lock_integration_entity: input_boolean.d07_lock_integration
-    lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
+    lock_integration_manual: false
+    lock_integration_with_position_manual: false
+    #lock_integration_entity: input_boolean.d07_lock_integration
+    #lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
     #
-    # Statically configured lock position
-    #lock_height_static: 0
-    #lock_angle_static: 0
+    # Lock with position height and angle values if lock_integration_with_position is used
+    # Range from 0-100 as percent values
+    lock_height_manual: 0
+    lock_angle_manual: 0
     #
-    # Lock position entities
+    # Lock with position height and angle entities if lock_integration_with_position is used
     #lock_height_entity: input_number.lock_height_entity
     #lock_angle_entity: input_number.lock_angle_entity
     #
@@ -575,8 +578,8 @@ shadow_control:
     # But in fact it makes no sense to configure something here as the shutter will not be moved 
     # anymore as soon as the final position is reached. This option is mainly used at the
     # maintenance page of a configured instance, to temporarily restrict the movement manually.
-    #movement_restriction_height_static: no_restriction
-    #movement_restriction_angle_static: no_restriction
+    movement_restriction_height_manual: no_restriction
+    movement_restriction_angle_manual: no_restriction
     #
     # Entities to restrict the movement direction
     #movement_restriction_height_entity:
