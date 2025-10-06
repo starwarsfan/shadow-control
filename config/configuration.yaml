@@ -39,14 +39,18 @@ shadow_control:
     #brightness_dawn_entity:
     sun_elevation_entity: input_number.d03_sun_elevation
     sun_azimuth_entity: input_number.d04_sun_azimuth
+    #lock_integration_manual: false
     lock_integration_entity: input_boolean.d07_lock_integration
+    #lock_integration_with_position_manual: false
     lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
-    #lock_height_static: 50
+    #lock_height_manual: 50
     lock_height_entity: input_number.lock_height_sc_dummy
-    #lock_angle_static: 50
+    #lock_angle_manual: 50
     lock_angle_entity: input_number.lock_angle_sc_dummy
-    #movement_restriction_height_entity: no_restriction
-    #movement_restriction_angle_entity: no_restriction
+    #movement_restriction_height_manual: no_restriction
+    #movement_restriction_height_entity:
+    #movement_restriction_angle_manual: no_restriction
+    #movement_restriction_angle_entity:
     enforce_positioning_entity: input_boolean.d13_enforce_positioning
     # General facade configuration
     facade_azimuth_static: 200
@@ -122,14 +126,18 @@ shadow_control:
     #brightness_dawn_entity:
     sun_elevation_entity: input_number.d03_sun_elevation
     sun_azimuth_entity: input_number.d04_sun_azimuth
+    #lock_integration_manual: false
     #lock_integration_entity: input_boolean.d07_lock_integration
+    #lock_integration_with_position_manual: false
     #lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
-    #lock_height_static: 0
+    #lock_height_manual: 0
     #lock_height_entity: input_number.lock_height_sc_dummy2
-    #lock_angle_static: 0
+    #lock_angle_manual: 0
     #lock_angle_entity: input_number.lock_angle_sc_dummy2
-    #movement_restriction_height_entity: no_restriction
-    #movement_restriction_angle_entity: no_restriction
+    #movement_restriction_height_manual: no_restriction
+    #movement_restriction_height_entity:
+    #movement_restriction_angle_manual: no_restriction
+    #movement_restriction_angle_entity:
     enforce_positioning_entity: input_boolean.d13_enforce_positioning
     # General facade configuration
     facade_azimuth_static: 80
@@ -205,11 +213,14 @@ shadow_control:
     #brightness_dawn_entity:
     sun_elevation_entity: input_number.d03_sun_elevation
     sun_azimuth_entity: input_number.d04_sun_azimuth
+    #lock_integration_manual: false
     #lock_integration_entity: input_boolean.d07_lock_integration
+    #lock_integration_with_position_manual: false
     #lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
-    #lock_height_static: 0
+    #lock_height_manual: 0
     #lock_height_entity: input_number.lock_height_sc_dummy3
-    #movement_restriction_height_entity: no_restriction
+    #movement_restriction_height_manual: no_restriction
+    #movement_restriction_height_entity:
     enforce_positioning_entity: input_boolean.d13_enforce_positioning
     # General facade configuration
     facade_azimuth_static: 320
