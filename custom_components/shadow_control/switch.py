@@ -12,7 +12,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 if TYPE_CHECKING:
     from . import ShadowControlManager
 
-from .const import DEBUG_ENABLED, DOMAIN, DOMAIN_DATA_MANAGERS, SCDawnInput, SCDynamicInput, SCShadowInput
+from .const import DEBUG_ENABLED, DOMAIN, DOMAIN_DATA_MANAGERS, SCDawnInput, SCInternal, SCShadowInput
 
 
 async def async_setup_entry(
@@ -55,22 +55,22 @@ async def async_setup_entry(
         ShadowControlRuntimeBooleanSwitch(
             hass,
             config_entry,
-            key=SCDynamicInput.LOCK_INTEGRATION_ENTITY.value,
+            key=SCInternal.LOCK_INTEGRATION_MANUAL.value,
             instance_name=sanitized_instance_name,
             logger=instance_logger,
             description=SwitchEntityDescription(
-                key=SCDynamicInput.LOCK_INTEGRATION_ENTITY.value,
+                key=SCInternal.LOCK_INTEGRATION_MANUAL.value,
                 name="Lock",  # default (English) fallback if no translation found
             ),
         ),
         ShadowControlRuntimeBooleanSwitch(
             hass,
             config_entry,
-            key=SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value,
+            key=SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL.value,
             instance_name=sanitized_instance_name,
             logger=instance_logger,
             description=SwitchEntityDescription(
-                key=SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value,
+                key=SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL.value,
                 name="Lock with position",  # default (English) fallback if no translation found
             ),
         ),

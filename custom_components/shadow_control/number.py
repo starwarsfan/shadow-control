@@ -30,11 +30,11 @@ async def async_setup_entry(
         ShadowControlNumber(
             hass,
             config_entry,
-            key=SCInternal.LOCK_HEIGHT_ENTITY.value,
+            key=SCInternal.LOCK_HEIGHT_MANUAL.value,
             instance_name=sanitized_instance_name,
             logger=instance_logger,
             description=NumberEntityDescription(
-                key=SCInternal.LOCK_HEIGHT_ENTITY.value,
+                key=SCInternal.LOCK_HEIGHT_MANUAL.value,
                 name="Height",  # default (English) fallback if no translation found
                 native_min_value=0.0,
                 native_max_value=100.0,
@@ -45,11 +45,11 @@ async def async_setup_entry(
         ShadowControlNumber(
             hass,
             config_entry,
-            key=SCInternal.LOCK_ANGLE_ENTITY.value,
+            key=SCInternal.LOCK_ANGLE_MANUAL.value,
             instance_name=sanitized_instance_name,
             logger=instance_logger,
             description=NumberEntityDescription(
-                key=SCInternal.LOCK_ANGLE_ENTITY.value,
+                key=SCInternal.LOCK_ANGLE_MANUAL.value,
                 name="Angle",  # default (English) fallback if no translation found
                 native_min_value=0.0,
                 native_max_value=100.0,

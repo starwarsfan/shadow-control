@@ -610,10 +610,10 @@ class ShadowControlManager:
         self._dynamic_config.sun_azimuth = config.get(SCDynamicInput.SUN_AZIMUTH_ENTITY.value)
         self._dynamic_config.shutter_current_height = config.get(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value)
         self._dynamic_config.shutter_current_angle = config.get(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value)
-        self._dynamic_config.lock_integration = config.get(SCInternal.LOCK_INTEGRATION_ENTITY.value)
-        self._dynamic_config.lock_integration_with_position = config.get(SCInternal.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value)
-        self._dynamic_config.lock_height = config.get(SCInternal.LOCK_HEIGHT_ENTITY.value)
-        self._dynamic_config.lock_angle = config.get(SCInternal.LOCK_ANGLE_ENTITY.value)
+        self._dynamic_config.lock_integration = config.get(SCInternal.LOCK_INTEGRATION_MANUAL.value)
+        self._dynamic_config.lock_integration_with_position = config.get(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL.value)
+        self._dynamic_config.lock_height = config.get(SCInternal.LOCK_HEIGHT_MANUAL.value)
+        self._dynamic_config.lock_angle = config.get(SCInternal.LOCK_ANGLE_MANUAL.value)
 
         self._handle_movement_restriction()
 
@@ -733,7 +733,7 @@ class ShadowControlManager:
                 self._dynamic_config.movement_restriction_height,
             )
         else:
-            entity_id_movement_restriction_height = self._get_internal_entity_id(SCInternal.MOVEMENT_RESTRICTION_HEIGHT_ENTITY)
+            entity_id_movement_restriction_height = self._get_internal_entity_id(SCInternal.MOVEMENT_RESTRICTION_HEIGHT_MANUAL)
             self._dynamic_config.movement_restriction_height = (
                 self._get_internal_entity_state_value(entity_id_movement_restriction_height, MovementRestricted.NO_RESTRICTION, MovementRestricted)
                 if entity_id_movement_restriction_height
@@ -755,7 +755,7 @@ class ShadowControlManager:
                 self._dynamic_config.movement_restriction_angle,
             )
         else:
-            entity_id_movement_restriction_angle = self._get_internal_entity_id(SCInternal.MOVEMENT_RESTRICTION_ANGLE_ENTITY)
+            entity_id_movement_restriction_angle = self._get_internal_entity_id(SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL)
             self._dynamic_config.movement_restriction_angle = (
                 self._get_internal_entity_state_value(entity_id_movement_restriction_angle, MovementRestricted.NO_RESTRICTION, MovementRestricted)
                 if entity_id_movement_restriction_angle
@@ -976,14 +976,14 @@ class ShadowControlManager:
         # Get lock states and calculate overall integration lock state
         # 1: Lock
         # 1.1: Get our own entity
-        entity_id_lock = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_ENTITY)
+        entity_id_lock = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_MANUAL)
         lock_integration = self._get_internal_entity_state_value(entity_id_lock, False, bool) if entity_id_lock else False
         # 1.2: Get configured external entity and overwrite our own entity with it
         self._dynamic_config.lock_integration = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, lock_integration, bool)
 
         # 2: Lock with position
         # 2.1: Get our own entity
-        entity_id_lock_with_position = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_ENTITY)
+        entity_id_lock_with_position = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL)
         lock_integration_with_position = (
             self._get_internal_entity_state_value(entity_id_lock_with_position, False, bool) if entity_id_lock_with_position else False
         )
@@ -996,11 +996,11 @@ class ShadowControlManager:
         self.current_lock_state = self._calculate_lock_state()
 
         # 4: Get lock height and angle values
-        entity_id_lock_height = self._get_internal_entity_id(SCInternal.LOCK_HEIGHT_ENTITY)
+        entity_id_lock_height = self._get_internal_entity_id(SCInternal.LOCK_HEIGHT_MANUAL)
         lock_height_config_value = self._get_internal_entity_state_value(entity_id_lock_height, 0, float) if entity_id_lock_height else 0
         self._dynamic_config.lock_height = self._get_entity_state_value(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, lock_height_config_value, float)
 
-        entity_id_lock_angle = self._get_internal_entity_id(SCInternal.LOCK_ANGLE_ENTITY)
+        entity_id_lock_angle = self._get_internal_entity_id(SCInternal.LOCK_ANGLE_MANUAL)
         lock_angle_config_value = self._get_internal_entity_state_value(entity_id_lock_angle, 0, float) if entity_id_lock_angle else 0
         self._dynamic_config.lock_angle = self._get_entity_state_value(SCDynamicInput.LOCK_ANGLE_ENTITY.value, lock_angle_config_value, float)
         # End of lock states handling
@@ -1168,8 +1168,8 @@ class ShadowControlManager:
                 self.logger.debug("  Old state: %s", old_state.state if old_state else "None")
                 self.logger.debug("  New state: %s", new_state.state if new_state else "None")
 
-                entity_id_lock = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_ENTITY)
-                entity_id_lock_with_position = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_ENTITY)
+                entity_id_lock_manual = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_MANUAL)
+                entity_id_lock_with_position_manual = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL)
 
                 if entity == self._config.get(SCShadowInput.CONTROL_ENABLED_ENTITY.value):
                     self.logger.info("Shadow control enable changed to %s", new_state.state)
@@ -1178,7 +1178,7 @@ class ShadowControlManager:
                     self.logger.info("Dawn control enable changed to %s", new_state.state)
                     dawn_handling_was_disabled = new_state.state == "off"
                 elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value) or entity == (
-                    self.hass.states.get(entity_id_lock) if entity_id_lock is not None else None
+                    self.hass.states.get(entity_id_lock_manual) if entity_id_lock_manual is not None else None
                 ):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration_with_position:
                         # Lock DISABLED
@@ -1194,7 +1194,7 @@ class ShadowControlManager:
                         self._height_during_lock_state = self._previous_shutter_height
                         self._angle_during_lock_state = self._previous_shutter_angle
                 elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value) or entity == (
-                    self.hass.states.get(entity_id_lock_with_position) if entity_id_lock_with_position is not None else None
+                    self.hass.states.get(entity_id_lock_with_position_manual) if entity_id_lock_with_position_manual is not None else None
                 ):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration:
                         # Lock DISABLED

@@ -18,29 +18,29 @@ TARGET_COVER_ENTITY_ID = "target_cover_entity"
 class SCInternal(Enum):
     """Instance specific internal Shadow Control entities."""
 
-    LOCK_INTEGRATION_ENTITY = "lock_integration_entity"
-    LOCK_INTEGRATION_WITH_POSITION_ENTITY = "lock_integration_with_position_entity"
-    LOCK_HEIGHT_ENTITY = "lock_height_entity"
-    LOCK_ANGLE_ENTITY = "lock_angle_entity"
-    MOVEMENT_RESTRICTION_HEIGHT_ENTITY = "movement_restriction_height_entity"
-    MOVEMENT_RESTRICTION_ANGLE_ENTITY = "movement_restriction_angle_entity"
+    LOCK_INTEGRATION_MANUAL = "lock_integration_manual"
+    LOCK_INTEGRATION_WITH_POSITION_MANUAL = "lock_integration_with_position_manual"
+    LOCK_HEIGHT_MANUAL = "lock_height_manual"
+    LOCK_ANGLE_MANUAL = "lock_angle_manual"
+    MOVEMENT_RESTRICTION_HEIGHT_MANUAL = "movement_restriction_height_manual"
+    MOVEMENT_RESTRICTION_ANGLE_MANUAL = "movement_restriction_angle_manual"
 
     @property
     def domain(self) -> str:
         """Handle domain for internal entities."""
         if self in (
-            SCInternal.LOCK_INTEGRATION_ENTITY,
-            SCInternal.LOCK_INTEGRATION_WITH_POSITION_ENTITY,
+            SCInternal.LOCK_INTEGRATION_MANUAL,
+            SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL,
         ):
             return "switch"
         if self in (
-            SCInternal.MOVEMENT_RESTRICTION_HEIGHT_ENTITY,
-            SCInternal.MOVEMENT_RESTRICTION_ANGLE_ENTITY,
+            SCInternal.MOVEMENT_RESTRICTION_HEIGHT_MANUAL,
+            SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL,
         ):
             return "select"
         if self in (
-            SCInternal.LOCK_HEIGHT_ENTITY,
-            SCInternal.LOCK_ANGLE_ENTITY,
+            SCInternal.LOCK_HEIGHT_MANUAL,
+            SCInternal.LOCK_ANGLE_MANUAL,
         ):
             return "number"
         return "select"  # default/fallback

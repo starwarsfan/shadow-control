@@ -12,7 +12,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 if TYPE_CHECKING:
     from . import ShadowControlManager
 
-from .const import DOMAIN, DOMAIN_DATA_MANAGERS, MovementRestricted, SCDynamicInput
+from .const import DOMAIN, DOMAIN_DATA_MANAGERS, MovementRestricted, SCInternal
 
 
 async def async_setup_entry(
@@ -30,25 +30,25 @@ async def async_setup_entry(
         ShadowControlSelect(
             hass,
             config_entry,
-            key=SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value,
+            key=SCInternal.MOVEMENT_RESTRICTION_HEIGHT_MANUAL.value,
             instance_name=sanitized_instance_name,
             logger=instance_logger,
             description=SelectEntityDescription(
-                key=SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value,
+                key=SCInternal.MOVEMENT_RESTRICTION_HEIGHT_MANUAL.value,
                 name="Restrict height movement",
-                translation_key=SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value,
+                translation_key=SCInternal.MOVEMENT_RESTRICTION_HEIGHT_MANUAL.value,
             ),
         ),
         ShadowControlSelect(
             hass,
             config_entry,
-            key=SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value,
+            key=SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL.value,
             instance_name=sanitized_instance_name,
             logger=instance_logger,
             description=SelectEntityDescription(
-                key=SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value,
+                key=SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL.value,
                 name="Restrict angle movement",
-                translation_key=SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value,
+                translation_key=SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL.value,
             ),
         ),
     ]
