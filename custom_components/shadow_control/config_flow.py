@@ -21,6 +21,7 @@ from .const import (
     SCDawnInput,
     SCDynamicInput,
     SCFacadeConfig,
+    SCInternal,
     SCShadowInput,
     ShutterType,
 )
@@ -638,11 +639,29 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): cv.entity_id,
+        vol.Optional(SCInternal.LOCK_INTEGRATION_MANUAL.value, default=False): cv.boolean,
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): cv.entity_id,
+        vol.Optional(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL.value, default=False): cv.boolean,
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value): cv.entity_id,
+        vol.Optional(SCInternal.LOCK_HEIGHT_MANUAL.value): vol.Coerce(float),
         vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value): cv.entity_id,
+        vol.Optional(SCInternal.LOCK_ANGLE_MANUAL.value): vol.Coerce(float),
         vol.Optional(SCDynamicInput.LOCK_ANGLE_ENTITY.value): cv.entity_id,
+        vol.Optional(SCInternal.MOVEMENT_RESTRICTION_HEIGHT_MANUAL.value, default="no_restriction"): vol.In(
+            [
+                "no_restriction",
+                "only_close",
+                "only_open",
+            ]
+        ),
         vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value): cv.entity_id,
+        vol.Optional(SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL.value, default="no_restriction"): vol.In(
+            [
+                "no_restriction",
+                "only_close",
+                "only_open",
+            ]
+        ),
         vol.Optional(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): cv.entity_id,
         vol.Optional(SCShadowInput.CONTROL_ENABLED_STATIC.value, default=True): cv.boolean,
