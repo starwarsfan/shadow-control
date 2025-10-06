@@ -296,10 +296,10 @@
   },
   "entity": {
     "number": {
-      "lock_height_entity": {
+      "lock_height_manual": {
         "name": "Enforced position height"
       },
-      "lock_angle_entity": {
+      "lock_angle_manual": {
         "name": "Enforced position slat angle"
       }
     },
@@ -368,10 +368,10 @@
       "dawn_control_enabled_static": {
         "name": "Dawn Control"
       },
-      "lock_integration_entity": {
+      "lock_integration_manual": {
         "name": "Lock"
       },
-      "lock_integration_with_position_entity": {
+      "lock_integration_with_position_manual": {
         "name": "Lock with position"
       }
     }
