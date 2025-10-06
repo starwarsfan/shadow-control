@@ -351,11 +351,21 @@
       }
     },
     "select": {
-      "movement_restriction_height_entity": {
-        "name": "Höhenveränderung einschränken"
+      "movement_restriction_height_manual": {
+        "name": "Höhenveränderung einschränken",
+        "state": {
+          "no_restriction": "Keine Beschränkung",
+          "only_close": "Nur schließen",
+          "only_open": "Nur öffnen"
+        }
       },
-      "movement_restriction_angle_entity": {
-        "name": "Winkelveränderung einschränken"
+      "movement_restriction_angle_manual": {
+        "name": "Winkelveränderung einschränken",
+        "state": {
+          "no_restriction": "Keine Beschränkung",
+          "only_close": "Nur schließen",
+          "only_open": "Nur öffnen"
+        }
       }
     },
     "switch": {
@@ -388,20 +398,6 @@
       "options": {
         "no_restriction": "Keine Einschränkung",
         "only_close": "Nur schliessen",
-        "only_open": "Nur öffnen"
-      }
-    },
-    "movement_restriction_height_entity": {
-      "options": {
-        "no_restriction": "Keine Beschränkung",
-        "only_close": "Nur schließen",
-        "only_open": "Nur öffnen"
-      }
-    },
-    "movement_restriction_angle_entity": {
-      "options": {
-        "no_restriction": "Keine Beschränkung",
-        "only_close": "Nur schließen",
         "only_open": "Nur öffnen"
       }
     }

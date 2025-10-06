@@ -351,11 +351,21 @@
       }
     },
     "select": {
-      "movement_restriction_height_entity": {
-        "name": "Restrict height movement"
+      "movement_restriction_height_manual": {
+        "name": "Restrict height movement",
+        "state": {
+          "no_restriction": "No restriction",
+          "only_close": "Only close",
+          "only_open": "Only open"
+        }
       },
-      "movement_restriction_angle_entity": {
-        "name": "Restrict angle movement"
+      "movement_restriction_angle_manual": {
+        "name": "Restrict angle movement",
+        "state": {
+          "no_restriction": "No restriction",
+          "only_close": "Only close",
+          "only_open": "Only open"
+        }
       }
     },
     "switch": {
@@ -385,20 +395,6 @@
       }
     },
     "facade_movement_restriction": {
-      "options": {
-        "no_restriction": "No restriction",
-        "only_close": "Only close",
-        "only_open": "Only open"
-      }
-    },
-    "movement_restriction_height_entity": {
-      "options": {
-        "no_restriction": "No restriction",
-        "only_close": "Only close",
-        "only_open": "Only open"
-      }
-    },
-    "movement_restriction_angle_entity": {
       "options": {
         "no_restriction": "No restriction",
         "only_close": "Only close",
