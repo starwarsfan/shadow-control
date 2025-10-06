@@ -445,11 +445,19 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         if field_to_remove in new_options:
             new_options.pop(field_to_remove)
             _LOGGER.debug("[%s] Removed '%s' from configuration.", DOMAIN, field_to_remove)
-        field_to_remove = SCDynamicInput.LOCK_INTEGRATION_ENTITY.value
+        field_to_remove = "lock_height_static"
         if field_to_remove in new_options:
             new_options.pop(field_to_remove)
             _LOGGER.debug("[%s] Removed '%s' from configuration.", DOMAIN, field_to_remove)
-        field_to_remove = SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value
+        field_to_remove = "lock_angle_static"
+        if field_to_remove in new_options:
+            new_options.pop(field_to_remove)
+            _LOGGER.debug("[%s] Removed '%s' from configuration.", DOMAIN, field_to_remove)
+        field_to_remove = "movement_restriction_height_static"
+        if field_to_remove in new_options:
+            new_options.pop(field_to_remove)
+            _LOGGER.debug("[%s] Removed '%s' from configuration.", DOMAIN, field_to_remove)
+        field_to_remove = "movement_restriction_angle_static"
         if field_to_remove in new_options:
             new_options.pop(field_to_remove)
             _LOGGER.debug("[%s] Removed '%s' from configuration.", DOMAIN, field_to_remove)
