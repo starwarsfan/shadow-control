@@ -127,6 +127,7 @@ In den folgenden Abschnitten gilt Folgendes:
 * Konfiguration via ConfigFlow und YAML möglich
 
 ## Beschreibung – Langform
+
 Basierend auf verschiedenen Eingangswerten wird die Integration die Positionierung des Behangs übernehmen. Damit das funktioniert, muss die jeweilige Instanz mit dem Azimut der Fassade, dem Sonnenstand sowie der dortigen Helligkeit konfiguriert werden. Zusätzlich sind viele weitere Details konfigurierbar, um den Beschattungsvorgang resp. den entsprechenden Bereich unter direkter Sonneneinstrahlung zu definieren und somit direktes Sonnenlicht im Raum zu verhindern oder einzuschränken.
 
 Die berechnete Behanghöhe sowie der Lamellenwinkel hängen von der momentanen Helligkeit, den konfigurierten Schwellwerten, der Abmessung der Lamellen, Timern und weiteren Einstellungen ab. Die verschiedenen Timer werden je nach momentanem Zustand der Integration gestartet.
@@ -150,8 +151,6 @@ Der konfigurierte Behang wird nur dann neu positioniert, wenn sich die berechnet
 
 **Shadow Control** ist eine Default-Integration in HACS. Zur Installation genügt es also, in HACS danach zu suchen, die Integration hinzuzufügen und Home-Assistant neu zu starten. Im Anschluss kann die Integration unter _Einstellungen > Geräte und Dienste_ hinzugefügt werden.
 
-
-
 # Konfiguration
 
 Die Konfiguration ist unterteilt in die minimalistische Initialkonfiguration sowie in eine separate Detailkonfiguration. Die Initialkonfiguration führt bereits zu einer vollständig funktionierenden Behangautomatisierung, welche über die Detailkonfiguration bei Bedarf jederzeit angepasst werden kann.
@@ -165,7 +164,13 @@ Die initiale Instanzkonfiguration ist sehr minimalistisch und benötigt nur die 
 ### Name der Instanz
 `name`
 
-Ein beschreibender und eindeutiger Name für diese **Shadow Control** Instanz. Eine bereinigte Version dieses Namens wird zur Kennzeichnung der Log-Einträge in der Home Assistant Logdatei verwendet.
+Ein beschreibender und eindeutiger Name für diese **Shadow Control** Instanz. Eine bereinigte Version dieses Namens wird zur Kennzeichnung der Log-Einträge in der Home Assistant Logdatei sowie als Präfix für die von der Integration erstellten Status- und Options-Entitäten verwendet.
+
+Beispiel: 
+1. Die Instanz wird "Essbereich Tür" genannt
+2. Der bereinigte Name ist daraufhin "essbereich_tr"
+3. Log-Einträge beginnen mit `[essbereich_tr]`
+4. Status-Entitäten heissen bspw. `sensor.essbereich_tr_target_height`
 
 #### Behangtyp
 `facade_shutter_type_static`
@@ -718,6 +723,7 @@ Das Ändern dieser Optionen entspricht dem Ändern der Konfiguration im ConfigFl
 Da die **Shadow Control** Konfiguration sehr umfangreich ist, gibt es einen speziellen Service, um die aktuelle Konfiguration im YAML-Format im Log auszugeben. 
 
 ## Vorarbeiten
+
 Damit das funktioniert, muss der Log-Modus von Home Assistant mindestens auf `info` stehen. In `configuration.yaml` muss dazu der folgende Eintrag vorhanden sein:
 
 ```yaml
@@ -775,6 +781,7 @@ Zwischen den beiden Marker-Zeilen `--- YAML dump start ---` und `--- YAML dump e
 Die auszugebende Konfiguration kann durch Angabe des entsprechenden Namens wie folgt angegeben werden:
 
 ## UI-Modus
+
 ```
 name: SC Dummy 3
 ```

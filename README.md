@@ -9,7 +9,6 @@
 
 Gehe zur [deutschen Version](/README.de.md) oder <a href="https://coff.ee/starwarsfan" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/white_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
 
-
 ## Table of content
 
 * [Introduction](#introduction)
@@ -88,6 +87,8 @@ Gehe zur [deutschen Version](/README.de.md) oder <a href="https://coff.ee/starwa
     * [Target height](#target-height)
     * [Target angle](#target-angle)
     * [Target angle (degrees)](#target-angle-degrees)
+    * [Computed height](#computed-height)
+    * [Computed angle](#computed-angle)
     * [Current state](#current-state)
     * [Lock state](#lock-state)
     * [Next shutter modification](#next-shutter-modification)
@@ -163,7 +164,13 @@ The initial instance configuration is very minimalistic and requires only the fo
 ### Instance name 
 `name`
 
-A descriptive and unique name for this **Shadow Control** instance. A sanitized version of this name will be used to mark corresponding log entries of this instance within the Home Assistant main log file.
+A descriptive and unique name for this **Shadow Control** instance. A sanitized version of this name will be used to mark corresponding log entries of this instance within the Home Assistant main log file as well as prefix for the created entities.
+
+Example:
+1. The instance is named "Dining room door"
+2. The sanitized name will be "dining_room_door"
+3. Log entries start with ``
+4. Entities will be named e. g. like ``
 
 #### Shutter type
 `facade_shutter_type_static`
@@ -263,6 +270,7 @@ With this switch, the debug mode for this instance could be activated. If activa
 Shutter height position in state _NEUTRAL_. The integration will switch to _NEUTRAL_ if
 
 * the integration is within a shadow- or a dawn-state and the corresponding regulation will be deactivated _or_
+* the dawn mode is deactivated
 * the sun leaves the facade range.
 
 Default: 0
@@ -315,10 +323,14 @@ To compute the light strip given with the previous configuration option, the int
 #### Tolerance height modification
 `facade_modification_tolerance_height_static`
 
+_Currently not used!_
+
 Tolerance range for external shutter height modification. If the calculated height is within the range of current height plus/minus this value, the integration will not lock itself. Default: 8
 
 #### Tolerance angle modification
 `facade_modification_tolerance_angle_static`
+
+_Currently not used!_
 
 Same as [Tolerance height modification](#tolerance-height-modification) but for the shutter slat angle. Default: 5
 
@@ -766,6 +778,7 @@ target_cover_entity:
 2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - switch.sc_dummy_sperren_mit_zwangspos...
 2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] === END INSTANCE CONFIGURATION DUMP ===
 ```
+
 Between the two marker lines `--- YAML dump start ---` and `--- YAML dump end ---` is the complete configuration of the instance in YAML format. This can be copied and saved or used as a basis for additional instances.
 
 The name of the configuration which should be exported can be given by the parameter `name`:
