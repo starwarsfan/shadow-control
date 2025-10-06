@@ -393,13 +393,6 @@
         "mode2": "Venetian blind bi-directional (vertical inside = closed / horizontal = open / vertical outside = closed)",
         "mode3": "Rolling shutter / blind"
       }
-    },
-    "facade_movement_restriction": {
-      "options": {
-        "no_restriction": "No restriction",
-        "only_close": "Only close",
-        "only_open": "Only open"
-      }
     }
   }
 }
