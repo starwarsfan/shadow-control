@@ -720,8 +720,9 @@ class ShadowControlManager:
 
     def _handle_movement_restriction(self) -> None:
         """Handle movement restriction configuration."""
+        # Handle movement restriction height
         configured_height_entity_id = self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value)
-        if configured_height_entity_id:
+        if configured_height_entity_id and configured_height_entity_id != "none":
             self._dynamic_config.movement_restriction_height = self._get_entity_state_value(
                 SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value,
                 MovementRestricted.NO_RESTRICTION,  # Fallback to default
@@ -740,12 +741,13 @@ class ShadowControlManager:
                 else MovementRestricted.NO_RESTRICTION
             )
             self.logger.debug(
-                "Movement restriction height entity NOT configured, using value %s from internal entity",
+                "Movement restriction height entity NOT configured or set to 'none', using value %s from internal entity",
                 self._dynamic_config.movement_restriction_height,
             )
 
+        # Handle movement restriction angle
         configured_angle_entity_id = self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value)
-        if configured_angle_entity_id:
+        if configured_angle_entity_id and configured_angle_entity_id != "none":
             self._dynamic_config.movement_restriction_angle = self._get_entity_state_value(
                 SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value, MovementRestricted.NO_RESTRICTION, MovementRestricted
             )
@@ -762,7 +764,7 @@ class ShadowControlManager:
                 else MovementRestricted.NO_RESTRICTION
             )
             self.logger.debug(
-                "Movement restriction angle entity NOT configured, using value %s from internal entity",
+                "Movement restriction angle entity NOT configured or set to 'none', using value %s from internal entity",
                 self._dynamic_config.movement_restriction_angle,
             )
 
@@ -3010,14 +3012,19 @@ class ShadowControlManager:
         return self._get_state_value(entity_id=entity_id, default=default, expected_type=expected_type, log_warning=log_warning)
 
     def _get_state_value(self, entity_id: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
-        if entity_id is None or not isinstance(entity_id, str) or entity_id == "":
-            # if log_warning:
-            #     self.logger.debug("No valid entity_id configured for key '%s' ('%s'). Using default: %s", key, entity_id, default)
+        """Extract dynamic value from an entity state."""
+        if entity_id in [None, "none"]:
+            # Directly return the default value for None or "none" without logging warnings
+            return default
+
+        if not isinstance(entity_id, str):
+            if log_warning:
+                self.logger.warning("Invalid entity_id: %s. Using default: %s", entity_id, default)
             return default
 
         state = self.hass.states.get(entity_id)
 
-        if state is None or state.state in ["unavailable", "unknown", "none"]:  # 'none' can happen for input_number if not set
+        if state is None or state.state in ["unavailable", "unknown"]:
             if log_warning:
                 self.logger.debug("Entity '%s' is unavailable or unknown. Using default: %s", entity_id, default)
             return default
@@ -3029,15 +3036,14 @@ class ShadowControlManager:
                 return int(float(state.state))  # Handle cases where state might be "10.0"
             if expected_type is float:
                 return float(state.state)
-            # For other types, direct conversion might be risky or need specific handling
             return expected_type(state.state)
         except (ValueError, TypeError):
             if log_warning:
                 self.logger.warning(
-                    "State of entity '%s' ('%s') cannot be converted to %s. Using default: %s",
-                    entity_id,
+                    "Failed to convert state '%s' of entity '%s' to type %s. Using default: %s",
                     state.state,
-                    expected_type,
+                    entity_id,
+                    expected_type.__name__,
                     default,
                 )
             return default
