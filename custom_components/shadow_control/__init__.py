@@ -171,6 +171,29 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error("[%s] No target cover entity ID found in config for entry %s.", manager_name, entry.entry_id)
         return False
 
+    # =================================================================
+    # Handle SCInternal config options from yaml import
+    sc_internal_values = config_data.get("sc_internal_values", {})
+    for entity_id, value in sc_internal_values.items():
+        _LOGGER.debug("Found these internal values for entity %s: %s", entity_id, value)
+
+    # Remove after processing
+    config_data.pop("sc_internal_values", None)
+
+    # Remove from options
+    if "sc_internal_values" in entry.options:
+        new_options = dict(entry.options)
+        new_options.pop("sc_internal_values")
+        hass.config_entries.async_update_entry(entry, options=new_options)
+
+    # Remove from data
+    if "sc_internal_values" in entry.data:
+        new_data = dict(entry.data)
+        new_data.pop("sc_internal_values")
+        hass.config_entries.async_update_entry(entry, data=new_data)
+    # End of SCInternal handling
+    # =================================================================
+
     # Hand over the combined configuration dictionary to the ShadowControlManager
     manager = ShadowControlManager(hass, config_data, entry.entry_id, instance_specific_logger)
 
