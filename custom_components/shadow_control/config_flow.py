@@ -1,6 +1,8 @@
 """Shadow Control ConfigFlow and OptionsFlow implementation."""
 
 import logging
+from typing import Any as TypingAny
+from typing import cast
 
 import homeassistant.helpers.entity_registry as er
 import voluptuous as vol
@@ -742,6 +744,13 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         # All the rest into 'options'
         options_data_for_entry = import_config
 
+        # Extract SCInternal values before validation
+        sc_internal_values = {key: options_data_for_entry[key] for key in list(options_data_for_entry) if key in [e.value for e in SCInternal]}
+
+        # Remove them from options_data_for_entry so validation doesn't fail
+        for key in sc_internal_values:
+            options_data_for_entry.pop(key)
+
         # Optional validation against FULL_OPTIONS_SCHEMA to verify the yaml data
         try:
             if config_data_for_entry.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value) == ShutterType.MODE3.value:
@@ -751,6 +760,9 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         except vol.Invalid:
             _LOGGER.exception("Validation error during YAML import for '%s'", instance_name)
             return self.async_abort(reason="invalid_yaml_config")
+
+        # Store SCInternal values in config entry data or options
+        config_data_for_entry["sc_internal_values"] = cast(TypingAny, sc_internal_values)
 
         # Create ConfigEntry with 'title' as the name within the UI
         return self.async_create_entry(
