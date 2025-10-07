@@ -172,12 +172,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return False
 
     # =================================================================
-    # Handle SCInternal config options from yaml import
+    # Get SCInternal config options from yaml import and remove them
+    # from entry.options and entry.data afterward.
     sc_internal_values = config_data.get("sc_internal_values", {})
-    for entity_id, value in sc_internal_values.items():
-        _LOGGER.debug("Found these internal values for entity %s: %s", entity_id, value)
 
-    # Remove after processing
     config_data.pop("sc_internal_values", None)
 
     # Remove from options
@@ -196,6 +194,38 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Hand over the combined configuration dictionary to the ShadowControlManager
     manager = ShadowControlManager(hass, config_data, entry.entry_id, instance_specific_logger)
+
+    # =================================================================
+    # After HA was started, the new internal entities exist.
+    # Now set internal (manual) entities with configured values from yaml import
+    async def set_internal_entities_when_ready(event=None) -> None:
+        for internal_enum_name, value in sc_internal_values.items():
+            _LOGGER.info("Configuring internal entity %s with %s", internal_enum_name, value)
+            internal_enum = SCInternal[internal_enum_name.upper()]
+            entity_id = manager.get_internal_entity_id(internal_enum)
+            if entity_id:
+                domain = internal_enum.domain
+                if domain == "number":
+                    _LOGGER.debug("Setting value of number %s to %s", entity_id, value)
+                    await hass.services.async_call("number", "set_value", {"entity_id": entity_id, "value": value}, blocking=True)
+                elif domain == "switch":
+                    _LOGGER.debug("Setting value of switch %s to %s", entity_id, value)
+                    service = "turn_on" if value else "turn_off"
+                    await hass.services.async_call("switch", service, {"entity_id": entity_id}, blocking=True)
+                elif domain == "select":
+                    _LOGGER.debug("Setting value of select %s to %s", entity_id, value)
+                    if hass.services.has_service("select", "select_option"):
+                        await hass.services.async_call("select", "select_option", {"entity_id": entity_id, "option": value}, blocking=True)
+                    else:
+                        _LOGGER.warning("Service select.select_option not found for entity %s", entity_id)
+                else:
+                    _LOGGER.warning("Unsupported domain %s for internal entity %s", domain, entity_id)
+            else:
+                _LOGGER.warning("Could not find entity ID for internal entity %s", internal_enum_name)
+
+    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, set_internal_entities_when_ready)
+    # End of setting internal entities
+    # =================================================================
 
     # Store manager within 'hass.data' to let sensors and other components access it.
     if DOMAIN_DATA_MANAGERS not in hass.data:
@@ -765,7 +795,7 @@ class ShadowControlManager:
                 self._dynamic_config.movement_restriction_height,
             )
         else:
-            entity_id_movement_restriction_height = self._get_internal_entity_id(SCInternal.MOVEMENT_RESTRICTION_HEIGHT_MANUAL)
+            entity_id_movement_restriction_height = self.get_internal_entity_id(SCInternal.MOVEMENT_RESTRICTION_HEIGHT_MANUAL)
             self._dynamic_config.movement_restriction_height = (
                 self._get_internal_entity_state_value(entity_id_movement_restriction_height, MovementRestricted.NO_RESTRICTION, MovementRestricted)
                 if entity_id_movement_restriction_height
@@ -788,7 +818,7 @@ class ShadowControlManager:
                 self._dynamic_config.movement_restriction_angle,
             )
         else:
-            entity_id_movement_restriction_angle = self._get_internal_entity_id(SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL)
+            entity_id_movement_restriction_angle = self.get_internal_entity_id(SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL)
             self._dynamic_config.movement_restriction_angle = (
                 self._get_internal_entity_state_value(entity_id_movement_restriction_angle, MovementRestricted.NO_RESTRICTION, MovementRestricted)
                 if entity_id_movement_restriction_angle
@@ -1011,14 +1041,14 @@ class ShadowControlManager:
         # Get lock states and calculate overall integration lock state
         # 1: Lock
         # 1.1: Get our own entity
-        entity_id_lock = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_MANUAL)
+        entity_id_lock = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_MANUAL)
         lock_integration = self._get_internal_entity_state_value(entity_id_lock, False, bool) if entity_id_lock else False
         # 1.2: Get configured external entity and overwrite our own entity with it
         self._dynamic_config.lock_integration = self._get_entity_state_value(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value, lock_integration, bool)
 
         # 2: Lock with position
         # 2.1: Get our own entity
-        entity_id_lock_with_position = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL)
+        entity_id_lock_with_position = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL)
         lock_integration_with_position = (
             self._get_internal_entity_state_value(entity_id_lock_with_position, False, bool) if entity_id_lock_with_position else False
         )
@@ -1031,11 +1061,11 @@ class ShadowControlManager:
         self.current_lock_state = self._calculate_lock_state()
 
         # 4: Get lock height and angle values
-        entity_id_lock_height = self._get_internal_entity_id(SCInternal.LOCK_HEIGHT_MANUAL)
+        entity_id_lock_height = self.get_internal_entity_id(SCInternal.LOCK_HEIGHT_MANUAL)
         lock_height_config_value = self._get_internal_entity_state_value(entity_id_lock_height, 0, float) if entity_id_lock_height else 0
         self._dynamic_config.lock_height = self._get_entity_state_value(SCDynamicInput.LOCK_HEIGHT_ENTITY.value, lock_height_config_value, float)
 
-        entity_id_lock_angle = self._get_internal_entity_id(SCInternal.LOCK_ANGLE_MANUAL)
+        entity_id_lock_angle = self.get_internal_entity_id(SCInternal.LOCK_ANGLE_MANUAL)
         lock_angle_config_value = self._get_internal_entity_state_value(entity_id_lock_angle, 0, float) if entity_id_lock_angle else 0
         self._dynamic_config.lock_angle = self._get_entity_state_value(SCDynamicInput.LOCK_ANGLE_ENTITY.value, lock_angle_config_value, float)
         # End of lock states handling
@@ -1203,8 +1233,8 @@ class ShadowControlManager:
                 self.logger.debug("  Old state: %s", old_state.state if old_state else "None")
                 self.logger.debug("  New state: %s", new_state.state if new_state else "None")
 
-                entity_id_lock_manual = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_MANUAL)
-                entity_id_lock_with_position_manual = self._get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL)
+                entity_id_lock_manual = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_MANUAL)
+                entity_id_lock_with_position_manual = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL)
 
                 if entity == self._config.get(SCShadowInput.CONTROL_ENABLED_ENTITY.value):
                     self.logger.info("Shadow control enable changed to %s", new_state.state)
@@ -3257,7 +3287,7 @@ class ShadowControlManager:
             return LockState.LOCKED_MANUALLY
         return LockState.UNLOCKED
 
-    def _get_internal_entity_id(self, internal_enum: SCInternal) -> str:
+    def get_internal_entity_id(self, internal_enum: SCInternal) -> str:
         """Get the internal entity_id for this instance."""
         registry = entity_registry.async_get(self.hass)
         unique_id = f"{self._entry_id}_{internal_enum.name.lower()}"
