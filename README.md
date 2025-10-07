@@ -110,6 +110,13 @@ Within further description:
 * The word "shutter" references rolling shutters. In the Home Assistant terminology, this is called a "cover". From the pov of this integration it's the same.
 * The whole internal logic was initially developed to interact with a KNX system, so the main difference is the handling of %-values. **Shadow Control** will interact with Home Assistant correct, but the configuration as well as the log output is using 0% as fully open and 100% as fully closed.
 * Most options are available with two flavors for each configuration: Once as a static configuration and once as an entity configuration. If you need to configure something without the possibility to change that value on demand, you should use the static configuration entry. If you need to modify something on demand, use the entity configuration and choose the corresponding entity, which holds the required value. If you change the used entity, it will be taken into account within the next execution of the integration instance.
+* Some settings could be modified using configured entities but also provide own instance specific entities. So these entities could be used within automations to modify the configuration without triggering a integration reload. These are the configurations:
+  * [Lock integration](#lock-integration)
+  * [Lock integration with position](#lock-integration-with-position)
+  * [Lock height](#lock-height)
+  * [Lock angle](#lock-angle)
+  * [Movement restriction height](#movement-restriction-height)
+  * [Movement restriction angle](#movement-restriction-angle)
 
 ## TL;DR – in short
 
@@ -370,14 +377,14 @@ See the description at [Sun elevation](#sun-elevation).
 See the description at [Sun azimuth](#sun-azimuth).
 
 #### Lock integration
-`lock_integration_entity`
+`lock_integration_manual` / `lock_integration_entity`
 
 If this input is set to 'off,' the integration works as desired by updating the output (as long as the input `lock_integration_with_position` is not set to 'on'). 
 
 If the input is set to 'on,' the integration gets locked. That means the integration is internally still working, but the configured shutter will not be updated and stay at the current position. With this approach, the integration is able to immediately move the shutter to the right position, as soon as it gets unlocked again.
 
 #### Lock integration with position
-`lock_integration_with_position_entity`
+`lock_integration_with_position_manual` / `lock_integration_with_position_entity`
 
 If this input is set to 'off,' the integration works as desired by updating the output (as long as the input `lock_integration` is not set to 'on').
 
@@ -386,17 +393,17 @@ If the input is set to 'on,' the integration gets locked. That means the integra
 This input has precedence over 'lock_integration.' If both lock inputs are set 'on,' the shutter will be moved to the configured lock position.
 
 #### Lock height
-`lock_height_entity`
+`lock_height_manual` / `lock_height_entity`
 
 Height in %, which should be set if integration gets locked by 'lock_integration_with_position.' 
 
 #### Lock angle
-`lock_angle_entity`
+`lock_angle_manual` / `lock_angle_entity`
 
 Angle in %, which should be set if integration gets locked by 'lock_integration_with_position.'
 
 #### Movement restriction height
-`movement_restriction_height_static` / `movement_restriction_height_entity`
+`movement_restriction_height_manual` / `movement_restriction_height_entity`
 
 With this setting, the movement direction could be restricted:
 
@@ -410,7 +417,7 @@ With this setting, the movement direction could be restricted:
 This could be used to prevent shutters from being opened after the sun goes down and close them some minutes later because of starting dawn. This setting might be modified using a timer clock or other appropriate automation.
 
 #### Movement restriction angle
-`movement_restriction_angle_static` / `movement_restriction_angle_entity`
+`movement_restriction_angle_manual` / `movement_restriction_angle_entity`
 
 Same as [Movement restriction height](#movement-restriction-height) but for the shutter slat angle.
 

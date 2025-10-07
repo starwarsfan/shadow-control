@@ -109,7 +109,14 @@ In den folgenden Abschnitten gilt Folgendes:
 * Das Wort "Fassade" ist gleichbedeutend mit "Fenster" oder "Tür", da es hier lediglich den Bezug zum Azimut eines Objektes in Blickrichtung von innen nach aussen darstellt.
 * Das Wort "Behang" bezieht sich auf Raffstoren. In der Home Assistant Terminologie ist das ein "cover", was aus Sicht dieser Integration das Gleiche ist.
 * Die gesamte interne Logik wurde ursprünglich für die Interaktion mit KNX-Systemen entwickelt. Der Hauptunterschied ist daher die Handhabung von Prozentwerten. **Shadow Control** wird mit Home Assistant korrekt interagieren aber die Konfiguration sowie die Logausgaben verwenden 0 % als geöffnet und 100 % als geschlossen.
-* Viele Einstellungen sind jeweils in zwei Ausprägungen vorhanden. Einmal als statischer Wert und einmal als Entität. Wird ein Wert fix konfiguriert und soll sich zur Laufzeit nicht ändern, wird das über die statische Konfiguration gemacht. Soll der Wert aber dynamisch angepasst werden könenn, muss er mit einer entsprechenden Entität verknüpft werden.
+* Viele Einstellungen sind jeweils in zwei Ausprägungen vorhanden. Einmal als statischer Wert und einmal als Entität. Wird ein Wert fix konfiguriert und soll sich zur Laufzeit nicht ändern, wird das über die statische Konfiguration gemacht. Soll der Wert aber dynamisch angepasst werden können, muss er mit einer entsprechenden Entität verknüpft werden.
+* Einige Einstellungen können via verknüpfter Entität modifiziert werden, stellen aber parallel dazu Instanz-spezifische Entitäten automatisch bereit. Damit können diese Einstellungen auch in Automationen verwendet werden, ohne durch eine Änderung einen Reload der Integration auszulösen. Konkret sind das die folgenden Settings:
+  * [Integration sperren](#integration-sperren)
+  * [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition)
+  * [Sperrhöhe](#sperrhöhe)
+  * [Sperrwinkel](#sperrwinkel)
+  * [Bewegungseinschränkung Höhenpositionierung](#bewegungseinschränkung-höhenpositionierung)
+  * [Bewegungseinschränkung Lamellenwinkelpositionierung](#bewegungseinschränkung-lamellenwinkelpositionierung)
 
 ## TL;DR – Kurzform
 
@@ -367,14 +374,14 @@ Siehe Beschreibung unter [Höhe der Sonne](#sun-elevation).
 Siehe Beschreibung unter [Azimut der Sonne](#sun-azimuth).
 
 #### Integration sperren
-`lock_integration_entity`
+`lock_integration_manual` / `lock_integration_entity`
 
 Mit diesem Eingang kann die gesamte Integration gesperrt werden. Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration intern normal weiter, aktualisiert aber den verbundenen Behang nicht. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann.
 
 Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, solange nicht [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) aktiv ist.
 
 #### Integration sperren mit Zwangsposition
-`lock_integration_with_position_entity`
+`lock_integration_with_position_manual` / `lock_integration_with_position_entity`
 
 Mit diesem Eingang kann die gesamte Integration gesperrt und eine Zwangsposition angefahren werden. Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration intern normal weiter, fährt aber den Behang auf die via [Sperrhöhe](#sperrhöhe)/[Sperrwinkel](#sperrwinkel) konfigurierte Position. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann.
 
@@ -383,17 +390,17 @@ Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, sola
 Dieser Eingang hat Vorrang vor [Integration sperren](#integration-sperren). Werden beide Sperren auf 'on' gesetzt, wird die Zwangsposition angefahren.
 
 #### Sperrhöhe
-`lock_height_entity`
+`lock_height_manual` / `lock_height_entity`
 
 Anzufahrende Höhe in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
 #### Sperrwinkel
-`lock_angle_entity`
+`lock_angle_manual` / `lock_angle_entity`
 
 Anzufahrender Lamellenwinkel in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
 #### Bewegungseinschränkung Höhenpositionierung
-`movement_restriction_height_static` / `movement_restriction_height_entity`
+`movement_restriction_height_manual` / `movement_restriction_height_entity`
 
 Mit diesem Setting kann die Bewegungsrichtung der Höhenpositionierung wie folgt eingeschränkt werden
 
@@ -407,7 +414,7 @@ Mit diesem Setting kann die Bewegungsrichtung der Höhenpositionierung wie folgt
 Das kann dafür verwendet werden, dass der Behang nach der Beschattung nicht zunächst geöffnet und kurze Zeit später durch schnell einsetzende Dämmerung wieder geschlossen wird. Durch eine separate, bspw. tageszeitabhängige Automation, kann dieser Eingang entsprechend modifiziert werden.
 
 #### Bewegungseinschränkung Lamellenwinkelpositionierung
-`movement_restriction_angle_static` / `movement_restriction_angle_entity`
+`movement_restriction_angle_manual` / `movement_restriction_angle_entity`
 
 Siehe [Bewegungseinschränkung Höhenpositionierung](#bewegungseinschränkung-höhenpositionierung), hier nur für den Lamellenwinkel.
 

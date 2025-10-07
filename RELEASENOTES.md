@@ -2,24 +2,14 @@
 
 ## 0.11.0
 * Breaking change:
-  * Remove configuration options for the following entities:
-    * `lock_integration_static`
-    * `lock_integration_with_position_static`
-    * `lock_height_static`
-    * `lock_angle_static`
-    * `movement_restriction_height_static`
-    * `movement_restriction_angle_static`
-  * Previously used configuration entries are now dynamically created as instance entities. See readme for naming of the entities.
-    * switch entities:
-      * `lock_integration_manual`
-      * `lock_integration_with_position_manual`
-    * input_number entities:
-      * `lock_height_manual`
-      * `lock_angle_manual`
-    * select entities:
-      * `movement_restriction_height_manual`
-      * `movement_restriction_angle_manual`
-
+  * Renamed some configuration options:
+    * `lock_integration_static`-> `lock_integration_manual`
+    * `lock_integration_with_position_static` -> `lock_integration_with_position_manual`
+    * `lock_height_static` -> `lock_height_manual`
+    * `lock_angle_static` -> `lock_angle_manual`
+    * `movement_restriction_height_static` -> `movement_restriction_height_manual`
+    * `movement_restriction_angle_static` -> `movement_restriction_angle_manual`
+  * These renamed options are no longer configuration entries within ConfigFlow. They are now dynamically created as `switch`, `number` or `select` entities per **Shadow Control** instance and could be used either right on the instance detail view or directly within own automations. See readme for naming of these entities.
 
 ## 0.10.0
 * Bugfix: Fixed position handling if movement is restricted and integration gets unlocked
