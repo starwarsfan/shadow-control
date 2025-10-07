@@ -31,6 +31,7 @@ ignore = [
     "FBT003", # Boolean positional value in function call
     "ANN001", # Missing type annotation for function argument
     "PLR0913", # Too many arguments in function definition
+    "TC006", # Add quotes to type expression in `typing.cast()`
 ]
 
 [lint.flake8-pytest-style]
