@@ -58,6 +58,14 @@ jobs:
           cd custom_components
           zip -r ../${{ env.INTEGRATION_NAME }}-${{ env.VERSION }}-${{ env.GITHASH }}.zip ./
 
+      - name: Set prerelease flag
+        run: |
+          if [[ "${GITHUB_REF##*/}" =~ -rc ]]; then
+            echo "PRERELEASE=true" >> $GITHUB_ENV
+          else
+            echo "PRERELEASE=false" >> $GITHUB_ENV
+          fi
+
       - name: Create GitHub Release and Upload Asset
         uses: softprops/action-gh-release@v2
         with:
@@ -65,5 +73,6 @@ jobs:
           name: Release ${{ github.ref_name }}
           body_path: release_notes.txt
           files: ${{ env.INTEGRATION_NAME }}-${{ env.VERSION }}-${{ env.GITHASH }}.zip
+          prerelease: ${{ env.PRERELEASE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
