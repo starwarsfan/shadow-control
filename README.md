@@ -14,6 +14,7 @@ Gehe zur [deutschen Version](/README.de.md) oder <a href="https://coff.ee/starwa
 * [Introduction](#introduction)
   * [TL;DR – in short](#tldr--in-short)
   * [What it does - long version](#what-it-does---long-version)
+  * [Entity precedence](#entity-precedence)
 * [Installation](#installation)
 * [Configuration](#configuration)
   * [Initial instance configuration](#initial-instance-configuration)
@@ -153,6 +154,10 @@ The integration will be triggered by updating the following entities:
 * [Dawn handling dis-/enabled state](#dawn-control-enabled)
 
 The configured cover entity will only be updated if a value has changed since the last run of the integration, which prevents unnecessary movements.
+
+## Entity precedence
+
+Attention: For all configurations where there are `*_manual` and `*_entity` variants, such as `lock_integration_manual` and `lock_integration_entity`, the `*_entity` variant takes precedence! This means that if both variants are configured, the value of the `*_entity` variant will be used. To prevent this, you must configure the empty entity `none` for the entity variants.
 
 # Installation
 
@@ -383,6 +388,8 @@ If this input is set to 'off,' the integration works as desired by updating the 
 
 If the input is set to 'on,' the integration gets locked. That means the integration is internally still working, but the configured shutter will not be updated and stay at the current position. With this approach, the integration is able to immediately move the shutter to the right position, as soon as it gets unlocked again.
 
+Attention, see note at [Entity precedence](#entity-precedence).
+
 #### Lock integration with position
 `lock_integration_with_position_manual` / `lock_integration_with_position_entity`
 
@@ -392,15 +399,21 @@ If the input is set to 'on,' the integration gets locked. That means the integra
 
 This input has precedence over 'lock_integration.' If both lock inputs are set 'on,' the shutter will be moved to the configured lock position.
 
+Attention, see note at [Entity precedence](#entity-precedence).
+
 #### Lock height
 `lock_height_manual` / `lock_height_entity`
 
 Height in %, which should be set if integration gets locked by 'lock_integration_with_position.' 
 
+Attention, see note at [Entity precedence](#entity-precedence).
+
 #### Lock angle
 `lock_angle_manual` / `lock_angle_entity`
 
 Angle in %, which should be set if integration gets locked by 'lock_integration_with_position.'
+
+Attention, see note at [Entity precedence](#entity-precedence).
 
 #### Movement restriction height
 `movement_restriction_height_manual` / `movement_restriction_height_entity`
@@ -416,10 +429,14 @@ With this setting, the movement direction could be restricted:
 
 This could be used to prevent shutters from being opened after the sun goes down and close them some minutes later because of starting dawn. This setting might be modified using a timer clock or other appropriate automation.
 
+Attention, see note at [Entity precedence](#entity-precedence).
+
 #### Movement restriction angle
 `movement_restriction_angle_manual` / `movement_restriction_angle_entity`
 
 Same as [Movement restriction height](#movement-restriction-height) but for the shutter slat angle.
+
+Attention, see note at [Entity precedence](#entity-precedence).
 
 #### Enforce shutter positioning
 `enforce_positioning_entity`

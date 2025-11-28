@@ -14,6 +14,7 @@ Go to the [English version](/README.md) or <a href="https://coff.ee/starwarsfan"
 * [Einführung](#einführung)
   * [TL;DR – Kurzform](#tldr--kurzform)
   * [Beschreibung – Langform](#beschreibung--langform)
+  * [Entitäten-Vorrang](#entitäten-vorrang)
 * [Installation](#installation)
 * [Konfiguration](#konfiguration)
   * [Initiale Instanzkonfiguration](#initiale-instanzkonfiguration)
@@ -153,6 +154,10 @@ Die Berechnung der Position wird durch die Aktualisierung der folgenden Eingäng
 * [Dämmerungssteuerung ein/aus](#dämmerungssteuerung-aktiviert)
 
 Der konfigurierte Behang wird nur dann neu positioniert, wenn sich die berechneten Werte seit dem letzten Lauf der Integration geändert haben. Damit wird die unnötige Neupositionierung der Raffstorenlamellen verhindert.
+
+## Entitäten-Vorrang
+Achtung: Bei allen Konfigurationen, bei welchen es `*_manual` und `*_entity` Varianten gibt, wie bspw. `lock_integration_manual` und `lock_integration_entity`, hat die `*_entity` Variante Vorrang! Das bedeutet, wenn beide Varianten konfiguriert sind, wird der Wert der `*_entity` Variante verwendet. Um das zu unterbinden, muss bei den Entity-Varianten die leere Entität `none` konfiguriert werden.
+
 
 # Installation
 
@@ -380,6 +385,8 @@ Mit diesem Eingang kann die gesamte Integration gesperrt werden. Wird der Eingan
 
 Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, solange nicht [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) aktiv ist.
 
+Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
+
 #### Integration sperren mit Zwangsposition
 `lock_integration_with_position_manual` / `lock_integration_with_position_entity`
 
@@ -389,15 +396,21 @@ Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, sola
 
 Dieser Eingang hat Vorrang vor [Integration sperren](#integration-sperren). Werden beide Sperren auf 'on' gesetzt, wird die Zwangsposition angefahren.
 
+Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
+
 #### Sperrhöhe
 `lock_height_manual` / `lock_height_entity`
 
 Anzufahrende Höhe in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
+Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
+
 #### Sperrwinkel
 `lock_angle_manual` / `lock_angle_entity`
 
 Anzufahrender Lamellenwinkel in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
+
+Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
 #### Bewegungseinschränkung Höhenpositionierung
 `movement_restriction_height_manual` / `movement_restriction_height_entity`
@@ -413,10 +426,14 @@ Mit diesem Setting kann die Bewegungsrichtung der Höhenpositionierung wie folgt
 
 Das kann dafür verwendet werden, dass der Behang nach der Beschattung nicht zunächst geöffnet und kurze Zeit später durch schnell einsetzende Dämmerung wieder geschlossen wird. Durch eine separate, bspw. tageszeitabhängige Automation, kann dieser Eingang entsprechend modifiziert werden.
 
+Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
+
 #### Bewegungseinschränkung Lamellenwinkelpositionierung
 `movement_restriction_angle_manual` / `movement_restriction_angle_entity`
 
 Siehe [Bewegungseinschränkung Höhenpositionierung](#bewegungseinschränkung-höhenpositionierung), hier nur für den Lamellenwinkel.
+
+Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
 #### Zwangspositionierung auslösen
 `enforce_positioning_entity`
