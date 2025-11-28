@@ -241,14 +241,14 @@ Positivoffset zum [Azimut der Fassade](#azimut-der-fassade), bis zu welchem die 
 #### Minimale Sonnenhöhe
 `facade_elevation_sun_min_static`
 
-Minimale Höhe der Sonne in Grad. Ist die effektive Höhe kleiner als dieser Wert, wird keine Beschattungsberechnung ausgelöst. Ein Anwendungsfall dafür ist bspw. wenn sich vor der Fassade ein anderes Gebäude befindet, welches Schatten auf die Fassade wird, während die Wetterstation auf dem Dach noch voll in der Sonne ist. Wertebereich: 0-90, Standardwert: 0
+Minimale Höhe der Sonne in Grad. Ist die effektive Höhe kleiner als dieser Wert, wird keine Beschattungsberechnung ausgelöst. Ein Anwendungsfall dafür ist bspw. wenn sich vor der Fassade ein anderes Gebäude befindet, welches Schatten auf die Fassade wirft, während die Wetterstation auf dem Dach noch voll in der Sonne ist. Wertebereich: 0-90, Standardwert: 0
 
 Hinweis bzgl. "effektiver Höhe": Um den korrekten Lamellenwinkel zu berechnen, muss die Höhe der Sonne im rechten Winkel zur Fassade errechnet werden. Das ist die sog. "effektive Höhe", welche so auch im Log zu finden ist. Wenn die Beschattungssteuerung insbesondere im Grenzbereich der beiden Beginn- und Ende-Offsets nicht wie erwartet arbeitet, muss dieser Wert genauer betrachtet werden.
 
 #### Maximale Sonnenhöhe
 `facade_elevation_sun_max_static`
 
-Maximale Höhe der Sonne in Grad. Ist die effektive Höhe grösser als dieser Wert, wird keine Beschattungsberechnung ausgelöst. Ein Anwendungsfall dafür ist bspw. wenn sich über der Fassade resp. dem Fenster ein Balkon befindet, welcher Schatten auf die Fassade wird, während die Wetterstation auf dem Dach noch voll in der Sonne ist. Wertebereich: 0-90, Standardwert: 90
+Maximale Höhe der Sonne in Grad. Ist die effektive Höhe grösser als dieser Wert, wird keine Beschattungsberechnung ausgelöst. Ein Anwendungsfall dafür ist bspw. wenn sich über der Fassade resp. dem Fenster ein Balkon befindet, welcher Schatten auf die Fassade wirft, während die Wetterstation auf dem Dach noch voll in der Sonne ist. Wertebereich: 0-90, Standardwert: 90
 
 #### Debugmodus
 `debug_enabled`
