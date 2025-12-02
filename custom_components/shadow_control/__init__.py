@@ -865,8 +865,6 @@ class ShadowControlManager:
             SCDynamicInput.LOCK_INTEGRATION_ENTITY,
             SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY,
             SCDynamicInput.ENFORCE_POSITIONING_ENTITY,
-            SCInternal.LOCK_INTEGRATION_MANUAL,
-            SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL,
             SCShadowInput.CONTROL_ENABLED_ENTITY,
             SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY,
             SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY,
@@ -878,6 +876,14 @@ class ShadowControlManager:
             entity_id = self._config.get(conf_key_enum.value)
             if entity_id:
                 tracked_inputs.append(entity_id)
+
+        # Also track internal lock entities for manual lock state changes
+        entity_id_lock = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_MANUAL)
+        if entity_id_lock:
+            tracked_inputs.append(entity_id_lock)
+        entity_id_lock_with_position = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL)
+        if entity_id_lock_with_position:
+            tracked_inputs.append(entity_id_lock_with_position)
 
         if tracked_inputs:
             self.logger.debug("Tracking input entities: %s", tracked_inputs)
