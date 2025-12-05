@@ -910,6 +910,11 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                     errors=errors,
                 )
 
+            for entity_field in SCFacadeConfig:
+                if entity_field.name.endswith("_ENTITY") and not user_input.get(entity_field.value):
+                    _LOGGER.debug("[OptionsFlow facade part 2] %s is empty, removing it from options_data", entity_field.name)
+                    self.options_data.pop(entity_field.value, None)
+
             self.options_data.update(user_input)
             _LOGGER.debug("[OptionsFlow] Shutter type: %s", self.shutter_type)
             # if self.shutter_type == ShutterType.MODE3.value:
@@ -989,6 +994,12 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                     errors=errors,
                 )
 
+            # Configurable entities could be empty, so remove them from options_data if not set
+            for entity_field in SCDynamicInput:
+                if not user_input.get(entity_field.value):
+                    _LOGGER.debug("[OptionsFlow dynamic inputs] %s is empty, removing it from options_data", entity_field.name)
+                    self.options_data.pop(entity_field.value, None)
+
             self.options_data.update(self._clean_number_inputs(user_input))
             return await self.async_step_shadow_settings()
 
@@ -1007,6 +1018,12 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
 
         errors: dict[str, str] = {}
         if user_input is not None:
+            # Configurable entities could be empty, so remove them from options_data if not set
+            for entity_field in SCShadowInput:
+                if entity_field.name.endswith("_ENTITY") and not user_input.get(entity_field.value):
+                    _LOGGER.debug("[OptionsFlow shadow settings] %s is empty, removing it from options_data", entity_field.name)
+                    self.options_data.pop(entity_field.value, None)
+
             self.options_data.update(self._clean_number_inputs(user_input))
             return await self.async_step_dawn_settings()
 
@@ -1039,6 +1056,12 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                 self.options_data.pop(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value)
 
             _LOGGER.debug("Final options data before update: %s", self.options_data)
+
+            # Configurable entities could be empty, so remove them from options_data if not set
+            for entity_field in SCDawnInput:
+                if entity_field.name.endswith("_ENTITY") and not user_input.get(entity_field.value):
+                    _LOGGER.debug("[OptionsFlow dawn settings] %s is empty, removing it from options_data", entity_field.name)
+                    self.options_data.pop(entity_field.value, None)
 
             try:
                 # Validate the entire options configuration using the combined schema
