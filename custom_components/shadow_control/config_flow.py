@@ -121,9 +121,8 @@ def get_cfg_facade_settings_part1() -> vol.Schema:
 # === Mode1 / Mode2
 # --- STEP 3: 2nd part of facade configuration ---
 # CFG_FACADE_SETTINGS_PART2 = vol.Schema(
-def get_cfg_facade_settings_part2(hass) -> vol.Schema:
+def get_cfg_facade_settings_part2() -> vol.Schema:
     """Get facade configuration schema with static and entity options."""
-    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
     return vol.Schema(
         {
             vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
@@ -173,11 +172,8 @@ def get_cfg_facade_settings_part2(hass) -> vol.Schema:
 
 
 # --- STEP 4: Dynamic settings ---
-def get_cfg_dynamic_inputs(hass) -> vol.Schema:
+def get_cfg_dynamic_inputs() -> vol.Schema:
     """Get dynamic input configuration schema with entity options."""
-    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
-    entity_options_boolean = get_entity_options(hass, ["input_boolean", "binary_sensor"])
-    entity_options_select = get_entity_options(hass, ["sensor", "select", "input_select", "input_text"])
     return vol.Schema(
         {
             vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): selector.EntitySelector(
@@ -225,10 +221,8 @@ def get_cfg_dynamic_inputs(hass) -> vol.Schema:
 
 # --- STEP 5: Shadow settings ---
 # CFG_SHADOW_SETTINGS = vol.Schema(
-def get_cfg_shadow_settings(hass) -> vol.Schema:
+def get_cfg_shadow_settings() -> vol.Schema:
     """Get shadow configuration schema with static and entity options."""
-    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
-    entity_options_boolean = get_entity_options(hass, ["input_boolean", "binary_sensor"])
     return vol.Schema(
         {
             vol.Optional(SCShadowInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
@@ -304,10 +298,8 @@ def get_cfg_shadow_settings(hass) -> vol.Schema:
 
 # --- STEP 6: Dawn settings ---
 # CFG_DAWN_SETTINGS = vol.Schema(
-def get_cfg_dawn_settings(hass) -> vol.Schema:
+def get_cfg_dawn_settings() -> vol.Schema:
     """Get dawn configuration schema with static and entity options."""
-    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
-    entity_options_boolean = get_entity_options(hass, ["input_boolean", "binary_sensor"])
     return vol.Schema(
         {
             vol.Optional(SCDawnInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
@@ -385,9 +377,8 @@ def get_cfg_dawn_settings(hass) -> vol.Schema:
 # === Mode3
 # --- STEP 3: 2nd part of facade configuration ---
 # CFG_FACADE_SETTINGS_PART2_MODE3 = vol.Schema(
-def get_cfg_facade_settings_part2_mode3(hass) -> vol.Schema:
+def get_cfg_facade_settings_part2_mode3() -> vol.Schema:
     """Get facade configuration schema for mode3 with static and entity options."""
-    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
     return vol.Schema(
         {
             vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
@@ -414,11 +405,8 @@ def get_cfg_facade_settings_part2_mode3(hass) -> vol.Schema:
 
 # --- STEP 4: Dynamic settings ---
 # CFG_DYNAMIC_INPUTS_MODE3 = vol.Schema(
-def get_cfg_dynamic_inputs_mode3(hass) -> vol.Schema:
+def get_cfg_dynamic_inputs_mode3() -> vol.Schema:
     """Get dynamic input configuration schema for mode3 with entity options."""
-    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
-    entity_options_boolean = get_entity_options(hass, ["input_boolean", "binary_sensor"])
-    entity_options_select = get_entity_options(hass, ["sensor", "select", "input_select", "input_text"])
     return vol.Schema(
         {
             vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): selector.EntitySelector(
@@ -457,10 +445,8 @@ def get_cfg_dynamic_inputs_mode3(hass) -> vol.Schema:
 
 # --- STEP 5: Shadow settings ---
 # CFG_SHADOW_SETTINGS_MODE3 = vol.Schema(
-def get_cfg_shadow_settings_mode3(hass) -> vol.Schema:
+def get_cfg_shadow_settings_mode3() -> vol.Schema:
     """Get shadow configuration schema for mode3 with static and entity options."""
-    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
-    entity_options_boolean = get_entity_options(hass, ["input_boolean", "binary_sensor"])
     return vol.Schema(
         {
             vol.Optional(SCShadowInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
@@ -515,10 +501,8 @@ def get_cfg_shadow_settings_mode3(hass) -> vol.Schema:
 
 # --- STEP 6: Dawn settings ---
 # CFG_DAWN_SETTINGS_MODE3 = vol.Schema(
-def get_cfg_dawn_settings_mode3(hass) -> vol.Schema:
+def get_cfg_dawn_settings_mode3() -> vol.Schema:
     """Get dawn configuration schema for mode3 with static and entity options."""
-    entity_options_number = get_entity_options(hass, ["sensor", "input_number"])
-    entity_options_boolean = get_entity_options(hass, ["input_boolean", "binary_sensor"])
     return vol.Schema(
         {
             vol.Optional(SCDawnInput.CONTROL_ENABLED_STATIC.value, default=True): selector.BooleanSelector(),
