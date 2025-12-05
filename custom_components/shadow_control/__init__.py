@@ -407,7 +407,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             _LOGGER.debug("[%s] Set default value for '%s'.", DOMAIN, lock_angle_static_key)
 
         try:
-            validated_options = get_full_options_schema(hass)(new_options)
+            validated_options = get_full_options_schema()(new_options)
             _LOGGER.debug("[%s] Migrated options successfully validated. Result: %s", DOMAIN, validated_options)
             _LOGGER.debug("[%s] Type of validated_options: %s", DOMAIN, type(validated_options))
         except vol.Invalid:
@@ -438,7 +438,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             )
 
         try:
-            validated_options = get_full_options_schema(hass)(new_options)
+            validated_options = get_full_options_schema()(new_options)
             _LOGGER.debug("[%s] Migrated configuration successfully validated. Result: %s", DOMAIN, validated_options)
             _LOGGER.debug("[%s] Type of validated_options: %s", DOMAIN, type(validated_options))
         except vol.Invalid:
@@ -469,7 +469,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             _LOGGER.info("Removed old key '%s' from options for entry %s.", old_angle_restriction_key, config_entry.entry_id)
 
         try:
-            validated_options = get_full_options_schema(hass)(new_options)
+            validated_options = get_full_options_schema()(new_options)
             _LOGGER.debug("[%s] Migrated configuration successfully validated. Result: %s", DOMAIN, validated_options)
             _LOGGER.debug("[%s] Type of validated_options: %s", DOMAIN, type(validated_options))
         except vol.Invalid:
@@ -516,7 +516,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             _LOGGER.debug("[%s] Removed '%s' from configuration.", DOMAIN, field_to_remove)
 
         try:
-            validated_options = get_full_options_schema(hass)(new_options)
+            validated_options = get_full_options_schema()(new_options)
             _LOGGER.debug("[%s] Migrated options successfully validated. Result: %s", DOMAIN, validated_options)
             _LOGGER.debug("[%s] Type of validated_options: %s", DOMAIN, type(validated_options))
         except vol.Invalid:

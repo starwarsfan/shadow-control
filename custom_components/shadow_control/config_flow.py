@@ -557,15 +557,15 @@ def get_cfg_dawn_settings_mode3() -> vol.Schema:
 
 # Combined schema for OptionsFlow mode1/mode2
 # FULL_OPTIONS_SCHEMA = vol.Schema(
-def get_full_options_schema(hass) -> vol.Schema:
+def get_full_options_schema() -> vol.Schema:
     """Get combined schema for OptionsFlow mode1/mode2."""
     return vol.Schema(
         {
             **get_cfg_facade_settings_part1().schema,
-            **get_cfg_facade_settings_part2(hass).schema,
-            **get_cfg_dynamic_inputs(hass).schema,
-            **get_cfg_shadow_settings(hass).schema,
-            **get_cfg_dawn_settings(hass).schema,
+            **get_cfg_facade_settings_part2().schema,
+            **get_cfg_dynamic_inputs().schema,
+            **get_cfg_shadow_settings().schema,
+            **get_cfg_dawn_settings().schema,
         },
         extra=vol.ALLOW_EXTRA,
     )
@@ -573,15 +573,15 @@ def get_full_options_schema(hass) -> vol.Schema:
 
 # Combined schema for OptionsFlow mode1/mode2
 # FULL_OPTIONS_SCHEMA_MODE3 = vol.Schema(
-def get_full_options_schema_mode3(hass) -> vol.Schema:
+def get_full_options_schema_mode3() -> vol.Schema:
     """Get combined schema for OptionsFlow mode3."""
     return vol.Schema(
         {
             **get_cfg_facade_settings_part1().schema,
-            **get_cfg_facade_settings_part2_mode3(hass).schema,
-            **get_cfg_dynamic_inputs_mode3(hass).schema,
-            **get_cfg_shadow_settings_mode3(hass).schema,
-            **get_cfg_dawn_settings_mode3(hass).schema,
+            **get_cfg_facade_settings_part2_mode3().schema,
+            **get_cfg_dynamic_inputs_mode3().schema,
+            **get_cfg_shadow_settings_mode3().schema,
+            **get_cfg_dawn_settings_mode3().schema,
         },
         extra=vol.ALLOW_EXTRA,
     )
@@ -738,9 +738,9 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         # Optional validation against FULL_OPTIONS_SCHEMA to verify the yaml data
         try:
             if config_data_for_entry.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value) == ShutterType.MODE3.value:
-                validated_options = get_full_options_schema_mode3(self.hass)(options_data_for_entry)
+                validated_options = get_full_options_schema_mode3()(options_data_for_entry)
             else:
-                validated_options = get_full_options_schema(self.hass)(options_data_for_entry)
+                validated_options = get_full_options_schema()(options_data_for_entry)
         except vol.Invalid:
             _LOGGER.exception("Validation error during YAML import for '%s'", instance_name)
             return self.async_abort(reason="invalid_yaml_config")
@@ -925,9 +925,9 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_facade_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle facade settings options."""
         _LOGGER.debug("[OptionsFlow] -> async_step_facade_settings")
-        data_schema = get_cfg_facade_settings_part2(self.hass)
+        data_schema = get_cfg_facade_settings_part2()
         if self.is_mode3:
-            data_schema = get_cfg_facade_settings_part2_mode3(self.hass)
+            data_schema = get_cfg_facade_settings_part2_mode3()
 
         errors: dict[str, str] = {}
         if user_input is not None:
@@ -962,9 +962,9 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_dynamic_inputs(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle dynamic inputs options."""
         _LOGGER.debug("[OptionsFlow] -> async_step_dynamic_inputs")
-        data_schema = get_cfg_dynamic_inputs(self.hass)
+        data_schema = get_cfg_dynamic_inputs()
         if self.is_mode3:
-            data_schema = get_cfg_dynamic_inputs_mode3(self.hass)
+            data_schema = get_cfg_dynamic_inputs_mode3()
 
         errors: dict[str, str] = {}
         if user_input is not None:
@@ -1001,9 +1001,9 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_shadow_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle shadow settings options."""
         _LOGGER.debug("[OptionsFlow] -> async_step_shadow_settings")
-        data_schema = get_cfg_shadow_settings(self.hass)
+        data_schema = get_cfg_shadow_settings()
         if self.is_mode3:
-            data_schema = get_cfg_shadow_settings_mode3(self.hass)
+            data_schema = get_cfg_shadow_settings_mode3()
 
         errors: dict[str, str] = {}
         if user_input is not None:
@@ -1019,11 +1019,11 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_dawn_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle dawn settings options (final options step)."""
         _LOGGER.debug("[OptionsFlow] -> async_step_dawn_settings")
-        data_schema = get_cfg_dawn_settings(self.hass)
-        validation_schema = get_full_options_schema(self.hass)
+        data_schema = get_cfg_dawn_settings()
+        validation_schema = get_full_options_schema()
         if self.is_mode3:
-            data_schema = get_cfg_dawn_settings_mode3(self.hass)
-            validation_schema = get_full_options_schema_mode3(self.hass)
+            data_schema = get_cfg_dawn_settings_mode3()
+            validation_schema = get_full_options_schema_mode3()
 
         errors: dict[str, str] = {}
         if user_input is not None:
