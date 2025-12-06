@@ -374,6 +374,19 @@ class ShadowControlNumber(NumberEntity, RestoreEntity):
         """Return the unit of measurement."""
         return self.entity_description.unit_of_measurement
 
+    @property
+    def state(self) -> str | None:
+        """Return the state of the entity."""
+        # Get the native (float) value
+        value = self.native_value
+
+        if value is None:
+            return None
+
+        # Crucial Step:
+        # Round and cast to integer to remove decimals from the HA UI
+        return str(round(value))
+
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         self._value = value
