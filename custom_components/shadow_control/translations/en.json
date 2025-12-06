@@ -54,9 +54,8 @@
       "dawn_look_through_seconds_missing": "Please use a static value or a entity for the timeout of look-through position after dawn position.",
       "dawn_open_seconds_missing": "Please use a static value or a entity for the timeout until open after look-through position.",
       "dawn_look_through_angle_missing": "Please use a static value or a entity for look-through shutter slat angle.",
-      "dawn_height_after_sun_missing": "Please use a static value or a entity for the shutter height after dawn position.",
-      "dawn_angle_after_sun_missing": "Please use a static value or a entity for the shutter slat angle after dawn position.",
-      "facade_shutter_type_static": "Please configure the shutter type."
+      "dawn_height_after_dawn_missing": "Please use a static value or a entity for the shutter height after dawn position.",
+      "dawn_angle_after_dawn_missing": "Please use a static value or a entity for the shutter slat angle after dawn position."
     },
     "abort": {
       "already_configured": "This entry is already configured."
@@ -164,47 +163,27 @@
         "description": "Configure how to handle brightness",
         "data": {
           "shadow_control_enabled_entity": "Activate shadow handling entity",
-          "shadow_control_enabled_static": "Permanently activate shadow handling",
           "shadow_brightness_threshold_entity": "Brightness threshold",
-          "shadow_brightness_threshold_static": "Brightness threshold",
           "shadow_after_seconds_entity": "Close after x seconds",
-          "shadow_after_seconds_static": "Close after x seconds",
           "shadow_shutter_max_height_entity": "Max shutter height",
-          "shadow_shutter_max_height_static": "Max shutter height",
           "shadow_shutter_max_angle_entity": "Max shutter angle",
-          "shadow_shutter_max_angle_static": "Max shutter angle",
           "shadow_shutter_look_through_seconds_entity": "Look through after x seconds",
-          "shadow_shutter_look_through_seconds_static": "Look through after x seconds",
           "shadow_shutter_open_seconds_entity": "Open after x seconds",
-          "shadow_shutter_open_seconds_static": "Open after x seconds",
           "shadow_shutter_look_through_angle_entity": "Look through angle",
-          "shadow_shutter_look_through_angle_static": "Look through angle",
           "shadow_height_after_sun_entity": "Height after shadow",
-          "shadow_height_after_sun_static": "Height after shadow",
-          "shadow_angle_after_sun_entity": "Angle after shadow",
-          "shadow_angle_after_sun_static": "Angle after shadow"
+          "shadow_angle_after_sun_entity": "Angle after shadow"
         },
         "data_description": {
           "shadow_control_enabled_entity": "De-/Activate shadow handling entity.",
-          "shadow_control_enabled_static": "Permanently de-/activate shadow handling.",
           "shadow_brightness_threshold_entity": "Brightness threshold which must be passed to start shadow handling (by entity).",
-          "shadow_brightness_threshold_static": "Brightness threshold which must be passed to start shadow handling (static).",
           "shadow_after_seconds_entity": "Time in seconds to close shutter after passing brightness threshold (by entity).",
-          "shadow_after_seconds_static": "Time in seconds to close shutter after passing brightness threshold (static).",
           "shadow_shutter_max_height_entity": "Shutter max height at shadow position (by entity).",
-          "shadow_shutter_max_height_static": "Shutter max height at shadow position (static).",
           "shadow_shutter_max_angle_entity": "Shutter max slat angle at shadow position (by entity).",
-          "shadow_shutter_max_angle_static": "Shutter max slat angle at shadow position (static).",
           "shadow_shutter_look_through_seconds_entity": "Time to look through position in seconds after brightness threshold was undercut (by entity).",
-          "shadow_shutter_look_through_seconds_static": "Time to look through position in seconds after brightness threshold was undercut (static).",
           "shadow_shutter_open_seconds_entity": "Time to open the shutter after look through position (by entity).",
-          "shadow_shutter_open_seconds_static": "Time to open the shutter after look through position (static).",
           "shadow_shutter_look_through_angle_entity": "Look through slat angle (by entity).",
-          "shadow_shutter_look_through_angle_static": "Look through slat angle (static).",
           "shadow_height_after_sun_entity": "Height after shadow (by entity).",
-          "shadow_height_after_sun_static": "Height after shadow (static).",
-          "shadow_angle_after_sun_entity": "Slat angle after shadow (by entity).",
-          "shadow_angle_after_sun_static": "Slat angle after shadow (static)."
+          "shadow_angle_after_sun_entity": "Slat angle after shadow (by entity)."
         }
       },
       "dawn_settings": {
@@ -212,47 +191,27 @@
         "description": "Configure how to handle dawn",
         "data": {
           "dawn_control_enabled_entity": "Activate dawn handling entity",
-          "dawn_control_enabled_static": "Permanently activate dawn handling",
           "dawn_brightness_threshold_entity": "Brightness threshold",
-          "dawn_brightness_threshold_static": "Brightness threshold",
           "dawn_after_seconds_entity": "Close after x seconds",
-          "dawn_after_seconds_static": "Close after x seconds",
           "dawn_shutter_max_height_entity": "Max shutter height",
-          "dawn_shutter_max_height_static": "Max shutter height",
           "dawn_shutter_max_angle_entity": "Max shutter angle",
-          "dawn_shutter_max_angle_static": "Max shutter angle",
           "dawn_shutter_look_through_seconds_entity": "Look through after x seconds",
-          "dawn_shutter_look_through_seconds_static": "Look through after x seconds",
           "dawn_shutter_open_seconds_entity": "Open after x seconds",
-          "dawn_shutter_open_seconds_static": "Open after x seconds",
           "dawn_shutter_look_through_angle_entity": "Look through angle",
-          "dawn_shutter_look_through_angle_static": "Look through angle",
-          "dawn_height_after_sun_entity": "Height after dawn",
-          "dawn_height_after_sun_static": "Height after dawn",
-          "dawn_angle_after_sun_entity": "Angle after dawn",
-          "dawn_angle_after_sun_static": "Angle after dawn"
+          "dawn_height_after_dawn_entity": "Height after dawn",
+          "dawn_angle_after_dawn_entity": "Angle after dawn"
         },
         "data_description": {
           "dawn_control_enabled_entity": "De-/Activate dawn handling (by entity).",
-          "dawn_control_enabled_static": "Permanently de-/activate dawn handling.",
           "dawn_brightness_threshold_entity": "Brightness threshold which must be undercut to start dawn handling (by entity).",
-          "dawn_brightness_threshold_static": "Brightness threshold which must be undercut to start dawn handling (static).",
           "dawn_after_seconds_entity": "Time in seconds to open shutter after passing brightness threshold (by entity).",
-          "dawn_after_seconds_static": "Time in seconds to open shutter after passing brightness threshold (static).",
           "dawn_shutter_max_height_entity": "Shutter max height at dawn position (by entity).",
-          "dawn_shutter_max_height_static": "Shutter max height at dawn position (static).",
           "dawn_shutter_max_angle_entity": "Shutter max slat angle at dawn position (by entity).",
-          "dawn_shutter_max_angle_static": "Shutter max slat angle at dawn position (static).",
           "dawn_shutter_look_through_seconds_entity": "Time to look through position in seconds after brightness threshold was passed (by entity).",
-          "dawn_shutter_look_through_seconds_static": "Time to look through position in seconds after brightness threshold was passed (static).",
           "dawn_shutter_open_seconds_entity": "Time to open the shutter after look through position (by entity).",
-          "dawn_shutter_open_seconds_static": "Time to open the shutter after look through position (static).",
           "dawn_shutter_look_through_angle_entity": "Look through slat angle (by entity).",
-          "dawn_shutter_look_through_angle_static": "Look through slat angle (static).",
-          "dawn_height_after_sun_entity": "Height after dawn (by entity).",
-          "dawn_height_after_sun_static": "Height after dawn (static).",
-          "dawn_angle_after_sun_entity": "Slat angle after dawn (by entity).",
-          "dawn_angle_after_sun_static": "Slat angle after dawn (static)."
+          "dawn_height_after_dawn_entity": "Height after dawn (by entity).",
+          "dawn_angle_after_dawn_entity": "Slat angle after dawn (by entity)."
         }
       },
       "options": {
@@ -287,8 +246,9 @@
       "dawn_look_through_seconds_missing": "Please use a static value or a entity for the timeout of look-through position after dawn position.",
       "dawn_open_seconds_missing": "Please use a static value or a entity for the timeout until open after look-through position.",
       "dawn_look_through_angle_missing": "Please use a static value or a entity for look-through shutter slat angle.",
-      "dawn_height_after_sun_missing": "Please use a static value or a entity for the shutter height after dawn position.",
-      "dawn_angle_after_sun_missing": "Please use a static value or a entity for the shutter slat angle after dawn position."
+      "dawn_height_after_dawn_missing": "Please use a static value or a entity for the shutter height after dawn position.",
+      "dawn_angle_after_dawn_missing": "Please use a static value or a entity for the shutter slat angle after dawn position.",
+      "facade_shutter_type_static": "Please configure the shutter type."
     },
     "abort": {
       "already_configured": "This entry is already configured."
@@ -301,6 +261,60 @@
       },
       "lock_angle_manual": {
         "name": "Enforced position slat angle"
+      },
+      "shadow_brightness_threshold_manual": {
+        "name": "S: Brightness threshold"
+      },
+      "shadow_after_seconds_manual": {
+        "name": "S: Close after x seconds"
+      },
+      "shadow_shutter_max_height_manual": {
+        "name": "S: Max shutter height"
+      },
+      "shadow_shutter_max_angle_manual": {
+        "name": "S: Max shutter angle"
+      },
+      "shadow_shutter_look_through_seconds_manual": {
+        "name": "S: Look through after x seconds"
+      },
+      "shadow_shutter_open_seconds_manual": {
+        "name": "S: Open after x seconds"
+      },
+      "shadow_shutter_look_through_angle_manual": {
+        "name": "S: Look through angle"
+      },
+      "shadow_height_after_sun_manual": {
+        "name": "S: Height after shadow"
+      },
+      "shadow_angle_after_sun_manual": {
+        "name": "S: Angle after shadow"
+      },
+      "dawn_brightness_threshold_manual": {
+        "name": "D: Brightness threshold"
+      },
+      "dawn_after_seconds_manual": {
+        "name": "D: Close after x seconds"
+      },
+      "dawn_shutter_max_height_manual": {
+        "name": "D: Max shutter height"
+      },
+      "dawn_shutter_max_angle_manual": {
+        "name": "D: Max shutter angle"
+      },
+      "dawn_shutter_look_through_seconds_manual": {
+        "name": "D: Look through after x seconds"
+      },
+      "dawn_shutter_open_seconds_manual": {
+        "name": "D: Open after x seconds"
+      },
+      "dawn_shutter_look_through_angle_manual": {
+        "name": "D: Look through angle"
+      },
+      "dawn_height_after_dawn_manual": {
+        "name": "D: Height after dawn"
+      },
+      "dawn_angle_after_dawn_manual": {
+        "name": "D: Angle after dawn"
       }
     },
     "sensor": {
@@ -372,11 +386,11 @@
       "debug_enabled": {
         "name": "Debug Mode"
       },
-      "shadow_control_enabled_static": {
-        "name": "Shadow Control"
+      "shadow_control_enabled_manual": {
+        "name": "S: Control active"
       },
-      "dawn_control_enabled_static": {
-        "name": "Dawn Control"
+      "dawn_control_enabled_manual": {
+        "name": "D: Control active"
       },
       "lock_integration_manual": {
         "name": "Lock"
