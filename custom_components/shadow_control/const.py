@@ -25,12 +25,36 @@ class SCInternal(Enum):
     MOVEMENT_RESTRICTION_HEIGHT_MANUAL = "movement_restriction_height_manual"
     MOVEMENT_RESTRICTION_ANGLE_MANUAL = "movement_restriction_angle_manual"
 
+    SHADOW_CONTROL_ENABLED_MANUAL = "shadow_control_enabled_manual"
+    SHADOW_BRIGHTNESS_THRESHOLD_MANUAL = "shadow_brightness_threshold_manual"
+    SHADOW_AFTER_SECONDS_MANUAL = "shadow_after_seconds_manual"
+    SHADOW_SHUTTER_MAX_HEIGHT_MANUAL = "shadow_shutter_max_height_manual"
+    SHADOW_SHUTTER_MAX_ANGLE_MANUAL = "shadow_shutter_max_angle_manual"
+    SHADOW_SHUTTER_LOOK_THROUGH_SECONDS_MANUAL = "shadow_shutter_look_through_seconds_manual"
+    SHADOW_SHUTTER_OPEN_SECONDS_MANUAL = "shadow_shutter_open_seconds_manual"
+    SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL = "shadow_shutter_look_through_angle_manual"
+    SHADOW_HEIGHT_AFTER_SUN_MANUAL = "shadow_height_after_sun_manual"
+    SHADOW_ANGLE_AFTER_SUN_MANUAL = "shadow_angle_after_sun_manual"
+
+    DAWN_CONTROL_ENABLED_MANUAL = "dawn_control_enabled_manual"
+    DAWN_BRIGHTNESS_THRESHOLD_MANUAL = "dawn_brightness_threshold_manual"
+    DAWN_AFTER_SECONDS_MANUAL = "dawn_after_seconds_manual"
+    DAWN_SHUTTER_MAX_HEIGHT_MANUAL = "dawn_shutter_max_height_manual"
+    DAWN_SHUTTER_MAX_ANGLE_MANUAL = "dawn_shutter_max_angle_manual"
+    DAWN_SHUTTER_LOOK_THROUGH_SECONDS_MANUAL = "dawn_shutter_look_through_seconds_manual"
+    DAWN_SHUTTER_OPEN_SECONDS_MANUAL = "dawn_shutter_open_seconds_manual"
+    DAWN_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL = "dawn_shutter_look_through_angle_manual"
+    DAWN_HEIGHT_AFTER_DAWN_MANUAL = "dawn_height_after_dawn_manual"
+    DAWN_ANGLE_AFTER_DAWN_MANUAL = "dawn_angle_after_dawn_manual"
+
     @property
     def domain(self) -> str:
         """Handle domain for internal entities."""
         if self in (
             SCInternal.LOCK_INTEGRATION_MANUAL,
             SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL,
+            SCInternal.SHADOW_CONTROL_ENABLED_MANUAL,
+            SCInternal.DAWN_CONTROL_ENABLED_MANUAL,
         ):
             return "switch"
         if self in (
@@ -41,6 +65,24 @@ class SCInternal(Enum):
         if self in (
             SCInternal.LOCK_HEIGHT_MANUAL,
             SCInternal.LOCK_ANGLE_MANUAL,
+            SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MANUAL,
+            SCInternal.SHADOW_AFTER_SECONDS_MANUAL,
+            SCInternal.SHADOW_SHUTTER_MAX_HEIGHT_MANUAL,
+            SCInternal.SHADOW_SHUTTER_MAX_ANGLE_MANUAL,
+            SCInternal.SHADOW_SHUTTER_LOOK_THROUGH_SECONDS_MANUAL,
+            SCInternal.SHADOW_SHUTTER_OPEN_SECONDS_MANUAL,
+            SCInternal.SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL,
+            SCInternal.SHADOW_HEIGHT_AFTER_SUN_MANUAL,
+            SCInternal.SHADOW_ANGLE_AFTER_SUN_MANUAL,
+            SCInternal.DAWN_BRIGHTNESS_THRESHOLD_MANUAL,
+            SCInternal.DAWN_AFTER_SECONDS_MANUAL,
+            SCInternal.DAWN_SHUTTER_MAX_HEIGHT_MANUAL,
+            SCInternal.DAWN_SHUTTER_MAX_ANGLE_MANUAL,
+            SCInternal.DAWN_SHUTTER_LOOK_THROUGH_SECONDS_MANUAL,
+            SCInternal.DAWN_SHUTTER_OPEN_SECONDS_MANUAL,
+            SCInternal.DAWN_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL,
+            SCInternal.DAWN_HEIGHT_AFTER_DAWN_MANUAL,
+            SCInternal.DAWN_ANGLE_AFTER_DAWN_MANUAL,
         ):
             return "number"
         return "select"  # default/fallback
@@ -93,50 +135,30 @@ class SCShadowInput(Enum):
     """Shadow configuration enums."""
 
     CONTROL_ENABLED_ENTITY = "shadow_control_enabled_entity"
-    CONTROL_ENABLED_STATIC = "shadow_control_enabled_static"
     BRIGHTNESS_THRESHOLD_ENTITY = "shadow_brightness_threshold_entity"
-    BRIGHTNESS_THRESHOLD_STATIC = "shadow_brightness_threshold_static"
     AFTER_SECONDS_ENTITY = "shadow_after_seconds_entity"
-    AFTER_SECONDS_STATIC = "shadow_after_seconds_static"
     SHUTTER_MAX_HEIGHT_ENTITY = "shadow_shutter_max_height_entity"
-    SHUTTER_MAX_HEIGHT_STATIC = "shadow_shutter_max_height_static"
     SHUTTER_MAX_ANGLE_ENTITY = "shadow_shutter_max_angle_entity"
-    SHUTTER_MAX_ANGLE_STATIC = "shadow_shutter_max_angle_static"
     SHUTTER_LOOK_THROUGH_SECONDS_ENTITY = "shadow_shutter_look_through_seconds_entity"
-    SHUTTER_LOOK_THROUGH_SECONDS_STATIC = "shadow_shutter_look_through_seconds_static"
     SHUTTER_OPEN_SECONDS_ENTITY = "shadow_shutter_open_seconds_entity"
-    SHUTTER_OPEN_SECONDS_STATIC = "shadow_shutter_open_seconds_static"
     SHUTTER_LOOK_THROUGH_ANGLE_ENTITY = "shadow_shutter_look_through_angle_entity"
-    SHUTTER_LOOK_THROUGH_ANGLE_STATIC = "shadow_shutter_look_through_angle_static"
     HEIGHT_AFTER_SUN_ENTITY = "shadow_height_after_sun_entity"
-    HEIGHT_AFTER_SUN_STATIC = "shadow_height_after_sun_static"
     ANGLE_AFTER_SUN_ENTITY = "shadow_angle_after_sun_entity"
-    ANGLE_AFTER_SUN_STATIC = "shadow_angle_after_sun_static"
 
 
 class SCDawnInput(Enum):
     """Dawn configuration enums."""
 
     CONTROL_ENABLED_ENTITY = "dawn_control_enabled_entity"
-    CONTROL_ENABLED_STATIC = "dawn_control_enabled_static"
     BRIGHTNESS_THRESHOLD_ENTITY = "dawn_brightness_threshold_entity"
-    BRIGHTNESS_THRESHOLD_STATIC = "dawn_brightness_threshold_static"
     AFTER_SECONDS_ENTITY = "dawn_after_seconds_entity"
-    AFTER_SECONDS_STATIC = "dawn_after_seconds_static"
     SHUTTER_MAX_HEIGHT_ENTITY = "dawn_shutter_max_height_entity"
-    SHUTTER_MAX_HEIGHT_STATIC = "dawn_shutter_max_height_static"
     SHUTTER_MAX_ANGLE_ENTITY = "dawn_shutter_max_angle_entity"
-    SHUTTER_MAX_ANGLE_STATIC = "dawn_shutter_max_angle_static"
     SHUTTER_LOOK_THROUGH_SECONDS_ENTITY = "dawn_shutter_look_through_seconds_entity"
-    SHUTTER_LOOK_THROUGH_SECONDS_STATIC = "dawn_shutter_look_through_seconds_static"
     SHUTTER_OPEN_SECONDS_ENTITY = "dawn_shutter_open_seconds_entity"
-    SHUTTER_OPEN_SECONDS_STATIC = "dawn_shutter_open_seconds_static"
     SHUTTER_LOOK_THROUGH_ANGLE_ENTITY = "dawn_shutter_look_through_angle_entity"
-    SHUTTER_LOOK_THROUGH_ANGLE_STATIC = "dawn_shutter_look_through_angle_static"
     HEIGHT_AFTER_DAWN_ENTITY = "dawn_height_after_dawn_entity"
-    HEIGHT_AFTER_DAWN_STATIC = "dawn_height_after_dawn_static"
     ANGLE_AFTER_DAWN_ENTITY = "dawn_angle_after_dawn_entity"
-    ANGLE_AFTER_DAWN_STATIC = "dawn_angle_after_dawn_static"
 
 
 # State constants for shutter control
