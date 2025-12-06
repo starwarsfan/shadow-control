@@ -12,7 +12,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 if TYPE_CHECKING:
     from . import ShadowControlManager
 
-from .const import DEBUG_ENABLED, DOMAIN, DOMAIN_DATA_MANAGERS, SCDawnInput, SCInternal, SCShadowInput
+from .const import DEBUG_ENABLED, DOMAIN, DOMAIN_DATA_MANAGERS, SCInternal
 
 
 async def async_setup_entry(
@@ -39,16 +39,16 @@ async def async_setup_entry(
         ShadowControlConfigBooleanSwitch(
             hass,
             config_entry,
-            key=SCShadowInput.CONTROL_ENABLED_STATIC.value,
-            translation_key="shadow_control_enabled_static",
+            key=SCInternal.SHADOW_CONTROL_ENABLED_MANUAL.value,
+            translation_key="shadow_control_enabled_manual",
             instance_name=sanitized_instance_name,
             logger=instance_logger,
         ),
         ShadowControlConfigBooleanSwitch(
             hass,
             config_entry,
-            key=SCDawnInput.CONTROL_ENABLED_STATIC.value,
-            translation_key="dawn_control_enabled_static",
+            key=SCInternal.DAWN_CONTROL_ENABLED_MANUAL.value,
+            translation_key="dawn_control_enabled_manual",
             instance_name=sanitized_instance_name,
             logger=instance_logger,
         ),
