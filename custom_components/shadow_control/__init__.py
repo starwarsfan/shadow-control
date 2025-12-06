@@ -1082,125 +1082,185 @@ class ShadowControlManager:
         self._enforce_position_update = self._get_entity_state_value(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value, False, bool)
 
         # Shadow Control Inputs
-        shadow_control_enabled_static = self._get_static_value(SCShadowInput.CONTROL_ENABLED_STATIC.value, True, bool, log_warning=False)
-        self._shadow_config.enabled = self._get_entity_state_value(SCShadowInput.CONTROL_ENABLED_ENTITY.value, shadow_control_enabled_static, bool)
+        shadow_control_enabled_manual = self.get_internal_entity_id(SCInternal.SHADOW_CONTROL_ENABLED_MANUAL)
+        shadow_control_enabled_value = (
+            self._get_internal_entity_state_value(shadow_control_enabled_manual, True, bool) if shadow_control_enabled_manual else True
+        )
+        self._shadow_config.enabled = self._get_entity_state_value(SCShadowInput.CONTROL_ENABLED_ENTITY.value, shadow_control_enabled_value, bool)
 
         # Shadow Brightness Threshold
-        shadow_brightness_threshold_static = self._get_static_value(
-            SCShadowInput.BRIGHTNESS_THRESHOLD_STATIC.value, 50000.0, float, log_warning=False
+        shadow_brightness_threshold_manual = self.get_internal_entity_id(SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MANUAL)
+        shadow_brightness_threshold_value = (
+            self._get_internal_entity_state_value(shadow_brightness_threshold_manual, 50000.0, float)
+            if shadow_brightness_threshold_manual
+            else 50000.0
         )
         self._shadow_config.brightness_threshold = self._get_entity_state_value(
-            SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value, shadow_brightness_threshold_static, float
+            SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value, shadow_brightness_threshold_value, float
         )
 
         # Shadow After Seconds
-        shadow_after_seconds_static = self._get_static_value(SCShadowInput.AFTER_SECONDS_STATIC.value, 15.0, float, log_warning=False)
-        self._shadow_config.after_seconds = self._get_entity_state_value(SCShadowInput.AFTER_SECONDS_ENTITY.value, shadow_after_seconds_static, float)
+        shadow_after_seconds_manual = self.get_internal_entity_id(SCInternal.SHADOW_AFTER_SECONDS_MANUAL)
+        shadow_after_seconds_value = (
+            self._get_internal_entity_state_value(shadow_after_seconds_manual, 15.0, float) if shadow_after_seconds_manual else 15.0
+        )
+        self._shadow_config.after_seconds = self._get_entity_state_value(SCShadowInput.AFTER_SECONDS_ENTITY.value, shadow_after_seconds_value, float)
 
         # Shadow Shutter Max Height
-        shadow_shutter_max_height_static = self._get_static_value(SCShadowInput.SHUTTER_MAX_HEIGHT_STATIC.value, 100.0, float, log_warning=False)
+        shadow_shutter_max_height_manual = self.get_internal_entity_id(SCInternal.SHADOW_SHUTTER_MAX_HEIGHT_MANUAL)
+        shadow_shutter_max_height_value = (
+            self._get_internal_entity_state_value(shadow_shutter_max_height_manual, 100.0, float) if shadow_shutter_max_height_manual else 100.0
+        )
         self._shadow_config.shutter_max_height = self._get_entity_state_value(
-            SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value, shadow_shutter_max_height_static, float
+            SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value, shadow_shutter_max_height_value, float
         )
 
         # Shadow Shutter Max Angle
-        shadow_shutter_max_angle_static = self._get_static_value(SCShadowInput.SHUTTER_MAX_ANGLE_STATIC.value, 100.0, float, log_warning=False)
+        shadow_shutter_max_angle_manual = self.get_internal_entity_id(SCInternal.SHADOW_SHUTTER_MAX_ANGLE_MANUAL)
+        shadow_shutter_max_angle_value = (
+            self._get_internal_entity_state_value(shadow_shutter_max_angle_manual, 100.0, float) if shadow_shutter_max_angle_manual else 100.0
+        )
         self._shadow_config.shutter_max_angle = self._get_entity_state_value(
-            SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value, shadow_shutter_max_angle_static, float
+            SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value, shadow_shutter_max_angle_value, float
         )
 
         # Shadow Shutter Look Through Seconds
-        shadow_shutter_look_through_seconds_static = self._get_static_value(
-            SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, 15.0, float, log_warning=False
+        shadow_shutter_look_through_seconds_manual = self.get_internal_entity_id(SCInternal.SHADOW_SHUTTER_LOOK_THROUGH_SECONDS_MANUAL)
+        shadow_shutter_look_through_seconds_value = (
+            self._get_internal_entity_state_value(shadow_shutter_look_through_seconds_manual, 15.0, float)
+            if shadow_shutter_look_through_seconds_manual
+            else 15.0
         )
         self._shadow_config.shutter_look_through_seconds = self._get_entity_state_value(
-            SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, shadow_shutter_look_through_seconds_static, float
+            SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, shadow_shutter_look_through_seconds_value, float
         )
 
         # Shadow Shutter Open Seconds
-        shadow_shutter_open_seconds_static = self._get_static_value(SCShadowInput.SHUTTER_OPEN_SECONDS_STATIC.value, 15.0, float, log_warning=False)
+        shadow_shutter_open_seconds_manual = self.get_internal_entity_id(SCInternal.SHADOW_SHUTTER_OPEN_SECONDS_MANUAL)
+        shadow_shutter_open_seconds_value = (
+            self._get_internal_entity_state_value(shadow_shutter_open_seconds_manual, 15.0, float) if shadow_shutter_open_seconds_manual else 15.0
+        )
         self._shadow_config.shutter_open_seconds = self._get_entity_state_value(
-            SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value, shadow_shutter_open_seconds_static, float
+            SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value, shadow_shutter_open_seconds_value, float
         )
 
         # Shadow Shutter Look Through Angle
-        shadow_shutter_look_through_angle_static = self._get_static_value(
-            SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, 0.0, float, log_warning=False
+        shadow_shutter_look_through_angle_manual = self.get_internal_entity_id(SCInternal.SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL)
+        shadow_shutter_look_through_angle_value = (
+            self._get_internal_entity_state_value(shadow_shutter_look_through_angle_manual, 0.0, float)
+            if shadow_shutter_look_through_angle_manual
+            else 0.0
         )
         self._shadow_config.shutter_look_through_angle = self._get_entity_state_value(
-            SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value, shadow_shutter_look_through_angle_static, float
+            SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value, shadow_shutter_look_through_angle_value, float
         )
 
         # Shadow Height After Sun
-        shadow_height_after_sun_static = self._get_static_value(SCShadowInput.HEIGHT_AFTER_SUN_STATIC.value, 0.0, float, log_warning=False)
+        shadow_height_after_sun_manual = self.get_internal_entity_id(SCInternal.SHADOW_HEIGHT_AFTER_SUN_MANUAL)
+        shadow_height_after_sun_value = (
+            self._get_internal_entity_state_value(shadow_height_after_sun_manual, 0.0, float) if shadow_height_after_sun_manual else 0.0
+        )
         self._shadow_config.height_after_sun = self._get_entity_state_value(
-            SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value, shadow_height_after_sun_static, float
+            SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value, shadow_height_after_sun_value, float
         )
 
         # Shadow Angle After Sun
-        shadow_angle_after_sun_static = self._get_static_value(SCShadowInput.ANGLE_AFTER_SUN_STATIC.value, 0.0, float, log_warning=False)
+        shadow_angle_after_sun_manual = self.get_internal_entity_id(SCInternal.SHADOW_ANGLE_AFTER_SUN_MANUAL)
+        shadow_angle_after_sun_value = (
+            self._get_internal_entity_state_value(shadow_angle_after_sun_manual, 0.0, float) if shadow_angle_after_sun_manual else 0.0
+        )
         self._shadow_config.angle_after_sun = self._get_entity_state_value(
-            SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value, shadow_angle_after_sun_static, float
+            SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value, shadow_angle_after_sun_value, float
         )
 
         # Dawn Control Inputs
-        dawn_control_enabled_static = self._get_static_value(SCDawnInput.CONTROL_ENABLED_STATIC.value, True, bool, log_warning=False)
-        self._dawn_config.enabled = self._get_entity_state_value(SCDawnInput.CONTROL_ENABLED_ENTITY.value, dawn_control_enabled_static, bool)
+        dawn_control_enabled_manual = self.get_internal_entity_id(SCInternal.DAWN_CONTROL_ENABLED_MANUAL)
+        dawn_control_enabled_value = (
+            self._get_internal_entity_state_value(dawn_control_enabled_manual, True, bool) if dawn_control_enabled_manual else True
+        )
+        self._dawn_config.enabled = self._get_entity_state_value(SCDawnInput.CONTROL_ENABLED_ENTITY.value, dawn_control_enabled_value, bool)
 
         # Dawn Brightness Threshold
-        dawn_brightness_threshold_static = self._get_static_value(SCDawnInput.BRIGHTNESS_THRESHOLD_STATIC.value, 500.0, float, log_warning=False)
+        dawn_brightness_threshold_manual = self.get_internal_entity_id(SCInternal.DAWN_BRIGHTNESS_THRESHOLD_MANUAL)
+        dawn_brightness_threshold_value = (
+            self._get_internal_entity_state_value(dawn_brightness_threshold_manual, 500.0, float) if dawn_brightness_threshold_manual else 500.0
+        )
         self._dawn_config.brightness_threshold = self._get_entity_state_value(
-            SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value, dawn_brightness_threshold_static, float
+            SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value, dawn_brightness_threshold_value, float
         )
 
         # Dawn After Seconds
-        dawn_after_seconds_static = self._get_static_value(SCDawnInput.AFTER_SECONDS_STATIC.value, 15.0, float, log_warning=False)
-        self._dawn_config.after_seconds = self._get_entity_state_value(SCDawnInput.AFTER_SECONDS_ENTITY.value, dawn_after_seconds_static, float)
+        dawn_after_seconds_manual = self.get_internal_entity_id(SCInternal.DAWN_AFTER_SECONDS_MANUAL)
+        dawn_after_seconds_value = (
+            self._get_internal_entity_state_value(dawn_after_seconds_manual, 15.0, float) if dawn_after_seconds_manual else 15.0
+        )
+        self._dawn_config.after_seconds = self._get_entity_state_value(SCDawnInput.AFTER_SECONDS_ENTITY.value, dawn_after_seconds_value, float)
 
         # Dawn Shutter Max Height
-        dawn_shutter_max_height_static = self._get_static_value(SCDawnInput.SHUTTER_MAX_HEIGHT_STATIC.value, 100.0, float, log_warning=False)
+        dawn_shutter_max_height_manual = self.get_internal_entity_id(SCInternal.DAWN_SHUTTER_MAX_HEIGHT_MANUAL)
+        dawn_shutter_max_height_value = (
+            self._get_internal_entity_state_value(dawn_shutter_max_height_manual, 100.0, float) if dawn_shutter_max_height_manual else 100.0
+        )
         self._dawn_config.shutter_max_height = self._get_entity_state_value(
-            SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value, dawn_shutter_max_height_static, float
+            SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value, dawn_shutter_max_height_value, float
         )
 
         # Dawn Shutter Max Angle
-        dawn_shutter_max_angle_static = self._get_static_value(SCDawnInput.SHUTTER_MAX_ANGLE_STATIC.value, 100.0, float, log_warning=False)
+        dawn_shutter_max_angle_manual = self.get_internal_entity_id(SCInternal.DAWN_SHUTTER_MAX_ANGLE_MANUAL)
+        dawn_shutter_max_angle_value = (
+            self._get_internal_entity_state_value(dawn_shutter_max_angle_manual, 100.0, float) if dawn_shutter_max_angle_manual else 100.0
+        )
         self._dawn_config.shutter_max_angle = self._get_entity_state_value(
-            SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value, dawn_shutter_max_angle_static, float
+            SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value, dawn_shutter_max_angle_value, float
         )
 
         # Dawn Shutter Look Through Seconds
-        dawn_shutter_look_through_seconds_static = self._get_static_value(
-            SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_STATIC.value, 15.0, float, log_warning=False
+        dawn_shutter_look_through_seconds_manual = self.get_internal_entity_id(SCInternal.DAWN_SHUTTER_LOOK_THROUGH_SECONDS_MANUAL)
+        dawn_shutter_look_through_seconds_value = (
+            self._get_internal_entity_state_value(dawn_shutter_look_through_seconds_manual, 15.0, float)
+            if dawn_shutter_look_through_seconds_manual
+            else 15.0
         )
         self._dawn_config.shutter_look_through_seconds = self._get_entity_state_value(
-            SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, dawn_shutter_look_through_seconds_static, float
+            SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value, dawn_shutter_look_through_seconds_value, float
         )
 
         # Dawn Shutter Open Seconds
-        dawn_shutter_open_seconds_static = self._get_static_value(SCDawnInput.SHUTTER_OPEN_SECONDS_STATIC.value, 15.0, float, log_warning=False)
+        dawn_shutter_open_seconds_manual = self.get_internal_entity_id(SCInternal.DAWN_SHUTTER_OPEN_SECONDS_MANUAL)
+        dawn_shutter_open_seconds_value = (
+            self._get_internal_entity_state_value(dawn_shutter_open_seconds_manual, 15.0, float) if dawn_shutter_open_seconds_manual else 15.0
+        )
         self._dawn_config.shutter_open_seconds = self._get_entity_state_value(
-            SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value, dawn_shutter_open_seconds_static, float
+            SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value, dawn_shutter_open_seconds_value, float
         )
 
         # Dawn Shutter Look Through Angle
-        dawn_shutter_look_through_angle_static = self._get_static_value(
-            SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_STATIC.value, 0.0, float, log_warning=False
+        dawn_shutter_look_through_angle_manual = self.get_internal_entity_id(SCInternal.DAWN_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL)
+        dawn_shutter_look_through_angle_value = (
+            self._get_internal_entity_state_value(dawn_shutter_look_through_angle_manual, 0.0, float)
+            if dawn_shutter_look_through_angle_manual
+            else 0.0
         )
         self._dawn_config.shutter_look_through_angle = self._get_entity_state_value(
-            SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value, dawn_shutter_look_through_angle_static, float
+            SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value, dawn_shutter_look_through_angle_value, float
         )
 
         # Dawn Height After Dawn
-        dawn_height_after_dawn_static = self._get_static_value(SCDawnInput.HEIGHT_AFTER_DAWN_STATIC.value, 0.0, float, log_warning=False)
+        dawn_height_after_dawn_manual = self.get_internal_entity_id(SCInternal.DAWN_HEIGHT_AFTER_DAWN_MANUAL)
+        dawn_height_after_dawn_value = (
+            self._get_internal_entity_state_value(dawn_height_after_dawn_manual, 0.0, float) if dawn_height_after_dawn_manual else 0.0
+        )
         self._dawn_config.height_after_dawn = self._get_entity_state_value(
-            SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value, dawn_height_after_dawn_static, float
+            SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value, dawn_height_after_dawn_value, float
         )
 
         # Dawn Angle After Dawn
-        dawn_angle_after_dawn_static = self._get_static_value(SCDawnInput.ANGLE_AFTER_DAWN_STATIC.value, 0.0, float, log_warning=False)
+        dawn_angle_after_dawn_manual = self.get_internal_entity_id(SCInternal.DAWN_ANGLE_AFTER_DAWN_MANUAL)
+        dawn_angle_after_dawn_value = (
+            self._get_internal_entity_state_value(dawn_angle_after_dawn_manual, 0.0, float) if dawn_angle_after_dawn_manual else 0.0
+        )
         self._dawn_config.angle_after_dawn = self._get_entity_state_value(
-            SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value, dawn_angle_after_dawn_static, float
+            SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value, dawn_angle_after_dawn_value, float
         )
 
         facade = _format_config_object_for_logging(self._facade_config, " -> Facade config: ")
