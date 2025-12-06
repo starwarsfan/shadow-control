@@ -57,6 +57,276 @@ async def async_setup_entry(
                 native_unit_of_measurement="%",
             ),
         ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MANUAL.value,
+                name="Shadow brightness threshold",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=300000.0,
+                native_step=10.0,
+                native_unit_of_measurement="Lx",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.SHADOW_AFTER_SECONDS_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.SHADOW_AFTER_SECONDS_MANUAL.value,
+                name="Close after x seconds",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=60.0 * 60.0 * 24.0,
+                native_step=1.0,
+                native_unit_of_measurement="s",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.SHADOW_SHUTTER_MAX_HEIGHT_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.SHADOW_SHUTTER_MAX_HEIGHT_MANUAL.value,
+                name="Max shutter height",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=100.0,
+                native_step=1.0,
+                native_unit_of_measurement="%",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.SHADOW_SHUTTER_MAX_ANGLE_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.SHADOW_SHUTTER_MAX_ANGLE_MANUAL.value,
+                name="Max shutter angle",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=100.0,
+                native_step=1.0,
+                native_unit_of_measurement="%",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.SHADOW_SHUTTER_LOOK_THROUGH_SECONDS_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.SHADOW_SHUTTER_LOOK_THROUGH_SECONDS_MANUAL.value,
+                name="Look through after x seconds",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=60.0 * 60.0 * 24.0,
+                native_step=1.0,
+                native_unit_of_measurement="s",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.SHADOW_SHUTTER_OPEN_SECONDS_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.SHADOW_SHUTTER_OPEN_SECONDS_MANUAL.value,
+                name="Open after x seconds",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=60.0 * 60.0 * 24.0,
+                native_step=1.0,
+                native_unit_of_measurement="s",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL.value,
+                name="Look through angle",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=100.0,
+                native_step=1.0,
+                native_unit_of_measurement="%",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.SHADOW_HEIGHT_AFTER_SUN_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.SHADOW_HEIGHT_AFTER_SUN_MANUAL.value,
+                name="Height after shadow",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=100.0,
+                native_step=1.0,
+                native_unit_of_measurement="%",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.SHADOW_ANGLE_AFTER_SUN_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.SHADOW_ANGLE_AFTER_SUN_MANUAL.value,
+                name="Angle after shadow",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=100.0,
+                native_step=1.0,
+                native_unit_of_measurement="%",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.DAWN_BRIGHTNESS_THRESHOLD_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.DAWN_BRIGHTNESS_THRESHOLD_MANUAL.value,
+                name="Dawn brightness threshold",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=30000.0,
+                native_step=10.0,
+                native_unit_of_measurement="Lx",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.DAWN_AFTER_SECONDS_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.DAWN_AFTER_SECONDS_MANUAL.value,
+                name="Close after x seconds",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=60.0 * 60.0 * 24.0,
+                native_step=1.0,
+                native_unit_of_measurement="s",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.DAWN_SHUTTER_MAX_HEIGHT_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.DAWN_SHUTTER_MAX_HEIGHT_MANUAL.value,
+                name="Max shutter height",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=100.0,
+                native_step=1.0,
+                native_unit_of_measurement="%",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.DAWN_SHUTTER_MAX_ANGLE_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.DAWN_SHUTTER_MAX_ANGLE_MANUAL.value,
+                name="Max shutter angle",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=100.0,
+                native_step=1.0,
+                native_unit_of_measurement="%",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.DAWN_SHUTTER_LOOK_THROUGH_SECONDS_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.DAWN_SHUTTER_LOOK_THROUGH_SECONDS_MANUAL.value,
+                name="Look through after x seconds",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=60.0 * 60.0 * 24.0,
+                native_step=1.0,
+                native_unit_of_measurement="s",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.DAWN_SHUTTER_OPEN_SECONDS_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.DAWN_SHUTTER_OPEN_SECONDS_MANUAL.value,
+                name="Open after x seconds",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=60.0 * 60.0 * 24.0,
+                native_step=1.0,
+                native_unit_of_measurement="s",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.DAWN_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.DAWN_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL.value,
+                name="Look through angle",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=100.0,
+                native_step=1.0,
+                native_unit_of_measurement="%",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.DAWN_HEIGHT_AFTER_DAWN_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.DAWN_HEIGHT_AFTER_DAWN_MANUAL.value,
+                name="Height after dawn",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=100.0,
+                native_step=1.0,
+                native_unit_of_measurement="%",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.DAWN_ANGLE_AFTER_DAWN_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.DAWN_ANGLE_AFTER_DAWN_MANUAL.value,
+                name="Angle after dawn",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=100.0,
+                native_step=1.0,
+                native_unit_of_measurement="%",
+            ),
+        ),
     ]
     async_add_entities(entities)
 
