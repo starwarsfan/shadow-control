@@ -81,47 +81,47 @@ shadow_control:
 
     # Shadow configuration
     #shadow_control_enabled_entity:
-    shadow_control_enabled_static: true
+    shadow_control_enabled_manual: true
     #shadow_brightness_threshold_entity:
-    shadow_brightness_threshold_static: 50000
+    shadow_brightness_threshold_manual: 50000
     #shadow_after_seconds_entity:
-    shadow_after_seconds_static: 10
+    shadow_after_seconds_manual: 10
     shadow_shutter_max_height_entity: input_number.automation_shadow_max_height_sc_dummy
-    shadow_shutter_max_height_static: 90
+    shadow_shutter_max_height_manual: 90
     shadow_shutter_max_angle_entity: input_number.automation_shadow_max_angle_sc_dummy
-    shadow_shutter_max_angle_static: 90
+    shadow_shutter_max_angle_manual: 90
     #shadow_shutter_look_through_seconds_entity:
-    shadow_shutter_look_through_seconds_static: 10
+    shadow_shutter_look_through_seconds_manual: 10
     #shadow_shutter_open_seconds_entity:
-    shadow_shutter_open_seconds_static: 10
+    shadow_shutter_open_seconds_manual: 10
     #shadow_shutter_look_through_angle_entity:
-    shadow_shutter_look_through_angle_static: 54
+    shadow_shutter_look_through_angle_manual: 54
     #shadow_height_after_sun_entity:
-    shadow_height_after_sun_static: 80
+    shadow_height_after_sun_manual: 80
     #shadow_angle_after_sun_entity:
-    shadow_angle_after_sun_static: 80
+    shadow_angle_after_sun_manual: 80
 
     # Dawn configuration
     #dawn_control_enabled_entity:
-    dawn_control_enabled_static: true
+    dawn_control_enabled_manual: true
     #dawn_brightness_threshold_entity:
-    dawn_brightness_threshold_static: 5000
+    dawn_brightness_threshold_manual: 5000
     #dawn_after_seconds_entity:
-    dawn_after_seconds_static: 10
+    dawn_after_seconds_manual: 10
     dawn_shutter_max_height_entity: input_number.automation_dawn_max_height_sc_dummy
-    dawn_shutter_max_height_static: 90
+    dawn_shutter_max_height_manual: 90
     dawn_shutter_max_angle_entity: input_number.automation_dawn_max_angle_sc_dummy
-    dawn_shutter_max_angle_static: 90
+    dawn_shutter_max_angle_manual: 90
     #dawn_shutter_look_through_seconds_entity:
-    dawn_shutter_look_through_seconds_static: 10
+    dawn_shutter_look_through_seconds_manual: 10
     #dawn_shutter_open_seconds_entity:
-    dawn_shutter_open_seconds_static: 10
+    dawn_shutter_open_seconds_manual: 10
     #dawn_shutter_look_through_angle_entity:
-    dawn_shutter_look_through_angle_static: 45
+    dawn_shutter_look_through_angle_manual: 45
     #dawn_height_after_dawn_entity:
-    dawn_height_after_dawn_static: 10
+    dawn_height_after_dawn_manual: 10
     #dawn_angle_after_dawn_entity:
-    dawn_angle_after_dawn_static: 10
+    dawn_angle_after_dawn_manual: 10
 
   # =========================================================================
   - name: "SC Dummy 2"
@@ -169,46 +169,46 @@ shadow_control:
     facade_modification_tolerance_angle_static: 3
     # Shadow configuration
     #shadow_control_enabled_entity:
-    shadow_control_enabled_static: true
+    shadow_control_enabled_manual: true
     #shadow_brightness_threshold_entity:
-    shadow_brightness_threshold_static: 50000
+    shadow_brightness_threshold_manual: 50000
     #shadow_after_seconds_entity:
-    shadow_after_seconds_static: 10
+    shadow_after_seconds_manual: 10
     #shadow_shutter_max_height_entity:
-    shadow_shutter_max_height_static: 90
+    shadow_shutter_max_height_manual: 90
     #shadow_shutter_max_angle_entity:
-    shadow_shutter_max_angle_static: 90
+    shadow_shutter_max_angle_manual: 90
     #shadow_shutter_look_through_seconds_entity:
-    shadow_shutter_look_through_seconds_static: 10
+    shadow_shutter_look_through_seconds_manual: 10
     #shadow_shutter_open_seconds_entity:
-    shadow_shutter_open_seconds_static: 10
+    shadow_shutter_open_seconds_manual: 10
     #shadow_shutter_look_through_angle_entity:
-    shadow_shutter_look_through_angle_static: 50
+    shadow_shutter_look_through_angle_manual: 50
     #shadow_height_after_sun_entity:
-    shadow_height_after_sun_static: 10
+    shadow_height_after_sun_manual: 10
     #shadow_angle_after_sun_entity:
-    shadow_angle_after_sun_static: 10
+    shadow_angle_after_sun_manual: 10
     # Dawn configuration
     #dawn_control_enabled_entity:
-    dawn_control_enabled_static: true
+    dawn_control_enabled_manual: true
     #dawn_brightness_threshold_entity:
-    dawn_brightness_threshold_static: 5000
+    dawn_brightness_threshold_manual: 5000
     #dawn_after_seconds_entity:
-    dawn_after_seconds_static: 10
+    dawn_after_seconds_manual: 10
     #dawn_shutter_max_height_entity:
-    dawn_shutter_max_height_static: 50
+    dawn_shutter_max_height_manual: 50
     #dawn_shutter_max_angle_entity:
-    dawn_shutter_max_angle_static: 50
+    dawn_shutter_max_angle_manual: 50
     #dawn_shutter_look_through_seconds_entity:
-    dawn_shutter_look_through_seconds_static: 10
+    dawn_shutter_look_through_seconds_manual: 10
     #dawn_shutter_open_seconds_entity:
-    dawn_shutter_open_seconds_static: 10
+    dawn_shutter_open_seconds_manual: 10
     #dawn_shutter_look_through_angle_entity:
-    dawn_shutter_look_through_angle_static: 45
+    dawn_shutter_look_through_angle_manual: 45
     #dawn_height_after_dawn_entity:
-    dawn_height_after_dawn_static: 80
+    dawn_height_after_dawn_manual: 80
     #dawn_angle_after_dawn_entity:
-    dawn_angle_after_dawn_static: 80
+    dawn_angle_after_dawn_manual: 80
 
   # =========================================================================
   - name: "SC Dummy 3"
@@ -244,31 +244,31 @@ shadow_control:
     facade_modification_tolerance_height_static: 3
     # Shadow configuration
     #shadow_control_enabled_entity:
-    shadow_control_enabled_static: true
+    shadow_control_enabled_manual: true
     #shadow_brightness_threshold_entity:
-    shadow_brightness_threshold_static: 50000
+    shadow_brightness_threshold_manual: 50000
     #shadow_after_seconds_entity:
-    shadow_after_seconds_static: 10
+    shadow_after_seconds_manual: 10
     #shadow_shutter_max_height_entity:
-    shadow_shutter_max_height_static: 90
+    shadow_shutter_max_height_manual: 90
     #shadow_shutter_look_through_seconds_entity:
-    shadow_shutter_look_through_seconds_static: 10
+    shadow_shutter_look_through_seconds_manual: 10
     #shadow_shutter_open_seconds_entity:
-    shadow_shutter_open_seconds_static: 10
+    shadow_shutter_open_seconds_manual: 10
     #shadow_height_after_sun_entity:
-    shadow_height_after_sun_static: 10
+    shadow_height_after_sun_manual: 10
     # Dawn configuration
     #dawn_control_enabled_entity:
-    dawn_control_enabled_static: true
+    dawn_control_enabled_manual: true
     #dawn_brightness_threshold_entity:
-    dawn_brightness_threshold_static: 5000
+    dawn_brightness_threshold_manual: 5000
     #dawn_after_seconds_entity:
-    dawn_after_seconds_static: 10
+    dawn_after_seconds_manual: 10
     #dawn_shutter_max_height_entity:
-    dawn_shutter_max_height_static: 50
+    dawn_shutter_max_height_manual: 50
     #dawn_shutter_look_through_seconds_entity:
-    dawn_shutter_look_through_seconds_static: 10
+    dawn_shutter_look_through_seconds_manual: 10
     #dawn_shutter_open_seconds_entity:
-    dawn_shutter_open_seconds_static: 10
+    dawn_shutter_open_seconds_manual: 10
     #dawn_height_after_dawn_entity:
-    dawn_height_after_dawn_static: 80
+    dawn_height_after_dawn_manual: 80
