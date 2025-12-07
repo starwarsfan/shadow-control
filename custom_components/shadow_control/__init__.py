@@ -490,30 +490,11 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
     if config_entry.version == 4:
         # Remove no longer existing config options
-        field_to_remove = "lock_integration_static"
-        if field_to_remove in new_options:
-            new_options.pop(field_to_remove)
-            _LOGGER.debug("[%s] Removed '%s' from configuration.", DOMAIN, field_to_remove)
-        field_to_remove = "lock_integration_with_position_static"
-        if field_to_remove in new_options:
-            new_options.pop(field_to_remove)
-            _LOGGER.debug("[%s] Removed '%s' from configuration.", DOMAIN, field_to_remove)
-        field_to_remove = "lock_height_static"
-        if field_to_remove in new_options:
-            new_options.pop(field_to_remove)
-            _LOGGER.debug("[%s] Removed '%s' from configuration.", DOMAIN, field_to_remove)
-        field_to_remove = "lock_angle_static"
-        if field_to_remove in new_options:
-            new_options.pop(field_to_remove)
-            _LOGGER.debug("[%s] Removed '%s' from configuration.", DOMAIN, field_to_remove)
-        field_to_remove = "movement_restriction_height_static"
-        if field_to_remove in new_options:
-            new_options.pop(field_to_remove)
-            _LOGGER.debug("[%s] Removed '%s' from configuration.", DOMAIN, field_to_remove)
-        field_to_remove = "movement_restriction_angle_static"
-        if field_to_remove in new_options:
-            new_options.pop(field_to_remove)
-            _LOGGER.debug("[%s] Removed '%s' from configuration.", DOMAIN, field_to_remove)
+        for field_to_remove in SCInternal:
+            static_key = field_to_remove.value.replace("_manual", "_static")
+            if static_key in new_options:
+                new_options.pop(static_key)
+                _LOGGER.info("[%s] Removed '%s' from configuration.", DOMAIN, static_key)
 
         try:
             validated_options = get_full_options_schema()(new_options)
