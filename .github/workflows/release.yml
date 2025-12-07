@@ -30,10 +30,12 @@ jobs:
           TAG_NAME="${GITHUB_REF##*/}"
           python3 <<EOF
           import re
-          version = "${TAG_NAME}"
+          tag = "${TAG_NAME}"
+          # Remove -rc* suffix for release candidates
+          base_version = re.sub(r'-rc\d*$', '', tag)
           with open('RELEASENOTES.md', 'r') as f:
               lines = f.readlines()
-          pattern = re.compile(r'^##\s+' + re.escape(version) + r'\s*$')
+          pattern = re.compile(r'^##\s+' + re.escape(base_version) + r'\s*$')
           notes = []
           in_section = False
           for line in lines:
