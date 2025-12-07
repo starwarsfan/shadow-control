@@ -156,7 +156,7 @@ Die Berechnung der Position wird durch die Aktualisierung der folgenden Eingäng
 Der konfigurierte Behang wird nur dann neu positioniert, wenn sich die berechneten Werte seit dem letzten Lauf der Integration geändert haben. Damit wird die unnötige Neupositionierung der Raffstorenlamellen verhindert.
 
 ## Entitäten-Vorrang
-Achtung: Bei allen Konfigurationen, bei welchen es `*_manual` und `*_entity` Varianten gibt, wie bspw. `lock_integration_manual` und `lock_integration_entity`, hat die `*_entity` Variante Vorrang! Das bedeutet, wenn beide Varianten konfiguriert sind, wird der Wert der `*_entity` Variante verwendet. Um das zu unterbinden, muss bei den Entity-Varianten die leere Entität `none` konfiguriert werden.
+Achtung: Bei allen Konfigurationen, bei welchen es `*_manual` und `*_entity` Varianten gibt, wie bspw. `lock_integration_manual` und `lock_integration_entity`, hat die `*_entity` Variante Vorrang! Das bedeutet, dass sobald eine Entität konfiguriert wird, wird deren Wert verwendet. Um das zu unterbinden, muss die Entity-Verknüpfung gelöscht werden.
 
 
 # Installation
@@ -445,52 +445,52 @@ Dieser Eingang kann mit einer Boolean-Entität verknüpft werden. Wird diese Ent
 ### Beschattungseinstellungen
 
 #### Beschattungssteuerung aktiviert
-`shadow_control_enabled_static` / `shadow_control_enabled_entity`
+`shadow_control_enabled_manual` / `shadow_control_enabled_entity`
 
 Mit dieser Option wird die Beschattungssteuerung ein- oder ausgeschaltet. Standardwert: ein
 
 #### Beschattung: Helligkeitsschwellwert
-`shadow_brightness_threshold_static` / `shadow_brightness_threshold_entity`
+`shadow_brightness_threshold_manual` / `shadow_brightness_threshold_entity`
 
 Hier wird der Helligkeitsschwellwert in Lux konfiguriert. Wird dieser Wert überschritten, startet der Timer [Beschattung: Schliessen nach x Sekunden](#beschattung-schliessen-nach-x-sekunden). Standardwert: 50000 
 
 #### Beschattung: Schliessen nach x Sekunden
-`shadow_after_seconds_static` / `shadow_after_seconds_entity`
+`shadow_after_seconds_manual` / `shadow_after_seconds_entity`
 
 Hier wird der Zeitraum in Sekunden konfiguriert, nachdem der Behang nach Überschreiten des [Helligkeitsschwellwertes](#beschattung-helligkeitsschwellwert) geschlossen werden soll. Standardwert: 120
 
 #### Beschattung: Maximale Höhe
-`shadow_shutter_max_height_static` / `shadow_shutter_max_height_entity`
+`shadow_shutter_max_height_manual` / `shadow_shutter_max_height_entity`
 
 Hier kann die maximale Behanghöhe angegeben werden. Das wird bspw. verwendet, um den Behang nicht bis ganz auf den Boden zu fahren, damit ein festfrieren im Winter vermieden wird. Standardwert: 100 
 
 #### Beschattung: Maximaler Lamellenwinkel
-`shadow_shutter_max_angle_static` / `shadow_shutter_max_angle_entity`
+`shadow_shutter_max_angle_manual` / `shadow_shutter_max_angle_entity`
 
 Hier kann der maximale Lamellenwinkel angegeben werden. Das wird bspw. verwendet, um den Behang nicht ganz zu schliessen, damit ein zusammenfrieren der Lamellen im Winter vermieden wird. Standardwert: 100
 
 #### Beschattung: Durchsichtposition nach x Sekunden
-`shadow_shutter_look_through_seconds_static` / `shadow_shutter_look_through_seconds_entity`
+`shadow_shutter_look_through_seconds_manual` / `shadow_shutter_look_through_seconds_entity`
 
 Fällt die Helligkeit unter den Schwellwert von [Beschattung: Helligkeitsschwellwert](#beschattung-helligkeitsschwellwert), wird der Behang nach der hier angegeben Zeit auf Durchsichtsposition gefahren. Standardwert: 900
 
 #### Beschattung: Öffnen nach x Sekunden
-`shadow_shutter_open_seconds_static` / `shadow_shutter_open_seconds_entity`
+`shadow_shutter_open_seconds_manual` / `shadow_shutter_open_seconds_entity`
 
 Nachdem der Behang auf Durchsichtsposition gefahren wurde, wird er nach der hier konfigurierten Zeit ganz geöffnet. Standardwert: 3600
 
 #### Beschattung: Durchsichtswinkel
-`shadow_shutter_look_through_angle_static` / `shadow_shutter_look_through_angle_entity`
+`shadow_shutter_look_through_angle_manual` / `shadow_shutter_look_through_angle_entity`
 
 Hier wird der Lamellenwinkel der Durchsichtsposition in % konfiguriert. Standardwert: 0
 
 #### Beschattung: Höhe nach Beschattung
-`shadow_height_after_sun_static` / `shadow_height_after_sun_entity`
+`shadow_height_after_sun_manual` / `shadow_height_after_sun_entity`
 
 Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf die hier in % konfigurierte Höhe gefahren. Standardwert: 0
 
 #### Beschattung: Lamellenwinkel nach Beschattung
-`shadow_angle_after_sun_static` / `shadow_angle_after_sun_entity`
+`shadow_angle_after_sun_manual` / `shadow_angle_after_sun_entity`
 
 Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf den hier in % konfigurierten Lamellenwinkel gefahren. Standardwert: 0
 
@@ -501,52 +501,52 @@ Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf den hier in 
 ### Dämmerungseinstellungen
 
 #### Dämmerungssteuerung aktiviert
-`dawn_control_enabled_static` / `dawn_control_enabled_entity`
+`dawn_control_enabled_manual` / `dawn_control_enabled_entity`
 
 Mit dieser Option wird die Dämmerungssteuerung ein- oder ausgeschaltet. Standardwert: ein
 
 #### Dämmerung: Helligkeitsschwellwert
-`dawn_brightness_threshold_static` / `dawn_brightness_threshold_entity`
+`dawn_brightness_threshold_manual` / `dawn_brightness_threshold_entity`
 
 Hier wird der Helligkeitsschwellwert in Lux konfiguriert. Wird dieser Wert unterschritten, startet der Timer [Dämmerung: Schliessen nach x Sekunden](#dämmerung-schliessen-nach-x-sekunden). Standardwert: 500
 
 #### Dämmerung: Schliessen nach x Sekunden
-`dawn_after_seconds_static` / `dawn_after_seconds_entity`
+`dawn_after_seconds_manual` / `dawn_after_seconds_entity`
 
 Hier wird der Zeitraum in Sekunden konfiguriert, nachdem der Behang nach Unterschreiten des [Helligkeitsschwellwertes](#dämmerung-helligkeitsschwellwert) geschlossen werden soll. Standardwert: 120
 
 #### Dämmerung: Maximale Höhe
-`dawn_shutter_max_height_static` / `dawn_shutter_max_height_entity`
+`dawn_shutter_max_height_manual` / `dawn_shutter_max_height_entity`
 
 Hier kann die maximale Behanghöhe angegeben werden. Das wird bspw. verwendet, um den Behang nicht bis ganz auf den Boden zu fahren, damit ein festfrieren im Winter vermieden wird. Standardwert: 100
 
 #### Dämmerung: Maximaler Lamellenwinkel
-`dawn_shutter_max_angle_static` / `dawn_shutter_max_angle_entity`
+`dawn_shutter_max_angle_manual` / `dawn_shutter_max_angle_entity`
 
 Hier kann der maximale Lamellenwinkel angegeben werden. Das wird bspw. verwendet, um den Behang nicht ganz zu schliessen, damit ein zusammenfrieren der Lamellen im Winter vermieden wird. Standardwert: 100
 
 #### Dämmerung: Durchsichtposition nach x Sekunden
-`dawn_shutter_look_through_seconds_static` / `dawn_shutter_look_through_seconds_entity`
+`dawn_shutter_look_through_seconds_manual` / `dawn_shutter_look_through_seconds_entity`
 
 Steigt die Helligkeit über den Schwellwert von [Dämmerung: Helligkeitsschwellwert](#dämmerung-helligkeitsschwellwert), wird der Behang nach der hier angegeben Zeit auf Durchsichtposition gefahren. Standardwert: 120
 
 #### Dämmerung: Öffnen nach x Sekunden
-`dawn_shutter_open_seconds_static` / `dawn_shutter_open_seconds_entity`
+`dawn_shutter_open_seconds_manual` / `dawn_shutter_open_seconds_entity`
 
 Nachdem der Behang auf Durchsichtsposition gefahren wurde, wird er nach der hier konfigurierten Zeit ganz geöffnet. Standardwert: 3600
 
 #### Dämmerung: Durchsichtswinkel
-`dawn_shutter_look_through_angle_static` / `dawn_shutter_look_through_angle_entity`
+`dawn_shutter_look_through_angle_manual` / `dawn_shutter_look_through_angle_entity`
 
 Hier wird der Lamellenwinkel der Durchsichtsposition in % konfiguriert. Standardwert: 0
 
 #### Dämmerung: Höhe nach Beschattung
-`dawn_height_after_dawn_static` / `dawn_height_after_dawn_entity`
+`dawn_height_after_dawn_manual` / `dawn_height_after_dawn_entity`
 
 Wenn keine Dämmerungssituation mehr vorliegt, wird der Behang auf die hier in % konfigurierte Höhe gefahren. Standardwert: 0
 
 #### Dämmerung: Lamellenwinkel nach Beschattung
-`dawn_angle_after_dawn_static` / `dawn_angle_after_dawn_entity`
+`dawn_angle_after_dawn_manual` / `dawn_angle_after_dawn_entity`
 
 Wenn keine Dämmerungssituation mehr vorliegt, wird der Behang auf den hier in % konfigurierten Lamellenwinkel gefahren. Standardwert: 0
 
@@ -634,48 +634,48 @@ shadow_control:
     # =======================================================================
     # Shadow configuration
     #shadow_control_enabled_entity:
-    shadow_control_enabled_static: true
+    shadow_control_enabled_manual: true
     #shadow_brightness_threshold_entity:
-    shadow_brightness_threshold_static: 50000
+    shadow_brightness_threshold_manual: 50000
     #shadow_after_seconds_entity:
-    shadow_after_seconds_static: 15
+    shadow_after_seconds_manual: 15
     #shadow_shutter_max_height_entity:
-    shadow_shutter_max_height_static: 100
+    shadow_shutter_max_height_manual: 100
     #shadow_shutter_max_angle_entity:
-    shadow_shutter_max_angle_static: 100
+    shadow_shutter_max_angle_manual: 100
     #shadow_shutter_look_through_seconds_entity:
-    shadow_shutter_look_through_seconds_static: 15
+    shadow_shutter_look_through_seconds_manual: 15
     #shadow_shutter_open_seconds_entity:
-    shadow_shutter_open_seconds_static: 15
+    shadow_shutter_open_seconds_manual: 15
     #shadow_shutter_look_through_angle_entity:
-    shadow_shutter_look_through_angle_static: 0
+    shadow_shutter_look_through_angle_manual: 0
     #shadow_height_after_sun_entity:
-    shadow_height_after_sun_static: 0
+    shadow_height_after_sun_manual: 0
     #shadow_angle_after_sun_entity:
-    shadow_angle_after_sun_static: 0
+    shadow_angle_after_sun_manual: 0
     #
     # =======================================================================
     # Dawn configuration
     #dawn_control_enabled_entity:
-    dawn_control_enabled_static: true
+    dawn_control_enabled_manual: true
     #dawn_brightness_threshold_entity:
-    dawn_brightness_threshold_static: 500
+    dawn_brightness_threshold_manual: 500
     #dawn_after_seconds_entity:
-    dawn_after_seconds_static: 15
+    dawn_after_seconds_manual: 15
     #dawn_shutter_max_height_entity:
-    dawn_shutter_max_height_static: 100
+    dawn_shutter_max_height_manual: 100
     #dawn_shutter_max_angle_entity:
-    dawn_shutter_max_angle_static: 100
+    dawn_shutter_max_angle_manual: 100
     #dawn_shutter_look_through_seconds_entity:
-    dawn_shutter_look_through_seconds_static: 15
+    dawn_shutter_look_through_seconds_manual: 15
     #dawn_shutter_open_seconds_entity:
-    dawn_shutter_open_seconds_static: 15
+    dawn_shutter_open_seconds_manual: 15
     #dawn_shutter_look_through_angle_entity:
-    dawn_shutter_look_through_angle_static: 50
+    dawn_shutter_look_through_angle_manual: 50
     #dawn_height_after_dawn_entity:
-    dawn_height_after_dawn_static: 0
+    dawn_height_after_dawn_manual: 0
     #dawn_angle_after_dawn_entity:
-    dawn_angle_after_dawn_static: 0
+    dawn_angle_after_dawn_manual: 0
 ```
 # Status, Rückgabewerte und direkte Optionen
 
@@ -775,8 +775,8 @@ Der Service ist via `Entwicklerwerkzeuge -> Aktionen` und dort mit der Suche nac
 2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Full configuration:
 --- YAML dump start ---
 brightness_entity: input_number.d01_brightness
-dawn_after_seconds_static: 10.0
-dawn_angle_after_dawn_static: 80.0
+dawn_after_seconds_manual: 10.0
+dawn_angle_after_dawn_manual: 80.0
 ...
 name: SC Dummy
 ...
