@@ -44,7 +44,7 @@ jobs:
                   break
               if in_section:
                   notes.append(line.rstrip())
-          with open('RELEASENOTES_FOOTER.md', 'r') as footer:
+          with open('.github/RELEASENOTES_FOOTER.md', 'r') as footer:
               notes.append(footer.read().strip())
           with open('release_notes.txt', 'w') as out:
               out.write('\n'.join(notes).strip())
