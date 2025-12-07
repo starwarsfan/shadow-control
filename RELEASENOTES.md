@@ -2,14 +2,16 @@
 
 ## 0.11.0
 * Breaking change:
-  * Renamed some configuration options:
+  * **Important: If you're using yaml configuration, you must rename the following options within your yaml files before updating to version 0.11.0 or higher!**
     * `lock_integration_static`-> `lock_integration_manual`
     * `lock_integration_with_position_static` -> `lock_integration_with_position_manual`
     * `lock_height_static` -> `lock_height_manual`
     * `lock_angle_static` -> `lock_angle_manual`
     * `movement_restriction_height_static` -> `movement_restriction_height_manual`
     * `movement_restriction_angle_static` -> `movement_restriction_angle_manual`
-  * These renamed options are no longer configuration entries within ConfigFlow. They are now dynamically created as `switch`, `number` or `select` entities per **Shadow Control** instance and could be used either right on the instance detail view or directly within own automations. See readme for naming of these entities.
+    * All options with `_static` suffix to `_manual` suffix within shadow configuration
+    * All options with `_static` suffix to `_manual` suffix within dawn configuration
+  * These renamed options are no longer configuration entries within ConfigFlow. They are now dynamically created as `switch`, `number` or `select` entities per **Shadow Control** instance and could be used either right on the instance detail view or directly within own automations. See [README.md](README.md) for naming of these entities.
 
 ## 0.10.0
 * Bugfix: Fixed position handling if movement is restricted and integration gets unlocked
