@@ -1,5 +1,3 @@
-![Version](https://img.shields.io/github/v/release/starwarsfan/shadow-control?style=for-the-badge)
-
 ![logo](/images/logo.svg#gh-light-mode-only)
 ![logo](/images/dark_logo.svg#gh-dark-mode-only)
 
@@ -7,7 +5,7 @@
 
 **A Home Assistant integration to fully automate movement and positioning of rolling shutters.**
 
-[![hacs_badge][hacsbadge]][hacs] [![github][ghsbadge]][ghs] [![BuyMeCoffee][buymecoffeebadge]][buymecoffee] [![PayPal][paypalbadge]][paypal] [![hainstall][hainstallbadge]][hainstall]
+![Version](https://img.shields.io/github/v/release/starwarsfan/shadow-control?style=for-the-badge) [![hacs_badge][hacsbadge]][hacs] [![github][ghsbadge]][ghs] [![BuyMeCoffee][buymecoffeebadge]][buymecoffee] [![PayPal][paypalbadge]][paypal] [![hainstall][hainstallbadge]][hainstall]
 
 Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
 
