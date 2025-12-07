@@ -111,13 +111,15 @@ Within further description:
 * The word "shutter" references rolling shutters. In the Home Assistant terminology, this is called a "cover". From the pov of this integration it's the same.
 * The whole internal logic was initially developed to interact with a KNX system, so the main difference is the handling of %-values. **Shadow Control** will interact with Home Assistant correct, but the configuration as well as the log output is using 0% as fully open and 100% as fully closed.
 * Most options are available with two flavors for each configuration: Once as a static configuration and once as an entity configuration. If you need to configure something without the possibility to change that value on demand, you should use the static configuration entry. If you need to modify something on demand, use the entity configuration and choose the corresponding entity, which holds the required value. If you change the used entity, it will be taken into account within the next execution of the integration instance.
-* Some settings could be modified using configured entities but also provide own instance specific entities. So these entities could be used within automations to modify the configuration without triggering a integration reload. These are the configurations:
+* A lot of settings could be modified using configured entities but also provide own instance specific entities. So these entities could be used within automations to modify the configuration without triggering a integration reload. These are the configurations, which provide own entities beside the entity configuration option:
   * [Lock integration](#lock-integration)
   * [Lock integration with position](#lock-integration-with-position)
   * [Lock height](#lock-height)
   * [Lock angle](#lock-angle)
   * [Movement restriction height](#movement-restriction-height)
   * [Movement restriction angle](#movement-restriction-angle)
+  * [All shadow settings](#shadow-settings)
+  * [All dawn settings](#dawn-settings)
 
 ## TL;DR – in short
 
