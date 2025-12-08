@@ -676,8 +676,8 @@ class ShadowControlManager:
         self._facade_config.shutter_type = config.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value)
         self._facade_config.light_strip_width = config.get(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value)
         self._facade_config.shutter_height = config.get(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value)
-        self._facade_config.neutral_pos_height = config.get(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value)
-        self._facade_config.neutral_pos_angle = config.get(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value)
+        self._facade_config.neutral_pos_height = config.get(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL.value)
+        self._facade_config.neutral_pos_angle = config.get(SCInternal.NEUTRAL_POS_ANGLE_MANUAL.value)
         self._facade_config.modification_tolerance_height = config.get(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value)
         self._facade_config.modification_tolerance_angle = config.get(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value)
 
@@ -999,14 +999,20 @@ class ShadowControlManager:
         self._facade_config.light_strip_width = self._get_static_value(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value, 0.0, float)
         self._facade_config.shutter_height = self._get_static_value(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value, 1000.0, float)
 
-        neutral_pos_height_config_value = self._get_static_value(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, 0, float, log_warning=False)
+        entity_id_neutral_pos_height_manual = self.get_internal_entity_id(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL)
+        entity_id_neutral_pos_height_value = (
+            self._get_internal_entity_state_value(entity_id_neutral_pos_height_manual, 0, float) if entity_id_neutral_pos_height_manual else 0
+        )
         self._facade_config.neutral_pos_height = self._get_entity_state_value(
-            SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY.value, neutral_pos_height_config_value, float
+            SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY.value, entity_id_neutral_pos_height_value, float
         )
 
-        neutral_pos_angle_config_value = self._get_static_value(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, 0, float, log_warning=False)
+        entity_id_neutral_pos_angle_manual = self.get_internal_entity_id(SCInternal.NEUTRAL_POS_ANGLE_MANUAL)
+        entity_id_neutral_pos_angle_value = (
+            self._get_internal_entity_state_value(entity_id_neutral_pos_angle_manual, 0, float) if entity_id_neutral_pos_angle_manual else 0
+        )
         self._facade_config.neutral_pos_angle = self._get_entity_state_value(
-            SCFacadeConfig.NEUTRAL_POS_ANGLE_ENTITY.value, neutral_pos_angle_config_value, float
+            SCFacadeConfig.NEUTRAL_POS_ANGLE_ENTITY.value, entity_id_neutral_pos_angle_value, float
         )
 
         self._facade_config.modification_tolerance_height = self._get_static_value(
