@@ -201,7 +201,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def set_internal_entities_when_ready(event=None) -> None:
         for internal_enum_name, value in sc_internal_values.items():
             _LOGGER.info("Configuring internal entity %s with %s", internal_enum_name, value)
-            internal_enum = SCInternal[internal_enum_name.upper()]
+            internal_enum = next((member for member in SCInternal if member.value == internal_enum_name), None)
+
+            if internal_enum is None:
+                _LOGGER.warning("Could not find SCInternal member for configuration key: %s. Skipping entity setup.", internal_enum_name)
+                continue
+
             entity_id = manager.get_internal_entity_id(internal_enum)
             if entity_id:
                 domain = internal_enum.domain
