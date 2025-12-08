@@ -60,6 +60,36 @@ async def async_setup_entry(
         ShadowControlNumber(
             hass,
             config_entry,
+            key=SCInternal.NEUTRAL_POS_HEIGHT_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.NEUTRAL_POS_HEIGHT_MANUAL.value,
+                name="Neutral height",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=100.0,
+                native_step=1.0,
+                native_unit_of_measurement="%",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.NEUTRAL_POS_ANGLE_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.NEUTRAL_POS_ANGLE_MANUAL.value,
+                name="Neutral angle",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=100.0,
+                native_step=1.0,
+                native_unit_of_measurement="%",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
             key=SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MANUAL.value,
             instance_name=sanitized_instance_name,
             logger=instance_logger,
