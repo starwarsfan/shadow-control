@@ -79,8 +79,8 @@ Go to the [English version](/README.md) version of the documentation.
       * [Dämmerung: Durchsichtposition nach x Sekunden](#dämmerung-durchsichtposition-nach-x-sekunden)
       * [Dämmerung: Öffnen nach x Sekunden](#dämmerung-öffnen-nach-x-sekunden)
       * [Dämmerung: Durchsichtswinkel](#dämmerung-durchsichtswinkel)
-      * [Dämmerung: Höhe nach Beschattung](#dämmerung-höhe-nach-beschattung)
-      * [Dämmerung: Lamellenwinkel nach Beschattung](#dämmerung-lamellenwinkel-nach-beschattung)
+      * [Dämmerung: Höhe nach Dämmerungsposition](#dämmerung-höhe-nach-beschattung)
+      * [Dämmerung: Lamellenwinkel nach Dämmerungsposition](#dämmerung-lamellenwinkel-nach-beschattung)
   * [Konfiguration via yaml](#konfiguration-via-yaml)
     * [yaml Beispielkonfiguration](#yaml-beispielkonfiguration)
 * [Status, Rückgabewerte und direkte Optionen](#status-rückgabewerte-und-direkte-optionen)
@@ -542,12 +542,12 @@ Nachdem der Behang auf Durchsichtsposition gefahren wurde, wird er nach der hier
 
 Hier wird der Lamellenwinkel der Durchsichtsposition in % konfiguriert. Standardwert: 0
 
-#### Dämmerung: Höhe nach Beschattung
+#### Dämmerung: Höhe nach Dämmerungsposition
 `dawn_height_after_dawn_manual` / `dawn_height_after_dawn_entity`
 
 Wenn keine Dämmerungssituation mehr vorliegt, wird der Behang auf die hier in % konfigurierte Höhe gefahren. Standardwert: 0
 
-#### Dämmerung: Lamellenwinkel nach Beschattung
+#### Dämmerung: Lamellenwinkel nach Dämmerungsposition
 `dawn_angle_after_dawn_manual` / `dawn_angle_after_dawn_entity`
 
 Wenn keine Dämmerungssituation mehr vorliegt, wird der Behang auf den hier in % konfigurierten Lamellenwinkel gefahren. Standardwert: 0
