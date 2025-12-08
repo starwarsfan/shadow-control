@@ -7,6 +7,8 @@
     * `lock_integration_with_position_static` -> `lock_integration_with_position_manual`
     * `lock_height_static` -> `lock_height_manual`
     * `lock_angle_static` -> `lock_angle_manual`
+    * `facade_neutral_pos_height_static` -> `facade_neutral_pos_height_manual`
+    * `facade_neutral_pos_angle_static` -> `facade_neutral_pos_angle_manual`
     * `movement_restriction_height_static` -> `movement_restriction_height_manual`
     * `movement_restriction_angle_static` -> `movement_restriction_angle_manual`
     * All options with `_static` suffix to `_manual` suffix within shadow configuration

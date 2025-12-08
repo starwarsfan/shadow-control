@@ -279,7 +279,7 @@ Mit diesem Schalter kann der Debugmodus aktiviert werden. Damit werden erheblich
 ### Fassadenkonfiguration - Teil 2
 
 #### Neutralhöhe
-`facade_neutral_pos_height_static` / `facade_neutral_pos_height_entity`
+`facade_neutral_pos_height_manual` / `facade_neutral_pos_height_entity`
 
 Behanghöhe in % in Neutralposition. Die Integration wird in die Neutralposition fahren, wenn mindestens eine der folgenden Bedingungen erfüllt ist: 
 
@@ -290,7 +290,7 @@ Behanghöhe in % in Neutralposition. Die Integration wird in die Neutralposition
 Standardwert: 0
 
 #### Neutralwinkel
-`facade_neutral_pos_angle_static` / `facade_neutral_pos_angle_entity`
+`facade_neutral_pos_angle_manual` / `facade_neutral_pos_angle_entity`
 
 Lamellenwinkel in % in Neutralposition. Alles andere identisch zu [Neutralhöhe](#neutralhöhe). Standardwert: 0
 
@@ -626,8 +626,8 @@ shadow_control:
     facade_shutter_stepping_angle_static: 5
     facade_light_strip_width_static: 0
     facade_shutter_height_static: 1000
-    facade_neutral_pos_height_static: 0
-    facade_neutral_pos_angle_static: 0
+    facade_neutral_pos_height_manual: 0
+    facade_neutral_pos_angle_manual: 0
     #facade_neutral_pos_height_entity: input_number.facade_neutral_pos_height_entity
     #facade_neutral_pos_angle_entity: input_number.facade_neutral_pos_angle_entity
     facade_modification_tolerance_height_static: 8

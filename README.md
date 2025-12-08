@@ -279,7 +279,7 @@ With this switch, the debug mode for this instance could be activated. If activa
 ### Facade configuration - part 2
 
 #### Neutral position height
-`facade_neutral_pos_height_static` / `facade_neutral_pos_height_entity`
+`facade_neutral_pos_height_manual` / `facade_neutral_pos_height_entity`
 
 Shutter height position in state _NEUTRAL_. The integration will switch to _NEUTRAL_ if
 
@@ -290,7 +290,7 @@ Shutter height position in state _NEUTRAL_. The integration will switch to _NEUT
 Default: 0
 
 #### Neutral position angle
-`facade_neutral_pos_angle_static` / `facade_neutral_pos_angle_entity`
+`facade_neutral_pos_angle_manual` / `facade_neutral_pos_angle_entity`
 
 Shutter angle position in state _NEUTRAL_. Everything else is described in the previous configuration entry. Default: 0
 
@@ -629,8 +629,8 @@ shadow_control:
     facade_shutter_stepping_angle_static: 5
     facade_light_strip_width_static: 0
     facade_shutter_height_static: 1000
-    facade_neutral_pos_height_static: 0
-    facade_neutral_pos_angle_static: 0
+    facade_neutral_pos_height_manual: 0
+    facade_neutral_pos_angle_manual: 0
     #facade_neutral_pos_height_entity: input_number.facade_neutral_pos_height_entity
     #facade_neutral_pos_angle_entity: input_number.facade_neutral_pos_angle_entity
     facade_modification_tolerance_height_static: 8
