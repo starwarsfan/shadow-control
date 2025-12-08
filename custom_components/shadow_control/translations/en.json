@@ -90,9 +90,7 @@
         "title": "Facade configuration - part 2",
         "description": "Configure the second part of the details for the facade (or even the window), which should be handled by this SC instance",
         "data": {
-          "facade_neutral_pos_height_static": "Neutral position height",
           "facade_neutral_pos_height_entity": "Neutral position height",
-          "facade_neutral_pos_angle_static": "Neutral position angle",
           "facade_neutral_pos_angle_entity": "Neutral position angle",
           "facade_slat_width_static": "Shutter slat width",
           "facade_slat_distance_static": "Shutter slat distance",
@@ -107,9 +105,7 @@
           "facade_shutter_type_static": "Shutter type"
         },
         "data_description": {
-          "facade_neutral_pos_height_static": "Height of shutter in neutral position (static).",
           "facade_neutral_pos_height_entity": "Height of shutter in neutral position (by entity).",
-          "facade_neutral_pos_angle_static": "Angle of shutter in neutral position (static).",
           "facade_neutral_pos_angle_entity": "Angle of shutter in neutral position (by entity).",
           "facade_slat_width_static": "Width of shutter slats in mm.",
           "facade_slat_distance_static": "Distance between shutter slats in mm.",
@@ -261,6 +257,12 @@
       },
       "lock_angle_manual": {
         "name": "Enforced position slat angle"
+      },
+      "facade_neutral_pos_height_manual": {
+        "name": "Neutral height"
+      },
+      "facade_neutral_pos_angle_manual": {
+        "name": "Neutral angle"
       },
       "shadow_brightness_threshold_manual": {
         "name": "S: Brightness threshold"
