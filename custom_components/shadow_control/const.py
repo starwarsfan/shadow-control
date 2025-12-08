@@ -24,6 +24,8 @@ class SCInternal(Enum):
     LOCK_ANGLE_MANUAL = "lock_angle_manual"
     MOVEMENT_RESTRICTION_HEIGHT_MANUAL = "movement_restriction_height_manual"
     MOVEMENT_RESTRICTION_ANGLE_MANUAL = "movement_restriction_angle_manual"
+    NEUTRAL_POS_HEIGHT_MANUAL = "facade_neutral_pos_height_manual"
+    NEUTRAL_POS_ANGLE_MANUAL = "facade_neutral_pos_angle_manual"
 
     SHADOW_CONTROL_ENABLED_MANUAL = "shadow_control_enabled_manual"
     SHADOW_BRIGHTNESS_THRESHOLD_MANUAL = "shadow_brightness_threshold_manual"
@@ -65,6 +67,8 @@ class SCInternal(Enum):
         if self in (
             SCInternal.LOCK_HEIGHT_MANUAL,
             SCInternal.LOCK_ANGLE_MANUAL,
+            SCInternal.NEUTRAL_POS_HEIGHT_MANUAL,
+            SCInternal.NEUTRAL_POS_ANGLE_MANUAL,
             SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MANUAL,
             SCInternal.SHADOW_AFTER_SECONDS_MANUAL,
             SCInternal.SHADOW_SHUTTER_MAX_HEIGHT_MANUAL,
@@ -123,9 +127,7 @@ class SCFacadeConfig(Enum):
     SHUTTER_TYPE_STATIC = "facade_shutter_type_static"
     LIGHT_STRIP_WIDTH_STATIC = "facade_light_strip_width_static"
     SHUTTER_HEIGHT_STATIC = "facade_shutter_height_static"
-    NEUTRAL_POS_HEIGHT_STATIC = "facade_neutral_pos_height_static"
     NEUTRAL_POS_HEIGHT_ENTITY = "facade_neutral_pos_height_entity"
-    NEUTRAL_POS_ANGLE_STATIC = "facade_neutral_pos_angle_static"
     NEUTRAL_POS_ANGLE_ENTITY = "facade_neutral_pos_angle_entity"
     MODIFICATION_TOLERANCE_HEIGHT_STATIC = "facade_modification_tolerance_height_static"
     MODIFICATION_TOLERANCE_ANGLE_STATIC = "facade_modification_tolerance_angle_static"
