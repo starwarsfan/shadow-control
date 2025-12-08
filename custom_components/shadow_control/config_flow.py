@@ -125,14 +125,8 @@ def get_cfg_facade_settings_part2() -> vol.Schema:
     """Get facade configuration schema with static and entity options."""
     return vol.Schema(
         {
-            vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
-                selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
-            ),
             vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
-            ),
-            vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_STATIC.value, default=0): selector.NumberSelector(
-                selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
@@ -325,9 +319,6 @@ def get_cfg_facade_settings_part2_mode3() -> vol.Schema:
     """Get facade configuration schema for mode3 with static and entity options."""
     return vol.Schema(
         {
-            vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
-                selector.NumberSelectorConfig(min=0, max=100, step=1, mode=selector.NumberSelectorMode.BOX)
-            ),
             vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
