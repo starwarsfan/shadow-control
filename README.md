@@ -445,6 +445,9 @@ Attention, see note at [Entity precedence](#entity-precedence).
 
 This input could be wired with a boolean entity. If this entity is switched to "on," the shutter positioning will be enforced. That means that with every run of the integration, the shutter will be positioned. This could be used to align the shutter position with the computed position of the integration but should normally not be activated all the time. Otherwise, the shutter slats might close and immediately open again as that is how rolling shutters work: At first the move to the given height and position the shutter slats afterward.
 
+`enforce_positioning_manual`
+
+Additionally to the previous entity configuration, this push button entity could be used to enforce the shutter positioning once. If this button is pressed, the shutter will be positioned according to the computed values.
 
 
 ### Shadow settings

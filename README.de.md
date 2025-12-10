@@ -442,7 +442,9 @@ Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
 Dieser Eingang kann mit einer Boolean-Entität verknüpft werden. Wird diese Entität auf 'on' gestellt, wird die Zwangspositionierung aktiviert. Das heisst, dass mit jeder Berechnung die Behangposition geschrieben wird. Das ist hilfreich, wenn die tatsächliche Behangposition nicht mehr mit der von der Integration angenommenen Position übereinstimmt, sollte aber im Normalfall deaktiviert bleiben. Anderenfalls werden die Lamellen ständig nur geschlossen und wieder geöffnet, weil Raffstoren technisch immer erst die Höhe und danach den Lamellenwinkel anfahren.
 
+`enforce_positioning_manual`
 
+Zusätzlich zur vorherigen Entitätskonfiguration kann diese Push-Button-Entität verwendet werden, um die Behangpositionierung einmalig zu erzwingen. Wenn dieser Knopf gedrückt wird, wird der Behang entsprechend der berechneten Werte positioniert.
 
 ### Beschattungseinstellungen
 
