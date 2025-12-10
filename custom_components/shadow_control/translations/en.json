@@ -251,6 +251,11 @@
     }
   },
   "entity": {
+    "button": {
+      "enforce_positioning_manual": {
+        "name": "Do positioning"
+      }
+    },
     "number": {
       "lock_height_manual": {
         "name": "Enforced position height"

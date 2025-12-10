@@ -26,6 +26,7 @@ class SCInternal(Enum):
     MOVEMENT_RESTRICTION_ANGLE_MANUAL = "movement_restriction_angle_manual"
     NEUTRAL_POS_HEIGHT_MANUAL = "facade_neutral_pos_height_manual"
     NEUTRAL_POS_ANGLE_MANUAL = "facade_neutral_pos_angle_manual"
+    ENFORCE_POSITIONING_MANUAL = "enforce_positioning_manual"
 
     SHADOW_CONTROL_ENABLED_MANUAL = "shadow_control_enabled_manual"
     SHADOW_BRIGHTNESS_THRESHOLD_MANUAL = "shadow_brightness_threshold_manual"
@@ -64,6 +65,8 @@ class SCInternal(Enum):
             SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL,
         ):
             return "select"
+        if self in (SCInternal.ENFORCE_POSITIONING_MANUAL,):
+            return "button"
         if self in (
             SCInternal.LOCK_HEIGHT_MANUAL,
             SCInternal.LOCK_ANGLE_MANUAL,

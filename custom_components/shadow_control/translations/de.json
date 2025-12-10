@@ -251,6 +251,11 @@
     }
   },
   "entity": {
+    "button": {
+      "enforce_positioning_manual": {
+        "name": "Positioniere!"
+      }
+    },
     "number": {
       "lock_height_manual": {
         "name": "Zwangsposition Höhe"
