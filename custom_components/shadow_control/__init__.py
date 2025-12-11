@@ -1012,7 +1012,9 @@ class ShadowControlManager:
 
         entity_id_facade_neutral_pos_height_manual = self.get_internal_entity_id(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL)
         entity_id_neutral_pos_height_value = (
-            self._get_internal_entity_state_value(entity_id_facade_neutral_pos_height_manual, 0, float) if entity_id_facade_neutral_pos_height_manual else 0
+            self._get_internal_entity_state_value(entity_id_facade_neutral_pos_height_manual, 0, float)
+            if entity_id_facade_neutral_pos_height_manual
+            else 0
         )
         self._facade_config.neutral_pos_height = self._get_entity_state_value(
             SCFacadeConfig2.NEUTRAL_POS_HEIGHT_ENTITY.value, entity_id_neutral_pos_height_value, float
@@ -1020,7 +1022,9 @@ class ShadowControlManager:
 
         entity_id_facade_neutral_pos_angle_manual = self.get_internal_entity_id(SCInternal.NEUTRAL_POS_ANGLE_MANUAL)
         entity_id_neutral_pos_angle_value = (
-            self._get_internal_entity_state_value(entity_id_facade_neutral_pos_angle_manual, 0, float) if entity_id_facade_neutral_pos_angle_manual else 0
+            self._get_internal_entity_state_value(entity_id_facade_neutral_pos_angle_manual, 0, float)
+            if entity_id_facade_neutral_pos_angle_manual
+            else 0
         )
         self._facade_config.neutral_pos_angle = self._get_entity_state_value(
             SCFacadeConfig2.NEUTRAL_POS_ANGLE_ENTITY.value, entity_id_neutral_pos_angle_value, float
