@@ -22,7 +22,8 @@ from .const import (
     MovementRestricted,
     SCDawnInput,
     SCDynamicInput,
-    SCFacadeConfig,
+    SCFacadeConfig1,
+    SCFacadeConfig2,
     SCInternal,
     SCShadowInput,
     ShutterType,
@@ -51,7 +52,7 @@ def get_cfg_minimal_required() -> vol.Schema:
     return vol.Schema(
         {
             vol.Optional(SC_CONF_NAME, default=""): selector.TextSelector(selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)),
-            vol.Optional(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, default="mode1"): selector.SelectSelector(
+            vol.Optional(SCFacadeConfig2.SHUTTER_TYPE_STATIC.value, default="mode1"): selector.SelectSelector(
                 selector.SelectSelectorConfig(options=["mode1", "mode2", "mode3"], translation_key="facade_shutter_type")
             ),
         }
@@ -65,7 +66,7 @@ def get_cfg_minimal_options() -> vol.Schema:
     return vol.Schema(
         {
             vol.Optional(TARGET_COVER_ENTITY_ID): selector.EntitySelector(selector.EntitySelectorConfig(domain="cover", multiple=True)),
-            vol.Optional(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig1.AZIMUTH_STATIC.value, default=180): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=359, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): selector.EntitySelector(
@@ -97,19 +98,19 @@ def get_cfg_facade_settings_part1() -> vol.Schema:
     return vol.Schema(
         {
             vol.Optional(TARGET_COVER_ENTITY_ID): selector.EntitySelector(selector.EntitySelectorConfig(domain="cover", multiple=True)),
-            vol.Optional(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig1.AZIMUTH_STATIC.value, default=180): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=359, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value, default=-90): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig1.OFFSET_SUN_IN_STATIC.value, default=-90): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=-90, max=0, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value, default=90): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig1.OFFSET_SUN_OUT_STATIC.value, default=90): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value, default=0): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig1.ELEVATION_SUN_MIN_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value, default=90): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig1.ELEVATION_SUN_MAX_STATIC.value, default=90): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(DEBUG_ENABLED, default=False): selector.BooleanSelector(),
@@ -125,40 +126,40 @@ def get_cfg_facade_settings_part2() -> vol.Schema:
     """Get facade configuration schema with static and entity options."""
     return vol.Schema(
         {
-            vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY.value): selector.EntitySelector(
+            vol.Optional(SCFacadeConfig2.NEUTRAL_POS_HEIGHT_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
-            vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_ENTITY.value): selector.EntitySelector(
+            vol.Optional(SCFacadeConfig2.NEUTRAL_POS_ANGLE_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
-            vol.Optional(SCFacadeConfig.SLAT_WIDTH_STATIC.value, default=95): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig2.SLAT_WIDTH_STATIC.value, default=95): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=20, max=150, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.SLAT_DISTANCE_STATIC.value, default=67): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig2.SLAT_DISTANCE_STATIC.value, default=67): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=20, max=150, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.SLAT_ANGLE_OFFSET_STATIC.value, default=0): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig2.SLAT_ANGLE_OFFSET_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=10, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value, default=0): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig2.SLAT_MIN_ANGLE_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=5): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig2.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=5): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=1, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, default=5): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig2.SHUTTER_STEPPING_ANGLE_STATIC.value, default=5): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=1, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value, default=0): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig2.LIGHT_STRIP_WIDTH_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=2000, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value, default=1000): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig2.SHUTTER_HEIGHT_STATIC.value, default=1000): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=3000, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=0): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig2.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
         }
@@ -319,19 +320,19 @@ def get_cfg_facade_settings_part2_mode3() -> vol.Schema:
     """Get facade configuration schema for mode3 with static and entity options."""
     return vol.Schema(
         {
-            vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY.value): selector.EntitySelector(
+            vol.Optional(SCFacadeConfig2.NEUTRAL_POS_HEIGHT_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
-            vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=5): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig2.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=5): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=1, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value, default=0): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig2.LIGHT_STRIP_WIDTH_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=2000, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value, default=1000): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig2.SHUTTER_HEIGHT_STATIC.value, default=1000): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=3000, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
+            vol.Optional(SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
         }
@@ -490,7 +491,7 @@ def get_full_options_schema_mode3() -> vol.Schema:
 YAML_CONFIG_SCHEMA = vol.Schema(
     {
         vol.Required(SC_CONF_NAME): cv.string,  # Name ist hier erforderlich und einzigartig
-        vol.Required(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, default="mode1"): vol.In(
+        vol.Required(SCFacadeConfig2.SHUTTER_TYPE_STATIC.value, default="mode1"): vol.In(
             [
                 "mode1",
                 "mode2",
@@ -498,26 +499,26 @@ YAML_CONFIG_SCHEMA = vol.Schema(
             ]
         ),
         vol.Required(TARGET_COVER_ENTITY_ID): vol.All(cv.ensure_list, [cv.entity_id]),
-        vol.Optional(SCFacadeConfig.AZIMUTH_STATIC.value, default=180): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value, default=-90): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value, default=90): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value, default=0): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value, default=90): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig1.AZIMUTH_STATIC.value, default=180): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig1.OFFSET_SUN_IN_STATIC.value, default=-90): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig1.OFFSET_SUN_OUT_STATIC.value, default=90): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig1.ELEVATION_SUN_MIN_STATIC.value, default=0): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig1.ELEVATION_SUN_MAX_STATIC.value, default=90): vol.Coerce(float),
         vol.Optional(DEBUG_ENABLED, default=False): cv.boolean,
         vol.Optional(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL.value, default=0): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY.value): cv.entity_id,
+        vol.Optional(SCFacadeConfig2.NEUTRAL_POS_HEIGHT_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.NEUTRAL_POS_ANGLE_MANUAL.value, default=0): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.NEUTRAL_POS_ANGLE_ENTITY.value): cv.entity_id,
-        vol.Optional(SCFacadeConfig.SLAT_WIDTH_STATIC.value, default=95): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.SLAT_DISTANCE_STATIC.value, default=67): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.SLAT_ANGLE_OFFSET_STATIC.value, default=0): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value, default=0): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=5): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, default=5): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value, default=0): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value, default=1000): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=0): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig2.NEUTRAL_POS_ANGLE_ENTITY.value): cv.entity_id,
+        vol.Optional(SCFacadeConfig2.SLAT_WIDTH_STATIC.value, default=95): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig2.SLAT_DISTANCE_STATIC.value, default=67): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig2.SLAT_ANGLE_OFFSET_STATIC.value, default=0): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig2.SLAT_MIN_ANGLE_STATIC.value, default=0): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig2.SHUTTER_STEPPING_HEIGHT_STATIC.value, default=5): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig2.SHUTTER_STEPPING_ANGLE_STATIC.value, default=5): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig2.LIGHT_STRIP_WIDTH_STATIC.value, default=0): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig2.SHUTTER_HEIGHT_STATIC.value, default=1000): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig2.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=0): vol.Coerce(float),
         vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): cv.entity_id,
@@ -620,7 +621,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         # Must be the same as in __init__.py!
         config_data_for_entry = {
             SC_CONF_NAME: import_config.pop(SC_CONF_NAME),  # Remove name from import_config
-            SCFacadeConfig.SHUTTER_TYPE_STATIC.value: import_config.pop(SCFacadeConfig.SHUTTER_TYPE_STATIC.value),
+            SCFacadeConfig2.SHUTTER_TYPE_STATIC.value: import_config.pop(SCFacadeConfig2.SHUTTER_TYPE_STATIC.value),
         }
         # All the rest into 'options'
         options_data_for_entry = import_config
@@ -634,7 +635,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         # Optional validation against FULL_OPTIONS_SCHEMA to verify the yaml data
         try:
-            if config_data_for_entry.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value) == ShutterType.MODE3.value:
+            if config_data_for_entry.get(SCFacadeConfig2.SHUTTER_TYPE_STATIC.value) == ShutterType.MODE3.value:
                 validated_options = get_full_options_schema_mode3()(options_data_for_entry)
             else:
                 validated_options = get_full_options_schema()(options_data_for_entry)
@@ -671,11 +672,11 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             if not user_input.get(TARGET_COVER_ENTITY_ID):
                 errors[TARGET_COVER_ENTITY_ID] = "target_cover_entity"  # Error code from within strings.json
 
-            if not user_input.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value):
-                errors[SCFacadeConfig.SHUTTER_TYPE_STATIC.value] = "facade_shutter_type_static"
+            if not user_input.get(SCFacadeConfig2.SHUTTER_TYPE_STATIC.value):
+                errors[SCFacadeConfig2.SHUTTER_TYPE_STATIC.value] = "facade_shutter_type_static"
 
-            if not user_input.get(SCFacadeConfig.AZIMUTH_STATIC.value):
-                errors[SCFacadeConfig.AZIMUTH_STATIC.value] = "facade_azimuth_static_missing"
+            if not user_input.get(SCFacadeConfig1.AZIMUTH_STATIC.value):
+                errors[SCFacadeConfig1.AZIMUTH_STATIC.value] = "facade_azimuth_static_missing"
 
             if not user_input.get(SCDynamicInput.BRIGHTNESS_ENTITY.value):
                 errors[SCDynamicInput.BRIGHTNESS_ENTITY.value] = "dynamic_brightness_missing"
@@ -705,14 +706,14 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # Immutable configuration data, not available within OptionsFlow
             config_data_for_entry = {
                 SC_CONF_NAME: instance_name,
-                SCFacadeConfig.SHUTTER_TYPE_STATIC.value: user_input.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, ""),
+                SCFacadeConfig2.SHUTTER_TYPE_STATIC.value: user_input.get(SCFacadeConfig2.SHUTTER_TYPE_STATIC.value, ""),
             }
 
             # Create list of options, which are visible and editable within OptionsFlow
             options_data_for_entry = {
                 key: value
                 for key, value in user_input.items()
-                if key not in {SC_CONF_NAME, SCFacadeConfig.SHUTTER_TYPE_STATIC.value}  # Remove instance name and shutter type
+                if key not in {SC_CONF_NAME, SCFacadeConfig2.SHUTTER_TYPE_STATIC.value}  # Remove instance name and shutter type
             }
 
             # All fine, now perform voluptuous validation
@@ -769,7 +770,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
         """Manage the options."""
         # Initialize options_data from config_entry.options, with all editable options
         self.options_data = dict(self.config_entry.options)
-        self.shutter_type = self.config_entry.data.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value)
+        self.shutter_type = self.config_entry.data.get(SCFacadeConfig2.SHUTTER_TYPE_STATIC.value)
         if self.shutter_type == ShutterType.MODE3.value:
             self.is_mode3 = True
 
@@ -790,14 +791,14 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
             if not user_input.get(TARGET_COVER_ENTITY_ID):
                 errors[TARGET_COVER_ENTITY_ID] = "target_cover_entity"  # Error code from within strings.json
 
-            if not user_input.get(SCFacadeConfig.AZIMUTH_STATIC.value):
-                errors[SCFacadeConfig.AZIMUTH_STATIC.value] = "facade_azimuth_static_missing"
+            if not user_input.get(SCFacadeConfig1.AZIMUTH_STATIC.value):
+                errors[SCFacadeConfig1.AZIMUTH_STATIC.value] = "facade_azimuth_static_missing"
 
-            sun_min = user_input.get(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value)
-            sun_max = user_input.get(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value)
+            sun_min = user_input.get(SCFacadeConfig1.ELEVATION_SUN_MIN_STATIC.value)
+            sun_max = user_input.get(SCFacadeConfig1.ELEVATION_SUN_MAX_STATIC.value)
             if sun_min >= sun_max:
-                errors[SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value] = "minGreaterThanMax"
-                errors[SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value] = "minGreaterThanMax"
+                errors[SCFacadeConfig1.ELEVATION_SUN_MIN_STATIC.value] = "minGreaterThanMax"
+                errors[SCFacadeConfig1.ELEVATION_SUN_MAX_STATIC.value] = "minGreaterThanMax"
 
             # If configuration errors found, show the config form again
             if errors:
@@ -807,7 +808,7 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                     errors=errors,
                 )
 
-            for entity_field in SCFacadeConfig:
+            for entity_field in SCFacadeConfig1:
                 if entity_field.name.endswith("_ENTITY") and not user_input.get(entity_field.value):
                     _LOGGER.debug("[OptionsFlow facade settings] %s is empty, removing it from options_data", entity_field.name)
                     self.options_data.pop(entity_field.value, None)
@@ -838,11 +839,11 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
             if not self.is_mode3:
                 # Manual validation of input fields to provide possible error messages
                 # for each field at once and not step by step.
-                slat_width = user_input.get(SCFacadeConfig.SLAT_WIDTH_STATIC.value)
-                slat_distance = user_input.get(SCFacadeConfig.SLAT_DISTANCE_STATIC.value)
+                slat_width = user_input.get(SCFacadeConfig2.SLAT_WIDTH_STATIC.value)
+                slat_distance = user_input.get(SCFacadeConfig2.SLAT_DISTANCE_STATIC.value)
                 if slat_width is not None and slat_distance is not None and slat_width <= slat_distance:
-                    errors[SCFacadeConfig.SLAT_WIDTH_STATIC.value] = "slatWidthSmallerThanDistance"
-                    errors[SCFacadeConfig.SLAT_DISTANCE_STATIC.value] = "slatWidthSmallerThanDistance"
+                    errors[SCFacadeConfig2.SLAT_WIDTH_STATIC.value] = "slatWidthSmallerThanDistance"
+                    errors[SCFacadeConfig2.SLAT_DISTANCE_STATIC.value] = "slatWidthSmallerThanDistance"
 
             # If configuration errors found, show the config form again
             if errors:
