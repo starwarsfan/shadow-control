@@ -113,14 +113,21 @@ class SCDynamicInput(Enum):
     ENFORCE_POSITIONING_ENTITY = "enforce_positioning_entity"
 
 
-class SCFacadeConfig(Enum):
-    """General facade configuration enums."""
+class SCFacadeConfig1(Enum):
+    """General facade configuration enums, part 1."""
 
     AZIMUTH_STATIC = "facade_azimuth_static"
     OFFSET_SUN_IN_STATIC = "facade_offset_sun_in_static"
     OFFSET_SUN_OUT_STATIC = "facade_offset_sun_out_static"
     ELEVATION_SUN_MIN_STATIC = "facade_elevation_sun_min_static"
     ELEVATION_SUN_MAX_STATIC = "facade_elevation_sun_max_static"
+
+
+class SCFacadeConfig2(Enum):
+    """General facade configuration enums, part 2."""
+
+    NEUTRAL_POS_HEIGHT_ENTITY = "facade_neutral_pos_height_entity"
+    NEUTRAL_POS_ANGLE_ENTITY = "facade_neutral_pos_angle_entity"
     SLAT_WIDTH_STATIC = "facade_slat_width_static"
     SLAT_DISTANCE_STATIC = "facade_slat_distance_static"
     SLAT_ANGLE_OFFSET_STATIC = "facade_slat_angle_offset_static"
@@ -130,8 +137,6 @@ class SCFacadeConfig(Enum):
     SHUTTER_TYPE_STATIC = "facade_shutter_type_static"
     LIGHT_STRIP_WIDTH_STATIC = "facade_light_strip_width_static"
     SHUTTER_HEIGHT_STATIC = "facade_shutter_height_static"
-    NEUTRAL_POS_HEIGHT_ENTITY = "facade_neutral_pos_height_entity"
-    NEUTRAL_POS_ANGLE_ENTITY = "facade_neutral_pos_angle_entity"
     MODIFICATION_TOLERANCE_HEIGHT_STATIC = "facade_modification_tolerance_height_static"
     MODIFICATION_TOLERANCE_ANGLE_STATIC = "facade_modification_tolerance_angle_static"
 
