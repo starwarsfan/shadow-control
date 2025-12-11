@@ -5,8 +5,9 @@ from typing import TYPE_CHECKING
 
 from homeassistant.components.number import NumberEntity, NumberEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.restore_state import RestoreEntity
 
 if TYPE_CHECKING:
@@ -394,10 +395,63 @@ class ShadowControlNumber(NumberEntity, RestoreEntity):
         # Initialize with default value
         self._value = 0.0
 
+        self._key = key
+        self._manager: ShadowControlManager = hass.data[DOMAIN_DATA_MANAGERS][config_entry.entry_id]
+
+        # Determine the external config key
+        if key.endswith("_manual"):
+            # e.g., 'lock_height_manual' -> 'lock_height_entity'
+            self._external_config_key = key.replace("_manual", "_entity")
+        else:
+            # Fallback for entities without an external override option
+            self._external_config_key = None
+
     @property
-    def native_value(self) -> float:
+    def available(self) -> bool:
+        """Return True if the entity is available (i.e., not overridden by an external entity)."""
+        if not self._external_config_key:
+            # Always available if there is no external override option
+            return True
+
+        # Get the currently configured entity ID from the ConfigEntry options
+        external_id = self._manager.config_entry.options.get(self._external_config_key)
+
+        # The internal entity is available ONLY IF:
+        # 1. The option is not set (None).
+        # 2. The option is set to the 'no selection' sentinel value ("none").
+
+        # If external_id is NOT None and NOT "none", it is overridden, so we return False (unavailable)
+        is_overridden = bool(external_id and external_id.lower() != "none")
+
+        return not is_overridden
+
+    # In custom_components/shadow_control/number.py (ShadowControlNumber class)
+
+    # Helper method (can be shared or put in a mixin if you have one)
+    @property
+    def _is_overridden_by_external(self) -> bool:
+        """Reusable check for override status."""
+        if not self._external_config_key:
+            return False
+        external_id = self._manager.config_entry.options.get(self._external_config_key)
+        return bool(external_id and external_id.lower() != "none")
+
+    @property
+    def native_value(self) -> float | None:
         """Return the current value."""
-        return self._value
+        if self._is_overridden_by_external:
+            external_id = self._manager.config_entry.options.get(self._external_config_key)
+            state = self.hass.states.get(external_id)
+
+            # Safely check and convert external state
+            if state and state.state not in ("unknown", "unavailable", None):
+                try:
+                    return float(state.state)
+                except ValueError:
+                    self.logger.warning("External entity '%s' state '%s' is not a valid number.", external_id, state.state)
+            return None  # Fallback
+
+        return self._value  # Use internal state if not overridden
 
     @property
     def native_unit_of_measurement(self) -> str | None:
@@ -418,7 +472,11 @@ class ShadowControlNumber(NumberEntity, RestoreEntity):
         return str(round(value))
 
     async def async_set_native_value(self, value: float) -> None:
-        """Set new value."""
+        """Set new value (Blocked if overridden)."""
+        if self._is_overridden_by_external:
+            self.logger.warning("Attempted to set internal entity '%s' while overridden by external configuration. Ignoring.", self.entity_id)
+            return
+
         self._value = value
         self.async_write_ha_state()
 
@@ -435,6 +493,34 @@ class ShadowControlNumber(NumberEntity, RestoreEntity):
 
         # Restore last state after Home Assistant restart.
         last_state = await self.async_get_last_state()
-        if last_state:
-            self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
-            self._value = float(last_state.state)
+        if (
+            last_state
+            and last_state.state not in ("unknown", "unavailable", "none")
+            # Check if the state can be converted to a number
+            and last_state.state is not None
+        ):
+            try:
+                self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
+                # Safely convert the state to a float
+                self._value = float(last_state.state)
+            except ValueError:
+                # Catch any unexpected format errors and log them
+                self.logger.warning(
+                    "Could not restore last state for %s. Last state value '%s' is not a valid float.",
+                    self.name,
+                    last_state.state,
+                )
+
+        if self._is_overridden_by_external:
+            external_id = self._manager.config_entry.options.get(self._external_config_key)
+            self.async_on_remove(async_track_state_change_event(self.hass, [external_id], self._async_external_state_change_listener))
+
+        # The entity also needs to re-register its listener if the configuration changes in Options Flow.
+        # You'll need to send a dispatcher signal from your manager when options are updated and
+        # listen for it here to call self.async_write_ha_state() to update the 'available' status.
+
+    @callback
+    def _async_external_state_change_listener(self, event: Event) -> None:
+        """Handle external entity state changes and update internal entity state."""
+        # This will trigger a read of the new state via native_value property
+        self.async_write_ha_state()
