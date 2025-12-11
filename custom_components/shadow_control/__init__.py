@@ -41,7 +41,8 @@ from .const import (
     MovementRestricted,
     SCDawnInput,
     SCDynamicInput,
-    SCFacadeConfig,
+    SCFacadeConfig1,
+    SCFacadeConfig2,
     SCInternal,
     SCShadowInput,
     ShutterState,
@@ -440,12 +441,12 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     if config_entry.version == 2:
         # Migrate SHUTTER_TYPE_STATIC from config options to config data
 
-        if SCFacadeConfig.SHUTTER_TYPE_STATIC.value in new_options:
-            new_data[SCFacadeConfig.SHUTTER_TYPE_STATIC.value] = new_options.pop(SCFacadeConfig.SHUTTER_TYPE_STATIC.value)
+        if SCFacadeConfig2.SHUTTER_TYPE_STATIC.value in new_options:
+            new_data[SCFacadeConfig2.SHUTTER_TYPE_STATIC.value] = new_options.pop(SCFacadeConfig2.SHUTTER_TYPE_STATIC.value)
             _LOGGER.debug(
                 "[%s] Migrated: Moved shutter type '%s' from config options to config data.",
                 DOMAIN,
-                new_data[SCFacadeConfig.SHUTTER_TYPE_STATIC.value],
+                new_data[SCFacadeConfig2.SHUTTER_TYPE_STATIC.value],
             )
 
         try:
@@ -987,35 +988,35 @@ class ShadowControlManager:
         # self.logger.debug("Updating all input values")
 
         # Facade Configuration (static values)
-        self._facade_config.azimuth = self._get_static_value(SCFacadeConfig.AZIMUTH_STATIC.value, 180.0, float)
-        self._facade_config.offset_sun_in = self._get_static_value(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value, -90.0, float)
-        self._facade_config.offset_sun_out = self._get_static_value(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value, 90.0, float)
-        self._facade_config.elevation_sun_min = self._get_static_value(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value, 0.0, float)
-        self._facade_config.elevation_sun_max = self._get_static_value(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value, 90.0, float)
-        self._facade_config.slat_width = self._get_static_value(SCFacadeConfig.SLAT_WIDTH_STATIC.value, 95.0, float)
-        self._facade_config.slat_distance = self._get_static_value(SCFacadeConfig.SLAT_DISTANCE_STATIC.value, 67.0, float)
-        self._facade_config.slat_angle_offset = self._get_static_value(SCFacadeConfig.SLAT_ANGLE_OFFSET_STATIC.value, 0.0, float)
-        self._facade_config.slat_min_angle = self._get_static_value(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value, 0.0, float)
-        self._facade_config.shutter_stepping_height = self._get_static_value(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value, 10.0, float)
-        self._facade_config.shutter_stepping_angle = self._get_static_value(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value, 10.0, float)
+        self._facade_config.azimuth = self._get_static_value(SCFacadeConfig1.AZIMUTH_STATIC.value, 180.0, float)
+        self._facade_config.offset_sun_in = self._get_static_value(SCFacadeConfig1.OFFSET_SUN_IN_STATIC.value, -90.0, float)
+        self._facade_config.offset_sun_out = self._get_static_value(SCFacadeConfig1.OFFSET_SUN_OUT_STATIC.value, 90.0, float)
+        self._facade_config.elevation_sun_min = self._get_static_value(SCFacadeConfig1.ELEVATION_SUN_MIN_STATIC.value, 0.0, float)
+        self._facade_config.elevation_sun_max = self._get_static_value(SCFacadeConfig1.ELEVATION_SUN_MAX_STATIC.value, 90.0, float)
+        self._facade_config.slat_width = self._get_static_value(SCFacadeConfig2.SLAT_WIDTH_STATIC.value, 95.0, float)
+        self._facade_config.slat_distance = self._get_static_value(SCFacadeConfig2.SLAT_DISTANCE_STATIC.value, 67.0, float)
+        self._facade_config.slat_angle_offset = self._get_static_value(SCFacadeConfig2.SLAT_ANGLE_OFFSET_STATIC.value, 0.0, float)
+        self._facade_config.slat_min_angle = self._get_static_value(SCFacadeConfig2.SLAT_MIN_ANGLE_STATIC.value, 0.0, float)
+        self._facade_config.shutter_stepping_height = self._get_static_value(SCFacadeConfig2.SHUTTER_STEPPING_HEIGHT_STATIC.value, 10.0, float)
+        self._facade_config.shutter_stepping_angle = self._get_static_value(SCFacadeConfig2.SHUTTER_STEPPING_ANGLE_STATIC.value, 10.0, float)
 
         # For shutter_type_static, it's a string from a selector. Convert it to ShutterType enum.
-        shutter_type_str = self._get_static_value(SCFacadeConfig.SHUTTER_TYPE_STATIC.value, "mode1", str)
+        shutter_type_str = self._get_static_value(SCFacadeConfig2.SHUTTER_TYPE_STATIC.value, "mode1", str)
         try:
             self._facade_config.shutter_type = ShutterType[shutter_type_str.upper()]
         except KeyError:
             self.logger.warning("Invalid shutter type '%s' configured. Using default 'mode1'.", shutter_type_str)
             self._facade_config.shutter_type = ShutterType.MODE1
 
-        self._facade_config.light_strip_width = self._get_static_value(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value, 0.0, float)
-        self._facade_config.shutter_height = self._get_static_value(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value, 1000.0, float)
+        self._facade_config.light_strip_width = self._get_static_value(SCFacadeConfig2.LIGHT_STRIP_WIDTH_STATIC.value, 0.0, float)
+        self._facade_config.shutter_height = self._get_static_value(SCFacadeConfig2.SHUTTER_HEIGHT_STATIC.value, 1000.0, float)
 
         entity_id_neutral_pos_height_manual = self.get_internal_entity_id(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL)
         entity_id_neutral_pos_height_value = (
             self._get_internal_entity_state_value(entity_id_neutral_pos_height_manual, 0, float) if entity_id_neutral_pos_height_manual else 0
         )
         self._facade_config.neutral_pos_height = self._get_entity_state_value(
-            SCFacadeConfig.NEUTRAL_POS_HEIGHT_ENTITY.value, entity_id_neutral_pos_height_value, float
+            SCFacadeConfig2.NEUTRAL_POS_HEIGHT_ENTITY.value, entity_id_neutral_pos_height_value, float
         )
 
         entity_id_neutral_pos_angle_manual = self.get_internal_entity_id(SCInternal.NEUTRAL_POS_ANGLE_MANUAL)
@@ -1023,14 +1024,14 @@ class ShadowControlManager:
             self._get_internal_entity_state_value(entity_id_neutral_pos_angle_manual, 0, float) if entity_id_neutral_pos_angle_manual else 0
         )
         self._facade_config.neutral_pos_angle = self._get_entity_state_value(
-            SCFacadeConfig.NEUTRAL_POS_ANGLE_ENTITY.value, entity_id_neutral_pos_angle_value, float
+            SCFacadeConfig2.NEUTRAL_POS_ANGLE_ENTITY.value, entity_id_neutral_pos_angle_value, float
         )
 
         self._facade_config.modification_tolerance_height = self._get_static_value(
-            SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, 0.0, float
+            SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, 0.0, float
         )
         self._facade_config.modification_tolerance_angle = self._get_static_value(
-            SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, 0.0, float
+            SCFacadeConfig2.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, 0.0, float
         )
 
         # Dynamic Inputs (entity states or static values)
