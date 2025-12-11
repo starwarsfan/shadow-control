@@ -853,6 +853,11 @@ class ShadowControlOptionsFlowHandler(config_entries.OptionsFlow):
                     errors=errors,
                 )
 
+            for entity_field in SCFacadeConfig2:
+                if entity_field.name.endswith("_ENTITY") and not user_input.get(entity_field.value):
+                    _LOGGER.debug("[OptionsFlow facade settings] %s is empty, removing it from options_data", entity_field.name)
+                    self.options_data.pop(entity_field.value, None)
+
             self.options_data.update(self._clean_number_inputs(user_input))
             return await self.async_step_dynamic_inputs()
 
