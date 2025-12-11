@@ -8,7 +8,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import ShadowControlManager
-from .const import DOMAIN, DOMAIN_DATA_MANAGERS, SCFacadeConfig, SensorEntries, ShutterState, ShutterType
+from .const import DOMAIN, DOMAIN_DATA_MANAGERS, SCFacadeConfig2, SensorEntries, ShutterState, ShutterType
 
 
 async def async_setup_entry(
@@ -28,7 +28,7 @@ async def async_setup_entry(
 
     instance_logger.debug("Creating sensors for manager: %s (from entry %s)", manager.name, config_entry.entry_id)
 
-    shutter_type_value = config_entry.data.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value)
+    shutter_type_value = config_entry.data.get(SCFacadeConfig2.SHUTTER_TYPE_STATIC.value)
     instance_logger.debug("Shutter type for instance %s is %s", manager.name, shutter_type_value)
 
     entities_to_add = [
