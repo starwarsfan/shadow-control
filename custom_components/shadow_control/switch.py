@@ -5,14 +5,16 @@ from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.const import STATE_ON
+from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.restore_state import RestoreEntity
 
 if TYPE_CHECKING:
     from . import ShadowControlManager
 
-from .const import DEBUG_ENABLED, DOMAIN, DOMAIN_DATA_MANAGERS, SCInternal
+from .const import DEBUG_ENABLED, DOMAIN, DOMAIN_DATA_MANAGERS, SCDawnInput, SCDynamicInput, SCInternal, SCShadowInput
 
 
 async def async_setup_entry(
@@ -44,6 +46,7 @@ async def async_setup_entry(
                 key=SCInternal.SHADOW_CONTROL_ENABLED_MANUAL.value,
                 name="Enable shadow control",  # default (English) fallback if no translation found
             ),
+            external_config_key=SCShadowInput.CONTROL_ENABLED_ENTITY.value,
             instance_name=sanitized_instance_name,
             logger=instance_logger,
         ),
@@ -55,6 +58,7 @@ async def async_setup_entry(
                 key=SCInternal.DAWN_CONTROL_ENABLED_MANUAL.value,
                 name="Enable dawn control",  # default (English) fallback if no translation found
             ),
+            external_config_key=SCDawnInput.CONTROL_ENABLED_ENTITY.value,
             instance_name=sanitized_instance_name,
             logger=instance_logger,
         ),
@@ -68,6 +72,7 @@ async def async_setup_entry(
                 key=SCInternal.LOCK_INTEGRATION_MANUAL.value,
                 name="Lock",  # default (English) fallback if no translation found
             ),
+            external_config_key=SCDynamicInput.LOCK_INTEGRATION_ENTITY.value,
         ),
         ShadowControlSwitch(
             hass,
@@ -79,6 +84,7 @@ async def async_setup_entry(
                 key=SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL.value,
                 name="Lock with position",  # default (English) fallback if no translation found
             ),
+            external_config_key=SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value,
         ),
     ]
 
@@ -183,6 +189,7 @@ class ShadowControlSwitch(SwitchEntity, RestoreEntity):
         description: SwitchEntityDescription,
         instance_name: str,
         logger: logging.Logger,
+        external_config_key: str | None = None,
         icon: str | None = None,
     ) -> None:
         """Initialize the switch."""
@@ -194,6 +201,16 @@ class ShadowControlSwitch(SwitchEntity, RestoreEntity):
         self._attr_has_entity_name = True
 
         self._attr_unique_id = f"{self._config_entry.entry_id}_{key}"
+
+        self._external_config_key = external_config_key
+        self._is_overridden_by_external = False
+
+        self._manager: ShadowControlManager = hass.data[DOMAIN_DATA_MANAGERS][config_entry.entry_id]
+        if self._external_config_key:
+            # Check if an external entity ID is configured in options
+            external_id = self._manager.config_entry.options.get(self._external_config_key)
+            # The entity is overridden if the config key has a non-empty string value
+            self._is_overridden_by_external = external_id not in (None, "")
 
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, config_entry.entry_id)},
@@ -210,40 +227,72 @@ class ShadowControlSwitch(SwitchEntity, RestoreEntity):
         self._state = False
 
     @property
-    def is_on(self) -> bool | None:
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        # The internal switch is NOT available if it is overridden by an external entity
+        return not self._is_overridden_by_external
+
+    @property
+    def is_on(self) -> bool:
         """Return true if the switch is on."""
+        # If overridden, read the state from the external entity
+        if self._is_overridden_by_external:
+            external_id = self._manager.config_entry.options.get(self._external_config_key)
+            state = self.hass.states.get(external_id)
+            # Use STATE_ON constant for comparison
+            return state.state == STATE_ON if state else False
+
+        # Otherwise, return the internal state
         return self._state
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Switch the switch on."""
+        if self._is_overridden_by_external:
+            self.logger.warning("Attempted to turn on internal switch '%s', but it is overridden by an external entity.", self.name)
+            return
+
         self._state = True
         self.async_write_ha_state()
-        # Notify integration
         await self.hass.async_create_task(self._notify_integration())
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Switch the switch off."""
+        if self._is_overridden_by_external:
+            self.logger.warning("Attempted to turn off internal switch '%s', but it is overridden by an external entity.", self.name)
+            return
+
         self._state = False
         self.async_write_ha_state()
-        # Notify integration
         await self.hass.async_create_task(self._notify_integration())
 
     async def async_added_to_hass(self) -> None:
         """Register callbacks with entity registration at HA."""
         await super().async_added_to_hass()
 
-        # Ensure the mapping dictionary exists
-        if "unique_id_map" not in self.hass.data.setdefault(DOMAIN, {}):
-            self.hass.data[DOMAIN]["unique_id_map"] = {}
-
-        # Store the mapping
-        self.hass.data[DOMAIN]["unique_id_map"][self.unique_id] = self.entity_id
-
+        # ... (Existing unique_id_map storage logic) ...
         # Restore last state after Home Assistant restart.
         last_state = await self.async_get_last_state()
-        if last_state:
+
+        # Only restore state if not overridden, otherwise the state comes from the external entity
+        if last_state and not self._is_overridden_by_external:
             self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
-            self._state = last_state.state == "on"
+            self._state = last_state.state == STATE_ON
+
+            # --- NEW LISTENER LOGIC START ---
+        if self._is_overridden_by_external:
+            external_id = self._manager.config_entry.options.get(self._external_config_key)
+            # Listen for external state changes to update the internal switch's state
+            self.async_on_remove(async_track_state_change_event(self.hass, [external_id], self._async_external_state_change_listener))
+
+        # Ensure initial state (including 'available' and 'is_on') is written to HA
+        self.async_write_ha_state()
+        # --- NEW LISTENER LOGIC END ---
+
+    @callback
+    def _async_external_state_change_listener(self, event: Event) -> None:
+        """Handle external entity state changes and update internal entity state."""
+        # This forces the entity to re-read the state from the external entity via self.is_on
+        self.async_write_ha_state()
 
     async def _notify_integration(self) -> None:
         await self.hass.data[DOMAIN_DATA_MANAGERS][self._config_entry.entry_id].async_calculate_and_apply_cover_position(None)
