@@ -515,9 +515,8 @@ class ShadowControlNumber(NumberEntity, RestoreEntity):
             external_id = self._manager.config_entry.options.get(self._external_config_key)
             self.async_on_remove(async_track_state_change_event(self.hass, [external_id], self._async_external_state_change_listener))
 
-        # The entity also needs to re-register its listener if the configuration changes in Options Flow.
-        # You'll need to send a dispatcher signal from your manager when options are updated and
-        # listen for it here to call self.async_write_ha_state() to update the 'available' status.
+        # Ensure initial state is written to HA
+        self.async_write_ha_state()
 
     @callback
     def _async_external_state_change_listener(self, event: Event) -> None:

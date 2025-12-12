@@ -269,7 +269,6 @@ class ShadowControlSwitch(SwitchEntity, RestoreEntity):
         """Register callbacks with entity registration at HA."""
         await super().async_added_to_hass()
 
-        # ... (Existing unique_id_map storage logic) ...
         # Restore last state after Home Assistant restart.
         last_state = await self.async_get_last_state()
 
@@ -278,7 +277,6 @@ class ShadowControlSwitch(SwitchEntity, RestoreEntity):
             self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
             self._state = last_state.state == STATE_ON
 
-            # --- NEW LISTENER LOGIC START ---
         if self._is_overridden_by_external:
             external_id = self._manager.config_entry.options.get(self._external_config_key)
             # Listen for external state changes to update the internal switch's state
@@ -286,7 +284,6 @@ class ShadowControlSwitch(SwitchEntity, RestoreEntity):
 
         # Ensure initial state (including 'available' and 'is_on') is written to HA
         self.async_write_ha_state()
-        # --- NEW LISTENER LOGIC END ---
 
     @callback
     def _async_external_state_change_listener(self, event: Event) -> None:
