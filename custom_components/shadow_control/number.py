@@ -521,5 +521,6 @@ class ShadowControlNumber(NumberEntity, RestoreEntity):
     @callback
     def _async_external_state_change_listener(self, event: Event) -> None:
         """Handle external entity state changes and update internal entity state."""
+        self.logger.debug("External entity %s changed state. Triggering internal update for %s.", event.data.get("entity_id"), self.entity_id)
         # This will trigger a read of the new state via native_value property
         self.async_write_ha_state()

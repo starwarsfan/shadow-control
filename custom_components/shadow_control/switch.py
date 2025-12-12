@@ -288,6 +288,7 @@ class ShadowControlSwitch(SwitchEntity, RestoreEntity):
     @callback
     def _async_external_state_change_listener(self, event: Event) -> None:
         """Handle external entity state changes and update internal entity state."""
+        self.logger.debug("External entity %s changed state. Triggering internal update for %s.", event.data.get("entity_id"), self.entity_id)
         # This forces the entity to re-read the state from the external entity via self.is_on
         self.async_write_ha_state()
 
