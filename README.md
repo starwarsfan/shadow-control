@@ -450,6 +450,9 @@ This input could be wired with a boolean entity. If this entity is switched to "
 Additionally to the previous entity configuration, this push button entity could be used to enforce the shutter positioning once. If this button is pressed, the shutter will be positioned according to the computed values.
 
 
+
+
+
 ### Shadow settings
 
 #### Shadow control enabled

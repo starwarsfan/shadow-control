@@ -446,6 +446,10 @@ Dieser Eingang kann mit einer Boolean-Entität verknüpft werden. Wird diese Ent
 
 Zusätzlich zur vorherigen Entitätskonfiguration kann diese Push-Button-Entität verwendet werden, um die Behangpositionierung einmalig zu erzwingen. Wenn dieser Knopf gedrückt wird, wird der Behang entsprechend der berechneten Werte positioniert.
 
+
+
+
+
 ### Beschattungseinstellungen
 
 #### Beschattungssteuerung aktiviert
