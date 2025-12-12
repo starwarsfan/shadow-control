@@ -27,7 +27,7 @@ async def async_setup_entry(
     sanitized_instance_name = manager.sanitized_name
 
     entities = [
-        ShadowControlConfigBooleanSwitch(
+        ShadowControlConfigSwitch(
             hass,
             config_entry,
             key=DEBUG_ENABLED,
@@ -36,23 +36,29 @@ async def async_setup_entry(
             icon="mdi:developer-board",
             logger=instance_logger,
         ),
-        ShadowControlConfigBooleanSwitch(
+        ShadowControlSwitch(
             hass,
             config_entry,
             key=SCInternal.SHADOW_CONTROL_ENABLED_MANUAL.value,
-            translation_key="shadow_control_enabled_manual",
+            description=SwitchEntityDescription(
+                key=SCInternal.SHADOW_CONTROL_ENABLED_MANUAL.value,
+                name="Enable shadow control",  # default (English) fallback if no translation found
+            ),
             instance_name=sanitized_instance_name,
             logger=instance_logger,
         ),
-        ShadowControlConfigBooleanSwitch(
+        ShadowControlSwitch(
             hass,
             config_entry,
             key=SCInternal.DAWN_CONTROL_ENABLED_MANUAL.value,
-            translation_key="dawn_control_enabled_manual",
+            description=SwitchEntityDescription(
+                key=SCInternal.DAWN_CONTROL_ENABLED_MANUAL.value,
+                name="Enable dawn control",  # default (English) fallback if no translation found
+            ),
             instance_name=sanitized_instance_name,
             logger=instance_logger,
         ),
-        ShadowControlRuntimeBooleanSwitch(
+        ShadowControlSwitch(
             hass,
             config_entry,
             key=SCInternal.LOCK_INTEGRATION_MANUAL.value,
@@ -63,7 +69,7 @@ async def async_setup_entry(
                 name="Lock",  # default (English) fallback if no translation found
             ),
         ),
-        ShadowControlRuntimeBooleanSwitch(
+        ShadowControlSwitch(
             hass,
             config_entry,
             key=SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL.value,
@@ -80,7 +86,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class ShadowControlConfigBooleanSwitch(SwitchEntity, RestoreEntity):
+class ShadowControlConfigSwitch(SwitchEntity, RestoreEntity):
     """Represent a boolean config option from Shadow Control as switch."""
 
     def __init__(
@@ -166,7 +172,7 @@ class ShadowControlConfigBooleanSwitch(SwitchEntity, RestoreEntity):
             # If the key is not within `options` the default value (False) is used.
 
 
-class ShadowControlRuntimeBooleanSwitch(SwitchEntity, RestoreEntity):
+class ShadowControlSwitch(SwitchEntity, RestoreEntity):
     """Represent a boolean option from Shadow Control as switch."""
 
     def __init__(
