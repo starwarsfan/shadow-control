@@ -3,8 +3,10 @@
 import logging
 from typing import TYPE_CHECKING, Any
 
+import homeassistant.helpers.entity_registry as er
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.restore_state import RestoreEntity
@@ -25,6 +27,7 @@ async def async_setup_entry(
     manager: ShadowControlManager | None = hass.data.get(DOMAIN_DATA_MANAGERS, {}).get(config_entry.entry_id)
     instance_logger = manager.logger
     sanitized_instance_name = manager.sanitized_name
+    config_entry_id = config_entry.entry_id
 
     entities = [
         ShadowControlConfigSwitch(
@@ -86,13 +89,21 @@ async def async_setup_entry(
     ]
 
     entities_to_add = []
+    required_internal_unique_ids = set()
+    registry = er.async_get(hass)  # Access the Home Assistant Entity Registry
+
+    # ----------------------------------------------------------------------
+    # PART 1: Conditional Addition and Tracking
+    # ----------------------------------------------------------------------
     for entity in entities:
         internal_key = entity.entity_description.key
         external_config_key = SWITCH_INTERNAL_TO_EXTERNAL_MAP.get(internal_key)
 
         is_external_entity_configured = False
+
         if external_config_key:
             external_entity_id = config_entry.options.get(external_config_key)
+
             # Check if the external config key is present and is not "none" or empty
             if external_entity_id and external_entity_id.lower() not in ("none", ""):
                 is_external_entity_configured = True
@@ -106,6 +117,27 @@ async def async_setup_entry(
         if not is_external_entity_configured:
             # Only add the internal entity if NO external entity is configured
             entities_to_add.append(entity)
+            # Track the unique ID of the added entity
+            required_internal_unique_ids.add(entity.unique_id)
+
+    # ----------------------------------------------------------------------
+    # PART 2: Cleanup Unrequired Internal Entities from the Registry
+    # ----------------------------------------------------------------------
+
+    # Check all internal keys that have an associated external control mapping
+    for internal_key in SWITCH_INTERNAL_TO_EXTERNAL_MAP:
+        # Construct the unique ID as it appears in the entity's __init__ method (e.g., sc_entryid_key)
+        unique_id = f"sc_{config_entry_id}_{internal_key}"
+
+        # If the unique ID is NOT in the set of currently required entities (i.e., external is configured)...
+        if unique_id not in required_internal_unique_ids:
+            # Look up in the registry using Platform.NUMBER
+            entity_id = registry.async_get_entity_id(Platform.NUMBER, DOMAIN, unique_id)
+
+            if entity_id:
+                instance_logger.debug("Removing deprecated internal number entity: %s (unique_id: %s)", entity_id, unique_id)
+                # Remove the entity from the registry.
+                registry.async_remove(entity_id)
 
     async_add_entities(entities_to_add)
 
@@ -133,7 +165,7 @@ class ShadowControlConfigSwitch(SwitchEntity, RestoreEntity):
         self._attr_translation_key = description.key
         self._attr_has_entity_name = True
 
-        self._attr_unique_id = f"{config_entry.entry_id}_{key}"
+        self._attr_unique_id = f"sc_{config_entry.entry_id}_{key}"
 
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, config_entry.entry_id)},
@@ -218,7 +250,7 @@ class ShadowControlSwitch(SwitchEntity, RestoreEntity):
         self._attr_translation_key = description.key
         self._attr_has_entity_name = True
 
-        self._attr_unique_id = f"{self._config_entry.entry_id}_{key}"
+        self._attr_unique_id = f"sc_{self._config_entry.entry_id}_{key}"
 
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, config_entry.entry_id)},
