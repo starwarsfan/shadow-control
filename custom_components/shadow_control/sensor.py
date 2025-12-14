@@ -148,30 +148,42 @@ class ShadowControlSensor(SensorEntity):
     @property
     def native_value(self):  # noqa: ANN201
         """Return the state of the sensor from the manager."""
+        value = None
         if self._sensor_entry_type == SensorEntries.USED_HEIGHT:
-            return self._manager.used_shutter_height
+            value = self._manager.used_shutter_height
         if self._sensor_entry_type == SensorEntries.USED_ANGLE:
-            return self._manager.used_shutter_angle
+            value = self._manager.used_shutter_angle
         if self._sensor_entry_type == SensorEntries.USED_ANGLE_DEGREES:
-            return self._manager.used_shutter_angle_degrees
+            value = self._manager.used_shutter_angle_degrees
         if self._sensor_entry_type == SensorEntries.COMPUTED_HEIGHT:
-            return self._manager.calculated_shutter_height
+            value = self._manager.calculated_shutter_height
         if self._sensor_entry_type == SensorEntries.COMPUTED_ANGLE:
-            return self._manager.calculated_shutter_angle
+            value = self._manager.calculated_shutter_angle
         if self._sensor_entry_type == SensorEntries.CURRENT_STATE:
-            return (
+            value = (
                 self._manager.current_shutter_state.value
                 if hasattr(self._manager.current_shutter_state, "value")
                 else self._manager.current_shutter_state
             )
         if self._sensor_entry_type == SensorEntries.LOCK_STATE:
-            return self._manager.current_lock_state.value if hasattr(self._manager.current_lock_state, "value") else self._manager.current_lock_state
+            value = self._manager.current_lock_state.value if hasattr(self._manager.current_lock_state, "value") else self._manager.current_lock_state
         if self._sensor_entry_type == SensorEntries.NEXT_SHUTTER_MODIFICATION:
-            return self._manager.next_modification_timestamp
+            value = self._manager.next_modification_timestamp
         if self._sensor_entry_type == SensorEntries.IS_IN_SUN:
             # For boolean states, ensure it's a native Python boolean
-            return bool(self._manager.is_in_sun)
-        return None
+            value = bool(self._manager.is_in_sun)
+
+        if value is None:
+            return None
+
+            # 2. Apply the rounding logic for clean UI display
+        if isinstance(value, (float, int)):
+            # Round and cast to int to ensure the final output is a whole number,
+            # which removes the trailing decimals in the HA frontend.
+            return int(round(value))  # noqa: RUF046
+
+            # Return all other types (strings, etc.) as is
+        return value
 
     async def async_added_to_hass(self) -> None:
         """Run when this entity has been added to Home Assistant."""
@@ -273,7 +285,20 @@ class ShadowControlExternalEntityValueSensor(SensorEntity):
     @property
     def native_value(self) -> float | str | None:
         """Return the state of the sensor, mirroring the external entity's state."""
-        return self._current_value
+        value = self._current_value
+
+        if value is None:
+            return None
+
+        # Check if the value is a float OR an int. This handles all numeric states.
+        if isinstance(value, (float, int)):
+            # This is done to ensure the final output is a Python 'int',
+            # which prevents the HA frontend from displaying trailing decimals (.0 or ,0).
+            # We must use int() because round() can return a float (e.g., 50000.0).
+            return int(round(value))  # noqa: RUF046
+
+        # Return all other types (strings like 'on'/'off' or 'unavailable') as is.
+        return value
 
     async def async_added_to_hass(self) -> None:
         """Register callbacks and start state tracking."""
