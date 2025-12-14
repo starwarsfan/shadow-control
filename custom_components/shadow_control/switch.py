@@ -97,18 +97,19 @@ class ShadowControlConfigBooleanSwitch(SwitchEntity, RestoreEntity):
         hass: HomeAssistant,
         config_entry: ConfigEntry,
         key: str,
-        translation_key: str,
-        logger: logging.Logger,
+        description: SwitchEntityDescription,
         instance_name: str,
+        logger: logging.Logger,
         icon: str | None = None,
     ) -> None:
         """Initialize the switch."""
         self.hass = hass
         self.logger = logger
+        self.entity_description = description
         self._config_entry = config_entry
         self._key = key
 
-        self._attr_translation_key = translation_key
+        self._attr_translation_key = description.key
         self._attr_has_entity_name = True
 
         self._attr_unique_id = f"{config_entry.entry_id}_{key}"
