@@ -383,10 +383,10 @@
         "name": "> Zwangswinkel"
       },
       "movement_restriction_height_entity": {
-        "name": "> Einschränkung Höhe"
+        "name": "> Höhe"
       },
       "movement_restriction_angle_entity": {
-        "name": "> Einschränkung Winkel"
+        "name": "> Winkel"
       },
       "facade_neutral_pos_height_entity": {
         "name": "> Neutrale Höhe"
@@ -398,7 +398,7 @@
         "name": "B> Steuerung"
       },
       "shadow_brightness_threshold_entity": {
-        "name": "B> Helligkeitsschwellwert"
+        "name": "B> Schwellwert"
       },
       "shadow_after_seconds_entity": {
         "name": "B> nach"
@@ -419,16 +419,16 @@
         "name": "B> Durchsichtwinkel"
       },
       "shadow_height_after_sun_entity": {
-        "name": "B> Höhe nach Beschattung"
+        "name": "B> Höhe danach"
       },
       "shadow_angle_after_sun_entity": {
-        "name": "B> Winkel nach Beschattung"
+        "name": "B> Winkel danach"
       },
       "dawn_control_enabled_entity": {
         "name": "D> Steuerung"
       },
       "dawn_brightness_threshold_entity": {
-        "name": "D> Helligkeitsschwellwert"
+        "name": "D> Schwellwert"
       },
       "dawn_after_seconds_entity": {
         "name": "D> nach"

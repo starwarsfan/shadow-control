@@ -383,10 +383,10 @@
         "name": "> Lock angle"
       },
       "movement_restriction_height_entity": {
-        "name": "> Restriction height"
+        "name": "> Height"
       },
       "movement_restriction_angle_entity": {
-        "name": "> Restriction angle"
+        "name": "> Angle"
       },
       "facade_neutral_pos_height_entity": {
         "name": "> Neutral height"
