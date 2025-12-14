@@ -1,7 +1,9 @@
 """Shadow Control sensor implementation."""
 
+import homeassistant.helpers.entity_registry as er
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
 from homeassistant.core import Event, HomeAssistant, State, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import DeviceInfo
@@ -22,6 +24,8 @@ async def async_setup_entry(
     manager: ShadowControlManager | None = hass.data.get(DOMAIN_DATA_MANAGERS, {}).get(config_entry.entry_id)
     instance_logger = manager.logger
     instance_logger.debug("Setting up sensor platform from config entry: %s", config_entry.entry_id)
+    config_options = config_entry.options
+    config_entry_id = config_entry.entry_id  # Shortcut for entry ID
 
     if manager is None:
         instance_logger.error("No Shadow Control manager found for config entry %s. Cannot set up sensors.", config_entry.entry_id)
@@ -57,23 +61,52 @@ async def async_setup_entry(
     instance_name = manager.sanitized_name
     config_options = config_entry.options
 
+    # ----------------------------------------------------------------------
+    # PART 1: Identify and Create REQUIRED External Sensors
+    # ----------------------------------------------------------------------
+    required_external_unique_ids = set()
+
     for definition in EXTERNAL_SENSOR_DEFINITIONS:
         config_key = definition["config_key"]
         external_entity_id = config_options.get(config_key)
 
-        # Check if an external entity ID is configured for this type
-        if external_entity_id and external_entity_id.lower() not in ("none", ""):
-            instance_logger.debug("Creating external value sensor for key: %s, tracking entity: %s", config_key, external_entity_id)
+        unique_id = f"{config_entry_id}_{config_key}_source_value"
 
+        # Check if an external entity ID is configured and is not an empty/none value
+        if external_entity_id and external_entity_id.lower() not in ("none", ""):
+            # 1. Entity IS required: track its unique ID
+            required_external_unique_ids.add(unique_id)
+
+            # 2. Create the entity instance
             sensor = ShadowControlExternalEntityValueSensor(
                 hass,
                 manager,
-                config_entry.entry_id,
+                config_entry_id,
                 instance_name,
                 definition,
                 external_entity_id,
             )
             entities_to_add.append(sensor)
+
+    # ----------------------------------------------------------------------
+    # PART 2: Cleanup Unrequired External Sensors from the Registry
+    # ----------------------------------------------------------------------
+    registry = er.async_get(hass)
+
+    # Iterate over ALL possible external sensor unique IDs
+    for definition in EXTERNAL_SENSOR_DEFINITIONS:
+        config_key = definition["config_key"]
+        unique_id = f"sc_{config_entry_id}_{config_key}_source_value"
+
+        # If this unique ID is NOT in the set of currently required entities...
+        if unique_id not in required_external_unique_ids:
+            # Look it up in the registry
+            entity_id = registry.async_get_entity_id(Platform.SENSOR, DOMAIN, unique_id)
+
+            if entity_id:
+                instance_logger.debug("Removing deprecated external sensor entity: %s (unique_id: %s)", entity_id, unique_id)
+                # Remove the entity from the registry. This removes it from the UI immediately.
+                registry.async_remove(entity_id)
 
     if entities_to_add:
         async_add_entities(entities_to_add, True)
