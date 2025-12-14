@@ -12,7 +12,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 if TYPE_CHECKING:
     from . import ShadowControlManager
 
-from .const import DEBUG_ENABLED, DOMAIN, DOMAIN_DATA_MANAGERS, SCInternal
+from .const import DEBUG_ENABLED, DOMAIN, DOMAIN_DATA_MANAGERS, SWITCH_INTERNAL_TO_EXTERNAL_MAP, SCInternal
 
 
 async def async_setup_entry(
@@ -85,8 +85,29 @@ async def async_setup_entry(
         ),
     ]
 
-    # Add all the entities to Home Assistant
-    async_add_entities(entities)
+    entities_to_add = []
+    for entity in entities:
+        internal_key = entity.entity_description.key
+        external_config_key = SWITCH_INTERNAL_TO_EXTERNAL_MAP.get(internal_key)
+
+        is_external_entity_configured = False
+        if external_config_key:
+            external_entity_id = config_entry.options.get(external_config_key)
+            # Check if the external config key is present and is not "none" or empty
+            if external_entity_id and external_entity_id.lower() not in ("none", ""):
+                is_external_entity_configured = True
+                instance_logger.debug(
+                    "Skipping internal number entity '%s' because external entity '%s' is configured: %s",
+                    internal_key,
+                    external_config_key,
+                    external_entity_id,
+                )
+
+        if not is_external_entity_configured:
+            # Only add the internal entity if NO external entity is configured
+            entities_to_add.append(entity)
+
+    async_add_entities(entities_to_add)
 
 
 class ShadowControlConfigBooleanSwitch(SwitchEntity, RestoreEntity):
