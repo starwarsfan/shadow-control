@@ -70,7 +70,7 @@ async def async_setup_entry(
         config_key = definition["config_key"]
         external_entity_id = config_options.get(config_key)
 
-        unique_id = f"{config_entry_id}_{config_key}_source_value"
+        unique_id = f"sc_{config_entry_id}_{config_key}_source_value"
 
         # Check if an external entity ID is configured and is not an empty/none value
         if external_entity_id and external_entity_id.lower() not in ("none", ""):
