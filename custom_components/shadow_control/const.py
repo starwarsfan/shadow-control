@@ -2,6 +2,8 @@
 
 from enum import Enum, IntEnum
 
+from homeassistant.components.sensor import SensorStateClass
+
 DOMAIN = "shadow_control"
 DOMAIN_DATA_MANAGERS = f"{DOMAIN}_managers"  # A good practice for unique keys
 DEFAULT_NAME = "Shadow Control"
@@ -286,3 +288,20 @@ SELECT_INTERNAL_TO_EXTERNAL_MAP = {
     SCInternal.MOVEMENT_RESTRICTION_HEIGHT_MANUAL.value: SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value,
     SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL.value: SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value,
 }
+
+EXTERNAL_SENSOR_DEFINITIONS = [
+    {
+        "config_key": SCShadowInput.CONTROL_ENABLED_ENTITY.value,
+        "name_suffix": "Shadow Control Enabled",
+        "unit": None,
+        "state_class": None,
+        "icon": "mdi:toggle-switch",
+    },
+    {
+        "config_key": SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value,
+        "name_suffix": "Shadow Brightness Threshold",
+        "unit": "Lx",
+        "state_class": SensorStateClass.MEASUREMENT.value,
+        "icon": "mdi:brightness-5",
+    },
+]
