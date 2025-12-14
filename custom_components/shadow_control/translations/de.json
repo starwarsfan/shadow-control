@@ -370,11 +370,89 @@
       "sensor_is_in_sun": {
         "name": "In der Sonne"
       },
+      "lock_integration_entity": {
+        "name": "> Sperren"
+      },
+      "lock_integration_with_position_entity": {
+        "name": "> Sperren positioniert"
+      },
+      "lock_height_entity": {
+        "name": "> Zwangshöhe"
+      },
+      "lock_angle_entity": {
+        "name": "> Zwangswinkel"
+      },
+      "movement_restriction_height_entity": {
+        "name": "> Einschränkung Höhe"
+      },
+      "movement_restriction_angle_entity": {
+        "name": "> Einschränkung Winkel"
+      },
+      "facade_neutral_pos_height_entity": {
+        "name": "> Neutrale Höhe"
+      },
+      "facade_neutral_pos_angle_entity": {
+        "name": "> Neutraler Winkel"
+      },
       "shadow_control_enabled_entity": {
-        "name": "Beschattungssteuerung aktiviert"
+        "name": "B> Steuerung"
       },
       "shadow_brightness_threshold_entity": {
-        "name": "Helligkeitsschwellwert"
+        "name": "B> Helligkeitsschwellwert"
+      },
+      "shadow_after_seconds_entity": {
+        "name": "B> nach"
+      },
+      "shadow_shutter_max_height_entity": {
+        "name": "B> max Höhe"
+      },
+      "shadow_shutter_max_angle_entity": {
+        "name": "B> max Winkel"
+      },
+      "shadow_shutter_look_through_seconds_entity": {
+        "name": "B> Durchsicht nach"
+      },
+      "shadow_shutter_open_seconds_entity": {
+        "name": "B> Öffnen nach"
+      },
+      "shadow_shutter_look_through_angle_entity": {
+        "name": "B> Durchsichtwinkel"
+      },
+      "shadow_height_after_sun_entity": {
+        "name": "B> Höhe nach Beschattung"
+      },
+      "shadow_angle_after_sun_entity": {
+        "name": "B> Winkel nach Beschattung"
+      },
+      "dawn_control_enabled_entity": {
+        "name": "D> Steuerung"
+      },
+      "dawn_brightness_threshold_entity": {
+        "name": "D> Helligkeitsschwellwert"
+      },
+      "dawn_after_seconds_entity": {
+        "name": "D> nach"
+      },
+      "dawn_shutter_max_height_entity": {
+        "name": "D> max Höhe"
+      },
+      "dawn_shutter_max_angle_entity": {
+        "name": "D> max Winkel"
+      },
+      "dawn_shutter_look_through_seconds_entity": {
+        "name": "D> Durchsicht nach"
+      },
+      "dawn_shutter_open_seconds_entity": {
+        "name": "D> Öffnen nach"
+      },
+      "dawn_shutter_look_through_angle_entity": {
+        "name": "D> Durchsichtwinkel"
+      },
+      "dawn_height_after_sun_entity": {
+        "name": "D> Höhe nach Beschattung"
+      },
+      "dawn_angle_after_sun_entity": {
+        "name": "D> Winkel nach Beschattung"
       }
     },
     "select": {

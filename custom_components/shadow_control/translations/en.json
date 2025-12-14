@@ -370,11 +370,89 @@
       "sensor_is_in_sun": {
         "name": "Is in Sun"
       },
+      "lock_integration_entity": {
+        "name": "> Lock"
+      },
+      "lock_integration_with_position_entity": {
+        "name": "> Position lock"
+      },
+      "lock_height_entity": {
+        "name": "> Lock height"
+      },
+      "lock_angle_entity": {
+        "name": "> Lock angle"
+      },
+      "movement_restriction_height_entity": {
+        "name": "> Restriction height"
+      },
+      "movement_restriction_angle_entity": {
+        "name": "> Restriction angle"
+      },
+      "facade_neutral_pos_height_entity": {
+        "name": "> Neutral height"
+      },
+      "facade_neutral_pos_angle_entity": {
+        "name": "> Neutral angle"
+      },
       "shadow_control_enabled_entity": {
-        "name": "Shadow control enabled"
+        "name": "S> Control"
       },
       "shadow_brightness_threshold_entity": {
-        "name": "Brightness threshold"
+        "name": "S> Threshold"
+      },
+      "shadow_after_seconds_entity": {
+        "name": "B> after"
+      },
+      "shadow_shutter_max_height_entity": {
+        "name": "B> max height"
+      },
+      "shadow_shutter_max_angle_entity": {
+        "name": "B> max angle"
+      },
+      "shadow_shutter_look_through_seconds_entity": {
+        "name": "B> Look through"
+      },
+      "shadow_shutter_open_seconds_entity": {
+        "name": "B> Open after"
+      },
+      "shadow_shutter_look_through_angle_entity": {
+        "name": "B> Look through angle"
+      },
+      "shadow_height_after_sun_entity": {
+        "name": "B> Height after shadow"
+      },
+      "shadow_angle_after_sun_entity": {
+        "name": "B> Angle after shadow"
+      },
+      "dawn_control_enabled_entity": {
+        "name": "D> Control"
+      },
+      "dawn_brightness_threshold_entity": {
+        "name": "D> Threshold"
+      },
+      "dawn_after_seconds_entity": {
+        "name": "D> after"
+      },
+      "dawn_shutter_max_height_entity": {
+        "name": "D> max height"
+      },
+      "dawn_shutter_max_angle_entity": {
+        "name": "D> max angle"
+      },
+      "dawn_shutter_look_through_seconds_entity": {
+        "name": "D> Look through after"
+      },
+      "dawn_shutter_open_seconds_entity": {
+        "name": "D> Open after"
+      },
+      "dawn_shutter_look_through_angle_entity": {
+        "name": "D> Look through angle"
+      },
+      "dawn_height_after_sun_entity": {
+        "name": "D> Height after dawn"
+      },
+      "dawn_angle_after_sun_entity": {
+        "name": "D> Angle after dawn"
       }
     },
     "select": {
