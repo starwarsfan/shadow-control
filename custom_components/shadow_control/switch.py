@@ -31,26 +31,35 @@ async def async_setup_entry(
             hass,
             config_entry,
             key=DEBUG_ENABLED,
-            translation_key="debug_enabled",
             instance_name=sanitized_instance_name,
             icon="mdi:developer-board",
             logger=instance_logger,
+            description=SwitchEntityDescription(
+                key=DEBUG_ENABLED,
+                name="Debug mode",  # default (English) fallback if no translation found
+            ),
         ),
         ShadowControlConfigBooleanSwitch(
             hass,
             config_entry,
             key=SCInternal.SHADOW_CONTROL_ENABLED_MANUAL.value,
-            translation_key="shadow_control_enabled_manual",
             instance_name=sanitized_instance_name,
             logger=instance_logger,
+            description=SwitchEntityDescription(
+                key=SCInternal.SHADOW_CONTROL_ENABLED_MANUAL.value,
+                name="Shadow control",  # default (English) fallback if no translation found
+            ),
         ),
         ShadowControlConfigBooleanSwitch(
             hass,
             config_entry,
             key=SCInternal.DAWN_CONTROL_ENABLED_MANUAL.value,
-            translation_key="dawn_control_enabled_manual",
             instance_name=sanitized_instance_name,
             logger=instance_logger,
+            description=SwitchEntityDescription(
+                key=SCInternal.DAWN_CONTROL_ENABLED_MANUAL.value,
+                name="Dawn control",  # default (English) fallback if no translation found
+            ),
         ),
         ShadowControlRuntimeBooleanSwitch(
             hass,
