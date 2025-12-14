@@ -292,15 +292,15 @@ SELECT_INTERNAL_TO_EXTERNAL_MAP = {
 EXTERNAL_SENSOR_DEFINITIONS = [
     {
         "config_key": SCShadowInput.CONTROL_ENABLED_ENTITY.value,
-        "name_suffix": "Shadow Control Enabled",
+        "translation_key": SCShadowInput.CONTROL_ENABLED_ENTITY.value,
         "unit": None,
         "state_class": None,
         "icon": "mdi:toggle-switch",
     },
     {
         "config_key": SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value,
-        "name_suffix": "Shadow Brightness Threshold",
-        "unit": "Lx",
+        "translation_key": SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value,
+        "unit": "lx",
         "state_class": SensorStateClass.MEASUREMENT.value,
         "icon": "mdi:brightness-5",
     },

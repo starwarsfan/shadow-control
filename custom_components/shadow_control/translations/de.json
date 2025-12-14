@@ -369,6 +369,12 @@
       },
       "sensor_is_in_sun": {
         "name": "In der Sonne"
+      },
+      "shadow_control_enabled_entity": {
+        "name": "Beschattungssteuerung aktiviert"
+      },
+      "shadow_brightness_threshold_entity": {
+        "name": "Helligkeitsschwellwert"
       }
     },
     "select": {

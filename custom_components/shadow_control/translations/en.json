@@ -369,6 +369,12 @@
       },
       "sensor_is_in_sun": {
         "name": "Is in Sun"
+      },
+      "shadow_control_enabled_entity": {
+        "name": "Shadow control enabled"
+      },
+      "shadow_brightness_threshold_entity": {
+        "name": "Brightness threshold"
       }
     },
     "select": {

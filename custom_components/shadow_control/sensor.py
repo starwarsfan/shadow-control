@@ -249,8 +249,8 @@ class ShadowControlExternalEntityValueSensor(SensorEntity):
         self.hass = hass
         self._manager = manager
         self._external_entity_id = external_entity_id
-        # Use a descriptive name that includes the instance name
-        self._attr_name = f"{instance_name} {definition['name_suffix']}"
+        self._attr_translation_key = definition["translation_key"]
+        self._attr_has_entity_name = True
 
         # Unique ID based on the config key to ensure one per external entity type
         self._attr_unique_id = f"sc_{config_entry_id}_{definition['config_key']}_source_value"
