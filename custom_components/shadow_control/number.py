@@ -435,6 +435,19 @@ class ShadowControlNumber(NumberEntity, RestoreEntity):
 
         # Restore last state after Home Assistant restart.
         last_state = await self.async_get_last_state()
-        if last_state:
-            self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
-            self._value = float(last_state.state)
+        if last_state and last_state.state not in ("unknown", "unavailable", "none") and last_state.state is not None:
+            try:
+                self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
+                # Safely convert the state to a float
+                self._value = float(last_state.state)
+            except ValueError:
+                # Catch any unexpected format errors and log them
+                self.logger.warning(
+                    "Could not restore last state for %s. Last state value '%s' is not a valid float.",
+                    self.name,
+                    last_state.state,
+                )
+
+        # --- IMPORTANT: WE WILL CLEAN UP THE REST OF THIS METHOD IN THE NEXT STEP ---
+        # ... (If your code still contains listener logic here, we'll remove it next)
+        self.async_write_ha_state()

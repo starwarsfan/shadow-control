@@ -200,7 +200,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # =================================================================
 
     # Hand over the combined configuration dictionary to the ShadowControlManager
-    manager = ShadowControlManager(hass, config_data, entry.entry_id, instance_specific_logger)
+    manager = ShadowControlManager(hass, entry, instance_specific_logger)
 
     # =================================================================
     # After HA was started, the new internal entities exist.
@@ -619,15 +619,16 @@ class SCDawnControlConfig:
 class ShadowControlManager:
     """Manages the Shadow Control logic for a single cover."""
 
-    def __init__(self, hass: HomeAssistant, config: dict[str, Any], entry_id: str, instance_logger: logging.Logger) -> None:
+    def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry, instance_logger: logging.Logger) -> None:
         """Initialize all defaults."""
         self.hass = hass
-        self._config = config
-        self._entry_id = entry_id
+        self.config_entry = config_entry
+        self._entry_id = config_entry.entry_id
+        self._config = {**config_entry.data, **config_entry.options}
         self.logger = instance_logger
 
-        self.name = config[SC_CONF_NAME]
-        self._target_cover_entity_id = config[TARGET_COVER_ENTITY_ID]
+        self.name = self._config[SC_CONF_NAME]
+        self._target_cover_entity_id = self._config[TARGET_COVER_ENTITY_ID]
 
         # Sanitize instance name
         # 1. Replace spaces with underscores
@@ -640,14 +641,12 @@ class ShadowControlManager:
 
         # Check if critical values are missing, even if this might be done within async_setup_entry
         if not self.name:
-            self.logger.warning("Manager init: Manager name is missing in config for entry %s. Using fallback.", entry_id)
-            self.name = f"Unnamed Shadow Control ({entry_id})"
+            self.logger.warning("Manager init: Manager name is missing in config for entry %s. Using fallback.", self._entry_id)
+            self.name = f"Unnamed Shadow Control ({self._entry_id})"
         if not self._target_cover_entity_id:
-            self.logger.error("Manager init: Target cover entity ID is missing in config for entry %s. This is critical.", entry_id)
-            message = f"Target cover entity ID missing for entry {entry_id}"
+            self.logger.error("Manager init: Target cover entity ID is missing in config for entry %s. This is critical.", self._entry_id)
+            message = f"Target cover entity ID missing for entry {self._entry_id}"
             raise ValueError(message)
-
-        self._options = config
 
         self._unsub_callbacks: list[Callable[[], None]] = []
 
@@ -658,64 +657,64 @@ class ShadowControlManager:
         self._dawn_config = SCDawnControlConfig()
 
         # === Get dynamic configuration inputs
-        self._dynamic_config.brightness = config.get(SCDynamicInput.BRIGHTNESS_ENTITY.value)
-        self._dynamic_config.brightness_dawn = config.get(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value)
-        self._dynamic_config.sun_elevation = config.get(SCDynamicInput.SUN_ELEVATION_ENTITY.value)
-        self._dynamic_config.sun_azimuth = config.get(SCDynamicInput.SUN_AZIMUTH_ENTITY.value)
-        self._dynamic_config.shutter_current_height = config.get(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value)
-        self._dynamic_config.shutter_current_angle = config.get(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value)
-        self._dynamic_config.lock_integration = config.get(SCInternal.LOCK_INTEGRATION_MANUAL.value)
-        self._dynamic_config.lock_integration_with_position = config.get(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL.value)
-        self._dynamic_config.lock_height = config.get(SCInternal.LOCK_HEIGHT_MANUAL.value)
-        self._dynamic_config.lock_angle = config.get(SCInternal.LOCK_ANGLE_MANUAL.value)
+        self._dynamic_config.brightness = self._config.get(SCDynamicInput.BRIGHTNESS_ENTITY.value)
+        self._dynamic_config.brightness_dawn = self._config.get(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value)
+        self._dynamic_config.sun_elevation = self._config.get(SCDynamicInput.SUN_ELEVATION_ENTITY.value)
+        self._dynamic_config.sun_azimuth = self._config.get(SCDynamicInput.SUN_AZIMUTH_ENTITY.value)
+        self._dynamic_config.shutter_current_height = self._config.get(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value)
+        self._dynamic_config.shutter_current_angle = self._config.get(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value)
+        self._dynamic_config.lock_integration = self._config.get(SCInternal.LOCK_INTEGRATION_MANUAL.value)
+        self._dynamic_config.lock_integration_with_position = self._config.get(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL.value)
+        self._dynamic_config.lock_height = self._config.get(SCInternal.LOCK_HEIGHT_MANUAL.value)
+        self._dynamic_config.lock_angle = self._config.get(SCInternal.LOCK_ANGLE_MANUAL.value)
 
         self._handle_movement_restriction()
 
-        self._dynamic_config.enforce_positioning_entity = config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value)
+        self._dynamic_config.enforce_positioning_entity = self._config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value)
 
         # === Get general facade configuration
-        self._facade_config.azimuth = config.get(SCFacadeConfig.AZIMUTH_STATIC.value)
-        self._facade_config.offset_sun_in = config.get(SCFacadeConfig.OFFSET_SUN_IN_STATIC.value)
-        self._facade_config.offset_sun_out = config.get(SCFacadeConfig.OFFSET_SUN_OUT_STATIC.value)
-        self._facade_config.elevation_sun_min = config.get(SCFacadeConfig.ELEVATION_SUN_MIN_STATIC.value)
-        self._facade_config.elevation_sun_max = config.get(SCFacadeConfig.ELEVATION_SUN_MAX_STATIC.value)
-        self._facade_config.slat_width = config.get(SCFacadeConfig.SLAT_WIDTH_STATIC.value)
-        self._facade_config.slat_distance = config.get(SCFacadeConfig.SLAT_DISTANCE_STATIC.value)
-        self._facade_config.slat_angle_offset = config.get(SCFacadeConfig.SLAT_ANGLE_OFFSET_STATIC.value)
-        self._facade_config.slat_min_angle = config.get(SCFacadeConfig.SLAT_MIN_ANGLE_STATIC.value)
-        self._facade_config.shutter_stepping_height = config.get(SCFacadeConfig.SHUTTER_STEPPING_HEIGHT_STATIC.value)
-        self._facade_config.shutter_stepping_angle = config.get(SCFacadeConfig.SHUTTER_STEPPING_ANGLE_STATIC.value)
-        self._facade_config.shutter_type = config.get(SCFacadeConfig.SHUTTER_TYPE_STATIC.value)
-        self._facade_config.light_strip_width = config.get(SCFacadeConfig.LIGHT_STRIP_WIDTH_STATIC.value)
-        self._facade_config.shutter_height = config.get(SCFacadeConfig.SHUTTER_HEIGHT_STATIC.value)
-        self._facade_config.neutral_pos_height = config.get(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL.value)
-        self._facade_config.neutral_pos_angle = config.get(SCInternal.NEUTRAL_POS_ANGLE_MANUAL.value)
-        self._facade_config.modification_tolerance_height = config.get(SCFacadeConfig.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value)
-        self._facade_config.modification_tolerance_angle = config.get(SCFacadeConfig.MODIFICATION_TOLERANCE_ANGLE_STATIC.value)
+        self._facade_config.azimuth = self._config.get(SCFacadeConfig1.AZIMUTH_STATIC.value)
+        self._facade_config.offset_sun_in = self._config.get(SCFacadeConfig1.OFFSET_SUN_IN_STATIC.value)
+        self._facade_config.offset_sun_out = self._config.get(SCFacadeConfig1.OFFSET_SUN_OUT_STATIC.value)
+        self._facade_config.elevation_sun_min = self._config.get(SCFacadeConfig1.ELEVATION_SUN_MIN_STATIC.value)
+        self._facade_config.elevation_sun_max = self._config.get(SCFacadeConfig1.ELEVATION_SUN_MAX_STATIC.value)
+        self._facade_config.slat_width = self._config.get(SCFacadeConfig2.SLAT_WIDTH_STATIC.value)
+        self._facade_config.slat_distance = self._config.get(SCFacadeConfig2.SLAT_DISTANCE_STATIC.value)
+        self._facade_config.slat_angle_offset = self._config.get(SCFacadeConfig2.SLAT_ANGLE_OFFSET_STATIC.value)
+        self._facade_config.slat_min_angle = self._config.get(SCFacadeConfig2.SLAT_MIN_ANGLE_STATIC.value)
+        self._facade_config.shutter_stepping_height = self._config.get(SCFacadeConfig2.SHUTTER_STEPPING_HEIGHT_STATIC.value)
+        self._facade_config.shutter_stepping_angle = self._config.get(SCFacadeConfig2.SHUTTER_STEPPING_ANGLE_STATIC.value)
+        self._facade_config.shutter_type = self._config.get(SCFacadeConfig2.SHUTTER_TYPE_STATIC.value)
+        self._facade_config.light_strip_width = self._config.get(SCFacadeConfig2.LIGHT_STRIP_WIDTH_STATIC.value)
+        self._facade_config.shutter_height = self._config.get(SCFacadeConfig2.SHUTTER_HEIGHT_STATIC.value)
+        self._facade_config.neutral_pos_height = self._config.get(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL.value)
+        self._facade_config.neutral_pos_angle = self._config.get(SCInternal.NEUTRAL_POS_ANGLE_MANUAL.value)
+        self._facade_config.modification_tolerance_height = self._config.get(SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value)
+        self._facade_config.modification_tolerance_angle = self._config.get(SCFacadeConfig2.MODIFICATION_TOLERANCE_ANGLE_STATIC.value)
 
         # === Get shadow configuration
-        self._shadow_config.enabled = config.get(SCShadowInput.CONTROL_ENABLED_ENTITY.value)
-        self._shadow_config.brightness_threshold = config.get(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value)
-        self._shadow_config.after_seconds = config.get(SCShadowInput.AFTER_SECONDS_ENTITY.value)
-        self._shadow_config.shutter_max_height = config.get(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value)
-        self._shadow_config.shutter_max_angle = config.get(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value)
-        self._shadow_config.shutter_look_through_seconds = config.get(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value)
-        self._shadow_config.shutter_open_seconds = config.get(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value)
-        self._shadow_config.shutter_look_through_angle = config.get(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value)
-        self._shadow_config.height_after_sun = config.get(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value)
-        self._shadow_config.angle_after_sun = config.get(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value)
+        self._shadow_config.enabled = self._config.get(SCShadowInput.CONTROL_ENABLED_ENTITY.value)
+        self._shadow_config.brightness_threshold = self._config.get(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value)
+        self._shadow_config.after_seconds = self._config.get(SCShadowInput.AFTER_SECONDS_ENTITY.value)
+        self._shadow_config.shutter_max_height = self._config.get(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value)
+        self._shadow_config.shutter_max_angle = self._config.get(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value)
+        self._shadow_config.shutter_look_through_seconds = self._config.get(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value)
+        self._shadow_config.shutter_open_seconds = self._config.get(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value)
+        self._shadow_config.shutter_look_through_angle = self._config.get(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value)
+        self._shadow_config.height_after_sun = self._config.get(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value)
+        self._shadow_config.angle_after_sun = self._config.get(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value)
 
         # === Get dawn configuration
-        self._dawn_config.enabled = config.get(SCDawnInput.CONTROL_ENABLED_ENTITY.value)
-        self._dawn_config.brightness_threshold = config.get(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value)
-        self._dawn_config.after_seconds = config.get(SCDawnInput.AFTER_SECONDS_ENTITY.value)
-        self._dawn_config.shutter_max_height = config.get(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value)
-        self._dawn_config.shutter_max_angle = config.get(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value)
-        self._dawn_config.shutter_look_through_seconds = config.get(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value)
-        self._dawn_config.shutter_open_seconds = config.get(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value)
-        self._dawn_config.shutter_look_through_angle = config.get(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value)
-        self._dawn_config.height_after_dawn = config.get(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value)
-        self._dawn_config.angle_after_dawn = config.get(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value)
+        self._dawn_config.enabled = self._config.get(SCDawnInput.CONTROL_ENABLED_ENTITY.value)
+        self._dawn_config.brightness_threshold = self._config.get(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value)
+        self._dawn_config.after_seconds = self._config.get(SCDawnInput.AFTER_SECONDS_ENTITY.value)
+        self._dawn_config.shutter_max_height = self._config.get(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value)
+        self._dawn_config.shutter_max_angle = self._config.get(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value)
+        self._dawn_config.shutter_look_through_seconds = self._config.get(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value)
+        self._dawn_config.shutter_open_seconds = self._config.get(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value)
+        self._dawn_config.shutter_look_through_angle = self._config.get(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value)
+        self._dawn_config.height_after_dawn = self._config.get(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value)
+        self._dawn_config.angle_after_dawn = self._config.get(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value)
 
         # Define dictionary with all state handlers
         self._state_handlers: dict[ShutterState, Callable[[], Awaitable[ShutterState]]] = {
@@ -1011,20 +1010,24 @@ class ShadowControlManager:
         self._facade_config.light_strip_width = self._get_static_value(SCFacadeConfig2.LIGHT_STRIP_WIDTH_STATIC.value, 0.0, float)
         self._facade_config.shutter_height = self._get_static_value(SCFacadeConfig2.SHUTTER_HEIGHT_STATIC.value, 1000.0, float)
 
-        entity_id_neutral_pos_height_manual = self.get_internal_entity_id(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL)
-        entity_id_neutral_pos_height_value = (
-            self._get_internal_entity_state_value(entity_id_neutral_pos_height_manual, 0, float) if entity_id_neutral_pos_height_manual else 0
+        entity_id_facade_neutral_pos_height_manual = self.get_internal_entity_id(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL)
+        entity_id_facade_neutral_pos_height_value = (
+            self._get_internal_entity_state_value(entity_id_facade_neutral_pos_height_manual, 0, float)
+            if entity_id_facade_neutral_pos_height_manual
+            else 0
         )
         self._facade_config.neutral_pos_height = self._get_entity_state_value(
-            SCFacadeConfig2.NEUTRAL_POS_HEIGHT_ENTITY.value, entity_id_neutral_pos_height_value, float
+            SCFacadeConfig2.NEUTRAL_POS_HEIGHT_ENTITY.value, entity_id_facade_neutral_pos_height_value, float
         )
 
-        entity_id_neutral_pos_angle_manual = self.get_internal_entity_id(SCInternal.NEUTRAL_POS_ANGLE_MANUAL)
-        entity_id_neutral_pos_angle_value = (
-            self._get_internal_entity_state_value(entity_id_neutral_pos_angle_manual, 0, float) if entity_id_neutral_pos_angle_manual else 0
+        entity_id_facade_neutral_pos_angle_manual = self.get_internal_entity_id(SCInternal.NEUTRAL_POS_ANGLE_MANUAL)
+        entity_id_facade_neutral_pos_angle_value = (
+            self._get_internal_entity_state_value(entity_id_facade_neutral_pos_angle_manual, 0, float)
+            if entity_id_facade_neutral_pos_angle_manual
+            else 0
         )
         self._facade_config.neutral_pos_angle = self._get_entity_state_value(
-            SCFacadeConfig2.NEUTRAL_POS_ANGLE_ENTITY.value, entity_id_neutral_pos_angle_value, float
+            SCFacadeConfig2.NEUTRAL_POS_ANGLE_ENTITY.value, entity_id_facade_neutral_pos_angle_value, float
         )
 
         self._facade_config.modification_tolerance_height = self._get_static_value(
@@ -3111,7 +3114,7 @@ class ShadowControlManager:
 
     def _get_static_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
         """Get static value from options with type conversion and default handling."""
-        value = self._options.get(key)
+        value = self._config.get(key)
         if value is None:
             if log_warning:
                 self.logger.debug("Static key '%s' not found in options. Using default: %s", key, default)
@@ -3130,7 +3133,7 @@ class ShadowControlManager:
     def _get_entity_state_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
         """Extract dynamic value from an entity state."""
         # Type conversion and default will be handled
-        entity_id = self._options.get(key)  # This will be the string entity_id or None
+        entity_id = self._config.get(key)  # This will be the string entity_id or None
         return self._get_state_value(entity_id=entity_id, default=default, expected_type=expected_type, log_warning=log_warning)
 
     def _get_internal_entity_state_value(self, entity_id: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
@@ -3176,7 +3179,7 @@ class ShadowControlManager:
 
     def _get_enum_value(self, key: str, enum_class: type, default_enum_member: Enum, log_warning: bool = True) -> Enum:
         """Get enum member from string value stored in options."""
-        value_str = self._options.get(key)
+        value_str = self._config.get(key)
 
         if value_str is None or not isinstance(value_str, str) or value_str == "":
             if log_warning:
