@@ -2,13 +2,14 @@
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import Event, HomeAssistant, State, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.event import async_track_state_change_event
 
 from . import ShadowControlManager
-from .const import DOMAIN, DOMAIN_DATA_MANAGERS, SCFacadeConfig2, SensorEntries, ShutterState, ShutterType
+from .const import DOMAIN, DOMAIN_DATA_MANAGERS, EXTERNAL_SENSOR_DEFINITIONS, SCFacadeConfig2, SensorEntries, ShutterState, ShutterType
 
 
 async def async_setup_entry(
@@ -52,6 +53,27 @@ async def async_setup_entry(
 
     text_sensor = ShadowControlCurrentStateTextSensor(manager, config_entry.entry_id, manager.name)
     entities_to_add.append(text_sensor)
+
+    instance_name = manager.sanitized_name
+    config_options = config_entry.options
+
+    for definition in EXTERNAL_SENSOR_DEFINITIONS:
+        config_key = definition["config_key"]
+        external_entity_id = config_options.get(config_key)
+
+        # Check if an external entity ID is configured for this type
+        if external_entity_id and external_entity_id.lower() not in ("none", ""):
+            instance_logger.debug("Creating external value sensor for key: %s, tracking entity: %s", config_key, external_entity_id)
+
+            sensor = ShadowControlExternalEntityValueSensor(
+                hass,
+                manager,
+                config_entry.entry_id,
+                instance_name,
+                definition,
+                external_entity_id,
+            )
+            entities_to_add.append(sensor)
 
     if entities_to_add:
         async_add_entities(entities_to_add, True)
@@ -209,3 +231,86 @@ class ShadowControlCurrentStateTextSensor(SensorEntity):
                 self.async_write_ha_state,
             )
         )
+
+
+class ShadowControlExternalEntityValueSensor(SensorEntity):
+    """Sensor that mirrors the state of a configured external entity."""
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        manager: ShadowControlManager,
+        config_entry_id: str,
+        instance_name: str,
+        definition: dict,
+        external_entity_id: str,
+    ) -> None:
+        """Initialize the sensor."""
+        self.hass = hass
+        self._manager = manager
+        self._external_entity_id = external_entity_id
+        # Use a descriptive name that includes the instance name
+        self._attr_name = f"{instance_name} {definition['name_suffix']}"
+
+        # Unique ID based on the config key to ensure one per external entity type
+        self._attr_unique_id = f"sc_{config_entry_id}_{definition['config_key']}_source_value"
+
+        # Attributes
+        self._attr_native_unit_of_measurement = definition.get("unit")
+        self._attr_state_class = definition.get("state_class")
+        self._attr_device_class = definition.get("device_class")
+        self._attr_icon = definition.get("icon")
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, config_entry_id)},
+            name=manager.name,
+            model="Shadow Control",
+            manufacturer="Yves Schumann",
+        )
+
+        self._current_value = None
+
+    @property
+    def native_value(self) -> float | str | None:
+        """Return the state of the sensor, mirroring the external entity's state."""
+        return self._current_value
+
+    async def async_added_to_hass(self) -> None:
+        """Register callbacks and start state tracking."""
+        await super().async_added_to_hass()
+
+        # Get initial state
+        state = self.hass.states.get(self._external_entity_id)
+        if state:
+            self._update_from_state(state)
+
+        # Start tracking state changes of the external entity
+        self.async_on_remove(
+            async_track_state_change_event(
+                self.hass,
+                [self._external_entity_id],
+                self._handle_state_change,
+            )
+        )
+
+    @callback
+    def _handle_state_change(self, event: Event) -> None:
+        """Handle state changes of the tracked entity."""
+        new_state = event.data.get("new_state")
+        if new_state is not None:
+            self._update_from_state(new_state)
+            self.async_write_ha_state()
+
+    @callback
+    def _update_from_state(self, state: State) -> None:
+        """Parse the state object and update the sensor value."""
+        # Try to convert to float if a unit is defined (assuming it's a number sensor)
+        if self.native_unit_of_measurement:
+            try:
+                self._current_value = float(state.state)
+            except (ValueError, TypeError):
+                # Fallback for 'unavailable', 'unknown', or invalid string values
+                self._current_value = state.state
+        else:
+            # For non-numeric sensors (e.g., switches, selects), just use the state string
+            self._current_value = state.state
