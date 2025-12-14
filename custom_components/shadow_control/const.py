@@ -290,6 +290,69 @@ SELECT_INTERNAL_TO_EXTERNAL_MAP = {
 }
 
 EXTERNAL_SENSOR_DEFINITIONS = [
+    # Lock control and position values
+    {
+        "config_key": SCDynamicInput.LOCK_INTEGRATION_ENTITY.value,
+        "translation_key": SCDynamicInput.LOCK_INTEGRATION_ENTITY.value,
+        "unit": None,
+        "state_class": None,
+        "icon": "mdi:toggle-switch",
+    },
+    {
+        "config_key": SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value,
+        "translation_key": SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value,
+        "unit": None,
+        "state_class": None,
+        "icon": "mdi:toggle-switch",
+    },
+    {
+        "config_key": SCDynamicInput.LOCK_HEIGHT_ENTITY.value,
+        "translation_key": SCDynamicInput.LOCK_HEIGHT_ENTITY.value,
+        "unit": "%",
+        "state_class": SensorStateClass.MEASUREMENT.value,
+        "icon": "mdi:pan-vertical",
+    },
+    {
+        "config_key": SCDynamicInput.LOCK_ANGLE_ENTITY.value,
+        "translation_key": SCDynamicInput.LOCK_ANGLE_ENTITY.value,
+        "unit": "%",
+        "state_class": SensorStateClass.MEASUREMENT.value,
+        "icon": "mdi:rotate-3d",
+    },
+    #
+    # Neutral position values
+    {
+        "config_key": SCFacadeConfig2.NEUTRAL_POS_HEIGHT_ENTITY.value,
+        "translation_key": SCFacadeConfig2.NEUTRAL_POS_HEIGHT_ENTITY.value,
+        "unit": "%",
+        "state_class": SensorStateClass.MEASUREMENT.value,
+        "icon": "mdi:pan-vertical",
+    },
+    {
+        "config_key": SCFacadeConfig2.NEUTRAL_POS_ANGLE_ENTITY.value,
+        "translation_key": SCFacadeConfig2.NEUTRAL_POS_ANGLE_ENTITY.value,
+        "unit": "%",
+        "state_class": SensorStateClass.MEASUREMENT.value,
+        "icon": "mdi:rotate-3d",
+    },
+    #
+    # Movement restriction sensors
+    {
+        "config_key": SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value,
+        "translation_key": SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value,
+        "unit": None,
+        "state_class": None,
+        "icon": "mdi:state-machine",
+    },
+    {
+        "config_key": SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value,
+        "translation_key": SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value,
+        "unit": None,
+        "state_class": None,
+        "icon": "mdi:state-machine",
+    },
+    #
+    # Shadow control sensor definitions
     {
         "config_key": SCShadowInput.CONTROL_ENABLED_ENTITY.value,
         "translation_key": SCShadowInput.CONTROL_ENABLED_ENTITY.value,
