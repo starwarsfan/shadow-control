@@ -47,6 +47,7 @@ async def async_setup_entry(
             config_entry,
             key=SCInternal.SHADOW_CONTROL_ENABLED_MANUAL.value,
             instance_name=sanitized_instance_name,
+            icon="mdi:toggle-switch",
             logger=instance_logger,
             description=SwitchEntityDescription(
                 key=SCInternal.SHADOW_CONTROL_ENABLED_MANUAL.value,
@@ -58,6 +59,7 @@ async def async_setup_entry(
             config_entry,
             key=SCInternal.DAWN_CONTROL_ENABLED_MANUAL.value,
             instance_name=sanitized_instance_name,
+            icon="mdi:toggle-switch",
             logger=instance_logger,
             description=SwitchEntityDescription(
                 key=SCInternal.DAWN_CONTROL_ENABLED_MANUAL.value,
@@ -70,6 +72,7 @@ async def async_setup_entry(
             key=SCInternal.LOCK_INTEGRATION_MANUAL.value,
             instance_name=sanitized_instance_name,
             logger=instance_logger,
+            icon="mdi:toggle-switch",
             description=SwitchEntityDescription(
                 key=SCInternal.LOCK_INTEGRATION_MANUAL.value,
                 name="Lock",  # default (English) fallback if no translation found
@@ -81,6 +84,7 @@ async def async_setup_entry(
             key=SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL.value,
             instance_name=sanitized_instance_name,
             logger=instance_logger,
+            icon="mdi:toggle-switch",
             description=SwitchEntityDescription(
                 key=SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL.value,
                 name="Lock with position",  # default (English) fallback if no translation found
