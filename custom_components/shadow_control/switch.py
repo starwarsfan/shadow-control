@@ -131,11 +131,11 @@ async def async_setup_entry(
 
         # If the unique ID is NOT in the set of currently required entities (i.e., external is configured)...
         if unique_id not in required_internal_unique_ids:
-            # Look up in the registry using Platform.NUMBER
-            entity_id = registry.async_get_entity_id(Platform.NUMBER, DOMAIN, unique_id)
+            # Look up in the registry using Platform.SWITCH
+            entity_id = registry.async_get_entity_id(Platform.SWITCH, DOMAIN, unique_id)
 
             if entity_id:
-                instance_logger.debug("Removing deprecated internal number entity: %s (unique_id: %s)", entity_id, unique_id)
+                instance_logger.debug("Removing deprecated internal switch entity: %s (unique_id: %s)", entity_id, unique_id)
                 # Remove the entity from the registry.
                 registry.async_remove(entity_id)
 
