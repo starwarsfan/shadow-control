@@ -42,7 +42,7 @@ async def async_setup_entry(
                 name="Debug mode",  # default (English) fallback if no translation found
             ),
         ),
-        ShadowControlConfigSwitch(
+        ShadowControlSwitch(
             hass,
             config_entry,
             key=SCInternal.SHADOW_CONTROL_ENABLED_MANUAL.value,
@@ -53,7 +53,7 @@ async def async_setup_entry(
                 name="Shadow control",  # default (English) fallback if no translation found
             ),
         ),
-        ShadowControlConfigSwitch(
+        ShadowControlSwitch(
             hass,
             config_entry,
             key=SCInternal.DAWN_CONTROL_ENABLED_MANUAL.value,
