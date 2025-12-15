@@ -95,7 +95,7 @@ async def async_setup_entry(
     # Check all internal keys that have an associated external control mapping
     for internal_key in SELECT_INTERNAL_TO_EXTERNAL_MAP:
         # Construct the unique ID as it appears in the entity's __init__ method (e.g., sc_entryid_key)
-        unique_id = f"sc_{config_entry_id}_{internal_key}"
+        unique_id = f"{config_entry_id}_{internal_key}"
 
         # If the unique ID is NOT in the set of currently required entities (i.e., external is configured)...
         if unique_id not in required_internal_unique_ids:
@@ -132,7 +132,7 @@ class ShadowControlSelect(SelectEntity, RestoreEntity):
         self._attr_translation_key = description.key
         self._attr_has_entity_name = True
 
-        self._attr_unique_id = f"sc_{self._config_entry.entry_id}_{key}"
+        self._attr_unique_id = f"{self._config_entry.entry_id}_{key}"
 
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, config_entry.entry_id)},

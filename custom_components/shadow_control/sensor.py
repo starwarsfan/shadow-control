@@ -70,7 +70,7 @@ async def async_setup_entry(
         config_key = definition["config_key"]
         external_entity_id = config_options.get(config_key)
 
-        unique_id = f"sc_{config_entry_id}_{config_key}_source_value"
+        unique_id = f"{config_entry_id}_{config_key}_source_value"
 
         # Check if an external entity ID is configured and is not an empty/none value
         if external_entity_id and external_entity_id.lower() not in ("none", ""):
@@ -96,7 +96,7 @@ async def async_setup_entry(
     # Iterate over ALL possible external sensor unique IDs
     for definition in EXTERNAL_SENSOR_DEFINITIONS:
         config_key = definition["config_key"]
-        unique_id = f"sc_{config_entry_id}_{config_key}_source_value"
+        unique_id = f"{config_entry_id}_{config_key}_source_value"
 
         # If this unique ID is NOT in the set of currently required entities...
         if unique_id not in required_external_unique_ids:
@@ -130,7 +130,7 @@ class ShadowControlSensor(SensorEntity):
         self._attr_has_entity_name = True
 
         # Use stable unique_id based on entry_id and the sensor type
-        self._attr_unique_id = f"sc_{self._entry_id}_{self._sensor_entry_type.value}"
+        self._attr_unique_id = f"{self._entry_id}_{self._sensor_entry_type.value}"
 
         # Define key used within translation files based on enum values e.g. "target_height".
         self._attr_translation_key = f"sensor_{self._sensor_entry_type.value}"
@@ -298,7 +298,7 @@ class ShadowControlExternalEntityValueSensor(SensorEntity):
         self._attr_has_entity_name = True
 
         # Unique ID based on the config key to ensure one per external entity type
-        self._attr_unique_id = f"sc_{config_entry_id}_{definition['config_key']}_source_value"
+        self._attr_unique_id = f"{config_entry_id}_{definition['config_key']}_source_value"
 
         # Attributes
         self._attr_native_unit_of_measurement = definition.get("unit")
