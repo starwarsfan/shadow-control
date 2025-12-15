@@ -448,11 +448,11 @@
       "dawn_shutter_look_through_angle_entity": {
         "name": "D> Durchsichtwinkel"
       },
-      "dawn_height_after_sun_entity": {
-        "name": "D> Höhe nach Beschattung"
+      "dawn_height_after_dawn_entity": {
+        "name": "D> Höhe danach"
       },
-      "dawn_angle_after_sun_entity": {
-        "name": "D> Winkel nach Beschattung"
+      "dawn_angle_after_dawn_entity": {
+        "name": "D> Winkel danach"
       }
     },
     "select": {

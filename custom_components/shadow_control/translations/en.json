@@ -365,7 +365,7 @@
         "name": "Lock State"
       },
       "sensor_next_shutter_modification": {
-        "name": "Next Positioning"
+        "name": "Next positioning"
       },
       "sensor_is_in_sun": {
         "name": "Is in Sun"
@@ -419,10 +419,10 @@
         "name": "B> Look through angle"
       },
       "shadow_height_after_sun_entity": {
-        "name": "B> Height after shadow"
+        "name": "B> Height after"
       },
       "shadow_angle_after_sun_entity": {
-        "name": "B> Angle after shadow"
+        "name": "B> Angle after"
       },
       "dawn_control_enabled_entity": {
         "name": "D> Control"
@@ -448,11 +448,11 @@
       "dawn_shutter_look_through_angle_entity": {
         "name": "D> Look through angle"
       },
-      "dawn_height_after_sun_entity": {
-        "name": "D> Height after dawn"
+      "dawn_height_after_dawn_entity": {
+        "name": "D> Height after"
       },
-      "dawn_angle_after_sun_entity": {
-        "name": "D> Angle after dawn"
+      "dawn_angle_after_dawn_entity": {
+        "name": "D> Angle after"
       }
     },
     "select": {
