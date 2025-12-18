@@ -448,7 +448,7 @@
     }
   },
   "selector": {
-    "facade_shutter_type": {
+    "facade_shutter_type_static": {
       "options": {
         "mode1": "Raffstoren Einzelrichtung (senkrecht = geschlossen / waagerecht = offen)",
         "mode2": "Raffstoren Bidirektional (senkrecht innen = geschlossen / waagerecht = offen / senkrecht aussen = geschlossen)",

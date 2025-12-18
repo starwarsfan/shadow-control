@@ -448,7 +448,7 @@
     }
   },
   "selector": {
-    "facade_shutter_type": {
+    "facade_shutter_type_static": {
       "options": {
         "mode1": "Venetian blind single direction (vertical = closed / horizontal = open)",
         "mode2": "Venetian blind bi-directional (vertical inside = closed / horizontal = open / vertical outside = closed)",
