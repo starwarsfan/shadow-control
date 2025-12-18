@@ -667,13 +667,13 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # Manual validation of input fields to provide possible error messages
             # for each field at once and not step by step.
             if not user_input.get(SC_CONF_NAME):
-                errors[SC_CONF_NAME] = "name"  # Error code from within strings.json
+                errors[SC_CONF_NAME] = "name_missing"  # Error code from within strings.json
 
             if not user_input.get(TARGET_COVER_ENTITY_ID):
-                errors[TARGET_COVER_ENTITY_ID] = "target_cover_entity"  # Error code from within strings.json
+                errors[TARGET_COVER_ENTITY_ID] = "target_cover_entity_missing"  # Error code from within strings.json
 
             if not user_input.get(SCFacadeConfig2.SHUTTER_TYPE_STATIC.value):
-                errors[SCFacadeConfig2.SHUTTER_TYPE_STATIC.value] = "facade_shutter_type_static"
+                errors[SCFacadeConfig2.SHUTTER_TYPE_STATIC.value] = "facade_shutter_type_static_missing"
 
             if not user_input.get(SCFacadeConfig1.AZIMUTH_STATIC.value):
                 errors[SCFacadeConfig1.AZIMUTH_STATIC.value] = "facade_azimuth_static_missing"
