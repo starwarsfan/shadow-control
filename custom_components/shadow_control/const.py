@@ -20,6 +20,7 @@ TARGET_COVER_ENTITY_ID = "target_cover_entity"
 class SCInternal(Enum):
     """Instance specific internal Shadow Control entities."""
 
+    ENFORCE_POSITIONING_MANUAL = "enforce_positioning_manual"
     LOCK_INTEGRATION_MANUAL = "lock_integration_manual"
     LOCK_INTEGRATION_WITH_POSITION_MANUAL = "lock_integration_with_position_manual"
     LOCK_HEIGHT_MANUAL = "lock_height_manual"
@@ -28,7 +29,6 @@ class SCInternal(Enum):
     MOVEMENT_RESTRICTION_ANGLE_MANUAL = "movement_restriction_angle_manual"
     NEUTRAL_POS_HEIGHT_MANUAL = "facade_neutral_pos_height_manual"
     NEUTRAL_POS_ANGLE_MANUAL = "facade_neutral_pos_angle_manual"
-    ENFORCE_POSITIONING_MANUAL = "enforce_positioning_manual"
 
     SHADOW_CONTROL_ENABLED_MANUAL = "shadow_control_enabled_manual"
     SHADOW_BRIGHTNESS_THRESHOLD_MANUAL = "shadow_brightness_threshold_manual"
