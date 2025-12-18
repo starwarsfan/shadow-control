@@ -5,6 +5,7 @@
       "user": {
         "data": {
           "name": "Instanzname",
+          "facade_shutter_type_static": "Behangtyp",
           "target_cover_entity": "Behang-Entitäten",
           "facade_azimuth_static": "Azimut",
           "brightness_entity": "Helligkeit",
@@ -14,6 +15,7 @@
         },
         "data_description": {
           "name": "Eindeutiger Name dieser Shadow Control (SC) Instanz",
+          "facade_shutter_type_static": "Typ des Behangs auswählen",
           "target_cover_entity": "Eine oder mehrere Behang-Entitäten, welche mit dieser Shadow Control (SC) Instanz gesteuert werden sollen",
           "facade_azimuth_static": "Azimuth der Fassade in Grad mit Blickrichtung von innen nach aussen. Gültiger Bereich: 0° bis 359°",
           "brightness_entity": "Aktuelle Helligkeit, üblicherweise von einer Wetterstation.",
@@ -80,8 +82,7 @@
           "facade_light_strip_width_static": "Lichtstreifenbreite",
           "facade_shutter_height_static": "Behang-Gesamthöhe",
           "facade_modification_tolerance_height_static": "Toleranz Höhenänderung",
-          "facade_modification_tolerance_angle_static": "Toleranz Lamellenwinkeländerung",
-          "facade_shutter_type_static": "Behangtyp"
+          "facade_modification_tolerance_angle_static": "Toleranz Lamellenwinkeländerung"
         },
         "data_description": {
           "facade_neutral_pos_height_entity": "Anzufahrende Höhe in Neutralposition (via Entität).",
@@ -95,8 +96,7 @@
           "facade_light_strip_width_static": "Breite eines Lichtstreifens auf dem Boden.",
           "facade_shutter_height_static": "Gesamthöhe des Behangs resp. des Fensters bzw. der Tür. Wird für die Berechnung des Lichtstreifens aus der vorherigen Einstellung benötigt.",
           "facade_modification_tolerance_height_static": "Toleranzbereich, in dem keine Höhenanpassung erfolgt.",
-          "facade_modification_tolerance_angle_static": "Toleranzbereich, in dem keine Lamellenwinkelanpassung erfolgt.",
-          "facade_shutter_type_static": "Typ des Behangs auswählen"
+          "facade_modification_tolerance_angle_static": "Toleranzbereich, in dem keine Lamellenwinkelanpassung erfolgt."
         }
       },
       "dynamic_inputs": {

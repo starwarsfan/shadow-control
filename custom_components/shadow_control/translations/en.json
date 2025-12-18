@@ -5,6 +5,7 @@
       "user": {
         "data": {
           "name": "Instance name",
+          "facade_shutter_type_static": "Shutter type",
           "target_cover_entity": "Covers to maintain",
           "facade_azimuth_static": "Facade azimuth",
           "brightness_entity": "Brightness",
@@ -14,6 +15,7 @@
         },
         "data_description": {
           "name": "A descriptive and unique name for this Shadow Control (SC) instance",
+          "facade_shutter_type_static": "Choose shutter type",
           "target_cover_entity": "Covers which should be handled by this Shadow Control (SC) instance",
           "facade_azimuth_static": "Azimuth of the facade in degrees in direction from the inside to the outside. Valid range: 0° to 359°",
           "brightness_entity": "Current brightness, usually from a weather station",
@@ -80,8 +82,7 @@
           "facade_light_strip_width_static": "Width of light strip",
           "facade_shutter_height_static": "Overall shutter height",
           "facade_modification_tolerance_height_static": "Tolerance height modification",
-          "facade_modification_tolerance_angle_static": "Tolerance slat angle modification",
-          "facade_shutter_type_static": "Shutter type"
+          "facade_modification_tolerance_angle_static": "Tolerance slat angle modification"
         },
         "data_description": {
           "facade_neutral_pos_height_entity": "Height of shutter in neutral position (by entity).",
@@ -95,8 +96,7 @@
           "facade_light_strip_width_static": "Width of light strip on the floor.",
           "facade_shutter_height_static": "Overall height of window or door. Required to calculate light strip width from previous configuration option.",
           "facade_modification_tolerance_height_static": "Tolerance within no height modification will be performed.",
-          "facade_modification_tolerance_angle_static": "Tolerance within no slat angle modification will performed.",
-          "facade_shutter_type_static": "Choose shutter type"
+          "facade_modification_tolerance_angle_static": "Tolerance within no slat angle modification will performed."
         }
       },
       "dynamic_inputs": {
