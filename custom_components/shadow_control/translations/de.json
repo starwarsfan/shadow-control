@@ -10,8 +10,7 @@
           "facade_azimuth_static": "Azimut",
           "brightness_entity": "Helligkeit",
           "sun_elevation_entity": "Höhe der Sonne",
-          "sun_azimuth_entity": "Azimut der Sonne",
-          "debug_enabled": "Debug-Modus"
+          "sun_azimuth_entity": "Azimut der Sonne"
         },
         "data_description": {
           "name": "Eindeutiger Name dieser Shadow Control (SC) Instanz",
@@ -20,8 +19,7 @@
           "facade_azimuth_static": "Azimuth der Fassade in Grad mit Blickrichtung von innen nach aussen. Gültiger Bereich: 0° bis 359°",
           "brightness_entity": "Aktuelle Helligkeit, üblicherweise von einer Wetterstation.",
           "sun_elevation_entity": "Höhe der Sonne via Sun-Entität oder Wetterstation.",
-          "sun_azimuth_entity": "Winkel der Sonne via Sun-Entität oder Wetterstation.",
-          "debug_enabled": "Debug-Logs für diese Instanz aktivieren"
+          "sun_azimuth_entity": "Winkel der Sonne via Sun-Entität oder Wetterstation."
         }
       },
       "options": {
@@ -50,11 +48,11 @@
           "name": "Instanzname",
           "target_cover_entity": "Behang-Entität",
           "facade_azimuth_static": "Azimut",
-          "facade_offset_sun_in_static": "Start Sonneneinfall",
-          "facade_offset_sun_out_static": "Ende Sonneneinfall",
+          "facade_offset_sun_in_static": "Beschattungsbeginn",
+          "facade_offset_sun_out_static": "Beschattungsende",
           "facade_elevation_sun_min_static": "Minimale Sonnenhöhe",
           "facade_elevation_sun_max_static": "Maximale Sonnenhöhe",
-          "debug_enabled": "Debug-Modus"
+          "debug_enabled": "Debugmodus"
         },
         "data_description": {
           "name": "Eindeutiger Name dieser Shadow Control (SC) Instanz",
@@ -71,16 +69,16 @@
         "title": "Fassadenkonfiguration - Teil 2",
         "description": "Hier wird der zweite Teil der Details der zu steuernden Fassade resp. des zu steuernden Fensters konfiguriert.",
         "data": {
-          "facade_neutral_pos_height_entity": "Neutrale Höhe",
-          "facade_neutral_pos_angle_entity": "Neutraler Winkel",
-          "facade_slat_width_static": "Breite Raffstorelamellen",
-          "facade_slat_distance_static": "Abstand Raffstorelamellen",
+          "facade_neutral_pos_height_entity": "Neutralhöhe",
+          "facade_neutral_pos_angle_entity": "Neutralwinkel",
+          "facade_slat_width_static": "Lamellenbreite",
+          "facade_slat_distance_static": "Lamellenabstand",
           "facade_slat_angle_offset_static": "Lamellenwinkeloffset",
           "facade_slat_min_angle_static": "Minimaler Lamellenwinkel",
           "facade_shutter_stepping_height_static": "Höhenschrittweite",
           "facade_shutter_stepping_angle_static": "Winkelschrittweite",
           "facade_light_strip_width_static": "Lichtstreifenbreite",
-          "facade_shutter_height_static": "Behang-Gesamthöhe",
+          "facade_shutter_height_static": "Gesamthöhe",
           "facade_modification_tolerance_height_static": "Toleranz Höhenänderung",
           "facade_modification_tolerance_angle_static": "Toleranz Lamellenwinkeländerung"
         },
@@ -137,7 +135,7 @@
         "title": "Beschattung konfigurieren",
         "description": "Konfiguriere wie mit dem Lichteinfall auf der Fassade umgegangen werden soll",
         "data": {
-          "shadow_control_enabled_entity": "Beschattungssteuerung aktivieren",
+          "shadow_control_enabled_entity": "Beschattungssteuerung aktiviert",
           "shadow_brightness_threshold_entity": "Helligkeitsschwellwert",
           "shadow_after_seconds_entity": "Schliessen nach x Sekunden",
           "shadow_shutter_max_height_entity": "Maximale Behanghöhe",
@@ -165,7 +163,7 @@
         "title": "Dämmerung konfigurieren",
         "description": "Konfiguriere wie der Behang bei Dämmerung gesteuert werden soll",
         "data": {
-          "dawn_control_enabled_entity": "Dämmerungssteuerung aktivieren",
+          "dawn_control_enabled_entity": "Dämmerungssteuerung aktiviert",
           "dawn_brightness_threshold_entity": "Dämmerungsschwellwert",
           "dawn_after_seconds_entity": "Schliessen nach x Sekunden",
           "dawn_shutter_max_height_entity": "Maximale Behanghöhe",

@@ -18,16 +18,16 @@ Go to the [English version](/README.md) version of the documentation.
 * [Installation](#installation)
 * [Konfiguration](#konfiguration)
   * [Initiale Instanzkonfiguration](#initiale-instanzkonfiguration)
-    * [Name der Instanz](#name-der-instanz)
+    * [Instanzname](#instanzname)
     * [Behangtyp](#behangtyp)
-    * [Zu automatisierende Rollläden](#zu-automatisierende-rollläden)
+    * [Behang-Entitäten](#behang-entitäten)
     * [Azimut der Fassade](#azimut-der-fassade)
     * [Helligkeit](#helligkeit)
     * [Höhe der Sonne](#höhe-der-sonne)
     * [Azimut der Sonne](#azimut-der-sonne)
   * [Optionale Konfiguration](#optionale-konfiguration)
     * [Fassadenkonfiguration - Teil 1](#fassadenkonfiguration---teil-1)
-      * [Zu automatisierende Rollläden](#zu-automatisierende-rollläden)
+      * [Behang-Entitäten](#behang-entitäten-1)
       * [Azimut der Fassade](#facade-azimuth)
       * [Beschattungsbeginn](#beschattungsbeginn)
       * [Beschattungsende](#beschattungsende)
@@ -41,12 +41,12 @@ Go to the [English version](/README.md) version of the documentation.
       * [Lamellenabstand](#lamellenabstand)
       * [Lamellenwinkeloffset](#lamellenwinkeloffset)
       * [Minimaler Lamellenwinkel](#minimaler-lamellenwinkel)
-      * [Schrittweite Höhenpositionierung](#schrittweite-höhenpositionierung)
-      * [Schrittweite Lamellenwinkelpositionierung](#schrittweite-lamellenwinkelpositionierung)
+      * [Höhenschrittweite](#höhenschrittweite)
+      * [Winkelschrittweite](#winkelschrittweite)
       * [Lichtstreifenbreite](#lichtstreifenbreite)
       * [Gesamthöhe](#gesamthöhe)
-      * [Toleranz Höhenpositionierung](#toleranz-höhenpositionierung)
-      * [Toleranz Lamellenwinkelpositionierung](#toleranz-lamellenwinkelpositionierung)
+      * [Toleranz Höhenänderung](#toleranz-höhenänderung)
+      * [Toleranz Lamellenwinkeländerung](#toleranz-lamellenwinkeländerung)
     * [Dynamische Eingänge](#dynamische-eingänge)
       * [Helligkeit](#brightness)
       * [Helligkeit Dawn](#brightness-Dawn)
@@ -54,10 +54,10 @@ Go to the [English version](/README.md) version of the documentation.
       * [Azimut der Sonne](#sun-azimuth)
       * [Integration sperren](#integration-sperren)
       * [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition)
-      * [Sperrhöhe](#sperrhöhe)
-      * [Sperrwinkel](#sperrwinkel)
-      * [Bewegungseinschränkung Höhenpositionierung](#bewegungseinschränkung-höhenpositionierung)
-      * [Bewegungseinschränkung Lamellenwinkelpositionierung](#bewegungseinschränkung-lamellenwinkelpositionierung)
+      * [Zwangsposition Höhe](#zwangsposition-höhe)
+      * [Zwangsposition Lamellenwinkel](#zwangsposition-lamellenwinkel)
+      * [Höhenveränderung einschränken](#höhenveränderung-einschränken)
+      * [Winkelveränderung einschränken](#winkelveränderung-einschränken)
       * [Zwangspositionierung auslösen](#zwangspositionierung-auslösen)
     * [Beschattungseinstellungen](#beschattungseinstellungen)
       * [Beschattungssteuerung aktiviert](#beschattungssteuerung-aktiviert)
@@ -114,10 +114,10 @@ In den folgenden Abschnitten gilt Folgendes:
 * Viele Einstellungen können via verknüpfter Entität modifiziert werden, stellen aber parallel dazu Instanz-spezifische Entitäten automatisch bereit. Damit können diese Einstellungen auch in Automationen verwendet werden, ohne durch eine Änderung einen Reload der Integration auszulösen. Konkret sind das die folgenden Settings, welche eigene Entitäten bereitstellen:
   * [Integration sperren](#integration-sperren)
   * [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition)
-  * [Sperrhöhe](#sperrhöhe)
-  * [Sperrwinkel](#sperrwinkel)
-  * [Bewegungseinschränkung Höhenpositionierung](#bewegungseinschränkung-höhenpositionierung)
-  * [Bewegungseinschränkung Lamellenwinkelpositionierung](#bewegungseinschränkung-lamellenwinkelpositionierung)
+  * [Zwangsposition Höhe](#zwangsposition-höhe)
+  * [Zwangsposition Lamellenwinkel](#zwangsposition-lamellenwinkel)
+  * [Höhenveränderung einschränken](#höhenveränderung-einschränken)
+  * [Winkelveränderung einschränken](#winkelveränderung-einschränken)
   * [Alle Beschattungseinstellungen](#beschattungseinstellungen)
   * [Alle Dämmerungseinstellungen](#dämmerungseinstellungen)
 
@@ -158,7 +158,7 @@ Die Berechnung der Position wird durch die Aktualisierung der folgenden Eingäng
 Der konfigurierte Behang wird nur dann neu positioniert, wenn sich die berechneten Werte seit dem letzten Lauf der Integration geändert haben. Damit wird die unnötige Neupositionierung der Raffstorenlamellen verhindert.
 
 ## Entitäten-Vorrang
-Achtung: Bei allen Konfigurationen, bei welchen es `*_manual` und `*_entity` Varianten gibt, wie bspw. `lock_integration_manual` und `lock_integration_entity`, hat die `*_entity` Variante Vorrang! Das bedeutet, dass sobald eine Entität konfiguriert wird, wird deren Wert verwendet. Um das zu unterbinden, muss die Entity-Verknüpfung gelöscht werden.
+Achtung: Bei allen Optionen hat die Entity-Verknüpfung Vorrang! Das bedeutet, dass sobald eine Entität konfiguriert wird, wird deren Wert verwendet. Ausserdem werden die internen Entitäten aus dem System entfernt. Um die internen Entitäten wiederzuverwenden, muss die Entity-Verknüpfung gelöscht werden.
 
 
 # Installation
@@ -175,8 +175,7 @@ Die Konfiguration ist unterteilt in die minimalistische Initialkonfiguration sow
 
 Die initiale Instanzkonfiguration ist sehr minimalistisch und benötigt nur die folgenden Konfigurationswerte. Alle anderen Einstellungen werden mit Standardwerten vorbelegt, welche im Nachhinein an die persönlichen Wünsche angepasst werden können. Siehe dazu den Abschnitt [Optionale Konfiguration](#optionale-konfiguration).
 
-### Name der Instanz
-`name`
+### Instanzname
 
 Ein beschreibender und eindeutiger Name für diese **Shadow Control** Instanz. Eine bereinigte Version dieses Namens wird zur Kennzeichnung der Log-Einträge in der Home Assistant Logdatei sowie als Präfix für die von der Integration erstellten Status- und Options-Entitäten verwendet.
 
@@ -187,7 +186,6 @@ Beispiel:
 4. Status-Entitäten heissen bspw. `sensor.essbereich_tr_target_height`
 
 #### Behangtyp
-`facade_shutter_type_static`
 
 Der verwendete Behangtyp. Standardeinstellung ist der 90°-Behangtyp (yaml: `mode1`). Bei diesem Typ sind die Lamellen bei 0% waagerecht, also offen und bei 100% (i.d.R. nach aussen) vollständig geschlossen.
 
@@ -198,13 +196,11 @@ Weitere unterstützte Typen:
 
 Der Behangtyp kann im Nachhinein nicht geändert werden. Um ihn zu ändern, muss die jeweilige **Shutter Control** Instanz gelöscht und neu angelegt werden.
 
-### Zu automatisierende Rollläden
-`target_cover_entity`
+### Behang-Entitäten
 
 Hier werden die zu steuernden Behang-Entitäten verbunden. Es können beliebig viele davon gleichzeitig gesteuert werden. Allerdings empfiehlt es sich, nur die Storen zu steuern, welche sich auf der gleichen Fassade befinden, also das gleiche Azimut haben. Für die weiteren internen Berechnungen wird der erste konfigurierte Behang herangezogen. Alle anderen Storen werden identisch positioniert.
 
 ### Azimut der Fassade
-`facade_azimuth_static`
 
 Azimut der Fassade in Grad, also die Blickrichtung von innen nach aussen. Eine perfekt nach Norden ausgerichtete Fassade hat ein Azimut von 0°, eine nach Süden ausgerichtete Fassade demzufolge 180°. Der Sonnenbereich dieser Fassade ist der Bereich, in dem die Beschattungssteuerung via **Shadow Control** erfolgen soll. Das ist maximal ein Bereich von 180°, also [Azimut der Fassade](#azimut-der-fassade) + [Beschattungsbeginn](#beschattungsbeginn) bis [Azimut der Fassade](#azimut-der-fassade) + [Beschattungsende](#beschattungsende).
 
@@ -213,17 +209,14 @@ rdeckard hat damals für den Edomi-Baustein eine Zeichnung beigesteuert, welche 
 ![Erklärung zum Azimut](/images/azimut.png)
 
 ### Helligkeit
-`brightness_entity`
 
 Aktuelle Helligkeit auf der Fassade. Im Regelfall kommt dieser Wert von einer Wetterstation und sollte der tatsächlichen Helligkeit auf dieser Fassade möglichst nah kommen.
 
 ### Höhe der Sonne
-`sun_elevation_entity`
 
 Hier wird die aktuelle Höhe (Elevation) der Sonne konfiguriert. Dieser Wert kommt ebenfalls von einer Wetterstation oder direkt von der Home Assistant Sonne-Entität. Gültig ist dabei der Bereich von 0° (horizontal) bis 90° (vertikal).
 
 ### Azimut der Sonne
-`sun_azimuth_entity`
 
 Hier wird der aktuelle Winkel (Azimut) der Sonne konfiguriert. Dieser Wert kommt ebenfalls von einer Wetterstation oder direkt von der Home Assistant Sonne-Entität. Gültig ist dabei der Bereich von 0° bis 359°.
 
@@ -237,40 +230,33 @@ Die folgenden Optionen sind über den separaten ConfigFlow verfügbar, welcher m
 
 ### Fassadenkonfiguration - Teil 1
 
-#### Zu automatisierende Rollläden
-`target_cover_entity`
+#### Behang-Entitäten
 
-Siehe Beschreibung unter [Zu automatisierende Rollläden](#zu-automatisierende-rollläden).
+Siehe Beschreibung unter [Behang-Entitäten](#behang-entitäten).
 
 #### Azimut der Fassade
-`facade_azimuth_static`
 
 Siehe Beschreibung unter [Azimut der Fassade](#azimut-der-fassade).
 
 #### Beschattungsbeginn
-`facade_offset_sun_in_static`
 
 Negativoffset zum [Azimut der Fassade](#azimut-der-fassade), ab welchem die Beschattung erfolgen soll. Wenn das Azimut der Sonne kleiner ist als [Azimut der Fassade](#azimut-der-fassade) + [Beschattungsbeginn](#beschattungsbeginn), wird keine Beschattungsberechnung ausgelöst. Gültiger Wertebereich: -90–0, Standardwert: -90
 
 #### Beschattungsende
-`facade_offset_sun_out_static`
 
 Positivoffset zum [Azimut der Fassade](#azimut-der-fassade), bis zu welchem die Beschattung erfolgen soll. Wenn das Azimut der Sonne grösser ist als [Azimut der Fassade](#azimut-der-fassade) + [Beschattungsende](#beschattungsende), wird keine Beschattungsberechnung ausgelöst. Gültiger Wertebereich: 0-90, Standardwert: 90
 
 #### Minimale Sonnenhöhe
-`facade_elevation_sun_min_static`
 
 Minimale Höhe der Sonne in Grad. Ist die effektive Höhe kleiner als dieser Wert, wird keine Beschattungsberechnung ausgelöst. Ein Anwendungsfall dafür ist bspw. wenn sich vor der Fassade ein anderes Gebäude befindet, welches Schatten auf die Fassade wirft, während die Wetterstation auf dem Dach noch voll in der Sonne ist. Wertebereich: 0-90, Standardwert: 0
 
 Hinweis bzgl. "effektiver Höhe": Um den korrekten Lamellenwinkel zu berechnen, muss die Höhe der Sonne im rechten Winkel zur Fassade errechnet werden. Das ist die sog. "effektive Höhe", welche so auch im Log zu finden ist. Wenn die Beschattungssteuerung insbesondere im Grenzbereich der beiden Beginn- und Ende-Offsets nicht wie erwartet arbeitet, muss dieser Wert genauer betrachtet werden.
 
 #### Maximale Sonnenhöhe
-`facade_elevation_sun_max_static`
 
 Maximale Höhe der Sonne in Grad. Ist die effektive Höhe grösser als dieser Wert, wird keine Beschattungsberechnung ausgelöst. Ein Anwendungsfall dafür ist bspw. wenn sich über der Fassade resp. dem Fenster ein Balkon befindet, welcher Schatten auf die Fassade wirft, während die Wetterstation auf dem Dach noch voll in der Sonne ist. Wertebereich: 0-90, Standardwert: 90
 
 #### Debugmodus
-`debug_enabled`
 
 Mit diesem Schalter kann der Debugmodus aktiviert werden. Damit werden erheblich mehr Informationen zum Verhalten und der Berechnung für diese Fassade ins Log geschrieben.
 
@@ -279,7 +265,6 @@ Mit diesem Schalter kann der Debugmodus aktiviert werden. Damit werden erheblich
 ### Fassadenkonfiguration - Teil 2
 
 #### Neutralhöhe
-`facade_neutral_pos_height_manual` / `facade_neutral_pos_height_entity`
 
 Behanghöhe in % in Neutralposition. Die Integration wird in die Neutralposition fahren, wenn mindestens eine der folgenden Bedingungen erfüllt ist: 
 
@@ -290,63 +275,52 @@ Behanghöhe in % in Neutralposition. Die Integration wird in die Neutralposition
 Standardwert: 0
 
 #### Neutralwinkel
-`facade_neutral_pos_angle_manual` / `facade_neutral_pos_angle_entity`
 
 Lamellenwinkel in % in Neutralposition. Alles andere identisch zu [Neutralhöhe](#neutralhöhe). Standardwert: 0
 
 #### Lamellenbreite
-`facade_slat_width_static`)
 
 Die Breite der Lamellen in mm. Breite und Abstand werden benötigt, um den Lamellenwinkel zu berechnen, der benötigt wird, die Lamellen gerade so schräg zu stellen, dass kein direktes Sonnenlicht in den Raum fällt. Die Lamellenbreite muss zwingend grösser als der Lamellenabstand sein, anderenfalls ist es nicht möglich, eine korrekte Beschattungsposition anzufahren. Standardwert: 95
 
 #### Lamellenabstand
-`facade_slat_distance_static`
 
 Der Abstand der Lamellen in mm. Alles andere siehe [Lamellenbreite](#lamellenbreite). Standardwert: 67
 
 #### Lamellenwinkeloffset
-`facade_slat_angle_offset_static`
 
 Lamellenwinkeloffset in %. Dieser Wert wird zum berechneten Lamellenwinkel addiert. Er kann somit verwendet werden, um allfällige Ungenauigkeiten im Grenzbereich der Beschattung zu korrigieren. Das ist bspw. der Fall, wenn der Behang in Beschattungsposition ist aber dennoch ein schmaler Lichtstrahl hindurchfällt. Standardwert: 0
 
 #### Minimaler Lamellenwinkel
-`facade_slat_min_angle_static`
 
 Minimaler Lamellenwinkel in %. Die Lamellen werden im Bereich von diesem Wert bis 100% positioniert. Damit kann diese Option dazu verwendet werden, den Öffnungsbereich zu begrenzen. Standardwert: 0
 
-#### Schrittweite Höhenpositionierung
-`facade_shutter_stepping_height_static`
+#### Höhenschrittweite
 
 Schrittweite der Höhenpositionierung. Die meissten Rollläden sind nicht in der Lage, sehr kleine Positionierungsschritte anzufahren. Um dem zu begegnen, kann hier die Schrittweite eingestellt werden, in welcher der Behang positioniert werden soll. Dabei wird berücksichtigt, ob die Sonne steigt oder fällt. Standardwert: 5
 
-#### Schrittweite Lamellenwinkelpositionierung
-`facade_shutter_stepping_angle_static`
+#### Winkelschrittweite
 
-Schrittweite der Lamellenwinkelpositionierung. Details siehe [Schrittweite Höhenpositionierung](#schrittweite-höhenpositionierung). Standardwert: 5
+Schrittweite der Lamellenwinkelpositionierung. Details siehe [Höhenschrittweite](#höhenschrittweite). Standardwert: 5
 
 #### Lichtstreifenbreite
-`facade_light_strip_width_static`
 
 Breite eines nicht zu beschattenden Lichtstreifens am Boden. Mit dieser Einstellung wird festgelegt, wie tief oder weit die Sonne in den Raum hinein scheinen soll. Dementsprechend wird der Behang in der Höhe nicht 100% geschlossen, sondern auf die Höhe gefahren, welche in den hier definierten Lichtstreifen resultiert. Standardwert: 0
 
 #### Gesamthöhe
-`facade_shutter_height_static`
 
 Um den Lichtstreifen aus [Lichtstreifenbreite](#lichtstreifenbreite) zu berechnen, wird die Gesamthöhe des Behangs resp. des Fensters benötigt. Damit muss die gleiche Einheit verwendet werden, also bspw. beide Werte in mm. Standardwert: 1000
 
-#### Toleranz Höhenpositionierung
-`facade_modification_tolerance_height_static`
+#### Toleranz Höhenänderung
 
 _Wird aktuell noch nicht ausgewertet!_
 
 Toleranzbereich für externe Höhenmodifikation. Weicht die kalkulierte Höhe von der tatsächlichen Höhe +/- der hier angegebenem Toleranz ab, sperrt sich die Integration nicht selbst. Standardwert: 8
 
-#### Toleranz Lamellenwinkelpositionierung
-`facade_modification_tolerance_angle_static`
+#### Toleranz Lamellenwinkeländerung
 
 _Wird aktuell noch nicht ausgewertet!_
 
-Toleranzbereich für externe Lamellenwinkelmodifikation, alles Weitere siehe [Toleranz Höhenpositionierung](#toleranz-höhenpositionierung). Standardwert: 5
+Toleranzbereich für externe Lamellenwinkelmodifikation, alles Weitere siehe [Toleranz Höhenänderung](#toleranz-höhenänderung). Standardwert: 5
 
 
 
@@ -357,12 +331,10 @@ Toleranzbereich für externe Lamellenwinkelmodifikation, alles Weitere siehe [To
 Dieser Abschnitt konfiguriert die dynamischen Eingänge. Damit werden die Werte eingerichtet, welche sich im täglichen Betrieb ändern können wie bspw. der Sonnenstand oder andere Verhaltenseinstellungen der Integration.
 
 #### Helligkeit
-`brightness_entity`
 
 Siehe Beschreibung unter [Helligkeit](#brightness).
 
 #### Helligkeit (Dämmerung)
-`brightness_dawn_entity`
 
 Hier kann eine separate Helligkeit für die Dämmerungssteuerung eingestellt werden. Das ist insbesondere dann sinnvoll, wenn für die einzelnen **Shadow Control** Instanzen resp. Fassaden unterschiedliche Helligkeitssensoren verwendet werden, der Behang aber im gesamten Gebäude zur Dämmerung gleichzeitig geschlossen werden soll. 
 
@@ -371,17 +343,18 @@ In diesem Fall sollte über eine separate Automation bspw. der Mittelwert aus al
 Wenn nur eine Helligkeit für das gesamte Gebäude vorhanden ist, kann dieser Eingang leer bleiben.
 
 #### Höhe der Sonne
-`sun_elevation_entity`
 
 Siehe Beschreibung unter [Höhe der Sonne](#sun-elevation).
 
 #### Azimut der Sonne
-`sun_azimuth_entity`
 
 Siehe Beschreibung unter [Azimut der Sonne](#sun-azimuth).
 
+#### Aktuelle Behanghöhe
+
+#### Aktueller Behangwinkel
+
 #### Integration sperren
-`lock_integration_manual` / `lock_integration_entity`
 
 Mit diesem Eingang kann die gesamte Integration gesperrt werden. Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration intern normal weiter, aktualisiert aber den verbundenen Behang nicht. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann.
 
@@ -390,9 +363,8 @@ Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, sola
 Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
 #### Integration sperren mit Zwangsposition
-`lock_integration_with_position_manual` / `lock_integration_with_position_entity`
 
-Mit diesem Eingang kann die gesamte Integration gesperrt und eine Zwangsposition angefahren werden. Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration intern normal weiter, fährt aber den Behang auf die via [Sperrhöhe](#sperrhöhe)/[Sperrwinkel](#sperrwinkel) konfigurierte Position. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann.
+Mit diesem Eingang kann die gesamte Integration gesperrt und eine Zwangsposition angefahren werden. Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration intern normal weiter, fährt aber den Behang auf die via [Zwangsposition Höhe](#zwangsposition-höhe)/[Zwangsposition Lamellenwinkel](#zwangsposition-lamellenwinkel) konfigurierte Position. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann.
 
 Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, solange nicht [Integration sperren](#integration-sperren) aktiv ist.
 
@@ -400,22 +372,19 @@ Dieser Eingang hat Vorrang vor [Integration sperren](#integration-sperren). Werd
 
 Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
-#### Sperrhöhe
-`lock_height_manual` / `lock_height_entity`
+#### Zwangsposition Höhe
 
 Anzufahrende Höhe in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
 Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
-#### Sperrwinkel
-`lock_angle_manual` / `lock_angle_entity`
+#### Zwangsposition Lamellenwinkel
 
 Anzufahrender Lamellenwinkel in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
 Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
-#### Bewegungseinschränkung Höhenpositionierung
-`movement_restriction_height_manual` / `movement_restriction_height_entity`
+#### Höhenveränderung einschränken
 
 Mit diesem Setting kann die Bewegungsrichtung der Höhenpositionierung wie folgt eingeschränkt werden
 
@@ -430,71 +399,61 @@ Das kann dafür verwendet werden, dass der Behang nach der Beschattung nicht zun
 
 Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
-#### Bewegungseinschränkung Lamellenwinkelpositionierung
-`movement_restriction_angle_manual` / `movement_restriction_angle_entity`
+#### Winkelveränderung einschränken
 
-Siehe [Bewegungseinschränkung Höhenpositionierung](#bewegungseinschränkung-höhenpositionierung), hier nur für den Lamellenwinkel.
+Siehe [Höhenveränderung einschränken](#höhenveränderung-einschränken), hier nur für den Lamellenwinkel.
 
 Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
 #### Zwangspositionierung auslösen
-`enforce_positioning_entity`
 
 Dieser Eingang kann mit einer Boolean-Entität verknüpft werden. Wird diese Entität auf 'on' gestellt, wird die Zwangspositionierung aktiviert. Das heisst, dass mit jeder Berechnung die Behangposition geschrieben wird. Das ist hilfreich, wenn die tatsächliche Behangposition nicht mehr mit der von der Integration angenommenen Position übereinstimmt, sollte aber im Normalfall deaktiviert bleiben. Anderenfalls werden die Lamellen ständig nur geschlossen und wieder geöffnet, weil Raffstoren technisch immer erst die Höhe und danach den Lamellenwinkel anfahren.
 
-`enforce_positioning_manual`
-
 Zusätzlich zur vorherigen Entitätskonfiguration kann diese Push-Button-Entität verwendet werden, um die Behangpositionierung einmalig zu erzwingen. Wenn dieser Knopf gedrückt wird, wird der Behang entsprechend der berechneten Werte positioniert.
+
+
+
+
 
 ### Beschattungseinstellungen
 
 #### Beschattungssteuerung aktiviert
-`shadow_control_enabled_manual` / `shadow_control_enabled_entity`
 
 Mit dieser Option wird die Beschattungssteuerung ein- oder ausgeschaltet. Standardwert: ein
 
 #### Beschattung: Helligkeitsschwellwert
-`shadow_brightness_threshold_manual` / `shadow_brightness_threshold_entity`
 
 Hier wird der Helligkeitsschwellwert in Lux konfiguriert. Wird dieser Wert überschritten, startet der Timer [Beschattung: Schliessen nach x Sekunden](#beschattung-schliessen-nach-x-sekunden). Standardwert: 50000 
 
 #### Beschattung: Schliessen nach x Sekunden
-`shadow_after_seconds_manual` / `shadow_after_seconds_entity`
 
 Hier wird der Zeitraum in Sekunden konfiguriert, nachdem der Behang nach Überschreiten des [Helligkeitsschwellwertes](#beschattung-helligkeitsschwellwert) geschlossen werden soll. Standardwert: 120
 
 #### Beschattung: Maximale Höhe
-`shadow_shutter_max_height_manual` / `shadow_shutter_max_height_entity`
 
 Hier kann die maximale Behanghöhe angegeben werden. Das wird bspw. verwendet, um den Behang nicht bis ganz auf den Boden zu fahren, damit ein festfrieren im Winter vermieden wird. Standardwert: 100 
 
 #### Beschattung: Maximaler Lamellenwinkel
-`shadow_shutter_max_angle_manual` / `shadow_shutter_max_angle_entity`
 
 Hier kann der maximale Lamellenwinkel angegeben werden. Das wird bspw. verwendet, um den Behang nicht ganz zu schliessen, damit ein zusammenfrieren der Lamellen im Winter vermieden wird. Standardwert: 100
 
 #### Beschattung: Durchsichtposition nach x Sekunden
-`shadow_shutter_look_through_seconds_manual` / `shadow_shutter_look_through_seconds_entity`
 
 Fällt die Helligkeit unter den Schwellwert von [Beschattung: Helligkeitsschwellwert](#beschattung-helligkeitsschwellwert), wird der Behang nach der hier angegeben Zeit auf Durchsichtsposition gefahren. Standardwert: 900
 
 #### Beschattung: Öffnen nach x Sekunden
-`shadow_shutter_open_seconds_manual` / `shadow_shutter_open_seconds_entity`
 
 Nachdem der Behang auf Durchsichtsposition gefahren wurde, wird er nach der hier konfigurierten Zeit ganz geöffnet. Standardwert: 3600
 
 #### Beschattung: Durchsichtswinkel
-`shadow_shutter_look_through_angle_manual` / `shadow_shutter_look_through_angle_entity`
 
 Hier wird der Lamellenwinkel der Durchsichtsposition in % konfiguriert. Standardwert: 0
 
 #### Beschattung: Höhe nach Beschattung
-`shadow_height_after_sun_manual` / `shadow_height_after_sun_entity`
 
 Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf die hier in % konfigurierte Höhe gefahren. Standardwert: 0
 
 #### Beschattung: Lamellenwinkel nach Beschattung
-`shadow_angle_after_sun_manual` / `shadow_angle_after_sun_entity`
 
 Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf den hier in % konfigurierten Lamellenwinkel gefahren. Standardwert: 0
 
@@ -505,54 +464,48 @@ Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf den hier in 
 ### Dämmerungseinstellungen
 
 #### Dämmerungssteuerung aktiviert
-`dawn_control_enabled_manual` / `dawn_control_enabled_entity`
 
 Mit dieser Option wird die Dämmerungssteuerung ein- oder ausgeschaltet. Standardwert: ein
 
 #### Dämmerung: Helligkeitsschwellwert
-`dawn_brightness_threshold_manual` / `dawn_brightness_threshold_entity`
 
 Hier wird der Helligkeitsschwellwert in Lux konfiguriert. Wird dieser Wert unterschritten, startet der Timer [Dämmerung: Schliessen nach x Sekunden](#dämmerung-schliessen-nach-x-sekunden). Standardwert: 500
 
 #### Dämmerung: Schliessen nach x Sekunden
-`dawn_after_seconds_manual` / `dawn_after_seconds_entity`
 
 Hier wird der Zeitraum in Sekunden konfiguriert, nachdem der Behang nach Unterschreiten des [Helligkeitsschwellwertes](#dämmerung-helligkeitsschwellwert) geschlossen werden soll. Standardwert: 120
 
 #### Dämmerung: Maximale Höhe
-`dawn_shutter_max_height_manual` / `dawn_shutter_max_height_entity`
 
 Hier kann die maximale Behanghöhe angegeben werden. Das wird bspw. verwendet, um den Behang nicht bis ganz auf den Boden zu fahren, damit ein festfrieren im Winter vermieden wird. Standardwert: 100
 
 #### Dämmerung: Maximaler Lamellenwinkel
-`dawn_shutter_max_angle_manual` / `dawn_shutter_max_angle_entity`
 
 Hier kann der maximale Lamellenwinkel angegeben werden. Das wird bspw. verwendet, um den Behang nicht ganz zu schliessen, damit ein zusammenfrieren der Lamellen im Winter vermieden wird. Standardwert: 100
 
 #### Dämmerung: Durchsichtposition nach x Sekunden
-`dawn_shutter_look_through_seconds_manual` / `dawn_shutter_look_through_seconds_entity`
 
 Steigt die Helligkeit über den Schwellwert von [Dämmerung: Helligkeitsschwellwert](#dämmerung-helligkeitsschwellwert), wird der Behang nach der hier angegeben Zeit auf Durchsichtposition gefahren. Standardwert: 120
 
 #### Dämmerung: Öffnen nach x Sekunden
-`dawn_shutter_open_seconds_manual` / `dawn_shutter_open_seconds_entity`
 
 Nachdem der Behang auf Durchsichtsposition gefahren wurde, wird er nach der hier konfigurierten Zeit ganz geöffnet. Standardwert: 3600
 
 #### Dämmerung: Durchsichtswinkel
-`dawn_shutter_look_through_angle_manual` / `dawn_shutter_look_through_angle_entity`
 
 Hier wird der Lamellenwinkel der Durchsichtsposition in % konfiguriert. Standardwert: 0
 
 #### Dämmerung: Höhe nach Dämmerungsposition
-`dawn_height_after_dawn_manual` / `dawn_height_after_dawn_entity`
 
 Wenn keine Dämmerungssituation mehr vorliegt, wird der Behang auf die hier in % konfigurierte Höhe gefahren. Standardwert: 0
 
 #### Dämmerung: Lamellenwinkel nach Dämmerungsposition
-`dawn_angle_after_dawn_manual` / `dawn_angle_after_dawn_entity`
 
 Wenn keine Dämmerungssituation mehr vorliegt, wird der Behang auf den hier in % konfigurierten Lamellenwinkel gefahren. Standardwert: 0
+
+
+
+
 
 ## Konfiguration via yaml
 

@@ -49,13 +49,13 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
       * [Tolerance angle modification](#tolerance-angle-modification)
     * [Dynamic input entities](#dynamic-input-entities)
       * [Brightness](#brightness)
-      * [Brightness Dawn](#brightness-Dawn)
+      * [Brightness at dawn](#brightness-at-dawn)
       * [Sun elevation](#sun-elevation)
       * [Sun azimuth](#sun-azimuth)
       * [Lock integration](#lock-integration)
       * [Lock integration with position](#lock-integration-with-position)
-      * [Lock height](#lock-height)
-      * [Lock angle](#lock-angle)
+      * [Enforced position height](#enforced-position-height)
+      * [Enforced position slat angle](#enforced-position-slat-angle)
       * [Movement restriction height](#movement-restriction-height)
       * [Movement restriction angle](#movement-restriction-angle)
       * [Enforce shutter positioning](#enforce-shutter-positioning)
@@ -114,8 +114,8 @@ Within further description:
 * A lot of settings could be modified using configured entities but also provide own instance specific entities. So these entities could be used within automations to modify the configuration without triggering a integration reload. These are the configurations, which provide own entities beside the entity configuration option:
   * [Lock integration](#lock-integration)
   * [Lock integration with position](#lock-integration-with-position)
-  * [Lock height](#lock-height)
-  * [Lock angle](#lock-angle)
+  * [Enforced position height](#enforced-position-height)
+  * [Enforced position slat angle](#enforced-position-slat-angle)
   * [Movement restriction height](#movement-restriction-height)
   * [Movement restriction angle](#movement-restriction-angle)
   * [All shadow settings](#shadow-settings)
@@ -159,7 +159,7 @@ The configured cover entity will only be updated if a value has changed since th
 
 ## Entity precedence
 
-Attention: For all configurations where there are `*_manual` and `*_entity` variants, such as `lock_integration_manual` and `lock_integration_entity`, the `*_entity` variant takes precedence! That means if a entity is configured, the entity value will be used. To prevent this, you need to clear the entity configuration.
+Attention: For all options the configured entity variant takes precedence! That means if a entity is configured, the entity value will be used. Additionally the internal entity for this option will be removed. To prevent this, you need to clear the entity configuration.
 
 # Installation
 
@@ -176,7 +176,6 @@ The configuration is split into a minimalistic initial configuration, which resu
 The initial instance configuration is very minimalistic and requires only the following configuration entries. Everything else will be setup up with default values, which you might tweak to your needs afterward. See section [Additional options](#additional-options).
 
 ### Instance name 
-`name`
 
 A descriptive and unique name for this **Shadow Control** instance. A sanitized version of this name will be used to mark corresponding log entries of this instance within the Home Assistant main log file as well as prefix for the created entities.
 
@@ -187,7 +186,6 @@ Example:
 4. Entities will be named e. g. like ``
 
 #### Shutter type
-`facade_shutter_type_static`
 
 Configuration of the used shutter type. Default is pivoting range of 0°-90° (yaml: `mode1`). These shutters are fully closed (vertical) at 90° and horizontally open at 0°.
 
@@ -199,12 +197,10 @@ Other supported types:
 This setting can't be changed later on. To do so, you need to remove the instance of the shutter and recreate it from scratch.
 
 ### Covers to maintain
-`target_cover_entity`
 
 The cover entities, which should be handled by this **Shadow Control** instance. You can add as many covers as you like, but the recommendation is to use only these covers, which have at least the same azimuth. For any further calculation, only the first configured cover will be used. All other covers will just be positioned as the first one.
 
 ### Facade azimuth
-`facade_azimuth_static`
 
 Azimuth of the facade in degrees, for which the integration should be configured. This is the viewing direction from the inside to the outside. A perfectly north facade has an Azimuth of 0°, a perfectly south facade has an Azimuth of 180°. The sun area at this facade is the range, from which a shadow handling is desired. This is a maximal range of 180°, from `azimuth_facade` + `offset_sun_in` to `azimuth_facade` + `offset_sun_out`.
 
@@ -213,17 +209,14 @@ rdeckard has provided a nice drawing to the Edomi-LBS, which is still valid at t
 ![Azimuth explanation](/images/azimut.png)
 
 ### Brightness
-`brightness_entity`
 
 This input needs to be configured with the current brightness, which usually comes from a weather station. The value should match the real brightness on this facade as much as possible.
 
 ### Sun elevation
-`sun_elevation_entity`
 
 This input should be filled with the current elevation of the sun. Usually this value comes from a weather station or the home assistant internal sun entity. Possible values are within the range from 0° (horizontal) to 90° (vertical).
 
 ### Sun azimuth
-`sun_azimuth_entity`
 
 This input should be filled with the current azimuth of the sun. Usually this value comes from a weather station or the home assistant internal sun entity. Possible values are within the range from 0° to 359°.
 
@@ -238,39 +231,32 @@ The following options will be available by a separate config flow, which will op
 ### Facade configuration - part 1
 
 #### Covers to maintain
-`target_cover_entity`
 
 See the description at [Covers to maintain](#covers-to-maintain).
 
 #### Facade azimuth
-`facade_azimuth_static`
 
 See the description at [Facade azimuth](#facade-azimuth).
 
 #### Sun start offest
-`facade_offset_sun_in_static`
 
 Negative offset to `facade_azimuth_static`, from which shadow handling should be done. If the azimuth of the sun is lower than `facade_azimuth_static + facade_offset_sun_in_static`, no shadow handling will be performed. Valid range: -90–0, default: -90
 
 #### Sun end offset
-`facade_offset_sun_out_static`
 
 Positive offset to `facade_azimuth_static`, up to which shadow handling should be done. If the azimuth of the sun is higher than `facade_azimuth_static + facade_offset_sun_out_static`, no shadow handling will be performed. Valid range: 0–90, default: 90
 
 #### Min sun elevation
-`facade_elevation_sun_min_static`
 
 Minimal elevation (height) of the sun in degrees. If the effective (!) elevation is lower than this value, no shadow handling will be performed. A use case for this configuration is another building in front of the facade, which throws shadow onto the facade, whereas the weather station on the roof is still full in the sun. Valid range: 0–90, default: 0
 
 Hint regarding effective elevation: To compute the right shutter angle, the elevation of the sun in the right angle to the facade must be computed. This so-called "effective elevation" is written to the log. If the shadow handling is not working as desired, especially nearly the limits of the given azimuth offsets, this value needs attention.
 
 #### Max sun elevation
-`facade_elevation_sun_max_static`
 
 Maximal elevation (height) of the sun in degrees. If the effective (!) elevation is higher than this value, no shadow handling will be performed. A use case for this configuration is a balcony from the story above, which throws shadow onto the facade, whereas the weather station on the roof is still full in the sun. Valid range: 0–90, default: 90
 
 #### Debug mode
-`debug_enabled`
 
 With this switch, the debug mode for this instance could be activated. If activated, there will be much more detailed output within the Home Assistant main log file.
 
@@ -279,7 +265,6 @@ With this switch, the debug mode for this instance could be activated. If activa
 ### Facade configuration - part 2
 
 #### Neutral position height
-`facade_neutral_pos_height_manual` / `facade_neutral_pos_height_entity`
 
 Shutter height position in state _NEUTRAL_. The integration will switch to _NEUTRAL_ if
 
@@ -290,59 +275,48 @@ Shutter height position in state _NEUTRAL_. The integration will switch to _NEUT
 Default: 0
 
 #### Neutral position angle
-`facade_neutral_pos_angle_manual` / `facade_neutral_pos_angle_entity`
 
 Shutter angle position in state _NEUTRAL_. Everything else is described in the previous configuration entry. Default: 0
 
 #### Shutter slat width
-`facade_slat_width_static`)
 
 The Width of the shutter slats in mm. Width and distance are required to compute the angle, which is used to close the shutter only that much, to prevent direct sun rays within the room. The slat width must be larger than the slat distance, otherwise it's impossible to set up the correct shadow position. Default: 95
 
 #### Shutter slat distance
-`facade_slat_distance_static`
 
 The distance of the shutter slats in mm. Everything else is described in the previous configuration entry. Default: 67
 
 #### Shutter angle offset
-`facade_slat_angle_offset_static`
 
 Angle offset in %. This value will be added to the computed slat angle and could be used if the computed angle needs to be corrected. This could be necessary if the shadow position has a slight gap, which lets the sun pass through. Default: 0
 
 #### Min shutter angle
-`facade_slat_min_angle_static`
 
 Min shutter slat angle in %. The slat position will be in the range of this value and 100%. This option could be used to restrict the opening range of the shutter slats. Default: 0
 
 #### Height stepping
-`facade_shutter_stepping_height_static`
 
 Stepping size for shutter height positioning. Most shutters could not handle repositioning of small values within the percent range. To handle this, the height will be modified in steps of a given size. Increasing or decreasing elevation of the sun will be handled properly. Default: 5
 
 #### Angle stepping
-`facade_shutter_stepping_angle_static`
 
 Same as "Height stepping" but for the shutter slat angle positioning. Default: 5
 
 #### Width of a light strip
-`facade_light_strip_width_static`
 
 Width of a desired light strip. With this setting could be configured, how "deep" the sun should shine directly into the room. According to this setting, during shadow the shutter will not be at a height position of 100% (aka full closed) but instead at a computed height position, which produces the desired light strip. Default: 0
 
 #### Overall shutter height
-`facade_shutter_height_static`
 
 To compute the light strip given with the previous configuration option, the integration needs to know the overall height of the shutter (or window). The same unit as on light bar width must be used. Default: 1000
 
 #### Tolerance height modification
-`facade_modification_tolerance_height_static`
 
 _Currently not used!_
 
 Tolerance range for external shutter height modification. If the calculated height is within the range of current height plus/minus this value, the integration will not lock itself. Default: 8
 
 #### Tolerance angle modification
-`facade_modification_tolerance_angle_static`
 
 _Currently not used!_
 
@@ -357,12 +331,10 @@ Same as [Tolerance height modification](#tolerance-height-modification) but for 
 The options within this section are called "dynamic settings," as they might be modified "dynamically." That covers such things like position updates of the sun or modification of the integration behavior in general.
 
 #### Brightness
-`brightness_entity`
 
 See the description at [Brightness](#brightness).
 
-#### Brightness Dawn
-`brightness_dawn_entity`
+#### Brightness at dawn
 
 A second brightness value could be configured here, which is used to calculate shutter position at dawn. This is especially useful if 
 
@@ -374,17 +346,18 @@ If you're using more than one brightness sensor, you might set up an automation,
 If you have only one brightness sensor, this input should not be configured. Let the input stay empty in this case.
 
 #### Sun elevation
-`sun_elevation_entity`
 
 See the description at [Sun elevation](#sun-elevation).
 
 #### Sun azimuth
-`sun_azimuth_entity`
 
 See the description at [Sun azimuth](#sun-azimuth).
 
+#### Current shutter height
+
+#### Current shutter slat angle
+
 #### Lock integration
-`lock_integration_manual` / `lock_integration_entity`
 
 If this input is set to 'off,' the integration works as desired by updating the output (as long as the input `lock_integration_with_position` is not set to 'on'). 
 
@@ -393,7 +366,6 @@ If the input is set to 'on,' the integration gets locked. That means the integra
 Attention, see note at [Entity precedence](#entity-precedence).
 
 #### Lock integration with position
-`lock_integration_with_position_manual` / `lock_integration_with_position_entity`
 
 If this input is set to 'off,' the integration works as desired by updating the output (as long as the input `lock_integration` is not set to 'on').
 
@@ -403,22 +375,19 @@ This input has precedence over 'lock_integration.' If both lock inputs are set '
 
 Attention, see note at [Entity precedence](#entity-precedence).
 
-#### Lock height
-`lock_height_manual` / `lock_height_entity`
+#### Enforced position height
 
 Height in %, which should be set if integration gets locked by 'lock_integration_with_position.' 
 
 Attention, see note at [Entity precedence](#entity-precedence).
 
-#### Lock angle
-`lock_angle_manual` / `lock_angle_entity`
+#### Enforced position slat angle
 
 Angle in %, which should be set if integration gets locked by 'lock_integration_with_position.'
 
 Attention, see note at [Entity precedence](#entity-precedence).
 
 #### Movement restriction height
-`movement_restriction_height_manual` / `movement_restriction_height_entity`
 
 With this setting, the movement direction could be restricted:
 
@@ -434,71 +403,60 @@ This could be used to prevent shutters from being opened after the sun goes down
 Attention, see note at [Entity precedence](#entity-precedence).
 
 #### Movement restriction angle
-`movement_restriction_angle_manual` / `movement_restriction_angle_entity`
 
 Same as [Movement restriction height](#movement-restriction-height) but for the shutter slat angle.
 
 Attention, see note at [Entity precedence](#entity-precedence).
 
 #### Enforce shutter positioning
-`enforce_positioning_entity`
 
 This input could be wired with a boolean entity. If this entity is switched to "on," the shutter positioning will be enforced. That means that with every run of the integration, the shutter will be positioned. This could be used to align the shutter position with the computed position of the integration but should normally not be activated all the time. Otherwise, the shutter slats might close and immediately open again as that is how rolling shutters work: At first the move to the given height and position the shutter slats afterward.
 
-`enforce_positioning_manual`
-
 Additionally to the previous entity configuration, this push button entity could be used to enforce the shutter positioning once. If this button is pressed, the shutter will be positioned according to the computed values.
+
+
+
 
 
 ### Shadow settings
 
 #### Shadow control enabled
-`shadow_control_enabled_manual` / `shadow_control_enabled_entity`
 
 With this option, the whole shadow handling could be de-/activated. Default: on
 
 #### Shadow brightness threshold
-`shadow_brightness_threshold_manual` / `shadow_brightness_threshold_entity`
 
 This is the brightness threshold in Lux. If the threshold is exceeded, the timer `shadow_after_seconds` is started. Default: 50000 
 
 #### Shadow after seconds
-`shadow_after_seconds_manual` / `shadow_after_seconds_entity`
 
 This is the number of seconds which should be passed after the exceedance of `shadow_brightness_threshold`, until the shutter will be moved to the shadow position. Default: 120
 
 #### Shadow max height
-`shadow_shutter_max_height_manual` / `shadow_shutter_max_height_entity`
 
 Max height of the shutter in case of shadow position in %. Default: 100 
 
 #### Shadow max angle
-`shadow_shutter_max_angle_manual` / `shadow_shutter_max_angle_entity`
 
 Max angle of the shutter in case of shadow position in %. Default: 100 
 
 #### Shadow look through seconds
-`shadow_shutter_look_through_seconds_manual` / `shadow_shutter_look_through_seconds_entity`
 
 If brightness falls below the value of `shadow_brightness_threshold`, the shutter slats will be moved to horizontal position after the configured number of seconds. Default: 900
 
 #### Shadow open seconds
-`shadow_shutter_open_seconds_manual` / `shadow_shutter_open_seconds_entity`
 
 If brightness stays below the value of `shadow_brightness_threshold`, the shutter will be fully opened after the configured number of seconds. Default: 3600
 
 #### Shadow look through angle
-`shadow_shutter_look_through_angle_manual` / `shadow_shutter_look_through_angle_entity`
 
 This is the shutter slat angle in %, which should be used at the "look through" position. Default: 0
 
 #### Shadow height after sun
-`shadow_height_after_sun_manual` / `shadow_height_after_sun_entity`
 
 This is the shutter height in %, which should be set after the shadow position. Default: 0
 
 #### Shadow angle after sun
-`shadow_angle_after_sun_manual` / `shadow_angle_after_sun_entity`
 
 This is the shutter angle in %, which should be set after the shadow position. Default: 0
 
@@ -509,54 +467,48 @@ This is the shutter angle in %, which should be set after the shadow position. D
 ### Dawn settings
 
 #### Dawn control enabled
-`dawn_control_enabled_manual` / `dawn_control_enabled_entity`
 
 With this option, the whole dawn handling could be de-/activated. Default: on
 
 #### Dawn brightness threshold
-`dawn_brightness_threshold_manual` / `dawn_brightness_threshold_entity`
 
 This is the brightness threshold in Lux. If the threshold is undercut, the timer `dawn_after_seconds` is started. Default: 500
 
 #### Dawn after seconds
-`dawn_after_seconds_manual` / `dawn_after_seconds_entity`
 
 This is the number of seconds which should be passed after `dawn_brightness_threshold` was undercut, until the shutter will be moved to the dawn position. Default: 120
 
 #### Dawn max height
-`dawn_shutter_max_height_manual` / `dawn_shutter_max_height_entity`
 
 Max height of the shutter in case of dawn position in %. Default: 100
 
 #### Dawn max angle
-`dawn_shutter_max_angle_manual` / `dawn_shutter_max_angle_entity`
 
 Max angle of the shutter in case of dawn position in %. Default: 100
 
 #### Dawn look through seconds
-`dawn_shutter_look_through_seconds_manual` / `dawn_shutter_look_through_seconds_entity`
 
 If brightness exceeds the value of `dawn_brightness_threshold`, the shutter slats will be moved to horizontal position after the configured number of seconds. Default: 120
 
 #### Dawn open seconds
-`dawn_shutter_open_seconds_manual` / `dawn_shutter_open_seconds_entity`
 
 If brightness stays above the value of `dawn_brightness_threshold`, the shutter will be fully opened after the configured number of seconds. Default: 3600
 
 #### Dawn look through angle
-`dawn_shutter_look_through_angle_manual` / `dawn_shutter_look_through_angle_entity`
 
 This is the shutter slat angle in %, which should be used at the "look through" position. Default: 0
 
 #### After dawn height
-`dawn_height_after_dawn_manual` / `dawn_height_after_dawn_entity`
 
 This is the shutter height in %, which should be set after the dawn position. Default: 0
 
 #### After dawn angle
-`dawn_angle_after_dawn_manual` / `dawn_angle_after_dawn_entity`
 
 This is the shutter angle in %, which should be set after the dawn position. Default: 0
+
+
+
+
 
 ## Configuration by YAML
 
