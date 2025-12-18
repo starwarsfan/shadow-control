@@ -53,7 +53,7 @@ def get_cfg_minimal_required() -> vol.Schema:
         {
             vol.Optional(SC_CONF_NAME, default=""): selector.TextSelector(selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)),
             vol.Optional(SCFacadeConfig2.SHUTTER_TYPE_STATIC.value, default="mode1"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=["mode1", "mode2", "mode3"], translation_key="facade_shutter_type")
+                selector.SelectSelectorConfig(options=["mode1", "mode2", "mode3"], translation_key=SCFacadeConfig2.SHUTTER_TYPE_STATIC.value)
             ),
         }
     )
