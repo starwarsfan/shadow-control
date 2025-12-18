@@ -7,12 +7,12 @@
     * `lock_integration_with_position_static` -> `lock_integration_with_position_manual`
     * `lock_height_static` -> `lock_height_manual`
     * `lock_angle_static` -> `lock_angle_manual`
-    * `facade_neutral_pos_height_static` -> `facade_neutral_pos_height_manual`
-    * `facade_neutral_pos_angle_static` -> `facade_neutral_pos_angle_manual`
     * `movement_restriction_height_static` -> `movement_restriction_height_manual`
     * `movement_restriction_angle_static` -> `movement_restriction_angle_manual`
-    * All options with `_static` suffix to `_manual` suffix within shadow configuration
-    * All options with `_static` suffix to `_manual` suffix within dawn configuration
+    * `facade_neutral_pos_height_static` -> `facade_neutral_pos_height_manual`
+    * `facade_neutral_pos_angle_static` -> `facade_neutral_pos_angle_manual`
+    * All options with `_static` suffix to `_manual` suffix within **shadow** configuration
+    * All options with `_static` suffix to `_manual` suffix within **dawn** configuration
   * These renamed options are no longer configuration entries within ConfigFlow. They are now dynamically created as `switch`, `number` or `select` entities per **Shadow Control** instance and could be used either right on the instance detail view or directly within own automations. See [README.md](README.md) for naming of these entities.
 * New additional entity `enforce_positioning_manual` with push button functionality to trigger recalculation and positioning of the shutter.
 
