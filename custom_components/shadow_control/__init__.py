@@ -34,6 +34,7 @@ from .const import (
     DEBUG_ENABLED,
     DOMAIN,
     DOMAIN_DATA_MANAGERS,
+    INTERNAL_TO_DEFAULTS_MAP,
     SC_CONF_NAME,
     TARGET_COVER_ENTITY_ID,
     VERSION,
@@ -115,7 +116,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 
 # Entry point for setup using ConfigEntry (via ConfigFlow)
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:  # noqa: C901
     """Set up Shadow Control from a config entry."""
     _LOGGER.debug("[%s] Setting up Shadow Control from config entry: %s: data=%s, options=%s", DOMAIN, entry.entry_id, entry.data, entry.options)
 
@@ -235,6 +236,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             else:
                 _LOGGER.warning("Could not find entity ID for internal entity %s", internal_enum_name)
 
+        # 2. NEW: Initialize empty internal entities with MCIntDefaults
+        for internal_member in SCInternal:
+            entity_id = manager.get_internal_entity_id(internal_member)
+            state = hass.states.get(entity_id)
+
+            # If the entity exists but has no value, push the default from const.py
+            if state is None or state.state in ["unavailable", "unknown"]:
+                default_val = INTERNAL_TO_DEFAULTS_MAP.get(internal_member)
+
+                if default_val is not None:
+                    domain = internal_member.domain
+                    if domain == "number":
+                        await hass.services.async_call("number", "set_value", {"entity_id": entity_id, "value": default_val})
+                    elif domain == "switch":
+                        service = "turn_on" if default_val else "turn_off"
+                        await hass.services.async_call("switch", service, {"entity_id": entity_id})
+
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, set_internal_entities_when_ready)
     # End of setting internal entities
     # =================================================================
@@ -245,8 +263,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN_DATA_MANAGERS][entry.entry_id] = manager
     _LOGGER.debug("[%s] Shadow Control manager stored for entry %s in %s.", manager_name, entry.entry_id, DOMAIN_DATA_MANAGERS)
 
-    # Initial start of the manager
-    await manager.async_start()
+    # Only start immediately if HA is already fully started.
+    # If HA is still booting, the EVENT_HOMEASSISTANT_STARTED listener
+    # inside the manager will trigger the start automatically.
+    if hass.is_running:
+        await manager.async_start()
 
     # Load platforms (like sensors)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
