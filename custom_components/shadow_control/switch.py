@@ -14,7 +14,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 if TYPE_CHECKING:
     from . import ShadowControlManager
 
-from .const import DEBUG_ENABLED, DOMAIN, DOMAIN_DATA_MANAGERS, SWITCH_INTERNAL_TO_EXTERNAL_MAP, SCInternal
+from .const import DEBUG_ENABLED, DOMAIN, DOMAIN_DATA_MANAGERS, INTERNAL_TO_DEFAULTS_MAP, SWITCH_INTERNAL_TO_EXTERNAL_MAP, SCInternal
 
 
 async def async_setup_entry(
@@ -305,6 +305,14 @@ class ShadowControlSwitch(SwitchEntity, RestoreEntity):
         if last_state:
             self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
             self._state = last_state.state == "on"
+        else:
+            # Match this entity's key to the Enum
+            member = next((m for m in SCInternal if m.value == self.entity_description.key), None)
+            if member and member in INTERNAL_TO_DEFAULTS_MAP:
+                self._state = INTERNAL_TO_DEFAULTS_MAP[member]
+                self.logger.debug("Entity %s initialized with default: %s", self.entity_id, self._state)
+
+        self.async_write_ha_state()
 
     async def _notify_integration(self) -> None:
         await self.hass.data[DOMAIN_DATA_MANAGERS][self._config_entry.entry_id].async_calculate_and_apply_cover_position(None)
