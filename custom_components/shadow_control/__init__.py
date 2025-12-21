@@ -239,6 +239,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:  #
         # 2. NEW: Initialize empty internal entities with MCIntDefaults
         for internal_member in SCInternal:
             entity_id = manager.get_internal_entity_id(internal_member)
+
+            if not entity_id:
+                _LOGGER.debug("Entity ID for %s not found, skipping initialization", internal_member.name)
+                continue
+
             state = hass.states.get(entity_id)
 
             # If the entity exists but has no value, push the default from const.py
@@ -3379,7 +3384,7 @@ class ShadowControlManager:
     def get_internal_entity_id(self, internal_enum: SCInternal) -> str:
         """Get the internal entity_id for this instance."""
         registry = entity_registry.async_get(self.hass)
-        unique_id = f"{self._entry_id}_{internal_enum.value.lower()}"
+        unique_id = f"{self._entry_id}_{internal_enum.value}"
         entity_id = registry.async_get_entity_id(internal_enum.domain, "shadow_control", unique_id)
         self.logger.debug("Looking up internal entity_id for unique_id: %s -> %s", unique_id, entity_id)
         return entity_id
