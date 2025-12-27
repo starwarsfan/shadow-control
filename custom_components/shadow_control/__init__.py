@@ -3379,8 +3379,8 @@ class ShadowControlManager:
         registry = entity_registry.async_get(self.hass)
         unique_id = f"{self._entry_id}_{internal_enum.value}"
         entity_id = registry.async_get_entity_id(internal_enum.domain, "shadow_control", unique_id)
-        self.logger.debug("Looking up internal entity_id for unique_id: %s -> %s", unique_id, entity_id)
-        return entity_id
+        # self.logger.debug("Looking up internal entity_id for unique_id: %s -> %s", unique_id, entity_id)
+        return entity_id  # noqa: RET504
 
 
 # Helper for dynamic log output
