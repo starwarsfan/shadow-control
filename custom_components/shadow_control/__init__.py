@@ -4,7 +4,6 @@
 # import json
 import logging
 import math
-import re
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 from functools import partial
@@ -28,6 +27,7 @@ from homeassistant.helpers.entity_registry import async_get as async_get_entity_
 from homeassistant.helpers.event import async_call_later, async_track_state_change_event
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import dt as dt_util
+from homeassistant.util import slugify
 
 from .config_flow import YAML_CONFIG_SCHEMA, get_full_options_schema
 from .const import (
@@ -134,11 +134,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:  #
         return False
 
     # Sanitize logger instance name
-    # 1. Replace spaces with underscores
-    # 2. All lowercase
-    # 3. Remove all characters that are not alphanumeric or underscores
-    sanitized_instance_name = re.sub(r"\s+", "_", instance_name).lower()
-    sanitized_instance_name = re.sub(r"[^a-z0-9_]", "", sanitized_instance_name)
+    # This handles umlauts, spaces, and special characters automatically
+    sanitized_instance_name = slugify(instance_name)
 
     # Prevent empty name if there were only special characters used
     if not sanitized_instance_name:
@@ -657,12 +654,8 @@ class ShadowControlManager:
         self._target_cover_entity_id = self._config[TARGET_COVER_ENTITY_ID]
 
         # Sanitize instance name
-        # 1. Replace spaces with underscores
-        # 2. All lowercase
-        # 3. Remove all characters that are not alphanumeric or underscores
-        sanitized_instance_name = re.sub(r"\s+", "_", self.name).lower()
-        sanitized_instance_name = re.sub(r"[^a-z0-9_]", "", sanitized_instance_name)
-        self.sanitized_name = sanitized_instance_name
+        # This handles umlauts, spaces, and special characters automatically
+        self.sanitized_name = slugify(self.name)
         self.logger.debug("Sanitized instance name from %s to %s", self.name, self.sanitized_name)
 
         # Check if critical values are missing, even if this might be done within async_setup_entry
