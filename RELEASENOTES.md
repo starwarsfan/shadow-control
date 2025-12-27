@@ -16,6 +16,7 @@
   * These renamed options are no longer configuration entries within ConfigFlow. They are now dynamically created as `switch`, `number` or `select` entities per **Shadow Control** instance and could be used either right on the instance detail view or directly within own automations. See [README.md](README.md) for naming of these entities.
 * New additional entity `enforce_positioning_manual` with push button functionality to trigger recalculation and positioning of the shutter.
 * Fix usage of default values if configuring a new instance via HA UI ConfigFlow.
+* Use HA internal slugify functionality to sanitize instance names
 
 ## 0.10.0
 * Bugfix: Fixed position handling if movement is restricted and integration gets unlocked
