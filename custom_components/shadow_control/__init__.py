@@ -250,9 +250,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:  #
                 if default_val is not None:
                     domain = internal_member.domain
                     if domain == "number":
+                        _LOGGER.debug("Initializing internal number entity %s with default value %s", entity_id, default_val)
                         await hass.services.async_call("number", "set_value", {"entity_id": entity_id, "value": default_val})
                     elif domain == "switch":
                         service = "turn_on" if default_val else "turn_off"
+                        _LOGGER.debug("Initializing internal switch entity %s with default value %s", entity_id, service)
                         await hass.services.async_call("switch", service, {"entity_id": entity_id})
 
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, set_internal_entities_when_ready)
@@ -265,11 +267,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:  #
     hass.data[DOMAIN_DATA_MANAGERS][entry.entry_id] = manager
     _LOGGER.debug("[%s] Shadow Control manager stored for entry %s in %s.", manager_name, entry.entry_id, DOMAIN_DATA_MANAGERS)
 
-    # Only start immediately if HA is already fully started.
-    # If HA is still booting, the EVENT_HOMEASSISTANT_STARTED listener
-    # inside the manager will trigger the start automatically.
-    if hass.is_running:
-        await manager.async_start()
+    await manager.async_start()
 
     # Load platforms (like sensors)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -867,10 +865,15 @@ class ShadowControlManager:
         # - Register listeners
         # - Trigger initial calculation
         # Will be called after instantiation of the manager.
-        self.logger.debug("Starting manager lifecycle...")
+        self.logger.info("=== Starting manager lifecycle ===")
         self._async_register_listeners()
         await self.async_calculate_and_apply_cover_position(None)
-        self.logger.debug("Manager lifecycle started.")
+
+        if self._is_initial_run:
+            self.logger.info("Initial calculation completed, switching to normal operation mode")
+            self._is_initial_run = False
+
+        self.logger.debug("=== Manager lifecycle started ===")
 
     def _async_register_listeners(self) -> None:
         """Register listener for state changes of relevant entities."""
@@ -1005,6 +1008,11 @@ class ShadowControlManager:
         """Calculate positions after start of Home Assistant."""
         self.logger.debug("Home Assistant started event received. Performing initial calculation.")
         await self.async_calculate_and_apply_cover_position(None)
+
+        # Setze _is_initial_run auf False nach der initialen Berechnung
+        if self._is_initial_run:
+            self.logger.info("Initial calculation completed (via HA started event), switching to normal operation mode")
+            self._is_initial_run = False
 
     async def async_stop(self) -> None:
         """Stop ShadowControlManager."""
