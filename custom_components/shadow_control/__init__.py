@@ -1418,7 +1418,10 @@ class ShadowControlManager:
                         self._height_during_lock_state = self._previous_shutter_height
                         self._angle_during_lock_state = self._previous_shutter_angle
 
-                elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value) or entity == entity_id_lock_with_position_manual:
+                elif (
+                    entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value)
+                    or entity == entity_id_lock_with_position_manual
+                ):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration:
                         # Lock with position DISABLED
                         self.logger.info("Lock with position was disabled and simple lock already disabled")
