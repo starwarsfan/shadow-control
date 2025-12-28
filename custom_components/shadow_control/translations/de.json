@@ -413,7 +413,7 @@
       "movement_restriction_height_manual": {
         "name": "Höhenveränderung einschränken",
         "state": {
-          "no_restriction": "Keine Beschränkung",
+          "no_restriction": "Keine Einschränkung",
           "only_close": "Nur schließen",
           "only_open": "Nur öffnen"
         }
@@ -421,7 +421,7 @@
       "movement_restriction_angle_manual": {
         "name": "Winkelveränderung einschränken",
         "state": {
-          "no_restriction": "Keine Beschränkung",
+          "no_restriction": "Keine Einschränkung",
           "only_close": "Nur schließen",
           "only_open": "Nur öffnen"
         }
