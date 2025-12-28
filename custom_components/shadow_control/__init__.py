@@ -1379,8 +1379,12 @@ class ShadowControlManager:
 
                         # Check if lock position differs from computed position by temporary caluculation
                         # without real positioning of shutters
-                        temp_calculated_height = self._calculate_shutter_height() if await self._check_if_facade_is_in_sun() else self._facade_config.neutral_pos_height
-                        temp_calculated_angle = self._calculate_shutter_angle() if await self._check_if_facade_is_in_sun() else self._facade_config.neutral_pos_angle
+                        temp_calculated_height = (
+                            self._calculate_shutter_height() if await self._check_if_facade_is_in_sun() else self._facade_config.neutral_pos_height
+                        )
+                        temp_calculated_angle = (
+                            self._calculate_shutter_angle() if await self._check_if_facade_is_in_sun() else self._facade_config.neutral_pos_angle
+                        )
 
                         forced_height = self._dynamic_config.lock_height
                         forced_angle = self._dynamic_config.lock_angle
@@ -1392,7 +1396,10 @@ class ShadowControlManager:
                         if height_differs or angle_differs:
                             self.logger.info(
                                 "Calculated position (%.1f%%, %.1f%%) differs from forced position (%.1f%%, %.1f%%) -> enforcing position update",
-                                temp_calculated_height, temp_calculated_angle, forced_height, forced_angle
+                                temp_calculated_height,
+                                temp_calculated_angle,
+                                forced_height,
+                                forced_angle,
                             )
                             self._enforce_position_update = True
                             self._previous_shutter_height = forced_height
@@ -1400,7 +1407,10 @@ class ShadowControlManager:
                         else:
                             self.logger.info(
                                 "Calculated position (%.1f%%, %.1f%%) equals forced position (%.1f%%, %.1f%%) -> no position update needed",
-                                temp_calculated_height, temp_calculated_angle, forced_height, forced_angle
+                                temp_calculated_height,
+                                temp_calculated_angle,
+                                forced_height,
+                                forced_angle,
                             )
                             # Setze die previous-Werte trotzdem, damit bei der nächsten Änderung die Differenz korrekt berechnet wird
                             self._previous_shutter_height = forced_height
