@@ -18,7 +18,7 @@
 * Fix usage of default values if configuring a new instance via HA UI ConfigFlow.
 * Use HA internal slugify functionality to sanitize instance names
 * Enforcing of shutter positioning works now with configured external entity as well as a corresponding button on the instance view in parallel.
-* Movement restriction handling for external entities refactored. The external entities could now use strings according to the used UI translation. Check [Movement restriction height within README.md](README.md#movement-restriction-height) for details.
+* Movement restriction handling for external entities refactored. The external entities could now use strings according to the used UI translation. Check [Movement restriction height within README.md](README.md#movement-restriction-height) or the readme.md of your UI language for details.
 
 ## 0.10.0
 * Bugfix: Fixed position handling if movement is restricted and integration gets unlocked
