@@ -61,7 +61,6 @@ class ShadowControlButton(ButtonEntity):
         icon: str | None = None,
     ) -> None:
         """Initialize the button."""
-        # ... (Similar initialization logic as your existing classes)
         self.hass = hass
         self.logger = logger
         self.entity_description = description
@@ -88,7 +87,9 @@ class ShadowControlButton(ButtonEntity):
         manager = self.hass.data[DOMAIN_DATA_MANAGERS][self._config_entry.entry_id]
 
         if self.entity_description.key == SCInternal.ENFORCE_POSITIONING_MANUAL.value:
-            await manager.async_calculate_and_apply_cover_position(None)
+            # Setze das Flag für erzwungene Positionierung
+            self.logger.info("Enforce positioning triggered via button")
+            await manager.async_trigger_enforce_positioning()
 
         # 2. You can also notify Home Assistant of the event
         # self.hass.bus.async_fire("shadow_control_button_pressed", {"entity_id": self.entity_id})

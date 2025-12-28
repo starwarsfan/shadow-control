@@ -1100,7 +1100,7 @@ class ShadowControlManager:
 
         self._handle_movement_restriction()
 
-        self._enforce_position_update = self._get_entity_state_value(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value, False, bool)
+        # self._enforce_position_update = self._get_entity_state_value(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value, False, bool)
 
         # Shadow Control Inputs
         shadow_control_enabled_manual = self.get_internal_entity_id(SCInternal.SHADOW_CONTROL_ENABLED_MANUAL)
@@ -1326,9 +1326,11 @@ class ShadowControlManager:
                 if entity == self._config.get(SCShadowInput.CONTROL_ENABLED_ENTITY.value):
                     self.logger.info("Shadow control enable changed to %s", new_state.state)
                     shadow_handling_was_disabled = new_state.state == "off"
+
                 elif entity == self._config.get(SCDawnInput.CONTROL_ENABLED_ENTITY.value):
                     self.logger.info("Dawn control enable changed to %s", new_state.state)
                     dawn_handling_was_disabled = new_state.state == "off"
+
                 elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value) or entity == (
                     self.hass.states.get(entity_id_lock_manual) if entity_id_lock_manual is not None else None
                 ):
@@ -1345,6 +1347,7 @@ class ShadowControlManager:
                         self.logger.info("Simple lock enabled -> no position update, storing current position")
                         self._height_during_lock_state = self._previous_shutter_height
                         self._angle_during_lock_state = self._previous_shutter_angle
+
                 elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value) or entity == (
                     self.hass.states.get(entity_id_lock_with_position_manual) if entity_id_lock_with_position_manual is not None else None
                 ):
@@ -1362,10 +1365,16 @@ class ShadowControlManager:
                         self._enforce_position_update = True
                         self._height_during_lock_state = self._dynamic_config.lock_height
                         self._angle_during_lock_state = self._dynamic_config.lock_angle
+
                 elif entity == self._config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value):
+                    # External enforce entity changed
                     if new_state.state == "on":
-                        self.logger.debug("Enforced positioning triggered")
-                        self._enforce_position_update = True
+                        self.logger.debug("External enforce positioning entity triggered")
+                        # Async handling by separate method
+                        # This method calls async_trigger_enforce_positioning,
+                        # which reset the flag automatically at the end
+                        await self._handle_external_enforce_trigger()
+
             elif event_type == "time_changed":
                 self.logger.info("Time changed event received")
             else:
@@ -1384,8 +1393,6 @@ class ShadowControlManager:
             await self._dawn_handling_was_disabled()
         else:
             await self._process_shutter_state()
-
-        self._enforce_position_update = False
 
     async def _check_if_facade_is_in_sun(self) -> bool:
         """Calculate if the sun illuminates the given facade."""
@@ -3381,6 +3388,49 @@ class ShadowControlManager:
         entity_id = registry.async_get_entity_id(internal_enum.domain, "shadow_control", unique_id)
         # self.logger.debug("Looking up internal entity_id for unique_id: %s -> %s", unique_id, entity_id)
         return entity_id  # noqa: RET504
+
+    async def async_trigger_enforce_positioning(self) -> None:
+        """Trigger a forced positioning update (one-time action)."""
+        self.logger.info("Enforce positioning triggered manually")
+        self._enforce_position_update = True
+
+        try:
+            await self.async_calculate_and_apply_cover_position(None)
+        finally:
+            # Ensure to always reset the flag
+            self._enforce_position_update = False
+            self.logger.debug("Enforce positioning flag reset")
+
+    async def _handle_external_enforce_trigger(self) -> None:
+        """Handle the external enforce positioning entity state change."""
+        # Check if external entity is configured
+        external_entity_id = self._config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value)
+
+        if not external_entity_id or external_entity_id == "none":
+            return
+
+        # Get current state
+        state = self.hass.states.get(external_entity_id)
+
+        if state and state.state == "on":
+            self.logger.info("Enforce positioning triggered via external entity: %s", external_entity_id)
+
+            # Switch external entity back to "off" (Toggle)
+            # Done before setting the flag to prevent race conditions!
+            try:
+                await self.hass.services.async_call(
+                    "input_boolean",
+                    "turn_off",
+                    {"entity_id": external_entity_id},
+                    blocking=False,
+                )
+                self.logger.debug("Reset external enforce entity to 'off': %s", external_entity_id)
+            except (ValueError, TypeError, KeyError) as e:
+                self.logger.warning("Could not reset external enforce entity %s: %s. Will continue anyway.", external_entity_id, e)
+
+            # Now set the flag and trigger positioning
+            # Reset will be done automatically within async_trigger_enforce_positioning
+            await self.async_trigger_enforce_positioning()
 
 
 # Helper for dynamic log output
