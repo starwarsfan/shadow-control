@@ -1374,15 +1374,42 @@ class ShadowControlManager:
                     self.hass.states.get(entity_id_lock_with_position_manual) if entity_id_lock_with_position_manual is not None else None
                 ):
                     if new_state.state == "off" and not self._dynamic_config.lock_integration:
-                        # Lock DISABLED
-                        self.logger.info("Lock with position was disabled and simple lock already disabled -> enforcing position update")
-                        self._enforce_position_update = True
-                        self._previous_shutter_height = self._height_during_lock_state
-                        self._previous_shutter_angle = self._angle_during_lock_state
+                        # Lock with position DISABLED
+                        self.logger.info("Lock with position was disabled and simple lock already disabled")
+
+                        # Check if lock position differs from computed position by temporary caluculation
+                        # without real positioning of shutters
+                        temp_calculated_height = self._calculate_shutter_height() if await self._check_if_facade_is_in_sun() else self._facade_config.neutral_pos_height
+                        temp_calculated_angle = self._calculate_shutter_angle() if await self._check_if_facade_is_in_sun() else self._facade_config.neutral_pos_angle
+
+                        forced_height = self._dynamic_config.lock_height
+                        forced_angle = self._dynamic_config.lock_angle
+
+                        # Check if positions differ (with small tolerance)
+                        height_differs = abs(temp_calculated_height - forced_height) > 0.5
+                        angle_differs = abs(temp_calculated_angle - forced_angle) > 0.5
+
+                        if height_differs or angle_differs:
+                            self.logger.info(
+                                "Calculated position (%.1f%%, %.1f%%) differs from forced position (%.1f%%, %.1f%%) -> enforcing position update",
+                                temp_calculated_height, temp_calculated_angle, forced_height, forced_angle
+                            )
+                            self._enforce_position_update = True
+                            self._previous_shutter_height = forced_height
+                            self._previous_shutter_angle = forced_angle
+                        else:
+                            self.logger.info(
+                                "Calculated position (%.1f%%, %.1f%%) equals forced position (%.1f%%, %.1f%%) -> no position update needed",
+                                temp_calculated_height, temp_calculated_angle, forced_height, forced_angle
+                            )
+                            # Setze die previous-Werte trotzdem, damit bei der nächsten Änderung die Differenz korrekt berechnet wird
+                            self._previous_shutter_height = forced_height
+                            self._previous_shutter_angle = forced_angle
+
                     elif new_state.state == "off" and self._dynamic_config.lock_integration:
                         self.logger.info("Lock with position was disabled but simple lock already enabled -> no position update")
                     else:
-                        # Lock ENABLED
+                        # Lock with position ENABLED
                         self.logger.info("Lock with position enabled -> storing current position and enforcing position update")
                         self._enforce_position_update = True
                         self._height_during_lock_state = self._dynamic_config.lock_height
