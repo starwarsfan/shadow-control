@@ -149,14 +149,21 @@ class ShadowControlSelect(SelectEntity, RestoreEntity):
     @property
     def options(self) -> list[str]:
         """Return the list of options for the selection."""
-        # The options are static, so we return a predefined list
-        return [state.to_ha_state_string() for state in MovementRestricted]
+        # Return enum values e. g. "no_restriction"
+        return [state.value for state in MovementRestricted]
 
     @property
     def current_option(self) -> str:
         """Return the current selected option."""
-        # Get the current value from the config entry options
-        return self.hass.data[DOMAIN].get("select_states", {}).get(self.unique_id, MovementRestricted.NO_RESTRICTION.value)
+        # Get the current value from hass.data
+        return (
+            self.hass.data[DOMAIN]
+            .get("select_states", {})
+            .get(
+                self.unique_id,
+                MovementRestricted.NO_RESTRICTION.value,  # Verwende .value statt .to_ha_state_string()
+            )
+        )
 
     def select_option(self, option: str) -> None:
         """Change the selected option, delegate to async."""

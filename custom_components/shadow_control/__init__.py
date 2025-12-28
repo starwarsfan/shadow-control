@@ -795,23 +795,33 @@ class ShadowControlManager:
         # Handle movement restriction height
         configured_height_entity_id = self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value)
         if configured_height_entity_id and configured_height_entity_id != "none":
-            self._dynamic_config.movement_restriction_height = self._get_entity_state_value(
-                SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value,
-                MovementRestricted.NO_RESTRICTION,  # Fallback to default
-                MovementRestricted,
-            )
-            self.logger.debug(
-                "Movement restriction height entity configured (%s), using value %s",
-                configured_height_entity_id,
-                self._dynamic_config.movement_restriction_height,
-            )
+            # External entity configured
+            state = self.hass.states.get(configured_height_entity_id)
+            if state and state.state not in ["unavailable", "unknown"]:
+                self._dynamic_config.movement_restriction_height = self._get_movement_restricted_from_state(state.state)
+                self.logger.debug(
+                    "Movement restriction height entity configured (%s), using value %s",
+                    configured_height_entity_id,
+                    self._dynamic_config.movement_restriction_height,
+                )
+            else:
+                self._dynamic_config.movement_restriction_height = MovementRestricted.NO_RESTRICTION
+                self.logger.debug(
+                    "Movement restriction height entity configured but unavailable (%s), using default NO_RESTRICTION",
+                    configured_height_entity_id,
+                )
         else:
+            # Use internal entity
             entity_id_movement_restriction_height = self.get_internal_entity_id(SCInternal.MOVEMENT_RESTRICTION_HEIGHT_MANUAL)
-            self._dynamic_config.movement_restriction_height = (
-                self._get_internal_entity_state_value(entity_id_movement_restriction_height, MovementRestricted.NO_RESTRICTION, MovementRestricted)
-                if entity_id_movement_restriction_height
-                else MovementRestricted.NO_RESTRICTION
-            )
+            if entity_id_movement_restriction_height:
+                state = self.hass.states.get(entity_id_movement_restriction_height)
+                if state and state.state not in ["unavailable", "unknown"]:
+                    self._dynamic_config.movement_restriction_height = self._get_movement_restricted_from_state(state.state)
+                else:
+                    self._dynamic_config.movement_restriction_height = MovementRestricted.NO_RESTRICTION
+            else:
+                self._dynamic_config.movement_restriction_height = MovementRestricted.NO_RESTRICTION
+
             self.logger.debug(
                 "Movement restriction height entity NOT configured or set to 'none', using value %s from internal entity",
                 self._dynamic_config.movement_restriction_height,
@@ -820,21 +830,33 @@ class ShadowControlManager:
         # Handle movement restriction angle
         configured_angle_entity_id = self._config.get(SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value)
         if configured_angle_entity_id and configured_angle_entity_id != "none":
-            self._dynamic_config.movement_restriction_angle = self._get_entity_state_value(
-                SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value, MovementRestricted.NO_RESTRICTION, MovementRestricted
-            )
-            self.logger.debug(
-                "Movement restriction angle entity configured (%s), using value %s",
-                configured_angle_entity_id,
-                self._dynamic_config.movement_restriction_angle,
-            )
+            # External entity configured
+            state = self.hass.states.get(configured_angle_entity_id)
+            if state and state.state not in ["unavailable", "unknown"]:
+                self._dynamic_config.movement_restriction_angle = self._get_movement_restricted_from_state(state.state)
+                self.logger.debug(
+                    "Movement restriction angle entity configured (%s), using value %s",
+                    configured_angle_entity_id,
+                    self._dynamic_config.movement_restriction_angle,
+                )
+            else:
+                self._dynamic_config.movement_restriction_angle = MovementRestricted.NO_RESTRICTION
+                self.logger.debug(
+                    "Movement restriction angle entity configured but unavailable (%s), using default NO_RESTRICTION",
+                    configured_angle_entity_id,
+                )
         else:
+            # Use internal entity
             entity_id_movement_restriction_angle = self.get_internal_entity_id(SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL)
-            self._dynamic_config.movement_restriction_angle = (
-                self._get_internal_entity_state_value(entity_id_movement_restriction_angle, MovementRestricted.NO_RESTRICTION, MovementRestricted)
-                if entity_id_movement_restriction_angle
-                else MovementRestricted.NO_RESTRICTION
-            )
+            if entity_id_movement_restriction_angle:
+                state = self.hass.states.get(entity_id_movement_restriction_angle)
+                if state and state.state not in ["unavailable", "unknown"]:
+                    self._dynamic_config.movement_restriction_angle = self._get_movement_restricted_from_state(state.state)
+                else:
+                    self._dynamic_config.movement_restriction_angle = MovementRestricted.NO_RESTRICTION
+            else:
+                self._dynamic_config.movement_restriction_angle = MovementRestricted.NO_RESTRICTION
+
             self.logger.debug(
                 "Movement restriction angle entity NOT configured or set to 'none', using value %s from internal entity",
                 self._dynamic_config.movement_restriction_angle,
@@ -3431,6 +3453,22 @@ class ShadowControlManager:
             # Now set the flag and trigger positioning
             # Reset will be done automatically within async_trigger_enforce_positioning
             await self.async_trigger_enforce_positioning()
+
+    def _get_movement_restricted_from_state(self, state_value: str) -> MovementRestricted:
+        """Convert state value to MovementRestricted enum."""
+        if not state_value:
+            return MovementRestricted.NO_RESTRICTION
+
+        result = MovementRestricted.from_ha_state_string(state_value)
+
+        if result == MovementRestricted.NO_RESTRICTION and state_value.lower() != "no_restriction":
+            self.logger.debug(
+                "State value '%s' was converted to NO_RESTRICTION (might be default fallback). Valid values are: %s",
+                state_value,
+                [e.value for e in MovementRestricted],
+            )
+
+        return result
 
 
 # Helper for dynamic log output

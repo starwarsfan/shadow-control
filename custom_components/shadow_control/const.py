@@ -225,8 +225,25 @@ class MovementRestricted(Enum):
     ONLY_OPEN = "only_open"
 
     def to_ha_state_string(self) -> str:
-        """Return the lowercase name for usage with selection."""
-        return self.name.lower()
+        """Return the value for usage with selection (not translated)."""
+        return self.value
+
+    @classmethod
+    def from_ha_state_string(cls, state_string: str) -> "MovementRestricted":
+        """Convert HA state string back to enum member."""
+        # Versuche direkt als value
+        for member in cls:
+            if member.value == state_string:
+                return member
+
+        # Versuche als name (z.B. "NO_RESTRICTION")
+        try:
+            return cls[state_string.upper()]
+        except KeyError:
+            pass
+
+        # Fallback
+        return cls.NO_RESTRICTION
 
 
 # Configuration values of known shutter types
