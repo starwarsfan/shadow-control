@@ -611,7 +611,7 @@ class ShadowControlConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         if instance_name:
             for entry in self.hass.config_entries.async_entries(DOMAIN):
                 if entry.data.get(SC_CONF_NAME) == instance_name:
-                    _LOGGER.warning("Attempted to import duplicate Shadow Control instance '%s' from YAML. Skipping.", instance_name)
+                    _LOGGER.info("Attempted to import duplicate Shadow Control instance '%s' from YAML. Skipping.", instance_name)
                     return self.async_abort(reason="already_configured")
 
         _LOGGER.debug("[ConfigFlow] Importing from YAML with config: %s", import_config)
