@@ -1336,6 +1336,7 @@ class ShadowControlManager:
 
         shadow_handling_was_disabled = False
         dawn_handling_was_disabled = False
+        force_immediate_positioning = False
 
         if event:  # Check for real event (not None like at the initial run)
             event_type = event.event_type
@@ -1352,6 +1353,47 @@ class ShadowControlManager:
 
                 entity_id_lock_manual = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_MANUAL)
                 entity_id_lock_with_position_manual = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL)
+
+                # List of entities, which require immediate repositioning without any timer in between:
+                config_entities_requiring_immediate_positioning = [
+                    # Shadow configuration entities
+                    self._config.get(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value),
+                    self._config.get(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value),
+                    self._config.get(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value),
+                    self._config.get(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value),
+                    self._config.get(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value),
+                    # Dawn configuration entities
+                    self._config.get(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value),
+                    self._config.get(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value),
+                    self._config.get(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value),
+                    self._config.get(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value),
+                    self._config.get(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value),
+                    # Internal entities
+                    self.get_internal_entity_id(SCInternal.SHADOW_SHUTTER_MAX_HEIGHT_MANUAL),
+                    self.get_internal_entity_id(SCInternal.SHADOW_SHUTTER_MAX_ANGLE_MANUAL),
+                    self.get_internal_entity_id(SCInternal.SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL),
+                    self.get_internal_entity_id(SCInternal.SHADOW_HEIGHT_AFTER_SUN_MANUAL),
+                    self.get_internal_entity_id(SCInternal.SHADOW_ANGLE_AFTER_SUN_MANUAL),
+                    self.get_internal_entity_id(SCInternal.DAWN_SHUTTER_MAX_HEIGHT_MANUAL),
+                    self.get_internal_entity_id(SCInternal.DAWN_SHUTTER_MAX_ANGLE_MANUAL),
+                    self.get_internal_entity_id(SCInternal.DAWN_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL),
+                    self.get_internal_entity_id(SCInternal.DAWN_HEIGHT_AFTER_DAWN_MANUAL),
+                    self.get_internal_entity_id(SCInternal.DAWN_ANGLE_AFTER_DAWN_MANUAL),
+                    # Neutral position entities
+                    self._config.get(SCFacadeConfig2.NEUTRAL_POS_HEIGHT_ENTITY.value),
+                    self._config.get(SCFacadeConfig2.NEUTRAL_POS_ANGLE_ENTITY.value),
+                    self.get_internal_entity_id(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL),
+                    self.get_internal_entity_id(SCInternal.NEUTRAL_POS_ANGLE_MANUAL),
+                ]
+
+                if entity in config_entities_requiring_immediate_positioning:
+                    self.logger.info(
+                        "Configuration entity '%s' changed from %s to %s -> forcing immediate positioning",
+                        entity,
+                        old_state.state if old_state else "None",
+                        new_state.state if new_state else "None",
+                    )
+                    force_immediate_positioning = True
 
                 if entity == self._config.get(SCShadowInput.CONTROL_ENABLED_ENTITY.value):
                     self.logger.info("Shadow control enable changed to %s", new_state.state)
@@ -1458,6 +1500,8 @@ class ShadowControlManager:
             await self._shadow_handling_was_disabled()
         elif dawn_handling_was_disabled:
             await self._dawn_handling_was_disabled()
+        elif force_immediate_positioning:
+            await self._force_immediate_positioning()
         else:
             await self._process_shutter_state()
 
@@ -1634,6 +1678,84 @@ class ShadowControlManager:
             case _:
                 self.logger.debug("Dawn handling was disabled but currently within a shadow state. Nothing to do")
 
+    async def _force_immediate_positioning(self) -> None:
+        """Force immediate positioning based on current state, bypassing timers."""
+        self.logger.info(
+            "=== FORCE_IMMEDIATE_POSITIONING DEBUG === _is_initial_run=%s, _previous_height=%s, _previous_angle=%s",
+            self._is_initial_run,
+            self._previous_shutter_height,
+            self._previous_shutter_angle,
+        )
+
+        self.logger.debug("Forcing immediate positioning based on current shutter state: %s", self.current_shutter_state.name)
+
+        if self._is_initial_run:
+            self.logger.debug("Was in initial run mode, switching to normal mode for immediate positioning")
+            self._is_initial_run = False
+
+        # Stoppe laufende Timer
+        self._cancel_timer()
+
+        # Ermittle die Zielposition basierend auf aktuellem State
+        if self.current_shutter_state in (
+            ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING,
+            ShutterState.DAWN_FULL_CLOSED,
+        ):
+            # Dawn full closed position
+            height = self._dawn_config.shutter_max_height
+            angle = self._dawn_config.shutter_max_angle
+
+        elif self.current_shutter_state in (
+            ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING,
+            ShutterState.DAWN_HORIZONTAL_NEUTRAL,
+        ):
+            # Dawn horizontal neutral position
+            height = self._dawn_config.shutter_max_height
+            angle = self._dawn_config.shutter_look_through_angle
+
+        elif self.current_shutter_state in (
+            ShutterState.DAWN_NEUTRAL_TIMER_RUNNING,
+            ShutterState.DAWN_NEUTRAL,
+        ):
+            # Dawn neutral position
+            height = self._dawn_config.height_after_dawn
+            angle = self._dawn_config.angle_after_dawn
+
+        elif self.current_shutter_state in (
+            ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING,
+            ShutterState.SHADOW_FULL_CLOSED,
+        ):
+            # Shadow full closed position
+            height = self._calculate_shutter_height()
+            angle = self._calculate_shutter_angle()
+
+        elif self.current_shutter_state in (
+            ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING,
+            ShutterState.SHADOW_HORIZONTAL_NEUTRAL,
+        ):
+            # Shadow horizontal neutral
+            height = self._calculate_shutter_height()
+            angle = self._shadow_config.shutter_look_through_angle
+
+        elif self.current_shutter_state in (
+            ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING,
+            ShutterState.SHADOW_NEUTRAL,
+        ):
+            # Shadow neutral position
+            height = self._shadow_config.height_after_sun
+            angle = self._shadow_config.angle_after_sun
+
+        else:
+            # Neutral position
+            height = self._facade_config.neutral_pos_height
+            angle = self._facade_config.neutral_pos_angle
+
+        if height is not None and angle is not None:
+            self.logger.info("Immediate positioning to %.1f%% / %.1f%% for state %s", height, angle, self.current_shutter_state.name)
+            await self._position_shutter(float(height), float(angle), stop_timer=True)
+        else:
+            self.logger.warning("Cannot force immediate positioning - height or angle is None (state: %s)", self.current_shutter_state.name)
+
     async def _process_shutter_state(self) -> None:
         """Process current shutter state and call corresponding handler functions."""
         self.logger.debug("Current shutter state (before processing): %s (%s)", self.current_shutter_state.name, self.current_shutter_state.value)
@@ -1683,7 +1805,7 @@ class ShadowControlManager:
             # These are now set to the *initial target* values.
             self._previous_shutter_height = shutter_height_percent
             self._previous_shutter_angle = shutter_angle_percent
-            self._is_initial_run = False  # Initial run completed
+            # self._is_initial_run = False  # Initial run completed
 
             self._update_extra_state_attributes()
             return  # Exit here, as no physical output should happen on the initial run
