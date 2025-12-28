@@ -4,11 +4,10 @@ import homeassistant.helpers.entity_registry as er
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import Event, HomeAssistant, State, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.event import async_track_state_change_event
 
 from . import ShadowControlManager
 from .const import DOMAIN, DOMAIN_DATA_MANAGERS, EXTERNAL_SENSOR_DEFINITIONS, SCFacadeConfig2, SensorEntries, ShutterState, ShutterType
@@ -296,6 +295,7 @@ class ShadowControlExternalEntityValueSensor(SensorEntity):
         self._external_entity_id = external_entity_id
         self._attr_translation_key = definition["translation_key"]
         self._attr_has_entity_name = True
+        self.logger = manager.logger
 
         # Unique ID based on the config key to ensure one per external entity type
         self._attr_unique_id = f"{config_entry_id}_{definition['config_key']}_source_value"
@@ -313,62 +313,48 @@ class ShadowControlExternalEntityValueSensor(SensorEntity):
             manufacturer="Yves Schumann",
         )
 
-        self._current_value = None
-
     @property
-    def native_value(self) -> float | str | None:
-        """Return the state of the sensor, mirroring the external entity's state."""
-        value = self._current_value
+    def native_value(self) -> float | int | str | None:
+        """Return the state of the sensor."""
+        entity_id = self._external_entity_id
 
-        if value is None:
+        # Keine Entität konfiguriert
+        if not entity_id or entity_id == "none":
             return None
 
-        # Check if the value is a float OR an int. This handles all numeric states.
-        if isinstance(value, (float, int)):
-            # This is done to ensure the final output is a Python 'int',
-            # which prevents the HA frontend from displaying trailing decimals (.0 or ,0).
-            # We must use int() because round() can return a float (e.g., 50000.0).
-            return int(round(value))  # noqa: RUF046
+        state = self.hass.states.get(entity_id)
 
-        # Return all other types (strings like 'on'/'off' or 'unavailable') as is.
-        return value
+        # Entität existiert nicht oder ist nicht verfügbar
+        if state is None or state.state in ("unknown", "unavailable"):
+            return None
 
-    async def async_added_to_hass(self) -> None:
-        """Register callbacks and start state tracking."""
-        await super().async_added_to_hass()
-
-        # Get initial state
-        state = self.hass.states.get(self._external_entity_id)
-        if state:
-            self._update_from_state(state)
-
-        # Start tracking state changes of the external entity
-        self.async_on_remove(
-            async_track_state_change_event(
-                self.hass,
-                [self._external_entity_id],
-                self._handle_state_change,
-            )
-        )
-
-    @callback
-    def _handle_state_change(self, event: Event) -> None:
-        """Handle state changes of the tracked entity."""
-        new_state = event.data.get("new_state")
-        if new_state is not None:
-            self._update_from_state(new_state)
-            self.async_write_ha_state()
-
-    @callback
-    def _update_from_state(self, state: State) -> None:
-        """Parse the state object and update the sensor value."""
-        # Try to convert to float if a unit is defined (assuming it's a number sensor)
-        if self.native_unit_of_measurement:
-            try:
-                self._current_value = float(state.state)
-            except (ValueError, TypeError):
-                # Fallback for 'unavailable', 'unknown', or invalid string values
-                self._current_value = state.state
+        # Versuche den Wert zu konvertieren
+        try:
+            # Für numerische Sensoren (haben state_class)
+            if self._attr_state_class is not None:
+                # Versuche Float-Konvertierung
+                return float(state.state)
+        except (ValueError, TypeError) as e:
+            self.logger.debug("Could not convert state '%s' of entity '%s' to numeric value: %s", state.state, entity_id, e)
+            return None
         else:
-            # For non-numeric sensors (e.g., switches, selects), just use the state string
-            self._current_value = state.state
+            # Für text-basierte Sensoren (kein state_class)
+            # Wird nur ausgeführt wenn kein Exception auftritt UND state_class None ist
+            return state.state
+
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        entity_id = self._external_entity_id
+
+        # Keine Entität konfiguriert
+        if not entity_id or entity_id == "none":
+            return False
+
+        state = self.hass.states.get(entity_id)
+
+        # Sensor ist nur verfügbar wenn die verknüpfte Entität verfügbar ist
+        if state is None:
+            return False
+
+        return state.state not in ("unknown", "unavailable")
