@@ -391,11 +391,11 @@ Attention, see note at [Entity precedence](#entity-precedence).
 
 With this setting, the movement direction could be restricted:
 
-* "No restriction" (UI) or `no_restriction` (yaml, entity; default value)
+* "No restriction" (default value):
   No restriction on shutter movement. The automation will open or close the shutter.
-* "Only close" (UI) or `only_close` (yaml, entity)
+* "Only close":
   In comparison to the last (previous) position, only closing positions will be activated.
-* "Only open" (UI) or `only_open` (yaml, entity)
+* "Only open":
   In comparison to the last (previous) position, only opening positions will be activated.
 
 This could be used to prevent shutters from being opened after the sun goes down and close them some minutes later because of starting dawn. This setting might be modified using a timer clock or other appropriate automation.

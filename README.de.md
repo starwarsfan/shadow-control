@@ -388,11 +388,11 @@ Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
 Mit diesem Setting kann die Bewegungsrichtung der Höhenpositionierung wie folgt eingeschränkt werden
 
-* "Keine Einschränkung" (UI) bzw. `no_restriction` (yaml, Entität; Standardwert)
+* "Keine Einschränkung" (Standardwert):
   Keine Einschränkung der Höhenpositionierung. Die Integration wird den Behang öffnen oder schliessen.
-* "Nur schliessen" (UI) bzw. `only_close` (yaml, Entität)
-  Im Vergleich zur letzten (vorherigen) Positionierung werden nur weiter schliessende Positionen angefahren.
-* "Nur öffnen" (UI) bzw. `only_open` (yaml, Entität)
+* "Nur schließen":
+  Im Vergleich zur letzten (vorherigen) Positionierung werden nur weiter schließende Positionen angefahren.
+* "Nur öffnen":
   Im Vergleich zur letzten (vorherigen) Positionierung werden nur weiter öffnende Positionen angefahren.
 
 Das kann dafür verwendet werden, dass der Behang nach der Beschattung nicht zunächst geöffnet und kurze Zeit später durch schnell einsetzende Dämmerung wieder geschlossen wird. Durch eine separate, bspw. tageszeitabhängige Automation, kann dieser Eingang entsprechend modifiziert werden.
