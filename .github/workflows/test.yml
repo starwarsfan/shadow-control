@@ -1,0 +1,66 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+      - bugfix/*
+      - feature/*
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+        ha-version: ["2024.12.0", "2025.1.0"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install homeassistant==${{ matrix.ha-version }}
+          pip install -r requirements_test.txt --no-deps
+          pip install pytest pytest-homeassistant-custom-component pytest-cov ruff
+
+      - name: Run tests with coverage
+        run: pytest tests/ -v --cov=custom_components.shadow_control --cov-report=xml --cov-report=term
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.13' && matrix.ha-version == '2025.1.0'
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-py${{ matrix.python-version }}-ha${{ matrix.ha-version }}
+          fail_ci_if_error: false
+          override_branch: ${{ github.head_ref || github.ref_name }}  # <-- Branch name
+          override_commit: ${{ github.sha }}
+
+      - name: Run ruff
+        run: ruff check custom_components/
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install ruff
+        run: pip install ruff==0.14.1
+
+      - name: Run ruff
+        run: ruff check custom_components/
