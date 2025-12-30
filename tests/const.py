@@ -1,10 +1,10 @@
 """Constants for shadow_control tests."""
+
 from custom_components.shadow_control.const import (
-    DOMAIN,
-    SC_CONF_NAME,
-    SC_CONF_COVERS,
-    TARGET_COVER_ENTITY,  # ✅ Ohne _ID!
     DEBUG_ENABLED,
+    SC_CONF_COVERS,
+    SC_CONF_NAME,
+    TARGET_COVER_ENTITY,  # ✅ Ohne _ID!
 )
 
 # Mock Config Data - Minimale Konfiguration für einen Cover

@@ -3,6 +3,7 @@
 # ============================================================================
 # WINDOWS COMPATIBILITY: Mock fcntl module
 # ============================================================================
+import logging
 import sys
 from unittest.mock import MagicMock
 
@@ -11,7 +12,6 @@ if sys.platform == "win32":
 # ============================================================================
 
 from collections.abc import Generator
-from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -19,10 +19,10 @@ from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.shadow_control.const import (
+    DEBUG_ENABLED,
     DOMAIN,
     SC_CONF_NAME,
     TARGET_COVER_ENTITY,
-    DEBUG_ENABLED,
 )
 
 pytest_plugins = "pytest_homeassistant_custom_component"
@@ -33,37 +33,30 @@ def auto_enable_custom_integrations(enable_custom_integrations: None) -> None:
     """Enable loading custom integrations in all tests."""
     return
 
+
 @pytest.fixture(autouse=True, scope="session")
 def configure_test_logging():
     """Configure logging to suppress sun integration errors."""
-    import logging
 
     # Create a custom filter
     class SunErrorFilter(logging.Filter):
         def filter(self, record):
             msg = record.getMessage()
-
-            # Filter out sun unload errors
-            if "Error unloading entry Sun for sun" in msg:
-                return False
-            if "'NoneType' object has no attribute 'loop'" in msg:
-                return False
-
-            # Filter out sun sensor attribute errors
-            if "Error adding entity sensor.sun_" in msg:
-                return False
-            if "'Sun' object has no attribute" in msg:
-                return False
-
-            return True
+            return not any(
+                blocked in msg
+                for blocked in [
+                    "Error unloading entry Sun for sun",
+                    "'NoneType' object has no attribute 'loop'",
+                    "Error adding entity sensor.sun_",
+                    "'Sun' object has no attribute",
+                ]
+            )
 
     # Add filter to relevant loggers
     sun_filter = SunErrorFilter()
     logging.getLogger().addFilter(sun_filter)
     logging.getLogger("homeassistant.config_entries").addFilter(sun_filter)
     logging.getLogger("homeassistant.components.sensor").addFilter(sun_filter)
-
-    yield
 
 
 @pytest.fixture(name="mock_cover")
@@ -144,27 +137,23 @@ def expected_lingering_timers() -> bool:
 
 
 @pytest.fixture(autouse=True)
-def mock_async_track_time_interval() -> Generator[MagicMock, None, None]:
+def mock_async_track_time_interval() -> Generator[MagicMock]:
     """Mock async_track_time_interval to prevent timer issues in tests."""
-    with patch(
-            "homeassistant.helpers.event.async_track_time_interval"
-    ) as mock:
+    with patch("homeassistant.helpers.event.async_track_time_interval") as mock:
         mock.return_value = MagicMock()
         yield mock
 
 
 @pytest.fixture(autouse=True)
-def mock_async_track_state_change() -> Generator[MagicMock, None, None]:
+def mock_async_track_state_change() -> Generator[MagicMock]:
     """Mock async_track_state_change_event to prevent state change listeners."""
-    with patch(
-            "homeassistant.helpers.event.async_track_state_change_event"
-    ) as mock:
+    with patch("homeassistant.helpers.event.async_track_state_change_event") as mock:
         mock.return_value = MagicMock()
         yield mock
 
 
 @pytest.fixture(autouse=True)
-def mock_async_call_later() -> Generator[MagicMock, None, None]:
+def mock_async_call_later() -> Generator[MagicMock]:
     """Mock async_call_later to prevent timer issues."""
     with patch("homeassistant.helpers.event.async_call_later") as mock:
         mock.return_value = MagicMock()

@@ -1,14 +1,14 @@
 """Test shadow_control setup process."""
+
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.shadow_control.const import DOMAIN
 
 
-async def test_setup_entry(
-    hass: HomeAssistant, mock_config_entry, mock_cover, mock_sun
-) -> None:
+async def test_setup_entry(hass: HomeAssistant, mock_config_entry, mock_cover, mock_sun) -> None:
     """Test setup of a config entry."""
     mock_config_entry.add_to_hass(hass)
 
@@ -25,7 +25,6 @@ async def test_setup_entry(
 
 async def test_setup_entry_missing_target_cover(hass: HomeAssistant, mock_sun) -> None:
     """Test setup fails when target cover is missing."""
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -42,7 +41,7 @@ async def test_setup_entry_missing_target_cover(hass: HomeAssistant, mock_sun) -
 
     # Should either fail or load with warning
     result = await hass.config_entries.async_setup(entry.entry_id)
-    
+
     # Je nach Implementation:
     # - Entweder schlägt Setup fehl: assert not result
     # - Oder es lädt mit Warning: assert result
@@ -50,9 +49,7 @@ async def test_setup_entry_missing_target_cover(hass: HomeAssistant, mock_sun) -
     assert result in (True, False)  # Placeholder
 
 
-async def test_unload_entry(
-    hass: HomeAssistant, mock_config_entry, mock_cover, mock_sun
-) -> None:
+async def test_unload_entry(hass: HomeAssistant, mock_config_entry, mock_cover, mock_sun) -> None:
     """Test unloading a config entry."""
     mock_config_entry.add_to_hass(hass)
 
@@ -68,9 +65,7 @@ async def test_unload_entry(
     assert mock_config_entry.state == ConfigEntryState.NOT_LOADED
 
 
-async def test_reload_entry(
-    hass: HomeAssistant, mock_config_entry, mock_cover, mock_sun
-) -> None:
+async def test_reload_entry(hass: HomeAssistant, mock_config_entry, mock_cover, mock_sun) -> None:
     """Test reloading a config entry."""
     mock_config_entry.add_to_hass(hass)
 
