@@ -31,6 +31,18 @@ ignore = [
     "FBT003", # Boolean positional value in function call
     "ANN001", # Missing type annotation for function argument
     "PLR0913", # Too many arguments in function definition
+    "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
+    "TC006", # Add quotes to type expression in `typing.cast()`
+]
+
+# Relaxed rules for tests
+[lint.per-file-ignores]
+"tests/**" = [
+    "S101",    # Use of assert detected
+    "ANN",     # Type annotations
+    "D",       # Docstrings
+    "SLF001",  # Private member access
+    "PLR2004", # Magic values
 ]
 
 [lint.flake8-pytest-style]
