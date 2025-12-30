@@ -1,0 +1,6 @@
+-r requirements.txt
+
+# Development Testing
+pytest>=8.0.0
+pytest-homeassistant-custom-component
+pytest-cov>=4.0.0
