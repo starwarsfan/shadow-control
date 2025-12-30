@@ -14,7 +14,7 @@ VERSION = 5
 
 SC_CONF_NAME = "name"
 DEBUG_ENABLED = "debug_enabled"
-TARGET_COVER_ENTITY_ID = "target_cover_entity"
+TARGET_COVER_ENTITY = "target_cover_entity"
 
 
 class SCInternal(Enum):

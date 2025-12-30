@@ -36,7 +36,7 @@ from .const import (
     DOMAIN_DATA_MANAGERS,
     INTERNAL_TO_DEFAULTS_MAP,
     SC_CONF_NAME,
-    TARGET_COVER_ENTITY_ID,
+    TARGET_COVER_ENTITY,
     VERSION,
     LockState,
     MovementRestricted,
@@ -162,7 +162,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:  #
         return False
 
     # The cover to handle with this integration
-    target_cover_entity_id = config_data.get(TARGET_COVER_ENTITY_ID)
+    target_cover_entity_id = config_data.get(TARGET_COVER_ENTITY)
 
     if not manager_name:
         _LOGGER.error(
@@ -649,7 +649,7 @@ class ShadowControlManager:
         self.logger = instance_logger
 
         self.name = self._config[SC_CONF_NAME]
-        self._target_cover_entity_id = self._config[TARGET_COVER_ENTITY_ID]
+        self._target_cover_entity_id = self._config[TARGET_COVER_ENTITY]
 
         # Sanitize instance name
         # This handles umlauts, spaces, and special characters automatically
