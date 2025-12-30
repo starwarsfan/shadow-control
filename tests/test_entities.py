@@ -1,13 +1,10 @@
 """Test shadow_control entities."""
 
-import pytest
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 
-async def test_sensor_entities_created(
-        hass: HomeAssistant, mock_config_entry: MockConfigEntry, mock_cover, mock_sun
-) -> None:
+async def test_sensor_entities_created(hass: HomeAssistant, mock_config_entry: MockConfigEntry, mock_cover, mock_sun) -> None:
     """Test all sensor entities are created."""
     mock_config_entry.add_to_hass(hass)
     await hass.config_entries.async_setup(mock_config_entry.entry_id)
@@ -26,9 +23,7 @@ async def test_sensor_entities_created(
         assert state is not None, f"Sensor {sensor_id} not found"
 
 
-async def test_button_entity_press(
-        hass: HomeAssistant, mock_config_entry: MockConfigEntry, mock_cover, mock_sun
-) -> None:
+async def test_button_entity_press(hass: HomeAssistant, mock_config_entry: MockConfigEntry, mock_cover, mock_sun) -> None:
     """Test button entity can be pressed."""
     mock_config_entry.add_to_hass(hass)
     await hass.config_entries.async_setup(mock_config_entry.entry_id)
@@ -45,9 +40,7 @@ async def test_button_entity_press(
     # Verify button was pressed (add appropriate assertions based on behavior)
 
 
-async def test_switch_entity_toggle(
-        hass: HomeAssistant, mock_config_entry: MockConfigEntry, mock_cover, mock_sun
-) -> None:
+async def test_switch_entity_toggle(hass: HomeAssistant, mock_config_entry: MockConfigEntry, mock_cover, mock_sun) -> None:
     """Test switch entity can be toggled."""
     mock_config_entry.add_to_hass(hass)
     await hass.config_entries.async_setup(mock_config_entry.entry_id)

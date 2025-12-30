@@ -1,6 +1,5 @@
 """Extended tests for shadow_control __init__."""
 
-import pytest
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -8,9 +7,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.shadow_control.const import DOMAIN, TARGET_COVER_ENTITY
 
 
-async def test_entry_setup_with_multiple_covers(
-        hass: HomeAssistant, mock_cover, mock_sun
-) -> None:
+async def test_entry_setup_with_multiple_covers(hass: HomeAssistant, mock_cover, mock_sun) -> None:
     """Test setup with multiple cover entities."""
     # Add second cover
     hass.states.async_set(
@@ -56,7 +53,7 @@ async def test_config_entry_not_ready_when_sun_missing(hass: HomeAssistant) -> N
 
     # Setup should succeed even without sun (your code handles this)
     # Adjust this based on your actual implementation
-    result = await hass.config_entries.async_setup(entry.entry_id)
+    await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
 
     # This test needs to match your actual behavior
