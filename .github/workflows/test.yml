@@ -37,7 +37,7 @@ jobs:
         run: pytest tests/ -v --cov=custom_components.shadow_control --cov-report=xml --cov-report=term
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         if: matrix.python-version == '3.13' && matrix.ha-version == '2025.1.0'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
