@@ -12,6 +12,7 @@ __pycache__
 coverage.xml
 .ruff_cache
 .idea/
+*.iml
 
 # Home Assistant configuration
 config/*
