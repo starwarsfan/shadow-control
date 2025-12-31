@@ -3,9 +3,7 @@
 from homeassistant.core import HomeAssistant
 
 
-async def test_config_change_with_active_lock_does_not_position(
-        hass: HomeAssistant, mock_config_entry, mock_cover, mock_sun
-):
+async def test_config_change_with_active_lock_does_not_position(hass: HomeAssistant, mock_config_entry, mock_cover, mock_sun):
     """Test that configuration changes don't trigger positioning when lock is active."""
     # Setup integration
     mock_config_entry.add_to_hass(hass)
@@ -13,7 +11,6 @@ async def test_config_change_with_active_lock_does_not_position(
     await hass.async_block_till_done()
 
     # Activate lock
-    lock_entity = hass.states.get("switch.test_shadow_control_lock")
     await hass.services.async_call(
         "switch",
         "turn_on",
@@ -40,14 +37,10 @@ async def test_config_change_with_active_lock_does_not_position(
     cover_state_after = hass.states.get("cover.test_cover")
     final_position = cover_state_after.attributes.get("current_position", 0)
 
-    assert initial_position == final_position, (
-        "Cover should NOT move when config changes while lock is active"
-    )
+    assert initial_position == final_position, "Cover should NOT move when config changes while lock is active"
 
 
-async def test_config_change_without_lock_does_position(
-        hass: HomeAssistant, mock_config_entry, mock_cover, mock_sun
-):
+async def test_config_change_without_lock_does_position(hass: HomeAssistant, mock_config_entry, mock_cover, mock_sun):
     """Test that configuration changes DO trigger positioning when no lock is active."""
     # Setup integration
     mock_config_entry.add_to_hass(hass)
