@@ -31,8 +31,8 @@ jobs:
           python3 <<EOF
           import re
           tag = "${TAG_NAME}"
-          # Remove -rc* suffix for release candidates
-          base_version = re.sub(r'-rc\d*$', '', tag)
+          # Remove -RC* suffix for release candidates
+          base_version = re.sub(r'-RC\d*$', '', tag)
           with open('RELEASENOTES.md', 'r') as f:
               lines = f.readlines()
           pattern = re.compile(r'^##\s+' + re.escape(base_version) + r'\s*$')
@@ -64,7 +64,7 @@ jobs:
 
       - name: Set prerelease flag
         run: |
-          if [[ "${GITHUB_REF##*/}" =~ -rc ]]; then
+          if [[ "${GITHUB_REF##*/}" =~ -RC ]]; then
             echo "PRERELEASE=true" >> $GITHUB_ENV
           else
             echo "PRERELEASE=false" >> $GITHUB_ENV
