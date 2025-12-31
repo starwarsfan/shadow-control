@@ -20,6 +20,7 @@ from homeassistant.const import (
     Platform,
 )
 from homeassistant.core import Event, HomeAssistant, ServiceCall, State, callback
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry, entity_registry
 from homeassistant.helpers.dispatcher import async_dispatcher_send
@@ -778,8 +779,9 @@ class ShadowControlManager:
         self.is_in_sun: bool = False
         self.next_modification_timestamp: datetime | None = None
 
-        self._last_known_height: float | None = None
-        self._last_known_angle: float | None = None
+        self._last_positioning_time: datetime | None = None
+        self._last_calculated_height: float = 0.0
+        self._last_calculated_angle: float = 0.0
         self._is_external_modification_detected: bool = False
         self._external_modification_timestamp: datetime | None = None
 
@@ -974,31 +976,101 @@ class ShadowControlManager:
         # Check if the state really was changed
         old_current_height = old_state.attributes.get("current_position") if old_state else None
         new_current_height = new_state.attributes.get("current_position") if new_state else None
-        old_current_angle = old_state.attributes.get("current_tilt") if old_state else None
-        new_current_angle = new_state.attributes.get("current_tilt") if new_state else None
+        old_current_angle = old_state.attributes.get("current_tilt_position") if old_state else None
+        new_current_angle = new_state.attributes.get("current_tilt_position") if new_state else None
 
-        # Wir müssen auch den Fall berücksichtigen, dass das Rollo offen oder geschlossen ist
-        # und der Status sich ändert (z.B. von "opening" zu "open").
-        # Hier ist es besser, auf eine Änderung von height oder angle zu prüfen,
-        # da der state (open/closed/opening/closing) sich auch ohne manuelle Interaktion ändern kann.
+        # Mode3 (Jalousien/Rollos): Kein Winkel, nur Höhe
+        has_tilt = self._facade_config.shutter_type != ShutterType.MODE3
 
-        # Nur fortfahren, wenn sich die Höhe oder der Winkel geändert hat
-        # und der Manager nicht selbst die Änderung verursacht hat (z.B. durch async_set_cover_position)
-        if old_current_height != new_current_height or old_current_angle != new_current_angle:
-            # Check if modification was triggerd by the ShadowControlManager himself
-            if self.next_modification_timestamp and (
-                (datetime.now(UTC) - self.next_modification_timestamp).total_seconds() < 5  # Less than 5 seconds since last change
-            ):
-                self.logger.debug("Cover state change detected, but appears to be self-initiated. Skipping lock state update.")
-                self.next_modification_timestamp = None  # Reset for next external change
+        # Nur fortfahren, wenn sich die Höhe oder bei Raffstoren der Winkel geändert hat
+        height_changed = old_current_height != new_current_height
+        angle_changed = has_tilt and (old_current_angle != new_current_angle)
+
+        if height_changed or angle_changed:
+            if self._is_within_grace_period():
+                self.logger.debug("Cover state change detected, but within grace period after positioning. Skipping manual movement check.")
                 return
 
-            # self.logger.debug("External change detected on target cover '%s'. (Updating lock state not implemented yet)", entity_id)
+            if self._dynamic_config.lock_integration or self._dynamic_config.lock_integration_with_position:
+                self.logger.debug("Cover state change detected, but already locked. Skipping manual movement check.")
+                return
 
-            # TODO: Implement logic for LockState handling e.g. manager.update_lock_state(LockState.LOCKED_BY_EXTERNAL_MODIFICATION)
+            # Prüfe ob Änderung innerhalb Toleranz (kein manueller Eingriff)
+            if new_current_height is not None:
+                height_diff = abs(float(new_current_height) - self._last_calculated_height)
+                tolerance_height = self._facade_config.modification_tolerance_height
+
+                # ✅ Bei Mode3: Nur Höhe prüfen, bei Mode1/2: Höhe UND Winkel
+                if has_tilt and new_current_angle is not None:
+                    angle_diff = abs(float(new_current_angle) - self._last_calculated_angle)
+                    tolerance_angle = self._facade_config.modification_tolerance_angle
+
+                    if height_diff <= tolerance_height and angle_diff <= tolerance_angle:
+                        self.logger.debug(
+                            "Cover position change within tolerance (height: %.1f%%, angle: %.1f°). No manual movement detected.",
+                            height_diff,
+                            angle_diff,
+                        )
+                        return
+                # Mode3: Nur Höhe prüfen
+                elif height_diff <= tolerance_height:
+                    self.logger.debug("Cover position change within tolerance (height: %.1f%%). No manual movement detected.", height_diff)
+                    return
+
+            # Manuelle Bewegung erkannt -> Auto-Lock aktivieren
+            if has_tilt:
+                self.logger.warning(
+                    "Manual movement detected on cover '%s'! "
+                    "Old: %.1f%% / %.1f°, New: %.1f%% / %.1f°, Expected: %.1f%% / %.1f° "
+                    "-> Activating auto-lock",
+                    entity_id,
+                    float(old_current_height) if old_current_height is not None else 0.0,
+                    float(old_current_angle) if old_current_angle is not None else 0.0,
+                    float(new_current_height) if new_current_height is not None else 0.0,
+                    float(new_current_angle) if new_current_angle is not None else 0.0,
+                    self._last_calculated_height,
+                    self._last_calculated_angle,
+                )
+            else:
+                # Mode3: Nur Höhe im Log
+                self.logger.warning(
+                    "Manual movement detected on cover '%s'! Old: %.1f%%, New: %.1f%%, Expected: %.1f%% -> Activating auto-lock",
+                    entity_id,
+                    float(old_current_height) if old_current_height is not None else 0.0,
+                    float(new_current_height) if new_current_height is not None else 0.0,
+                    self._last_calculated_height,
+                )
+
+            # Aktiviere Auto-Lock
+            await self._activate_auto_lock(
+                float(new_current_height) if new_current_height is not None else 0.0,
+                float(new_current_angle) if new_current_angle is not None else 0.0,
+            )
 
         else:
-            self.logger.debug("Target cover state change detected, but height/angle did not change or no external modification.")
+            self.logger.debug("Target cover state change detected, but position did not change.")
+
+    async def _activate_auto_lock(self, current_height: float, current_angle: float) -> None:
+        """Activate auto-lock due to manual movement detected."""
+        """
+        Args:
+            current_height: Current cover height in percent
+            current_angle: Current cover angle in degrees
+        """
+        self.logger.warning(
+            "Activating auto-lock due to manual movement. Current position will be preserved: %.1f%% height / %.1f° angle",
+            current_height,
+            current_angle,
+        )
+
+        # Set lock via the internal lock switch entity
+        lock_entity_id = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_MANUAL)
+
+        try:
+            await self.hass.services.async_call("switch", "turn_on", {"entity_id": lock_entity_id}, blocking=False)
+            self.logger.info("Auto-lock activated successfully via entity %s", lock_entity_id)
+        except (HomeAssistantError, ValueError):
+            self.logger.exception("Failed to activate auto-lock")
 
     def unregister_listeners(self) -> None:
         """Unregister all listeners for this manager."""
@@ -3361,6 +3433,26 @@ class ShadowControlManager:
                     "Static value for key '%s' ('%s') cannot be converted to %s. Using default: %s", key, value, expected_type, default
                 )
             return default
+
+    def _is_within_grace_period(self) -> bool:
+        """Check if we're within grace period after last positioning."""
+        # Returns True if we're still within the grace period (cover is still moving),
+        # False if enough time has passed or no positioning has occurred yet.
+        if self._last_positioning_time is None:
+            return False
+
+        # Get configured grace period from facade config
+        grace_period = self._facade_config.max_movement_duration
+
+        now = datetime.now(UTC)
+        elapsed = (now - self._last_positioning_time).total_seconds()
+
+        is_within = elapsed < grace_period
+
+        if is_within:
+            self.logger.debug("Within grace period: %.1fs elapsed of %.1fs configured", elapsed, grace_period)
+
+        return is_within
 
     def _get_entity_state_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
         """Extract dynamic value from an entity state."""
