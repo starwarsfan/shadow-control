@@ -79,6 +79,7 @@
           "facade_shutter_stepping_angle_static": "Angle stepping",
           "facade_light_strip_width_static": "Width of light strip",
           "facade_shutter_height_static": "Overall shutter height",
+          "facade_max_movement_duration_static": "Max move time",
           "facade_modification_tolerance_height_static": "Tolerance height modification",
           "facade_modification_tolerance_angle_static": "Tolerance slat angle modification"
         },
@@ -93,6 +94,7 @@
           "facade_shutter_stepping_angle_static": "Stepping of angle positioning in % to prevent small steps, which could not be positioned by the used shutter. Default: 5",
           "facade_light_strip_width_static": "Width of light strip on the floor.",
           "facade_shutter_height_static": "Overall height of window or door. Required to calculate light strip width from previous configuration option.",
+          "facade_max_movement_duration_static": "Duration from full closed to full open in seconds.",
           "facade_modification_tolerance_height_static": "Tolerance within no height modification will be performed.",
           "facade_modification_tolerance_angle_static": "Tolerance within no slat angle modification will performed."
         }

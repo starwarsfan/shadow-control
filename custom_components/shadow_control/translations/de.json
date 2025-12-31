@@ -79,6 +79,7 @@
           "facade_shutter_stepping_angle_static": "Winkelschrittweite",
           "facade_light_strip_width_static": "Lichtstreifenbreite",
           "facade_shutter_height_static": "Gesamthöhe",
+          "facade_max_movement_duration_static": "Maximale Verfahrdauer",
           "facade_modification_tolerance_height_static": "Toleranz Höhenänderung",
           "facade_modification_tolerance_angle_static": "Toleranz Lamellenwinkeländerung"
         },
@@ -93,6 +94,7 @@
           "facade_shutter_stepping_angle_static": "Schrittweite der Lamellenverstellung in %, um kleine und damit nicht positionierbare Verstellungen auszugleichen. Default: 5",
           "facade_light_strip_width_static": "Breite eines Lichtstreifens auf dem Boden.",
           "facade_shutter_height_static": "Gesamthöhe des Behangs resp. des Fensters bzw. der Tür. Wird für die Berechnung des Lichtstreifens aus der vorherigen Einstellung benötigt.",
+          "facade_max_movement_duration_static": "Dauer einer Gesamtfahrt, also von ganz geschlossen bis ganz offen in Sekunden.",
           "facade_modification_tolerance_height_static": "Toleranzbereich, in dem keine Höhenanpassung erfolgt.",
           "facade_modification_tolerance_angle_static": "Toleranzbereich, in dem keine Lamellenwinkelanpassung erfolgt."
         }
