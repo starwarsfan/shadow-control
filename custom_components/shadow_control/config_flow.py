@@ -21,6 +21,7 @@ from .const import (
     VERSION,
     MovementRestricted,
     SCDawnInput,
+    SCDefaults,
     SCDynamicInput,
     SCFacadeConfig1,
     SCFacadeConfig2,
@@ -155,6 +156,9 @@ def get_cfg_facade_settings_part2() -> vol.Schema:
             ),
             vol.Optional(SCFacadeConfig2.SHUTTER_HEIGHT_STATIC.value, default=1000): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=3000, step=1, mode=selector.NumberSelectorMode.BOX)
+            ),
+            vol.Optional(SCFacadeConfig2.MAX_MOVEMENT_DURATION_STATIC.value, default=0): selector.NumberSelector(
+                selector.NumberSelectorConfig(min=1, max=120, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
@@ -331,6 +335,9 @@ def get_cfg_facade_settings_part2_mode3() -> vol.Schema:
             ),
             vol.Optional(SCFacadeConfig2.SHUTTER_HEIGHT_STATIC.value, default=1000): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=3000, step=1, mode=selector.NumberSelectorMode.BOX)
+            ),
+            vol.Optional(SCFacadeConfig2.MAX_MOVEMENT_DURATION_STATIC.value, default=0): selector.NumberSelector(
+                selector.NumberSelectorConfig(min=1, max=120, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
@@ -517,8 +524,13 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCFacadeConfig2.SHUTTER_STEPPING_ANGLE_STATIC.value, default=5): vol.Coerce(float),
         vol.Optional(SCFacadeConfig2.LIGHT_STRIP_WIDTH_STATIC.value, default=0): vol.Coerce(float),
         vol.Optional(SCFacadeConfig2.SHUTTER_HEIGHT_STATIC.value, default=1000): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): vol.Coerce(float),
-        vol.Optional(SCFacadeConfig2.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=0): vol.Coerce(float),
+        vol.Optional(SCFacadeConfig2.MAX_MOVEMENT_DURATION_STATIC.value, default=SCDefaults.MAX_MOVEMENT_DURATION_VALUE.value): vol.Coerce(float),
+        vol.Optional(
+            SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=SCDefaults.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value
+        ): vol.Coerce(float),
+        vol.Optional(
+            SCFacadeConfig2.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=SCDefaults.MODIFICATION_TOLERANCE_ANGLE_STATIC.value
+        ): vol.Coerce(float),
         vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): cv.entity_id,

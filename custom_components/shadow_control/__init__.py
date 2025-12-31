@@ -41,6 +41,7 @@ from .const import (
     LockState,
     MovementRestricted,
     SCDawnInput,
+    SCDefaults,
     SCDynamicInput,
     SCFacadeConfig1,
     SCFacadeConfig2,
@@ -599,8 +600,9 @@ class SCFacadeConfiguration:
         self.shutter_height: float = 1000.0
         self.neutral_pos_height: float = 0.0
         self.neutral_pos_angle: float = 0.0
-        self.modification_tolerance_height: float = 0.0
-        self.modification_tolerance_angle: float = 0.0
+        self.max_movement_duration: int = SCDefaults.MAX_MOVEMENT_DURATION_VALUE.value
+        self.modification_tolerance_height: int = SCDefaults.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value
+        self.modification_tolerance_angle: int = SCDefaults.MODIFICATION_TOLERANCE_ANGLE_STATIC.value
 
 
 class SCShadowControlConfig:
@@ -706,6 +708,7 @@ class ShadowControlManager:
         self._facade_config.shutter_height = self._config.get(SCFacadeConfig2.SHUTTER_HEIGHT_STATIC.value)
         self._facade_config.neutral_pos_height = self._config.get(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL.value)
         self._facade_config.neutral_pos_angle = self._config.get(SCInternal.NEUTRAL_POS_ANGLE_MANUAL.value)
+        self._facade_config.max_movement_duration = self._config.get(SCFacadeConfig2.MAX_MOVEMENT_DURATION_STATIC.value)
         self._facade_config.modification_tolerance_height = self._config.get(SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value)
         self._facade_config.modification_tolerance_angle = self._config.get(SCFacadeConfig2.MODIFICATION_TOLERANCE_ANGLE_STATIC.value)
 
