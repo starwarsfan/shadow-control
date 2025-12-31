@@ -3456,6 +3456,10 @@ class ShadowControlManager:
         # Get configured grace period from facade config
         grace_period = self._facade_config.max_movement_duration
 
+        if grace_period is None:
+            self.logger.warning("max_movement_duration is None, using default 30 seconds")
+            grace_period = SCDefaults.MAX_MOVEMENT_DURATION_VALUE.value
+
         now = datetime.now(UTC)
         elapsed = (now - self._last_positioning_time).total_seconds()
 
