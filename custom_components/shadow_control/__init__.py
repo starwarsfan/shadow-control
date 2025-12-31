@@ -1387,13 +1387,28 @@ class ShadowControlManager:
                 ]
 
                 if entity in config_entities_requiring_immediate_positioning:
-                    self.logger.info(
-                        "Configuration entity '%s' changed from %s to %s -> forcing immediate positioning",
-                        entity,
-                        old_state.state if old_state else "None",
-                        new_state.state if new_state else "None",
-                    )
-                    force_immediate_positioning = True
+                    # Check if any lock is currently active
+                    lock_active = self._dynamic_config.lock_integration or self._dynamic_config.lock_integration_with_position
+
+                    if lock_active:
+                        self.logger.info(
+                            "Configuration entity '%s' changed from %s to %s, "
+                            "but lock is active (simple: %s, with_position: %s) -> skipping immediate positioning",
+                            entity,
+                            old_state.state if old_state else "None",
+                            new_state.state if new_state else "None",
+                            self._dynamic_config.lock_integration,
+                            self._dynamic_config.lock_integration_with_position,
+                        )
+                        # Don't set force_immediate_positioning
+                    else:
+                        self.logger.info(
+                            "Configuration entity '%s' changed from %s to %s -> forcing immediate positioning",
+                            entity,
+                            old_state.state if old_state else "None",
+                            new_state.state if new_state else "None",
+                        )
+                        force_immediate_positioning = True
 
                 if entity == self._config.get(SCShadowInput.CONTROL_ENABLED_ENTITY.value):
                     self.logger.info("Shadow control enable changed to %s", new_state.state)
