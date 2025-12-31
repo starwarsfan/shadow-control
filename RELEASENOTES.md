@@ -21,6 +21,8 @@
 * Movement restriction handling for external entities refactored. The external entities could now use strings according to the used UI translation. Check [Movement restriction height within README.md](README.md#movement-restriction-height) or the readme.md of your UI language for details.
 * Fix shutter repositioning after release of lock with position
 * Fix initialization after Home Assistant restart
+* Fix ignored lock in case lock is active and shutter are modified manually
+* Implement automatic instance lock in case shutters are modified manually
 
 ## 0.10.0
 * Bugfix: Fixed position handling if movement is restricted and integration gets unlocked
