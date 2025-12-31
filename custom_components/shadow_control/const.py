@@ -139,6 +139,7 @@ class SCFacadeConfig2(Enum):
     SHUTTER_TYPE_STATIC = "facade_shutter_type_static"
     LIGHT_STRIP_WIDTH_STATIC = "facade_light_strip_width_static"
     SHUTTER_HEIGHT_STATIC = "facade_shutter_height_static"
+    MAX_MOVEMENT_DURATION_STATIC = "facade_max_movement_duration_static"
     MODIFICATION_TOLERANCE_HEIGHT_STATIC = "facade_modification_tolerance_height_static"
     MODIFICATION_TOLERANCE_ANGLE_STATIC = "facade_modification_tolerance_angle_static"
 
@@ -274,6 +275,9 @@ class SCDefaults(Enum):
 
     LOCK_HEIGHT_VALUE = 0
     LOCK_ANGLE_VALUE = 0  # noqa: PIE796
+    MAX_MOVEMENT_DURATION_VALUE = 30
+    MODIFICATION_TOLERANCE_HEIGHT_STATIC = 3
+    MODIFICATION_TOLERANCE_ANGLE_STATIC = 3  # noqa: PIE796
     NEUTRAL_POS_HEIGHT_VALUE = 0  # noqa: PIE796
     NEUTRAL_POS_ANGLE_VALUE = 0  # noqa: PIE796
     SHADOW_BRIGHTNESS_THRESHOLD_VALUE = 50000
