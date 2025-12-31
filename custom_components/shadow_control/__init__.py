@@ -2054,6 +2054,18 @@ class ShadowControlManager:
         # Always update HA state at the end to reflect the latest internal calculated values and attributes
         self._update_extra_state_attributes()
 
+        if send_height_command or send_angle_command:
+            self._last_positioning_time = datetime.now(UTC)
+            self._last_calculated_height = self.used_shutter_height
+            self._last_calculated_angle = self.used_shutter_angle
+
+            self.logger.debug(
+                "Positioning tracking updated: %.1f%% / %.1f° at %s",
+                self._last_calculated_height,
+                self._last_calculated_angle,
+                self._last_positioning_time,
+            )
+
         self.logger.debug("_position_shutter finished.")
 
     def _calculate_shutter_height(self) -> float:
