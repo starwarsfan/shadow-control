@@ -52,6 +52,8 @@ class TestAsyncCalculateAndApplyCoverPosition:
         instance._calculate_shutter_height = MagicMock(return_value=50.0)
         instance._calculate_shutter_angle = MagicMock(return_value=45.0)
 
+        instance._last_unlock_time = None
+
         # Bind the actual method to the mock instance
         instance.async_calculate_and_apply_cover_position = ShadowControlManager.async_calculate_and_apply_cover_position.__get__(instance)
 
@@ -176,7 +178,9 @@ class TestAsyncCalculateAndApplyCoverPosition:
 
         await manager.async_calculate_and_apply_cover_position(event=event)
 
-        assert manager._enforce_position_update is True
+        assert manager._last_unlock_time is not None
+        assert manager._previous_shutter_height == 50.0
+        assert manager._previous_shutter_angle == 45.0
 
     async def test_simple_lock_enabled(self, manager):
         """Test simple lock enabled (Branch 7A3)."""
