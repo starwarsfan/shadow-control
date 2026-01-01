@@ -13,6 +13,7 @@ coverage.xml
 .ruff_cache
 .idea/
 *.iml
+junit.xml
 
 # Home Assistant configuration
 config/*

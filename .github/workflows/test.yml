@@ -48,6 +48,12 @@ jobs:
           override_branch: ${{ github.head_ref || github.ref_name }}  # <-- Branch name
           override_commit: ${{ github.sha }}
 
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Run ruff
         run: ruff check custom_components/
 
