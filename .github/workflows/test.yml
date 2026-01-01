@@ -49,8 +49,8 @@ jobs:
           override_commit: ${{ github.sha }}
 
       - name: Upload test results to Codecov
-        if: ${{ !cancelled() }} && matrix.python-version == '3.13' && matrix.ha-version == '2025.1.0'
         uses: codecov/test-results-action@v1
+        if: matrix.python-version == '3.13' && matrix.ha-version == '2025.1.0'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
