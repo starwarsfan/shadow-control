@@ -16,10 +16,13 @@ from homeassistant.config_entries import ConfigEntries, ConfigEntry
 from homeassistant.const import (
     ATTR_SUPPORTED_FEATURES,
     EVENT_HOMEASSISTANT_STARTED,
+    STATE_OFF,
     STATE_ON,
+    STATE_UNAVAILABLE,
+    STATE_UNKNOWN,
     Platform,
 )
-from homeassistant.core import Event, HomeAssistant, ServiceCall, State, callback
+from homeassistant.core import Event, EventStateChangedData, HomeAssistant, ServiceCall, State, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry, entity_registry
@@ -782,6 +785,7 @@ class ShadowControlManager:
         self._last_positioning_time: datetime | None = None
         self._last_calculated_height: float = 0.0
         self._last_calculated_angle: float = 0.0
+        self._last_unlock_time: datetime | None = None
         self._is_external_modification_detected: bool = False
         self._external_modification_timestamp: datetime | None = None
 
@@ -903,7 +907,6 @@ class ShadowControlManager:
             SCDynamicInput.BRIGHTNESS_DAWN_ENTITY,
             SCDynamicInput.SUN_ELEVATION_ENTITY,
             SCDynamicInput.SUN_AZIMUTH_ENTITY,
-            SCDynamicInput.LOCK_INTEGRATION_ENTITY,
             SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY,
             SCDynamicInput.ENFORCE_POSITIONING_ENTITY,
             SCShadowInput.CONTROL_ENABLED_ENTITY,
@@ -938,9 +941,17 @@ class ShadowControlManager:
                 async_track_state_change_event(self.hass, self._target_cover_entity_id, self._async_target_cover_entity_state_change_listener)
             )
 
+        # Separate listener for external lock entity (sync only, no recalculation)
+        external_lock_entity = self._config.get(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value)
+        if external_lock_entity:
+            self.logger.debug("Tracking external lock entity for sync: %s", external_lock_entity)
+            self._unsub_callbacks.append(
+                async_track_state_change_event(self.hass, [external_lock_entity], self._async_external_lock_entity_state_change_listener)
+            )
+
         self.logger.debug("Listeners registered.")
 
-    async def _async_state_change_listener(self, event: Event) -> None:
+    async def _async_state_change_listener(self, event: Event[EventStateChangedData]) -> None:
         """Listen for state changes of monitored entites."""
         entity_id = event.data.get("entity_id")
         old_state = event.data.get("old_state")
@@ -960,7 +971,7 @@ class ShadowControlManager:
         else:
             self.logger.debug("State change for %s detected, but value did not change. No recalculation triggered.", entity_id)
 
-    async def _async_target_cover_entity_state_change_listener(self, event: Event) -> None:
+    async def _async_target_cover_entity_state_change_listener(self, event: Event[EventStateChangedData]) -> None:
         """Handle state changes of cover entities."""
         entity_id = event.data.get("entity_id")
         old_state: State | None = event.data.get("old_state")
@@ -987,13 +998,26 @@ class ShadowControlManager:
         angle_changed = has_tilt and (old_current_angle != new_current_angle)
 
         if height_changed or angle_changed:
-            if self._is_within_grace_period():
+            if await self._is_within_grace_period():
                 self.logger.debug("Cover state change detected, but within grace period after positioning. Skipping manual movement check.")
                 return
 
             if self._dynamic_config.lock_integration or self._dynamic_config.lock_integration_with_position:
                 self.logger.debug("Cover state change detected, but already locked. Skipping manual movement check.")
                 return
+
+            # Ignore auto-lock after unlock for a grace period
+            if self._last_unlock_time is not None:
+                elapsed_since_unlock = (datetime.now(UTC) - self._last_unlock_time).total_seconds()
+
+                unlock_grace_period = self._facade_config.max_movement_duration
+
+                if elapsed_since_unlock < unlock_grace_period:
+                    self.logger.debug("Ignoring auto-lock check: %.1fs since unlock (grace period: %.1fs)", elapsed_since_unlock, unlock_grace_period)
+                    return
+                # Grace period done, reset
+                self.logger.debug("Unlock grace period expired, re-enabling auto-lock checks")
+                self._last_unlock_time = None
 
             # Prüfe ob Änderung innerhalb Toleranz (kein manueller Eingriff)
             if new_current_height is not None:
@@ -1049,6 +1073,53 @@ class ShadowControlManager:
 
         else:
             self.logger.debug("Target cover state change detected, but position did not change.")
+
+    async def _async_external_lock_entity_state_change_listener(self, event: Event[EventStateChangedData]) -> None:
+        """Sync external lock entity state to internal switch."""
+        """
+        When the external lock entity changes, update the internal switch to match.
+        This ensures the internal switch is always the source of truth for the integration.
+        """
+        entity_id = event.data.get("entity_id")
+        old_state: State | None = event.data.get("old_state")
+        new_state: State | None = event.data.get("new_state")
+
+        if new_state is None or new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
+            self.logger.debug("External lock entity %s changed to unavailable/unknown, ignoring", entity_id)
+            return
+
+        self.logger.debug("External lock entity %s state changed: %s → %s", entity_id, old_state.state if old_state else "None", new_state.state)
+
+        # Set unlock time if external entity get's unlocked
+        if old_state and old_state.state == STATE_ON and new_state.state == STATE_OFF:
+            self._last_unlock_time = datetime.now(UTC)
+            self.logger.debug("External lock disabled, setting unlock grace period")
+
+        # Get internal lock switch
+        internal_lock_entity = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_MANUAL)
+        if not internal_lock_entity:
+            self.logger.warning("Cannot sync external lock: internal lock switch not found")
+            return
+
+        # Get current state of internal switch
+        internal_state = self.hass.states.get(internal_lock_entity)
+        if internal_state is None:
+            self.logger.warning("Cannot sync external lock: internal lock switch %s not found in state registry", internal_lock_entity)
+            return
+
+        # Only sync if different
+        if internal_state.state == new_state.state:
+            self.logger.debug("Internal lock switch already in sync with external entity, no action needed")
+            return
+
+        # Sync: Turn internal switch on/off to match external entity
+        service = "turn_on" if new_state.state == STATE_ON else "turn_off"
+
+        try:
+            await self.hass.services.async_call("switch", service, {"entity_id": internal_lock_entity}, blocking=False)
+            self.logger.info("Synced internal lock switch %s to match external entity %s: %s", internal_lock_entity, entity_id, new_state.state)
+        except (HomeAssistantError, ValueError):
+            self.logger.exception("Failed to sync internal lock switch to external entity state")
 
     async def _activate_auto_lock(self, current_height: float, current_angle: float) -> None:
         """Activate auto-lock due to manual movement detected."""
@@ -1496,8 +1567,8 @@ class ShadowControlManager:
                 elif entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value) or entity == entity_id_lock_manual:
                     if new_state.state == "off" and not self._dynamic_config.lock_integration_with_position:
                         # Lock DISABLED
-                        self.logger.info("Simple lock was disabled and lock with position is already disabled -> enforcing position update")
-                        self._enforce_position_update = True
+                        self.logger.info("Simple lock was disabled -> waiting for next trigger to reposition")
+                        self._last_unlock_time = datetime.now(UTC)
                         self._previous_shutter_height = self._height_during_lock_state
                         self._previous_shutter_angle = self._angle_during_lock_state
                     elif new_state.state == "off" and self._dynamic_config.lock_integration_with_position:
@@ -3446,27 +3517,52 @@ class ShadowControlManager:
                 )
             return default
 
-    def _is_within_grace_period(self) -> bool:
-        """Check if we're within grace period after last positioning."""
-        # Returns True if we're still within the grace period (cover is still moving),
-        # False if enough time has passed or no positioning has occurred yet.
+    async def _is_within_grace_period(self) -> bool:
+        """
+        Check if we're within grace period after last positioning.
+
+        Combines time-based and position-based checks for optimal grace period handling.
+        Note: Only checks HEIGHT during grace period, as angle can vary during movement
+        due to technical cover behavior (lamellae close during height changes).
+        """
         if self._last_positioning_time is None:
             return False
 
-        # Get configured grace period from facade config
         grace_period = self._facade_config.max_movement_duration
-
         if grace_period is None:
             self.logger.warning("max_movement_duration is None, using default 30 seconds")
             grace_period = SCDefaults.MAX_MOVEMENT_DURATION_VALUE.value
 
-        now = datetime.now(UTC)
-        elapsed = (now - self._last_positioning_time).total_seconds()
+        elapsed = (datetime.now(UTC) - self._last_positioning_time).total_seconds()
 
+        # Early exit if enough time has passed
+        if elapsed > grace_period:
+            return False
+
+        # Position-based early exit: Check if cover reached target HEIGHT
+        # Note: We only check HEIGHT, not angle, because angle changes during movement
+        current_height, current_angle = await self._get_current_cover_position()
+
+        # Calculate distance to target HEIGHT only
+        height_diff = abs(current_height - self._last_calculated_height)
+
+        # If close to target height (<2%), cover has likely reached position
+        if height_diff < 2.0:
+            self.logger.debug("Cover reached target height (diff: %.1f%%), ending grace period early after %.1fs", height_diff, elapsed)
+            return False
+
+        # Still within grace period and not yet at target height
         is_within = elapsed < grace_period
 
         if is_within:
-            self.logger.debug("Within grace period: %.1fs elapsed of %.1fs configured", elapsed, grace_period)
+            angle_diff = abs(current_angle - self._last_calculated_angle)
+            self.logger.debug(
+                "Within grace period: %.1fs elapsed of %.1fs configured, still %.1f%% away from target height (angle diff: %.1f°)",
+                elapsed,
+                grace_period,
+                height_diff,
+                angle_diff,
+            )
 
         return is_within
 
@@ -3540,6 +3636,41 @@ class ShadowControlManager:
                     default_enum_member.name,
                 )
             return default_enum_member
+
+    async def _get_current_cover_position(self) -> tuple[float, float]:
+        """Get current position of the cover from Home Assistant state."""
+        """
+        Returns:
+            Tuple of (height_percent, angle_degrees)
+            Returns (0.0, 0.0) if cover not found or has no position attributes
+            For Mode3 (Jalousie), angle is always 0.0
+        """
+        # Get the first cover entity
+        if not self._target_cover_entity_id:
+            self.logger.warning("No cover entity configured")
+            return 0.0, 0.0
+
+        cover_entity_id = self._target_cover_entity_id[0]
+        cover_state = self.hass.states.get(cover_entity_id)
+
+        if cover_state is None:
+            self.logger.warning("Cover entity %s not found", cover_entity_id)
+            return 0.0, 0.0
+
+        # Get current position (0 = closed, 100 = open)
+        # HA reports position, but we work with "height" (0 = open, 100 = closed)
+        # So we need to invert: height = 100 - position
+        current_position = cover_state.attributes.get("current_position")
+        current_height = 100.0 - float(current_position) if current_position is not None else 0.0
+
+        # Get current tilt position (angle) - only for Mode1/Mode2
+        current_angle = 0.0
+        if self._facade_config.shutter_type != ShutterType.MODE3:
+            current_tilt = cover_state.attributes.get("current_tilt_position")
+            if current_tilt is not None:
+                current_angle = 100.0 - float(current_tilt)
+
+        return current_height, current_angle
 
     def _convert_shutter_angle_percent_to_degrees(self, angle_percent: float) -> float:
         """Convert percent to degrees."""
