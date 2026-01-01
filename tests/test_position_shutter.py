@@ -40,6 +40,7 @@ class TestPositionShutter:
         instance._last_positioning_time = None
         instance._last_calculated_height = 0.0
         instance._last_calculated_angle = 0.0
+        instance._last_unlock_time = None
 
         # Mock methods
         instance._cancel_timer = MagicMock()
