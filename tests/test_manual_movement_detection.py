@@ -37,6 +37,12 @@ class TestManualMovementDetection:
         instance._last_positioning_time = None
         instance._last_calculated_height = 80.0
         instance._last_calculated_angle = 45.0
+        instance._last_unlock_time = None
+
+        async def mock_get_current_position():
+            return 80.0, 45.0
+
+        instance._get_current_cover_position = mock_get_current_position
 
         # Mock methods
         instance.get_internal_entity_id = MagicMock(return_value="switch.test_lock")
@@ -54,31 +60,35 @@ class TestManualMovementDetection:
     # TEST: Grace Period Logic
     # ========================================================================
 
-    def test_is_within_grace_period_no_positioning_yet(self, manager):
+    async def test_is_within_grace_period_no_positioning_yet(self, manager):
         """Test grace period returns False when no positioning occurred yet."""
         manager._last_positioning_time = None
 
-        result = manager._is_within_grace_period()
+        result = await manager._is_within_grace_period()
 
         assert result is False
 
-    def test_is_within_grace_period_yes(self, manager):
+    async def test_is_within_grace_period_yes(self, manager):
         """Test grace period returns True when within configured duration."""
-        # Positioning happened 10 seconds ago, grace period is 30 seconds
         manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=10)
         manager._facade_config.max_movement_duration = 30.0
+        manager._last_calculated_height = 80.0  # ← Ziel
+        manager._last_calculated_angle = 45.0  # ← Ziel
 
-        result = manager._is_within_grace_period()
+        # Mock muss Position zurückgeben die NICHT am Ziel ist!
+        manager._get_current_cover_position = AsyncMock(return_value=(50.0, 30.0))  # ← Noch unterwegs!
+
+        result = await manager._is_within_grace_period()
 
         assert result is True
 
-    def test_is_within_grace_period_no(self, manager):
+    async def test_is_within_grace_period_no(self, manager):
         """Test grace period returns False when duration exceeded."""
         # Positioning happened 40 seconds ago, grace period is 30 seconds
         manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
         manager._facade_config.max_movement_duration = 30.0
 
-        result = manager._is_within_grace_period()
+        result = await manager._is_within_grace_period()
 
         assert result is False
 
@@ -116,6 +126,11 @@ class TestManualMovementDetection:
         """Test that no auto-lock is triggered within grace period."""
         # Set last positioning to 5 seconds ago (within 30s grace period)
         manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=5)
+        manager._last_calculated_height = 80.0  # Ziel
+        manager._last_calculated_angle = 45.0  # Ziel
+
+        # ✅ Position ist noch nicht am Ziel (unterwegs!)
+        manager._get_current_cover_position = AsyncMock(return_value=(60.0, 30.0))
 
         old_state = MagicMock()
         old_state.state = "open"
