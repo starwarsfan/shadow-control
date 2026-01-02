@@ -52,6 +52,23 @@ def mock_hass(hass, mock_manager, mock_config_entry):
     return hass
 
 
+# --- Helper ---
+
+
+def setup_test_entity(entity, hass, entity_id):
+    """Set required internal HA attributes for testing."""
+    entity.hass = hass
+    entity.entity_id = entity_id
+
+    mock_platform = MagicMock()
+    mock_platform.platform_name = "select"
+    mock_platform.domain = DOMAIN
+    # This prevents the AttributeError by mocking the translation lookup engine
+    mock_platform.default_language_platform_translations.get.return_value = None
+
+    entity.platform = mock_platform
+
+
 # --- Tests ---
 
 
@@ -109,10 +126,9 @@ class TestSelectEntity:
         entity = ShadowControlSelect(
             mock_hass, mock_config_entry, "test_key", SelectEntityDescription(key="test_key", name="Test"), "test_instance", mock_manager.logger
         )
-        entity.platform = MagicMock(platform_name="select", domain=DOMAIN)
-        entity.entity_id = "select.test_entity"
+        setup_test_entity(entity, mock_hass, "select.test_entity")
 
-        # FIX: Dynamically pick a valid option from the Enum to avoid AttributeError
+        # Dynamically pick a valid option from the Enum to avoid AttributeError
         valid_options = [state.value for state in MovementRestricted]
         test_option = valid_options[0]
 
@@ -127,8 +143,7 @@ class TestSelectEntity:
         entity = ShadowControlSelect(
             mock_hass, mock_config_entry, "test_key", SelectEntityDescription(key="test_key", name="Test"), "test_instance", mock_manager.logger
         )
-        entity.platform = MagicMock(platform_name="select", domain=DOMAIN)
-        entity.entity_id = "select.test_unique"
+        setup_test_entity(entity, mock_hass, "select.test_unique")
 
         await entity.async_added_to_hass()
 
@@ -139,10 +154,9 @@ class TestSelectEntity:
         entity = ShadowControlSelect(
             mock_hass, mock_config_entry, "test_key", SelectEntityDescription(key="test_key", name="Test"), "test_instance", mock_manager.logger
         )
-        entity.platform = MagicMock(platform_name="select", domain=DOMAIN)
-        entity.entity_id = "select.test_restore"
+        setup_test_entity(entity, mock_hass, "select.test_restore")
 
-        # FIX: Dynamically pick a valid option
+        # Dynamically pick a valid option
         valid_options = [state.value for state in MovementRestricted]
         restored_val = valid_options[-1]  # Pick the last option
         mock_state = State(entity.entity_id, restored_val)
