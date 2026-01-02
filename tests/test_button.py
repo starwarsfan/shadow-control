@@ -45,7 +45,6 @@ class TestButtonEntity:
         """Test button setup entry."""
         entities_added = []
 
-        # ✅ FIX: Nicht async machen, sondern synchron
         def mock_add_entities(entities):
             entities_added.extend(entities)
 
@@ -73,7 +72,6 @@ class TestButtonEntity:
             icon="mdi:developer-board",
         )
 
-        # ✅ FIX: Mock the name property to avoid platform lookup
         with patch.object(type(button), "name", new_callable=PropertyMock) as mock_name:
             mock_name.return_value = "Trigger"
 
