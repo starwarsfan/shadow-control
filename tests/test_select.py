@@ -60,11 +60,18 @@ def setup_test_entity(entity, hass, entity_id):
     entity.hass = hass
     entity.entity_id = entity_id
 
+    # Create a more robust mock platform
     mock_platform = MagicMock()
-    mock_platform.platform_name = "select"
+    mock_platform.platform_name = "number"
     mock_platform.domain = DOMAIN
-    # This prevents the AttributeError by mocking the translation lookup engine
+
+    # This nested structure is required for self.name to resolve without crashing
+    # in newer HA versions when translation keys are present.
+    mock_platform.default_language_platform_translations = MagicMock()
     mock_platform.default_language_platform_translations.get.return_value = None
+
+    # This satisfies the internal translation lookup engine
+    mock_platform.component.get_platform.return_value = mock_platform
 
     entity.platform = mock_platform
 
