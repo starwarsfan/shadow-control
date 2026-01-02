@@ -925,3 +925,110 @@ class TestTimerIntegration:
 
         # No auto-lock (position matches or is close enough)
         # This tests the complete flow without triggering auto-lock
+
+    # ========================================================================
+    # TEST 26: Auto-Lock setzt LockState.LOCKED_BY_EXTERNAL_MODIFICATION
+    # ========================================================================
+
+    async def test_auto_lock_sets_correct_lock_state(self, manager):
+        """Test auto-lock sets LockState.LOCKED_BY_EXTERNAL_MODIFICATION."""
+        # Mock the internal entity ID
+        manager.get_internal_entity_id = MagicMock(return_value="switch.test_lock")
+
+        # Mock service call
+        manager.hass.services.async_call = AsyncMock()
+
+        # ✅ FIX: Ohne 'instance=' keyword
+        manager._activate_auto_lock = ShadowControlManager._activate_auto_lock.__get__(manager)
+        manager._calculate_lock_state = ShadowControlManager._calculate_lock_state.__get__(manager)
+
+        # Initially unlocked
+        manager._locked_by_auto_lock = False
+        manager._dynamic_config.lock_integration = False
+        manager._dynamic_config.lock_integration_with_position = False
+
+        # Calculate lock state - should be UNLOCKED
+        lock_state = manager._calculate_lock_state()
+        assert lock_state == LockState.UNLOCKED
+
+        # Activate auto-lock
+        await manager._activate_auto_lock(50.0, 45.0)
+
+        # Flag should be set
+        assert manager._locked_by_auto_lock is True
+
+        # Position should be stored
+        assert manager._height_during_lock_state == 50.0
+        assert manager._angle_during_lock_state == 45.0
+
+        # Simulate lock switch being turned on (would happen via service call)
+        manager._dynamic_config.lock_integration = True
+
+        # Calculate lock state - should be LOCKED_BY_EXTERNAL_MODIFICATION
+        lock_state = manager._calculate_lock_state()
+        assert lock_state == LockState.LOCKED_BY_EXTERNAL_MODIFICATION
+        assert lock_state.value == 3  # Verify numeric value
+
+    # ========================================================================
+    # TEST 27: Manuelles Lock setzt LockState.LOCKED_MANUALLY
+    # ========================================================================
+
+    async def test_manual_lock_sets_correct_lock_state(self, manager):
+        """Test manual lock sets LockState.LOCKED_MANUALLY."""
+        # ✅ FIX
+        manager._calculate_lock_state = ShadowControlManager._calculate_lock_state.__get__(manager)
+
+        # Manual lock (not auto-lock)
+        manager._locked_by_auto_lock = False
+        manager._dynamic_config.lock_integration = True
+        manager._dynamic_config.lock_integration_with_position = False
+
+        # Calculate lock state
+        lock_state = manager._calculate_lock_state()
+        assert lock_state == LockState.LOCKED_MANUALLY
+        assert lock_state.value == 1
+
+    # ========================================================================
+    # TEST 28: Lock with Position überschreibt Auto-Lock
+    # ========================================================================
+
+    async def test_lock_with_position_overrides_auto_lock(self, manager):
+        """Test lock with position takes precedence over auto-lock."""
+        # ✅ FIX
+        manager._calculate_lock_state = ShadowControlManager._calculate_lock_state.__get__(manager)
+
+        # Auto-lock was active
+        manager._locked_by_auto_lock = True
+        manager._dynamic_config.lock_integration = True
+
+        # But lock with position is also enabled
+        manager._dynamic_config.lock_integration_with_position = True
+
+        # Lock with position takes precedence
+        lock_state = manager._calculate_lock_state()
+        assert lock_state == LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
+        assert lock_state.value == 2
+
+    # ========================================================================
+    # TEST 29: Unlock resettet Auto-Lock Flag
+    # ========================================================================
+
+    async def test_unlock_resets_auto_lock_flag(self, manager):
+        """Test unlocking resets auto-lock flag."""
+        # ✅ FIX
+        manager._calculate_lock_state = ShadowControlManager._calculate_lock_state.__get__(manager)
+
+        # Start with auto-lock active
+        manager._locked_by_auto_lock = True
+        manager._dynamic_config.lock_integration = True
+        manager._dynamic_config.lock_integration_with_position = False
+
+        # Verify locked by external modification
+        assert manager._calculate_lock_state() == LockState.LOCKED_BY_EXTERNAL_MODIFICATION
+
+        # User unlocks
+        manager._locked_by_auto_lock = False  # Reset by unlock logic
+        manager._dynamic_config.lock_integration = False
+
+        # Should be unlocked
+        assert manager._calculate_lock_state() == LockState.UNLOCKED
