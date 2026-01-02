@@ -786,6 +786,8 @@ class ShadowControlManager:
         self._last_calculated_height: float = 0.0
         self._last_calculated_angle: float = 0.0
         self._last_unlock_time: datetime | None = None
+        self._last_reported_height: float | None = None
+        self._last_reported_angle: float | None = None
         self._is_external_modification_detected: bool = False
         self._external_modification_timestamp: datetime | None = None
 
@@ -997,82 +999,100 @@ class ShadowControlManager:
         height_changed = old_current_height != new_current_height
         angle_changed = has_tilt and (old_current_angle != new_current_angle)
 
-        if height_changed or angle_changed:
-            if await self._is_within_grace_period():
-                self.logger.debug("Cover state change detected, but within grace period after positioning. Skipping manual movement check.")
+        if not (height_changed or angle_changed):
+            self.logger.debug("Target cover state change detected, but position did not change.")
+            return
+
+        # ✅ NEU: Check if positioning completed (timer expired)
+        await self._check_positioning_completed()
+
+        # Already locked? Skip manual movement check
+        if self._dynamic_config.lock_integration or self._dynamic_config.lock_integration_with_position:
+            self.logger.debug("Cover state change detected, but already locked. Skipping manual movement check.")
+            return
+
+        # Unlock grace period active? Skip manual movement check
+        if self._last_unlock_time is not None:
+            elapsed_since_unlock = (datetime.now(UTC) - self._last_unlock_time).total_seconds()
+            unlock_grace_period = self._facade_config.max_movement_duration
+
+            if elapsed_since_unlock < unlock_grace_period:
+                self.logger.debug("Ignoring auto-lock check: %.1fs since unlock (grace period: %.1fs)", elapsed_since_unlock, unlock_grace_period)
                 return
+            # Grace period expired, reset
+            self.logger.debug("Unlock grace period expired, re-enabling auto-lock checks")
+            self._last_unlock_time = None
 
-            if self._dynamic_config.lock_integration or self._dynamic_config.lock_integration_with_position:
-                self.logger.debug("Cover state change detected, but already locked. Skipping manual movement check.")
-                return
+        # ✅ FALL A: Timer läuft -> Position speichern, keine weitere Aktion
+        if self._is_positioning_in_progress():
+            # Convert HA position to SC position (invert)
+            reported_height = 100.0 - float(new_current_height) if new_current_height is not None else 0.0
+            reported_angle = 0.0
+            if has_tilt and new_current_angle is not None:
+                reported_angle = 100.0 - float(new_current_angle)
 
-            # Ignore auto-lock after unlock for a grace period
-            if self._last_unlock_time is not None:
-                elapsed_since_unlock = (datetime.now(UTC) - self._last_unlock_time).total_seconds()
+            self._last_reported_height = reported_height
+            self._last_reported_angle = reported_angle
 
-                unlock_grace_period = self._facade_config.max_movement_duration
+            self.logger.debug("Positioning in progress, storing reported position: %.1f%% / %.1f°", reported_height, reported_angle)
+            return
 
-                if elapsed_since_unlock < unlock_grace_period:
-                    self.logger.debug("Ignoring auto-lock check: %.1fs since unlock (grace period: %.1fs)", elapsed_since_unlock, unlock_grace_period)
-                    return
-                # Grace period done, reset
-                self.logger.debug("Unlock grace period expired, re-enabling auto-lock checks")
-                self._last_unlock_time = None
+        # ✅ FALL B: Timer läuft NICHT -> Sofort prüfen
+        # Convert HA position to SC position (invert)
+        current_height = 100.0 - float(new_current_height) if new_current_height is not None else 0.0
+        current_angle = 0.0
+        if has_tilt and new_current_angle is not None:
+            current_angle = 100.0 - float(new_current_angle)
 
-            # Prüfe ob Änderung innerhalb Toleranz (kein manueller Eingriff)
-            if new_current_height is not None:
-                height_diff = abs(float(new_current_height) - self._last_calculated_height)
-                tolerance_height = self._facade_config.modification_tolerance_height
+        # Prüfe ob Änderung innerhalb Toleranz (kein manueller Eingriff)
+        height_diff = abs(current_height - self._last_calculated_height)
+        tolerance_height = self._facade_config.modification_tolerance_height
 
-                # ✅ Bei Mode3: Nur Höhe prüfen, bei Mode1/2: Höhe UND Winkel
-                if has_tilt and new_current_angle is not None:
-                    angle_diff = abs(float(new_current_angle) - self._last_calculated_angle)
-                    tolerance_angle = self._facade_config.modification_tolerance_angle
+        # Bei Mode3: Nur Höhe prüfen, bei Mode1/2: Höhe UND Winkel
+        within_tolerance = False
+        if has_tilt:
+            angle_diff = abs(current_angle - self._last_calculated_angle)
+            tolerance_angle = self._facade_config.modification_tolerance_angle
 
-                    if height_diff <= tolerance_height and angle_diff <= tolerance_angle:
-                        self.logger.debug(
-                            "Cover position change within tolerance (height: %.1f%%, angle: %.1f°). No manual movement detected.",
-                            height_diff,
-                            angle_diff,
-                        )
-                        return
-                # Mode3: Nur Höhe prüfen
-                elif height_diff <= tolerance_height:
-                    self.logger.debug("Cover position change within tolerance (height: %.1f%%). No manual movement detected.", height_diff)
-                    return
-
-            # Manuelle Bewegung erkannt -> Auto-Lock aktivieren
-            if has_tilt:
-                self.logger.warning(
-                    "Manual movement detected on cover '%s'! "
-                    "Old: %.1f%% / %.1f°, New: %.1f%% / %.1f°, Expected: %.1f%% / %.1f° "
-                    "-> Activating auto-lock",
-                    entity_id,
-                    float(old_current_height) if old_current_height is not None else 0.0,
-                    float(old_current_angle) if old_current_angle is not None else 0.0,
-                    float(new_current_height) if new_current_height is not None else 0.0,
-                    float(new_current_angle) if new_current_angle is not None else 0.0,
-                    self._last_calculated_height,
-                    self._last_calculated_angle,
+            if height_diff <= tolerance_height and angle_diff <= tolerance_angle:
+                self.logger.debug(
+                    "Cover position change within tolerance (height: %.1f%%, angle: %.1f°). No manual movement detected.",
+                    height_diff,
+                    angle_diff,
                 )
-            else:
-                # Mode3: Nur Höhe im Log
-                self.logger.warning(
-                    "Manual movement detected on cover '%s'! Old: %.1f%%, New: %.1f%%, Expected: %.1f%% -> Activating auto-lock",
-                    entity_id,
-                    float(old_current_height) if old_current_height is not None else 0.0,
-                    float(new_current_height) if new_current_height is not None else 0.0,
-                    self._last_calculated_height,
-                )
+                within_tolerance = True
+        # Mode3: Nur Höhe prüfen
+        elif height_diff <= tolerance_height:
+            self.logger.debug("Cover position change within tolerance (height: %.1f%%). No manual movement detected.", height_diff)
+            within_tolerance = True
 
-            # Aktiviere Auto-Lock
-            await self._activate_auto_lock(
-                float(new_current_height) if new_current_height is not None else 0.0,
-                float(new_current_angle) if new_current_angle is not None else 0.0,
+        if within_tolerance:
+            return
+
+        # Manuelle Bewegung erkannt -> Auto-Lock aktivieren
+        if has_tilt:
+            self.logger.warning(
+                "Manual movement detected on cover '%s'! Old: %.1f%% / %.1f°, New: %.1f%% / %.1f°, Expected: %.1f%% / %.1f° -> Activating auto-lock",
+                entity_id,
+                float(old_current_height) if old_current_height is not None else 0.0,
+                float(old_current_angle) if old_current_angle is not None else 0.0,
+                current_height,
+                current_angle,
+                self._last_calculated_height,
+                self._last_calculated_angle,
+            )
+        else:
+            # Mode3: Nur Höhe im Log
+            self.logger.warning(
+                "Manual movement detected on cover '%s'! Old: %.1f%%, New: %.1f%%, Expected: %.1f%% -> Activating auto-lock",
+                entity_id,
+                float(old_current_height) if old_current_height is not None else 0.0,
+                current_height,
+                self._last_calculated_height,
             )
 
-        else:
-            self.logger.debug("Target cover state change detected, but position did not change.")
+        # Aktiviere Auto-Lock
+        await self._activate_auto_lock(current_height, current_angle)
 
     async def _async_external_lock_entity_state_change_listener(self, event: Event[EventStateChangedData]) -> None:
         """Sync external lock entity state to internal switch."""
@@ -3517,13 +3537,12 @@ class ShadowControlManager:
                 )
             return default
 
-    async def _is_within_grace_period(self) -> bool:
+    def _is_positioning_in_progress(self) -> bool:
         """
-        Check if we're within grace period after last positioning.
+        Check if positioning is currently in progress (timer running).
 
-        Combines time-based and position-based checks for optimal grace period handling.
-        Note: Only checks HEIGHT during grace period, as angle can vary during movement
-        due to technical cover behavior (lamellae close during height changes).
+        Returns True if positioning was triggered within max_movement_duration,
+        False otherwise.
         """
         if self._last_positioning_time is None:
             return False
@@ -3535,36 +3554,66 @@ class ShadowControlManager:
 
         elapsed = (datetime.now(UTC) - self._last_positioning_time).total_seconds()
 
-        # Early exit if enough time has passed
-        if elapsed > grace_period:
-            return False
+        is_in_progress = elapsed < grace_period
 
-        # Position-based early exit: Check if cover reached target HEIGHT
-        # Note: We only check HEIGHT, not angle, because angle changes during movement
-        current_height, current_angle = await self._get_current_cover_position()
+        if is_in_progress:
+            self.logger.debug("Positioning in progress: %.1fs elapsed of %.1fs timer", elapsed, grace_period)
 
-        # Calculate distance to target HEIGHT only
-        height_diff = abs(current_height - self._last_calculated_height)
+        return is_in_progress
 
-        # If close to target height (<2%), cover has likely reached position
-        if height_diff < 2.0:
-            self.logger.debug("Cover reached target height (diff: %.1f%%), ending grace period early after %.1fs", height_diff, elapsed)
-            return False
+    async def _check_positioning_completed(self) -> None:
+        """
+        Check if positioning timer completed and validate final position.
 
-        # Still within grace period and not yet at target height
-        is_within = elapsed < grace_period
+        This is called on every cover state change. If the timer has expired,
+        it compares the last reported position with the calculated target.
+        If they differ beyond tolerance, auto-lock is activated.
+        """
+        # Timer still running? Nothing to do
+        if self._is_positioning_in_progress():
+            return
 
-        if is_within:
-            angle_diff = abs(current_angle - self._last_calculated_angle)
-            self.logger.debug(
-                "Within grace period: %.1fs elapsed of %.1fs configured, still %.1f%% away from target height (angle diff: %.1f°)",
-                elapsed,
-                grace_period,
-                height_diff,
-                angle_diff,
+        # No last positioning? Nothing to check
+        if self._last_positioning_time is None:
+            return
+
+        # No reported position during timer? Skip check
+        if self._last_reported_height is None:
+            self.logger.debug("No position reported during timer, skipping validation")
+            self._last_positioning_time = None  # Reset timer marker
+            return
+
+        # Timer expired, validate position
+        height_diff = abs(self._last_reported_height - self._last_calculated_height)
+        angle_diff = abs(self._last_reported_angle - self._last_calculated_angle) if self._last_reported_angle is not None else 0.0
+
+        tolerance_height = self._facade_config.modification_tolerance_height
+        tolerance_angle = self._facade_config.modification_tolerance_angle
+
+        # Check tolerance
+        has_tilt = self._facade_config.shutter_type != ShutterType.MODE3
+
+        within_tolerance = height_diff <= tolerance_height and angle_diff <= tolerance_angle if has_tilt else height_diff <= tolerance_height
+
+        if not within_tolerance:
+            # Position differs -> Manual intervention during movement!
+            self.logger.warning(
+                "Position after timer differs from target! "
+                "Reported: %.1f%% / %.1f°, Expected: %.1f%% / %.1f° "
+                "-> Activating auto-lock (manual intervention detected)",
+                self._last_reported_height,
+                self._last_reported_angle if self._last_reported_angle is not None else 0.0,
+                self._last_calculated_height,
+                self._last_calculated_angle,
             )
+            await self._activate_auto_lock(self._last_reported_height, self._last_reported_angle if self._last_reported_angle is not None else 0.0)
+        else:
+            self.logger.debug("Position after timer matches target (diff: %.1f%% / %.1f°), all good", height_diff, angle_diff)
 
-        return is_within
+        # Reset timer and reported positions
+        self._last_positioning_time = None
+        self._last_reported_height = None
+        self._last_reported_angle = None
 
     def _get_entity_state_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
         """Extract dynamic value from an entity state."""

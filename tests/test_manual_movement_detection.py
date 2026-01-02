@@ -38,18 +38,16 @@ class TestManualMovementDetection:
         instance._last_calculated_height = 80.0
         instance._last_calculated_angle = 45.0
         instance._last_unlock_time = None
-
-        async def mock_get_current_position():
-            return 80.0, 45.0
-
-        instance._get_current_cover_position = mock_get_current_position
+        instance._last_reported_height = None
+        instance._last_reported_angle = None
 
         # Mock methods
         instance.get_internal_entity_id = MagicMock(return_value="switch.test_lock")
         instance._activate_auto_lock = AsyncMock()
+        instance._check_positioning_completed = AsyncMock()
 
         # Bind real methods
-        instance._is_within_grace_period = ShadowControlManager._is_within_grace_period.__get__(instance)
+        instance._is_positioning_in_progress = ShadowControlManager._is_positioning_in_progress.__get__(instance)
         instance._async_target_cover_entity_state_change_listener = ShadowControlManager._async_target_cover_entity_state_change_listener.__get__(
             instance
         )
@@ -57,38 +55,34 @@ class TestManualMovementDetection:
         return instance
 
     # ========================================================================
-    # TEST: Grace Period Logic
-    # ========================================================================
+    # TEST: Position in progress
+    # ===================================================================
 
-    async def test_is_within_grace_period_no_positioning_yet(self, manager):
-        """Test grace period returns False when no positioning occurred yet."""
+    def test_is_positioning_in_progress_no_positioning_yet(self, manager):
+        """Test positioning check returns False when no positioning occurred yet."""
         manager._last_positioning_time = None
 
-        result = await manager._is_within_grace_period()
+        result = manager._is_positioning_in_progress()  # ← Kein await mehr!
 
         assert result is False
 
-    async def test_is_within_grace_period_yes(self, manager):
-        """Test grace period returns True when within configured duration."""
+    def test_is_positioning_in_progress_yes(self, manager):
+        """Test positioning check returns True when within timer duration."""
+        # Positioning happened 10 seconds ago, timer is 30 seconds
         manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=10)
         manager._facade_config.max_movement_duration = 30.0
-        manager._last_calculated_height = 80.0  # ← Ziel
-        manager._last_calculated_angle = 45.0  # ← Ziel
 
-        # Mock muss Position zurückgeben die NICHT am Ziel ist!
-        manager._get_current_cover_position = AsyncMock(return_value=(50.0, 30.0))  # ← Noch unterwegs!
-
-        result = await manager._is_within_grace_period()
+        result = manager._is_positioning_in_progress()  # ← Kein await mehr!
 
         assert result is True
 
-    async def test_is_within_grace_period_no(self, manager):
-        """Test grace period returns False when duration exceeded."""
-        # Positioning happened 40 seconds ago, grace period is 30 seconds
+    def test_is_positioning_in_progress_no(self, manager):
+        """Test positioning check returns False when timer expired."""
+        # Positioning happened 40 seconds ago, timer is 30 seconds
         manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
         manager._facade_config.max_movement_duration = 30.0
 
-        result = await manager._is_within_grace_period()
+        result = manager._is_positioning_in_progress()  # ← Kein await mehr!
 
         assert result is False
 
@@ -120,17 +114,14 @@ class TestManualMovementDetection:
         await manager._async_target_cover_entity_state_change_listener(event)
 
         # Verify auto-lock was called
-        manager._activate_auto_lock.assert_called_once_with(50.0, 20.0)
+        manager._activate_auto_lock.assert_called_once_with(50.0, 80.0)
 
     async def test_no_auto_lock_within_grace_period(self, manager):
-        """Test that no auto-lock is triggered within grace period."""
-        # Set last positioning to 5 seconds ago (within 30s grace period)
+        """Test that no auto-lock is triggered when positioning timer is active."""
+        # Set last positioning to 5 seconds ago (timer: 30s)
         manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=5)
-        manager._last_calculated_height = 80.0  # Ziel
-        manager._last_calculated_angle = 45.0  # Ziel
-
-        # ✅ Position ist noch nicht am Ziel (unterwegs!)
-        manager._get_current_cover_position = AsyncMock(return_value=(60.0, 30.0))
+        manager._last_calculated_height = 80.0
+        manager._last_calculated_angle = 45.0
 
         old_state = MagicMock()
         old_state.state = "open"
@@ -138,7 +129,7 @@ class TestManualMovementDetection:
 
         new_state = MagicMock()
         new_state.state = "open"
-        new_state.attributes = {"current_position": 50, "current_tilt_position": 20}
+        new_state.attributes = {"current_position": 50, "current_tilt_position": 20}  # Große Änderung
 
         event = Event(
             "state_changed",
@@ -151,7 +142,11 @@ class TestManualMovementDetection:
 
         await manager._async_target_cover_entity_state_change_listener(event)
 
-        # Verify auto-lock was NOT called
+        # ✅ GEÄNDERT: Position sollte gespeichert worden sein
+        assert manager._last_reported_height == 50.0  # 100 - 50
+        assert manager._last_reported_angle == 80.0  # 100 - 20
+
+        # Verify auto-lock was NOT called (timer still running)
         manager._activate_auto_lock.assert_not_called()
 
     async def test_no_auto_lock_when_already_locked(self, manager):
@@ -189,7 +184,7 @@ class TestManualMovementDetection:
 
         new_state = MagicMock()
         new_state.state = "open"
-        new_state.attributes = {"current_position": 81, "current_tilt_position": 46}
+        new_state.attributes = {"current_position": 19, "current_tilt_position": 54}
 
         event = Event(
             "state_changed",
