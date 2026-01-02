@@ -765,6 +765,7 @@ class ShadowControlManager:
         # Persistant vars
         self.current_shutter_state: ShutterState = ShutterState.NEUTRAL
         self.current_lock_state: LockState = LockState.UNLOCKED
+        self._locked_by_auto_lock: bool = False
 
         # The "used_*" values are the finally used values, where lock and movements restriction is taken into account
         self.used_shutter_angle_degrees: float | None = None
@@ -1153,6 +1154,10 @@ class ShadowControlManager:
             current_height,
             current_angle,
         )
+
+        self._locked_by_auto_lock = True
+        self._height_during_lock_state = current_height
+        self._angle_during_lock_state = current_angle
 
         # Set lock via the internal lock switch entity
         lock_entity_id = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_MANUAL)
@@ -1591,13 +1596,19 @@ class ShadowControlManager:
                         self._last_unlock_time = datetime.now(UTC)
                         self._previous_shutter_height = self._height_during_lock_state
                         self._previous_shutter_angle = self._angle_during_lock_state
+
+                        # Reset Auto-Lock Flag
+                        self._locked_by_auto_lock = False
+
                     elif new_state.state == "off" and self._dynamic_config.lock_integration_with_position:
                         self.logger.info("Simple lock was disabled but lock with position is already enabled -> no position update")
                     else:
-                        # Lock ENABLED
+                        # Lock ENABLED manually by user
                         self.logger.info("Simple lock enabled -> no position update, storing current position")
                         self._height_during_lock_state = self._previous_shutter_height
                         self._angle_during_lock_state = self._previous_shutter_angle
+
+                        self._locked_by_auto_lock = False
 
                 elif (
                     entity == self._config.get(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value)
@@ -1646,6 +1657,9 @@ class ShadowControlManager:
                             self._previous_shutter_height = forced_height
                             self._previous_shutter_angle = forced_angle
 
+                        # Reset auto-lock flag if both locks are disabled
+                        self._locked_by_auto_lock = False
+
                     elif new_state.state == "off" and self._dynamic_config.lock_integration:
                         self.logger.info("Lock with position was disabled but simple lock already enabled -> no position update")
                     else:
@@ -1654,6 +1668,10 @@ class ShadowControlManager:
                         self._enforce_position_update = True
                         self._height_during_lock_state = self._dynamic_config.lock_height
                         self._angle_during_lock_state = self._dynamic_config.lock_angle
+
+                        # This overwrites auto-lock
+                        # If lock-with-position, it's no longer auto-lock
+                        self._locked_by_auto_lock = False
 
                 elif entity == self._config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value):
                     # External enforce entity changed
@@ -3865,14 +3883,24 @@ class ShadowControlManager:
     def _calculate_lock_state(self) -> LockState:
         """Calculate the current lock state."""
         self.logger.debug(
-            "Calculating overall lock state based on lock=%s and lock_with_position=%s",
+            "Calculating overall lock state based on lock=%s, lock_with_position=%s, auto_lock=%s",
             self._dynamic_config.lock_integration,
             self._dynamic_config.lock_integration_with_position,
+            self._locked_by_auto_lock,
         )
+
+        # Lock with forced position takes precedence
         if self._dynamic_config.lock_integration_with_position:
             return LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
+
+        # Check if locked
         if self._dynamic_config.lock_integration:
+            # Distinct between auto-lock and manual-lock
+            if self._locked_by_auto_lock:
+                return LockState.LOCKED_BY_EXTERNAL_MODIFICATION
             return LockState.LOCKED_MANUALLY
+
+        # Not locked
         return LockState.UNLOCKED
 
     def get_internal_entity_id(self, internal_enum: SCInternal) -> str:

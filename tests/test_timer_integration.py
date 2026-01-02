@@ -12,6 +12,7 @@ from custom_components.shadow_control import ShadowControlManager
 from custom_components.shadow_control.const import (
     DOMAIN,
     DOMAIN_DATA_MANAGERS,
+    LockState,
     ShutterType,
 )
 
@@ -69,6 +70,10 @@ class TestTimerIntegration:
         instance._last_reported_height = None
         instance._last_reported_angle = None
         instance._last_unlock_time = None
+        instance._locked_by_auto_lock = False
+        instance._height_during_lock_state = 0.0
+        instance._angle_during_lock_state = 0.0
+        instance.current_lock_state = LockState.UNLOCKED
 
         # Mock methods
         instance._activate_auto_lock = AsyncMock()
