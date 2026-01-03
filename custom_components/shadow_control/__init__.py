@@ -2879,8 +2879,8 @@ class ShadowControlManager:
             ):
                 self.logger.debug(
                     "State %s (%s): Dawn mode active and brightness (%s) below threshold (%s), starting timer for %s (%ss)",
+                    ShutterState.SHADOW_NEUTRAL,
                     ShutterState.SHADOW_NEUTRAL.name,
-                    ShutterState.SHADOW_NEUTRAL.name.name,
                     dawn_brightness,
                     dawn_threshold_close,
                     ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING,
