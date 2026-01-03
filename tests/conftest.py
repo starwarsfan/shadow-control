@@ -5,7 +5,9 @@
 # ============================================================================
 import logging
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
+
+from custom_components.shadow_control import ShadowControlManager
 
 if sys.platform == "win32":
     sys.modules["fcntl"] = MagicMock()
@@ -23,6 +25,7 @@ from custom_components.shadow_control.const import (
     DOMAIN,
     SC_CONF_NAME,
     TARGET_COVER_ENTITY,
+    ShutterState,
 )
 
 pytest_plugins = "pytest_homeassistant_custom_component"
@@ -158,3 +161,25 @@ def mock_async_call_later() -> Generator[MagicMock]:
     with patch("homeassistant.helpers.event.async_call_later") as mock:
         mock.return_value = MagicMock()
         yield mock
+
+
+@pytest.fixture(name="mock_manager")
+def mock_manager_fixture(hass: HomeAssistant) -> MagicMock:
+    """Fixture to mock ShadowControlManager and its state handlers."""
+    manager = MagicMock()
+    manager.hass = hass
+    manager.logger = MagicMock()
+    manager.current_shutter_state = ShutterState.NEUTRAL
+
+    # Mock internal methods used by the orchestrator
+    manager._update_extra_state_attributes = MagicMock()
+    manager._cancel_timer = MagicMock()
+
+    # Create the state handlers dictionary with AsyncMocks for every state
+    # We populate it with mocks that by default return the current state (no change)
+    manager._state_handlers = {state: AsyncMock(return_value=state) for state in ShutterState}
+
+    # Bind the real orchestrator logic to the mock instance
+    manager._process_shutter_state = ShadowControlManager._process_shutter_state.__get__(manager)
+
+    return manager
