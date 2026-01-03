@@ -2496,13 +2496,6 @@ class ShadowControlManager:
         )
         return ShutterState.NEUTRAL
 
-        self.logger.debug(
-            "State %s (%s): Staying at previous position.",
-            ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING,
-            ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING.name,
-        )
-        return ShutterState.SHADOW_FULL_CLOSE_TIMER_RUNNING
-
     # =======================================================================
     # State SHADOW_FULL_CLOSED
     async def _handle_state_shadow_full_closed(self) -> ShutterState:
@@ -2566,9 +2559,6 @@ class ShadowControlManager:
             ShutterState.NEUTRAL,
         )
         return ShutterState.NEUTRAL
-
-        self.logger.debug("State %s (%s): Staying at previous position", ShutterState.SHADOW_FULL_CLOSED, ShutterState.SHADOW_FULL_CLOSED.name)
-        return ShutterState.SHADOW_FULL_CLOSED
 
     # =======================================================================
     # State SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
@@ -2648,13 +2638,6 @@ class ShadowControlManager:
             ShutterState.NEUTRAL,
         )
         return ShutterState.NEUTRAL
-
-        self.logger.debug(
-            "State %s (%s): Staying at previous position",
-            ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING,
-            ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name,
-        )
-        return ShutterState.SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING
 
     # =======================================================================
     # State SHADOW_HORIZONTAL_NEUTRAL
@@ -2738,11 +2721,6 @@ class ShadowControlManager:
         )
         return ShutterState.NEUTRAL
 
-        self.logger.debug(
-            "State %s (%s): Staying at previous position", ShutterState.SHADOW_HORIZONTAL_NEUTRAL, ShutterState.SHADOW_HORIZONTAL_NEUTRAL.name
-        )
-        return ShutterState.SHADOW_HORIZONTAL_NEUTRAL
-
     # =======================================================================
     # State SHADOW_NEUTRAL_TIMER_RUNNING
     async def _handle_state_shadow_neutral_timer_running(self) -> ShutterState:
@@ -2816,11 +2794,6 @@ class ShadowControlManager:
             ShutterState.NEUTRAL,
         )
         return ShutterState.NEUTRAL
-
-        self.logger.debug(
-            "State %s (%s): Staying at previous position", ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING, ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING.name
-        )
-        return ShutterState.SHADOW_NEUTRAL_TIMER_RUNNING
 
     # =======================================================================
     # State SHADOW_NEUTRAL
@@ -3204,11 +3177,6 @@ class ShadowControlManager:
         )
         return ShutterState.NEUTRAL
 
-        self.logger.debug(
-            "State %s (%s): Staying at previous position", ShutterState.DAWN_NEUTRAL_TIMER_RUNNING, ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name
-        )
-        return ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
-
     # =======================================================================
     # State DAWN_HORIZONTAL_NEUTRAL
     async def _handle_state_dawn_horizontal_neutral(self) -> ShutterState:
@@ -3285,11 +3253,6 @@ class ShadowControlManager:
         )
         return ShutterState.NEUTRAL
 
-        self.logger.debug(
-            "State %s (%s): Staying at previous position", ShutterState.DAWN_HORIZONTAL_NEUTRAL, ShutterState.DAWN_HORIZONTAL_NEUTRAL.name
-        )
-        return ShutterState.DAWN_HORIZONTAL_NEUTRAL
-
     # =======================================================================
     # State DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
     async def _handle_state_dawn_horizontal_neutral_timer_running(self) -> ShutterState:
@@ -3364,13 +3327,6 @@ class ShadowControlManager:
         )
         return ShutterState.NEUTRAL
 
-        self.logger.debug(
-            "State %s (%s): Staying at previous position",
-            ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING,
-            ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name,
-        )
-        return ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING
-
     # =======================================================================
     # State DAWN_FULL_CLOSED
     async def _handle_state_dawn_full_closed(self) -> ShutterState:
@@ -3443,9 +3399,6 @@ class ShadowControlManager:
             ShutterState.NEUTRAL,
         )
         return ShutterState.NEUTRAL
-
-        self.logger.debug("State %s (%s): Staying at previous position", ShutterState.DAWN_FULL_CLOSED, ShutterState.DAWN_FULL_CLOSED.name)
-        return ShutterState.DAWN_FULL_CLOSED
 
     # =======================================================================
     # State DAWN_FULL_CLOSE_TIMER_RUNNING
@@ -3520,11 +3473,6 @@ class ShadowControlManager:
             ShutterState.NEUTRAL,
         )
         return ShutterState.NEUTRAL
-
-        self.logger.debug(
-            "State %s (%s): Staying at previous position", ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING, ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name
-        )
-        return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
 
     # End of state handling
     # #######################################################################
