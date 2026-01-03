@@ -4,9 +4,18 @@ from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from homeassistant.components.cover import CoverEntityFeature
+from homeassistant.const import ATTR_SUPPORTED_FEATURES
+from homeassistant.core import HomeAssistant, State
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.shadow_control import ShadowControlManager
-from custom_components.shadow_control.const import LockState, ShutterType
+from custom_components.shadow_control.const import (
+    DOMAIN,
+    DOMAIN_DATA_MANAGERS,
+    LockState,
+    ShutterType,
+)
 
 
 class TestPositionShutter:
@@ -274,3 +283,306 @@ class TestPositionShutter:
 
         # Verify tracking was NOT updated (initial run)
         assert manager._last_positioning_time is None
+
+
+class TestPositionShutterSendLogic:
+    """Test send command logic in _position_shutter."""
+
+    @pytest.fixture
+    def mock_hass(self):
+        """Create a mock Home Assistant instance."""
+        hass = MagicMock(spec=HomeAssistant)
+        hass.states = MagicMock()
+        hass.services = MagicMock()
+        hass.data = {DOMAIN_DATA_MANAGERS: {}}
+        return hass
+
+    @pytest.fixture
+    def mock_config_entry(self):
+        """Create a mock config entry."""
+        return MockConfigEntry(
+            domain=DOMAIN,
+            entry_id="test_entry_id",
+            data={
+                "name": "Test Instance",
+                "covers": ["cover.test"],
+            },
+        )
+
+    @pytest.fixture
+    def manager(self, mock_hass, mock_config_entry):
+        """Create a ShadowControlManager instance with mocks."""
+        instance = MagicMock(spec=ShadowControlManager)
+        instance.hass = mock_hass
+        instance.logger = MagicMock()
+        instance._config_entry = mock_config_entry
+        instance._config = {}
+        instance._target_cover_entity_id = ["cover.test"]
+        instance.name = "Test Instance"
+
+        # Facade config
+        instance._facade_config = MagicMock()
+        instance._facade_config.shutter_type = ShutterType.MODE1
+
+        # Dynamic config
+        instance._dynamic_config = MagicMock()
+        instance._dynamic_config.movement_restriction_height = MagicMock()
+        instance._dynamic_config.movement_restriction_angle = MagicMock()
+
+        # Lock state
+        instance.current_lock_state = LockState.UNLOCKED
+
+        # Initial run
+        instance._is_initial_run = False
+
+        # Tracking
+        instance._previous_shutter_height = None
+        instance._previous_shutter_angle = None
+        instance._enforce_position_update = False
+
+        # Calculated values
+        instance.calculated_shutter_height = 0.0
+        instance.calculated_shutter_angle = 0.0
+        instance.used_shutter_height = 0.0
+        instance.used_shutter_angle = 0.0
+        instance.used_shutter_angle_degrees = 0.0
+
+        # Mock methods
+        instance._cancel_timer = MagicMock()
+        instance._update_extra_state_attributes = MagicMock()
+
+        def mock_should_output(config_value, new_value, previous_value):
+            """Mock that returns new_value."""
+            return new_value
+
+        instance._should_output_be_updated = MagicMock(side_effect=mock_should_output)
+        instance._convert_shutter_angle_percent_to_degrees = MagicMock(return_value=45.0)
+
+        # Mock cover state
+        cover_state = MagicMock(spec=State)
+        cover_state.attributes = {
+            ATTR_SUPPORTED_FEATURES: (CoverEntityFeature.SET_POSITION | CoverEntityFeature.SET_TILT_POSITION),
+            "current_position": 50,
+            "current_tilt_position": 50,
+        }
+        mock_hass.states.get.return_value = cover_state
+
+        # Mock services
+        mock_hass.services.has_service = MagicMock(return_value=True)
+        mock_hass.services.async_call = AsyncMock()
+
+        # Bind real method
+        instance._position_shutter = ShadowControlManager._position_shutter.__get__(instance)
+
+        return instance
+
+    # ========================================================================
+    # TEST 1: Keine Position-Änderung → Kein Command
+    # ========================================================================
+
+    async def test_no_position_change_no_command(self, manager):
+        """Test that no command is sent when position doesn't change."""
+        # Set previous position
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with SAME position (difference = 0.0)
+        await manager._position_shutter(50.0, 45.0, stop_timer=False)
+
+        # Verify NO service calls
+        manager.hass.services.async_call.assert_not_called()
+
+        # Verify internal states updated
+        assert manager.calculated_shutter_height == 50.0
+        assert manager.calculated_shutter_angle == 45.0
+
+    # ========================================================================
+    # TEST 2: Minimale Änderung (< 0.001%) → Kein Command
+    # ========================================================================
+
+    async def test_minimal_position_change_no_command(self, manager):
+        """Test that no command is sent for changes < 0.001%."""
+        # Set previous position
+        manager._previous_shutter_height = 50.0000
+        manager._previous_shutter_angle = 45.0000
+
+        # Call with MINIMAL change (0.0005% < 0.001%)
+        await manager._position_shutter(50.0005, 45.0005, stop_timer=False)
+
+        # Verify NO service calls
+        manager.hass.services.async_call.assert_not_called()
+
+    # ========================================================================
+    # TEST 3: Änderung genau an Grenze (0.001%) → Kein Command
+    # ========================================================================
+
+    async def test_boundary_position_change_no_command(self, manager):
+        """Test that no command is sent at exactly 0.001% change."""
+        # Set previous position
+        manager._previous_shutter_height = 50.0000
+        manager._previous_shutter_angle = 45.0000
+
+        # Call with EXACT boundary (0.001%)
+        await manager._position_shutter(50.0010, 45.0010, stop_timer=False)
+
+        # Verify NO service calls (> 0.001 is FALSE for exactly 0.001)
+        manager.hass.services.async_call.assert_not_called()
+
+    # ========================================================================
+    # TEST 4: Änderung knapp über Grenze (0.002%) → Command gesendet
+    # ========================================================================
+
+    async def test_small_position_change_sends_command(self, manager):
+        """Test that command IS sent for changes > 0.001%."""
+
+        # Set previous position
+        manager._previous_shutter_height = 50.0000
+        manager._previous_shutter_angle = 45.0000
+
+        # Call with change ABOVE threshold (0.002% > 0.001%)
+        await manager._position_shutter(50.0020, 45.0020, stop_timer=False)
+
+        # Verify service calls were made (2 calls: height + angle)
+        assert manager.hass.services.async_call.call_count == 2
+
+        # ✅ FIX: Verify calls correctly
+        calls = manager.hass.services.async_call.call_args_list
+
+        # First call: set_cover_position
+        assert calls[0].args[0] == "cover"
+        assert calls[0].args[1] == "set_cover_position"
+
+        # Second call: set_cover_tilt_position
+        assert calls[1].args[0] == "cover"
+        assert calls[1].args[1] == "set_cover_tilt_position"
+
+    # ========================================================================
+    # TEST 5: Große Änderung (1.0%) → Command gesendet
+    # ========================================================================
+
+    async def test_large_position_change_sends_command(self, manager):
+        """Test that command is sent for significant changes."""
+        # Set previous position
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with LARGE change (1.0%)
+        await manager._position_shutter(51.0, 46.0, stop_timer=False)
+
+        # Verify service calls
+        assert manager.hass.services.async_call.call_count == 2
+
+    # ========================================================================
+    # TEST 6: Nur Höhe ändert sich → Nur Höhe + Angle (wegen height change)
+    # ========================================================================
+
+    async def test_only_height_change_sends_both(self, manager):
+        """Test that both height and angle are sent when height changes."""
+        # Set previous position
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with ONLY height change
+        await manager._position_shutter(51.0, 45.0, stop_timer=False)
+
+        # Verify BOTH commands sent (angle follows height)
+        assert manager.hass.services.async_call.call_count == 2
+
+    # ========================================================================
+    # TEST 7: Nur Winkel ändert sich → Nur Winkel
+    # ========================================================================
+
+    async def test_only_angle_change_sends_angle_only(self, manager):
+        """Test that only angle is sent when only angle changes."""
+        # Set previous position
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with ONLY angle change
+        await manager._position_shutter(50.0, 46.0, stop_timer=False)
+
+        # Verify only angle command sent
+        assert manager.hass.services.async_call.call_count == 1
+
+        # ✅ FIX: Verify it's the angle command
+        call = manager.hass.services.async_call.call_args
+        assert call.args[0] == "cover"
+        assert call.args[1] == "set_cover_tilt_position"
+
+    # ========================================================================
+    # TEST 8: _enforce_position_update überschreibt Logik
+    # ========================================================================
+
+    async def test_enforce_position_update_always_sends(self, manager):
+        """Test that enforce flag always sends commands."""
+        # Set previous position (SAME as target)
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Set enforce flag
+        manager._enforce_position_update = True
+
+        # Call with SAME position
+        await manager._position_shutter(50.0, 45.0, stop_timer=False)
+
+        # Verify commands WERE sent despite no change
+        assert manager.hass.services.async_call.call_count == 2
+
+    # ========================================================================
+    # TEST 9: Erste Positionierung (previous = None) → Command gesendet
+    # ========================================================================
+
+    async def test_first_positioning_sends_command(self, manager):
+        """Test that first positioning always sends commands."""
+        # No previous position
+        manager._previous_shutter_height = None
+        manager._previous_shutter_angle = None
+
+        # Call
+        await manager._position_shutter(50.0, 45.0, stop_timer=False)
+
+        # Verify commands sent
+        assert manager.hass.services.async_call.call_count == 2
+
+    # ========================================================================
+    # TEST 10: Mode3 sendet kein Angle
+    # ========================================================================
+
+    async def test_mode3_no_angle_command(self, manager):
+        """Test that Mode3 doesn't send angle commands."""
+        # Set to Mode3
+        manager._facade_config.shutter_type = ShutterType.MODE3
+
+        # Set previous
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with change
+        await manager._position_shutter(51.0, 46.0, stop_timer=False)
+
+        # Verify only height command (no angle for Mode3)
+        assert manager.hass.services.async_call.call_count == 1
+
+        # ✅ FIX: Verify it's height
+        call = manager.hass.services.async_call.call_args
+        assert call.args[0] == "cover"
+        assert call.args[1] == "set_cover_position"
+
+    # ========================================================================
+    # TEST 11: Locked → Keine Commands (außer forced position)
+    # ========================================================================
+
+    async def test_locked_no_commands(self, manager):
+        """Test that locked state prevents commands."""
+        # Set locked
+        manager.current_lock_state = LockState.LOCKED_MANUALLY
+
+        # Set previous
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with change
+        await manager._position_shutter(51.0, 46.0, stop_timer=False)
+
+        # Verify NO commands sent
+        manager.hass.services.async_call.assert_not_called()
