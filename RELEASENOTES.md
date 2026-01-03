@@ -23,7 +23,8 @@
 * Fix initialization after Home Assistant restart
 * Fix ignored lock in case lock is active and shutter are modified manually
 * Implement automatic instance lock in case shutters are modified manually
-* New config option for max movement duration from full closed to full open
+* New config option `facade_max_movement_duration_static` to configure max movement duration from full closed to full open
+* Activate automatic testing and add a ton of testcases ;-)
 
 ## 0.10.0
 * Bugfix: Fixed position handling if movement is restricted and integration gets unlocked
