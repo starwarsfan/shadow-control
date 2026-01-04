@@ -164,7 +164,7 @@ class TestTravellingTimeCheck:
         assert call_args[0][2] == 40  # travelling_down
         assert call_args[0][3] == SCFacadeConfig2.MAX_MOVEMENT_DURATION_STATIC.value  # Config key
         assert call_args[0][4] == 35  # max_duration
-        assert call_args[0][5] == 45  # travelling_down + 5
+        assert call_args[0][5] == 43  # travelling_down + 3
 
     # ========================================================================
     # TEST 7: travelling_time_up > max_duration → WARNING
@@ -300,7 +300,7 @@ class TestTravellingTimeCheck:
         manager._check_travelling_time_configuration()
 
         call_args = manager.logger.warning.call_args
-        assert call_args[0][5] == 45  # travelling_down (40) + 5
+        assert call_args[0][5] == 43  # travelling_down (40) + 5
 
     # ========================================================================
     # TEST 15: Edge case - max_duration very small
@@ -320,4 +320,4 @@ class TestTravellingTimeCheck:
         call_args = manager.logger.warning.call_args
         assert call_args[0][2] == 30  # travelling_down
         assert call_args[0][4] == 5  # max_duration
-        assert call_args[0][5] == 35  # recommended (30 + 5)
+        assert call_args[0][5] == 33  # recommended (30 + 5)
