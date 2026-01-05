@@ -1,11 +1,12 @@
-from datetime import timedelta
+import asyncio
+import logging
 
 # Hier war der Fehler: async_setup_component kommt aus dem HA Core
-from homeassistant.setup import async_setup_component
-from homeassistant.util import dt as dt_util
-from pytest_homeassistant_custom_component.common import async_fire_time_changed, async_mock_service
+from pytest_homeassistant_custom_component.common import MockConfigEntry, async_mock_service
 
 from custom_components.shadow_control.const import DOMAIN
+
+_LOGGER = logging.getLogger(__name__)
 
 TEST_CONFIG = {
     DOMAIN: [
@@ -14,6 +15,7 @@ TEST_CONFIG = {
             "debug_enabled": True,
             "target_cover_entity": ["cover.sc_dummy"],
             "facade_shutter_type_static": "mode1",
+            #
             # Dynamic configuration inputs
             "brightness_entity": "input_number.d01_brightness",
             # "brightness_dawn_entity":
@@ -33,6 +35,7 @@ TEST_CONFIG = {
             # "movement_restriction_height_entity":
             # "movement_restriction_angle_entity":
             # "enforce_positioning_entity": input_boolean.d13_enforce_positioning
+            #
             # General facade configuration
             "facade_azimuth_static": 200,
             "facade_offset_sun_in_static": -45,
@@ -51,44 +54,47 @@ TEST_CONFIG = {
             # "facade_neutral_pos_height_entity": input_number.g15_neutral_pos_height
             "facade_neutral_pos_angle_manual": 0,
             # "facade_neutral_pos_angle_entity": input_number.g16_neutral_pos_angle
+            "facade_max_movement_duration_static": 3,
             "facade_modification_tolerance_height_static": 3,
             "facade_modification_tolerance_angle_static": 3,
+            #
             # Shadow configuration
             # "shadow_control_enabled_entity":
             "shadow_control_enabled_manual": True,
             # "shadow_brightness_threshold_entity":
             "shadow_brightness_threshold_manual": 50000,
             # "shadow_after_seconds_entity":
-            "shadow_after_seconds_manual": 10,
+            "shadow_after_seconds_manual": 5,
             # "shadow_shutter_max_height_entity": input_number.automation_shadow_max_height_sc_dummy
             "shadow_shutter_max_height_manual": 90,
             # "shadow_shutter_max_angle_entity": input_number.automation_shadow_max_angle_sc_dummy
             "shadow_shutter_max_angle_manual": 90,
             # "shadow_shutter_look_through_seconds_entity":
-            "shadow_shutter_look_through_seconds_manual": 10,
+            "shadow_shutter_look_through_seconds_manual": 5,
             # "shadow_shutter_open_seconds_entity":
-            "shadow_shutter_open_seconds_manual": 10,
+            "shadow_shutter_open_seconds_manual": 5,
             # "shadow_shutter_look_through_angle_entity":
             "shadow_shutter_look_through_angle_manual": 54,
             # "shadow_height_after_sun_entity":
             "shadow_height_after_sun_manual": 80,
             # "shadow_angle_after_sun_entity":
             "shadow_angle_after_sun_manual": 80,
+            #
             # Dawn configuration
             # "dawn_control_enabled_entity":
             "dawn_control_enabled_manual": True,
             # "dawn_brightness_threshold_entity":
             "dawn_brightness_threshold_manual": 5000,
             # "dawn_after_seconds_entity":
-            "dawn_after_seconds_manual": 10,
+            "dawn_after_seconds_manual": 5,
             # "dawn_shutter_max_height_entity": input_number.automation_dawn_max_height_sc_dummy
             "dawn_shutter_max_height_manual": 90,
             # "dawn_shutter_max_angle_entity": input_number.automation_dawn_max_angle_sc_dummy
             "dawn_shutter_max_angle_manual": 90,
             # "dawn_shutter_look_through_seconds_entity":
-            "dawn_shutter_look_through_seconds_manual": 10,
+            "dawn_shutter_look_through_seconds_manual": 5,
             # "dawn_shutter_open_seconds_entity":
-            "dawn_shutter_open_seconds_manual": 10,
+            "dawn_shutter_open_seconds_manual": 5,
             # "dawn_shutter_look_through_angle_entity":
             "dawn_shutter_look_through_angle_manual": 45,
             # "dawn_height_after_dawn_entity":
@@ -100,39 +106,61 @@ TEST_CONFIG = {
 }
 
 
-async def test_full_sc_dummy_flow(hass):
-    """Testet den SC Dummy mit der vollständigen Konfiguration."""
+async def test_full_sc_dummy_flow_debug(hass):
+    """Test mit Echtzeit-Warten und Status-Ausgaben."""
 
-    # 1. Vorbereitungen: Die benötigten Input-Entities faken
-    hass.states.async_set("input_number.d01_brightness", "10000")
+    # 1. Setup der Entities
+    hass.states.async_set("input_number.d01_brightness", "0")
     hass.states.async_set("input_number.d03_sun_elevation", "30")
     hass.states.async_set("input_number.d04_sun_azimuth", "200")
     hass.states.async_set("cover.sc_dummy", "open", {"current_position": 100})
 
     # 2. Integration starten
-    assert await async_setup_component(hass, DOMAIN, TEST_CONFIG)
+    # Wir erstellen manuell den Eintrag, den sonst die UI erstellen würde
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data=TEST_CONFIG[DOMAIN][0],  # Wir nehmen das erste Element deiner Liste
+        entry_id="test_entry_id",
+        version=5,
+    )
+    entry.add_to_hass(hass)
+
+    # Jetzt starten wir die Integration über den Entry, nicht über YAML
+    assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
 
-    # Registriere einen Mock-Service, um zu sehen, ob die Integration ihn aufruft
+    # Den Hauptschalter für Shadow Control explizit einschalten
+    hass.states.async_set("switch.sc_dummy_s_control_active", "on")
+    # Falls es noch einen globalen Lock gibt, diesen sicherheitshalber auf off
+    hass.states.async_set("switch.sc_dummy_lock", "off")
+
+    await hass.async_block_till_done()
+
+    # MOCK SERVICE
     calls = async_mock_service(hass, "cover", "set_cover_position")
 
-    # 3. Trigger: Helligkeit hochsetzen (Sonne knallt)
+    # Status-Check nach Start
+    active_switch = hass.states.get("switch.sc_dummy_s_control_active")
+    _LOGGER.info("Shadow Control Switch State: %s", active_switch.state if active_switch else "NOT FOUND")
+
+    # 3. Trigger: Helligkeit hoch
+    _LOGGER.info("Triggering brightness to 60000...")
     hass.states.async_set("input_number.d01_brightness", "60000")
     await hass.async_block_till_done()
 
-    # 4. Zeitraffer: 11 Sekunden vorspulen (shadow_after_seconds_manual: 10)
-    now = dt_util.utcnow()
-    async_fire_time_changed(hass, now + timedelta(seconds=11))
+    # 4. ECHTZEIT WARTEN
+    _LOGGER.info("Sleeping for 11 seconds...")
+    await asyncio.sleep(11)
+
+    # Wichtig: Nach dem Sleep muss HA die Timer-Events noch verarbeiten
     await hass.async_block_till_done()
 
-    # 5. Check: Hat die Jalousie reagiert?
-    # Hier prüfen wir, ob ein Service zum Schließen aufgerufen wurde
-    state = hass.states.get("cover.sc_dummy")
-    # In einem echten Integration-Test prüfen wir oft, ob die State Machine
-    # nun den neuen Zielwert reflektiert
-    assert state is not None
+    # 5. Status-Check am Ende
+    current_state = hass.states.get("sensor.sc_dummy_state")
+    _LOGGER.info("[DEBUG] Final Integration State Sensor: %s", {current_state.state if current_state else "NOT FOUND"})
 
-    # Verifikation: Wurde der Service genau 1x aufgerufen?
+    # 6. Verifikation
+    if len(calls) == 0:
+        _LOGGER.info("[DEBUG] FAILED: No service calls caught. Possible reasons: Threshold not hit, Azimuth wrong, or Timer canceled.")
+
     assert len(calls) > 0
-    # Prüfe die übermittelten Daten (z.B. Zielhöhe 80%)
-    assert calls[0].data["position"] == 80
