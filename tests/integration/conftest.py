@@ -1,0 +1,269 @@
+"""Fixtures für Integration Tests."""
+
+from datetime import timedelta
+
+import pytest
+from homeassistant.components.cover import (
+    DOMAIN as COVER_DOMAIN,
+)
+from homeassistant.components.input_number import DOMAIN as INPUT_NUMBER_DOMAIN
+from homeassistant.core import HomeAssistant
+from homeassistant.setup import async_setup_component
+from homeassistant.util import dt as dt_util
+from pytest_homeassistant_custom_component.common import async_fire_time_changed
+
+from custom_components.shadow_control.const import DOMAIN
+
+# ============================================================================
+# Helper: Setup mit User-Config
+# ============================================================================
+
+
+@pytest.fixture
+async def setup_from_user_config(hass: HomeAssistant, mock_minimal_entities):
+    """Setup Shadow Control mit User-Config Block.
+
+    Usage:
+        user_config = {
+            DOMAIN: [{
+                "name": "SC Dummy",
+                "target_cover_entity": ["cover.sc_dummy"],
+                ...
+            }]
+        }
+        await setup_from_user_config(user_config)
+    """
+
+    async def _setup(config: dict):
+        """Setup mit gegebener User Config."""
+        assert await async_setup_component(hass, DOMAIN, config)
+        await hass.async_block_till_done()
+        return config
+
+    return _setup
+
+
+# ============================================================================
+# Mock Entities (Minimal Setup)
+# ============================================================================
+
+
+@pytest.fixture
+async def mock_minimal_entities(hass: HomeAssistant):
+    """Erstelle minimale Entities die User-Configs erwarten."""
+
+    # Input Numbers für Cover Position und andere Werte
+    input_number_config = {
+        INPUT_NUMBER_DOMAIN: {
+            "cover_position": {
+                "min": 0,
+                "max": 100,
+                "initial": 50,
+                "name": "Cover Position",
+            },
+            "cover_tilt_position": {
+                "min": 0,
+                "max": 90,
+                "initial": 45,
+                "name": "Cover Tilt Position",
+            },
+            "d01_brightness": {
+                "min": 0,
+                "max": 100000,
+                "initial": 50000,
+                "name": "Brightness",
+            },
+            "d03_sun_elevation": {
+                "min": -90,
+                "max": 90,
+                "initial": 45,
+                "name": "Sun Elevation",
+            },
+            "d04_sun_azimuth": {
+                "min": 0,
+                "max": 360,
+                "initial": 180,
+                "name": "Sun Azimuth",
+            },
+        }
+    }
+
+    # Setup Input Numbers zuerst
+    assert await async_setup_component(hass, INPUT_NUMBER_DOMAIN, input_number_config)
+    await hass.async_block_till_done()
+
+    # Setup Cover mit Template Platform
+    cover_config = {
+        COVER_DOMAIN: [
+            {
+                "platform": "template",
+                "covers": {
+                    "sc_dummy": {
+                        "friendly_name": "SC Dummy",
+                        "device_class": "shutter",
+                        "position_template": "{{ states('input_number.cover_position') | int(50) }}",
+                        "open_cover": {
+                            "service": "input_number.set_value",
+                            "target": {"entity_id": "input_number.cover_position"},
+                            "data": {"value": 100},
+                        },
+                        "close_cover": {
+                            "service": "input_number.set_value",
+                            "target": {"entity_id": "input_number.cover_position"},
+                            "data": {"value": 0},
+                        },
+                        "set_cover_position": {
+                            "service": "input_number.set_value",
+                            "target": {"entity_id": "input_number.cover_position"},
+                            "data": {"value": "{{ position }}"},
+                        },
+                        "set_cover_tilt_position": {
+                            "service": "input_number.set_value",
+                            "target": {"entity_id": "input_number.cover_tilt_position"},
+                            "data": {"value": "{{ tilt_position }}"},
+                        },
+                    }
+                },
+            }
+        ]
+    }
+
+    # Setup Cover Template
+    assert await async_setup_component(hass, COVER_DOMAIN, cover_config)
+    await hass.async_block_till_done()
+
+    return {
+        "cover": "cover.sc_dummy",
+        "input_numbers": [
+            "input_number.d01_brightness",
+            "input_number.d03_sun_elevation",
+            "input_number.d04_sun_azimuth",
+        ],
+    }
+
+
+# ============================================================================
+# Time Travel Helper
+# ============================================================================
+
+
+@pytest.fixture
+def time_travel(hass: HomeAssistant):
+    """Fixture zum Zeitsprung für Timer-Tests.
+
+    Usage:
+        # Timer läuft für 5 Sekunden
+        await time_travel(seconds=6)  # Spring 6 Sekunden vor
+        await hass.async_block_till_done()
+        # Timer ist jetzt abgelaufen
+    """
+
+    async def _travel(*, seconds: int = 0, minutes: int = 0, hours: int = 0):
+        """Spring in der Zeit vorwärts."""
+        delta = timedelta(seconds=seconds, minutes=minutes, hours=hours)
+        future_time = dt_util.utcnow() + delta
+
+        # Nutze die pytest_homeassistant_custom_component Helper
+        async_fire_time_changed(hass, future_time)
+        await hass.async_block_till_done()
+
+    return _travel
+
+
+@pytest.fixture
+def fast_forward_timers(time_travel):
+    """Auto-forwarde Timer basierend auf Config-Werten.
+
+    Usage:
+        # Timer in Config: shadow_after_seconds_manual: 5
+        await fast_forward_timers("shadow_after_seconds")
+        # Springt automatisch 6 Sekunden vor (Config-Wert + 1)
+    """
+    _config_cache = {}
+
+    async def _fast_forward(timer_key: str, extra_seconds: int = 1):
+        """Forward timer basierend auf Config."""
+        # Hole Config-Wert (müsste aus der Integration gelesen werden)
+        # Für jetzt: manuelle Mappings
+        timer_mapping = {
+            "shadow_after_seconds": "shadow_after_seconds_manual",
+            "dawn_after_seconds": "dawn_after_seconds_manual",
+            "shadow_look_through_seconds": "shadow_shutter_look_through_seconds_manual",
+            "dawn_look_through_seconds": "dawn_shutter_look_through_seconds_manual",
+            "shadow_open_seconds": "shadow_shutter_open_seconds_manual",
+            "dawn_open_seconds": "dawn_shutter_open_seconds_manual",
+            "max_movement_duration": "facade_max_movement_duration_static",
+        }
+
+        config_key = timer_mapping.get(timer_key, timer_key)
+
+        # Hole Wert aus HA Data (falls gespeichert)
+        # Fallback zu Standard-Werten
+        timer_seconds = _config_cache.get(config_key, 5)
+
+        await time_travel(seconds=timer_seconds + extra_seconds)
+
+    # Helper um Config zu cachen
+    def cache_config(config: dict):
+        """Cache config values für Timer."""
+        if DOMAIN in config:
+            for instance in config[DOMAIN]:
+                _config_cache.update(instance)
+
+    _fast_forward.cache_config = cache_config
+
+    return _fast_forward
+
+
+# ============================================================================
+# Helper: Update Sun Position
+# ============================================================================
+
+
+@pytest.fixture
+def update_sun(hass: HomeAssistant):
+    """Helper um Sonnenposition zu ändern.
+
+    Usage:
+        await update_sun(elevation=60, azimuth=180, brightness=70000)
+    """
+
+    async def _update(
+        elevation: float,
+        azimuth: float,
+        brightness: float | None = None,
+    ):
+        """Update sun position via input_numbers."""
+        await hass.services.async_call(
+            "input_number",
+            "set_value",
+            {
+                "entity_id": "input_number.d03_sun_elevation",
+                "value": elevation,
+            },
+            blocking=True,
+        )
+        await hass.services.async_call(
+            "input_number",
+            "set_value",
+            {
+                "entity_id": "input_number.d04_sun_azimuth",
+                "value": azimuth,
+            },
+            blocking=True,
+        )
+
+        if brightness is not None:
+            await hass.services.async_call(
+                "input_number",
+                "set_value",
+                {
+                    "entity_id": "input_number.d01_brightness",
+                    "value": brightness,
+                },
+                blocking=True,
+            )
+
+        await hass.async_block_till_done()
+
+    return _update
