@@ -13,20 +13,17 @@ MINIMAL_CONFIG = {
     DOMAIN: [
         {
             "name": "Minimal Test",
+            "debug_enabled": False,
             "target_cover_entity": ["cover.sc_dummy"],
+            "facade_shutter_type_static": "mode1",
             "brightness_entity": "input_number.d01_brightness",
             "sun_elevation_entity": "input_number.d03_sun_elevation",
             "sun_azimuth_entity": "input_number.d04_sun_azimuth",
-            # Hier landen die Werte für die internen Numbers/Switches/Selects:
             "sc_internal_values": {
-                "shadow_control_enabled_manual": True,  # Schaltet den Switch direkt ein!
+                "shadow_control_enabled_manual": True,
                 "shadow_brightness_threshold_manual": 15000,
                 "shadow_after_seconds_manual": 10,
             },
-            # Alle anderen Felder, die NICHT in sc_internal_values stehen,
-            # landen in den normalen Manager-Optionen.
-            "facade_shutter_type_static": "mode1",
-            "debug_enabled": False,
         }
     ]
 }
