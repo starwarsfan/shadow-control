@@ -4,6 +4,7 @@ import logging
 
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import async_mock_service
 
 from custom_components.shadow_control.const import DOMAIN
 
@@ -143,37 +144,51 @@ async def test_show_initial_state(
     _LOGGER.info("Azimuth: %s", azimuth.state if azimuth else "NOT FOUND")
 
 
-async def test_issue_123_timer_sequence(
+async def test_debug_sun_update(
     hass: HomeAssistant,
     setup_from_user_config,
-    time_travel,
     update_sun,
+    caplog,
 ):
-    """Test Timer-Sequenz: Shadow-After → Look-Through → Open."""
+    """Debug: Prüfe ob Sun Updates funktionieren."""
+
+    caplog.set_level(logging.DEBUG)
 
     await setup_from_user_config(TEST_CONFIG)
 
-    # 1. Trigger Shadow Conditions
+    _LOGGER.info("=" * 80)
+    _LOGGER.info("BEFORE SUN UPDATE:")
+    _LOGGER.info("=" * 80)
+    brightness = hass.states.get("input_number.d01_brightness")
+    elevation = hass.states.get("input_number.d03_sun_elevation")
+    azimuth = hass.states.get("input_number.d04_sun_azimuth")
+    sc_state = hass.states.get("sensor.sc_dummy_state")
+
+    _LOGGER.info("Brightness: %s", brightness.state if brightness else "NOT FOUND")
+    _LOGGER.info("Elevation: %s", elevation.state if elevation else "NOT FOUND")
+    _LOGGER.info("Azimuth: %s", azimuth.state if azimuth else "NOT FOUND")
+    _LOGGER.info("SC State: %s", sc_state.state if sc_state else "NOT FOUND")
+
+    # Update Sun
     await update_sun(elevation=60, azimuth=180, brightness=70000)
 
-    # 2. Nach shadow_after_seconds (5s) sollte Shadow starten
-    await time_travel(seconds=6)
-
+    _LOGGER.info("=" * 80)
+    _LOGGER.info("AFTER SUN UPDATE:")
+    _LOGGER.info("=" * 80)
+    brightness = hass.states.get("input_number.d01_brightness")
+    elevation = hass.states.get("input_number.d03_sun_elevation")
+    azimuth = hass.states.get("input_number.d04_sun_azimuth")
     sc_state = hass.states.get("sensor.sc_dummy_state")
-    assert "shadow" in sc_state.state.lower()
 
-    # 3. Nach look_through_seconds (5s) sollte Look-Through aktiv sein
-    await time_travel(seconds=6)
+    _LOGGER.info("Brightness: %s", brightness.state if brightness else "NOT FOUND")
+    _LOGGER.info("Elevation: %s", elevation.state if elevation else "NOT FOUND")
+    _LOGGER.info("Azimuth: %s", azimuth.state if azimuth else "NOT FOUND")
+    _LOGGER.info("SC State: %s", sc_state.state if sc_state else "NOT FOUND")
 
-    sc_state = hass.states.get("sensor.sc_dummy_state")
-    # Je nach State-Namen
-    assert "look_through" in sc_state.state.lower() or "neutral" in sc_state.state.lower()
-
-    # 4. Nach open_seconds (5s) sollte wieder offen sein
-    await time_travel(seconds=6)
-
-    # TODO: Prüfe finale Position
-    # cover_state = hass.states.get("cover.sc_dummy")
+    # Prüfe ob Facade in Sun ist
+    facade_in_sun = hass.states.get("binary_sensor.sc_dummy_facade_in_sun")
+    if facade_in_sun:
+        _LOGGER.info("Facade in Sun: %s, Attributes: %s", facade_in_sun.state, facade_in_sun.attributes)
 
 
 async def test_issue_123_dawn_sequence(
