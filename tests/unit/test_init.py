@@ -33,6 +33,7 @@ async def test_setup_entry_missing_target_cover(hass: HomeAssistant, mock_sun) -
             "target_cover": "cover.nonexistent",
         },
         entry_id="test_no_cover",
+        version=5,
     )
     entry.add_to_hass(hass)
 
