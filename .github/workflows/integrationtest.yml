@@ -1,4 +1,4 @@
-name: Tests
+name: Integrationtests
 
 on:
   push:
@@ -34,7 +34,7 @@ jobs:
           pip install pytest pytest-homeassistant-custom-component pytest-cov ruff
 
       - name: Run tests with coverage
-        run: pytest tests/unit/ -v --cov=custom_components.shadow_control --cov-report=xml --cov-report=term --junitxml=junit.xml
+        run: pytest tests/integration/ -v --cov=custom_components.shadow_control --cov-report=xml --cov-report=term --junitxml=junit.xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
@@ -42,7 +42,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
-          flags: unit
+          flags: integration
           name: codecov-py${{ matrix.python-version }}-ha${{ matrix.ha-version }}
           fail_ci_if_error: false
 
@@ -52,7 +52,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./junit.xml
-          flags: unit
+          flags: integration
           report_type: test_results
           fail_ci_if_error: false
 
