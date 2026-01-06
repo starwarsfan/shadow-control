@@ -22,6 +22,22 @@ TEST_CONFIG = {
             # "brightness_dawn_entity":
             "sun_elevation_entity": "input_number.d03_sun_elevation",
             "sun_azimuth_entity": "input_number.d04_sun_azimuth",
+            "facade_azimuth_static": 200,
+            "facade_offset_sun_in_static": -45,
+            "facade_offset_sun_out_static": 45,
+            "facade_elevation_sun_min_static": 23,
+            "facade_elevation_sun_max_static": 80,
+            "facade_slat_width_static": 60,
+            "facade_slat_distance_static": 50,
+            "facade_slat_angle_offset_static": 0,
+            "facade_slat_min_angle_static": 0,
+            "facade_shutter_stepping_height_static": 5,
+            "facade_shutter_stepping_angle_static": 5,
+            "facade_light_strip_width_static": 0,
+            "facade_shutter_height_static": 1000,
+            "facade_max_movement_duration_static": 3,
+            "facade_modification_tolerance_height_static": 3,
+            "facade_modification_tolerance_angle_static": 3,
             "sc_internal_values": {
                 "lock_integration_manual": False,
                 # "lock_integration_entity": input_boolean.d07_lock_integration
@@ -38,27 +54,10 @@ TEST_CONFIG = {
                 # "movement_restriction_angle_entity":
                 # "enforce_positioning_entity": input_boolean.d13_enforce_positioning
                 #
-                # General facade configuration
-                "facade_azimuth_static": 200,
-                "facade_offset_sun_in_static": -45,
-                "facade_offset_sun_out_static": 45,
-                "facade_elevation_sun_min_static": 23,
-                "facade_elevation_sun_max_static": 80,
-                "facade_slat_width_static": 60,
-                "facade_slat_distance_static": 50,
-                "facade_slat_angle_offset_static": 0,
-                "facade_slat_min_angle_static": 0,
-                "facade_shutter_stepping_height_static": 5,
-                "facade_shutter_stepping_angle_static": 5,
-                "facade_light_strip_width_static": 0,
-                "facade_shutter_height_static": 1000,
                 "facade_neutral_pos_height_manual": 0,
                 # "facade_neutral_pos_height_entity": input_number.g15_neutral_pos_height
                 "facade_neutral_pos_angle_manual": 0,
                 # "facade_neutral_pos_angle_entity": input_number.g16_neutral_pos_angle
-                "facade_max_movement_duration_static": 3,
-                "facade_modification_tolerance_height_static": 3,
-                "facade_modification_tolerance_angle_static": 3,
                 #
                 # Shadow configuration
                 # "shadow_control_enabled_entity":
