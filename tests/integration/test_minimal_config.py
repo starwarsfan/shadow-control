@@ -22,11 +22,11 @@ MINIMAL_CONFIG = {
                 "shadow_control_enabled_manual": True,  # Schaltet den Switch direkt ein!
                 "shadow_brightness_threshold_manual": 15000,
                 "shadow_after_seconds_manual": 10,
-                "debug_mode": True,
             },
             # Alle anderen Felder, die NICHT in sc_internal_values stehen,
             # landen in den normalen Manager-Optionen.
             "facade_shutter_type_static": "mode1",
+            "debug_enabled": False,
         }
     ]
 }
