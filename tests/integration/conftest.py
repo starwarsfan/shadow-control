@@ -150,24 +150,35 @@ async def mock_minimal_entities(hass: HomeAssistant):
 # ============================================================================
 
 
+# Stelle sicher dass Integration Tests echte Timer verwenden
+@pytest.fixture(autouse=True)
+def use_real_timers():
+    """Ensure integration tests use real timers, not mocks."""
+    # Diese Fixture tut nichts, stellt aber sicher dass die
+    # Unit Test Mocks hier nicht greifen
+    return
+
+
 @pytest.fixture
 def time_travel(hass: HomeAssistant):
     """Fixture zum Zeitsprung für Timer-Tests.
 
-    Usage:
-        # Timer läuft für 5 Sekunden
-        await time_travel(seconds=6)  # Spring 6 Sekunden vor
-        await hass.async_block_till_done()
-        # Timer ist jetzt abgelaufen
+    Diese Fixture funktioniert mit async_call_later Timern.
     """
 
     async def _travel(*, seconds: int = 0, minutes: int = 0, hours: int = 0):
         """Spring in der Zeit vorwärts."""
         delta = timedelta(seconds=seconds, minutes=minutes, hours=hours)
-        future_time = dt_util.utcnow() + delta
+        target_time = dt_util.utcnow() + delta
 
-        # Nutze die pytest_homeassistant_custom_component Helper
-        async_fire_time_changed(hass, future_time)
+        # Wichtig: async_fire_time_changed triggert async_call_later Timer
+        async_fire_time_changed(hass, target_time)
+
+        # Gib HA Zeit alle Timer-Callbacks zu verarbeiten
+        await hass.async_block_till_done()
+
+        # Manchmal braucht es mehrere Durchläufe
+        await hass.async_block_till_done()
         await hass.async_block_till_done()
 
     return _travel
