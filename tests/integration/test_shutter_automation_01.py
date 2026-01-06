@@ -1,12 +1,10 @@
-import asyncio
-import logging
+"""Integration Test: Komplette Shutter Automation."""
 
-# Hier war der Fehler: async_setup_component kommt aus dem HA Core
-from pytest_homeassistant_custom_component.common import MockConfigEntry, async_mock_service
+import time as real_time
+
+from homeassistant.core import HomeAssistant
 
 from custom_components.shadow_control.const import DOMAIN
-
-_LOGGER = logging.getLogger(__name__)
 
 TEST_CONFIG = {
     DOMAIN: [
@@ -106,61 +104,137 @@ TEST_CONFIG = {
 }
 
 
-async def test_full_sc_dummy_flow_debug(hass):
-    """Test mit Echtzeit-Warten und Status-Ausgaben."""
+async def test_issue_123_shadow_not_activating(
+    hass: HomeAssistant,
+    setup_from_user_config,
+    time_travel,
+    update_sun,
+):
+    """Test Issue #123: Shadow Control aktiviert nicht bei Mittagssonne.
 
-    # 1. Setup der Entities
-    hass.states.async_set("input_number.d01_brightness", "0")
-    hass.states.async_set("input_number.d03_sun_elevation", "30")
-    hass.states.async_set("input_number.d04_sun_azimuth", "200")
-    hass.states.async_set("cover.sc_dummy", "open", {"current_position": 100})
+    User Report:
+    - Fassade Azimuth: 200° (SSW)
+    - Mittagssonne (Elevation 60°, Azimuth 180°) sollte Shadow triggern
+    - Shadow aktiviert aber nicht
 
-    # 2. Integration starten
-    # Wir erstellen manuell den Eintrag, den sonst die UI erstellen würde
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        data=TEST_CONFIG[DOMAIN][0],  # Wir nehmen das erste Element deiner Liste
-        entry_id="test_entry_id",
-        version=5,
+    Erwartetes Verhalten:
+    - Nach shadow_after_seconds_manual (5s) sollte Shadow aktiv sein
+    """
+
+    # Setup mit User-Config
+    await setup_from_user_config(TEST_CONFIG)
+
+    # Initialer Zustand
+    cover_state = hass.states.get("cover.sc_dummy")
+    initial_position = cover_state.attributes["current_position"]
+
+    # Setze Mittagssonne
+    await update_sun(
+        elevation=60,
+        azimuth=180,  # Süden
+        brightness=70000,  # Über Shadow-Threshold (50000)
     )
-    entry.add_to_hass(hass)
 
-    # Jetzt starten wir die Integration über den Entry, nicht über YAML
-    assert await hass.config_entries.async_setup(entry.entry_id)
-    await hass.async_block_till_done()
+    # Warte auf Timer (shadow_after_seconds_manual: 5)
+    # Statt 5 Sekunden zu warten, spring 6 Sekunden vor
+    await time_travel(seconds=6)
 
-    # Den Hauptschalter für Shadow Control explizit einschalten
-    hass.states.async_set("switch.sc_dummy_s_control_active", "on")
-    # Falls es noch einen globalen Lock gibt, diesen sicherheitshalber auf off
-    hass.states.async_set("switch.sc_dummy_lock", "off")
+    # Prüfe dass Shadow Control aktiv ist
+    sc_state = hass.states.get("sensor.sc_dummy_state")
+    assert sc_state is not None
+    assert "shadow" in sc_state.state.lower(), f"Shadow sollte aktiv sein, ist aber: {sc_state.state}"
 
-    await hass.async_block_till_done()
+    # Prüfe dass Cover Position sich geändert hat
+    cover_state = hass.states.get("cover.sc_dummy")
+    new_position = cover_state.attributes["current_position"]
+    assert new_position != initial_position, "Cover Position sollte sich geändert haben"
 
-    # MOCK SERVICE
-    calls = async_mock_service(hass, "cover", "set_cover_position")
 
-    # Status-Check nach Start
-    active_switch = hass.states.get("switch.sc_dummy_s_control_active")
-    _LOGGER.info("Shadow Control Switch State: %s", active_switch.state if active_switch else "NOT FOUND")
+async def test_issue_123_timer_sequence(
+    hass: HomeAssistant,
+    setup_from_user_config,
+    time_travel,
+    update_sun,
+):
+    """Test Timer-Sequenz: Shadow-After → Look-Through → Open."""
 
-    # 3. Trigger: Helligkeit hoch
-    _LOGGER.info("Triggering brightness to 60000...")
-    hass.states.async_set("input_number.d01_brightness", "60000")
-    await hass.async_block_till_done()
+    await setup_from_user_config(TEST_CONFIG)
 
-    # 4. ECHTZEIT WARTEN
-    _LOGGER.info("Sleeping for 11 seconds...")
-    await asyncio.sleep(11)
+    # 1. Trigger Shadow Conditions
+    await update_sun(elevation=60, azimuth=180, brightness=70000)
 
-    # Wichtig: Nach dem Sleep muss HA die Timer-Events noch verarbeiten
-    await hass.async_block_till_done()
+    # 2. Nach shadow_after_seconds (5s) sollte Shadow starten
+    await time_travel(seconds=6)
 
-    # 5. Status-Check am Ende
-    current_state = hass.states.get("sensor.sc_dummy_state")
-    _LOGGER.info("[DEBUG] Final Integration State Sensor: %s", {current_state.state if current_state else "NOT FOUND"})
+    sc_state = hass.states.get("sensor.sc_dummy_state")
+    assert "shadow" in sc_state.state.lower()
 
-    # 6. Verifikation
-    if len(calls) == 0:
-        _LOGGER.info("[DEBUG] FAILED: No service calls caught. Possible reasons: Threshold not hit, Azimuth wrong, or Timer canceled.")
+    # 3. Nach look_through_seconds (5s) sollte Look-Through aktiv sein
+    await time_travel(seconds=6)
 
-    assert len(calls) > 0
+    sc_state = hass.states.get("sensor.sc_dummy_state")
+    # Je nach State-Namen
+    assert "look_through" in sc_state.state.lower() or "neutral" in sc_state.state.lower()
+
+    # 4. Nach open_seconds (5s) sollte wieder offen sein
+    await time_travel(seconds=6)
+
+    # TODO: Prüfe finale Position
+    # cover_state = hass.states.get("cover.sc_dummy")
+
+
+async def test_issue_123_dawn_sequence(
+    hass: HomeAssistant,
+    setup_from_user_config,
+    time_travel,
+    update_sun,
+):
+    """Test Dawn-Sequenz mit Timern."""
+
+    await setup_from_user_config(TEST_CONFIG)
+
+    # Dawn Conditions: Niedrige Helligkeit
+    await update_sun(
+        elevation=10,
+        azimuth=90,  # Osten (Morgen)
+        brightness=4000,  # Unter Dawn-Threshold (5000)
+    )
+
+    # Nach dawn_after_seconds (5s)
+    await time_travel(seconds=6)
+
+    sc_state = hass.states.get("sensor.sc_dummy_state")
+    assert "dawn" in sc_state.state.lower()
+
+    # TODO: Assert basierend auf deiner Logik
+    # Cover sollte auf dawn_height_after_dawn (10%) sein
+    # expected_height = 10  # dawn_height_after_dawn_manual
+
+
+async def test_issue_123_no_timer_wait_with_time_travel(
+    hass: HomeAssistant,
+    setup_from_user_config,
+    time_travel,
+    update_sun,
+):
+    """Zeige dass Time-Travel keine echte Wartezeit braucht."""
+
+    await setup_from_user_config(TEST_CONFIG)
+
+    start_time = real_time.time()
+
+    # Trigger Shadow
+    await update_sun(elevation=60, azimuth=180, brightness=70000)
+
+    # "Warte" 5 Sekunden (aber ohne echte Zeit)
+    await time_travel(seconds=6)
+
+    end_time = real_time.time()
+    elapsed = end_time - start_time
+
+    # Test sollte < 1 Sekunde dauern, nicht 5+
+    assert elapsed < 1.0, f"Test dauerte {elapsed}s - Time Travel funktioniert nicht!"
+
+    # Shadow sollte trotzdem aktiv sein
+    sc_state = hass.states.get("sensor.sc_dummy_state")
+    assert "shadow" in sc_state.state.lower()
