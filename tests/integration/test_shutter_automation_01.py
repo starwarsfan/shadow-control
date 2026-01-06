@@ -239,7 +239,7 @@ async def test_timer_with_time_travel(
     assert sc_state.state != initial_state, f"State sollte sich geändert haben: {initial_state} -> {sc_state.state}"
 
     assert len(pos_calls) > 0
-    assert pos_calls[-1].data["position"] == 0 # KNX: 100% geschlossen
+    assert pos_calls[-1].data["position"] == 0  # KNX: 100% geschlossen
     assert len(tilt_calls) > 0
     assert tilt_calls[-1].data["tilt_position"] == 100
 
