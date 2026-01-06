@@ -213,7 +213,6 @@ class TestConfigFlowYAMLImport:
             SC_CONF_NAME: "Invalid Config",
             SCFacadeConfig2.SHUTTER_TYPE_STATIC.value: "mode1",
             TARGET_COVER_ENTITY: ["cover.test"],
-            SCFacadeConfig1.AZIMUTH_STATIC.value: 180,
             SCDynamicInput.BRIGHTNESS_ENTITY.value: "sensor.brightness",
             SCDynamicInput.SUN_ELEVATION_ENTITY.value: "sensor.sun_elevation",
             SCDynamicInput.SUN_AZIMUTH_ENTITY.value: "sensor.sun_azimuth",
