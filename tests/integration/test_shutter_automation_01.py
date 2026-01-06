@@ -14,7 +14,7 @@ TEST_CONFIG = {
     DOMAIN: [
         {
             "name": "TC 01",
-            "debug_enabled": True,
+            "debug_enabled": False,
             "target_cover_entity": ["cover.sc_dummy"],
             "facade_shutter_type_static": "mode1",
             #
