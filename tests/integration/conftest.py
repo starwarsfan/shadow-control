@@ -10,9 +10,9 @@ from homeassistant.components.input_number import DOMAIN as INPUT_NUMBER_DOMAIN
 from homeassistant.core import HomeAssistant
 from homeassistant.setup import async_setup_component
 from homeassistant.util import dt as dt_util
-from pytest_homeassistant_custom_component.common import async_fire_time_changed
+from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed
 
-from custom_components.shadow_control.const import DOMAIN
+from custom_components.shadow_control.const import DOMAIN, SC_CONF_NAME
 
 # ============================================================================
 # Helper: Setup mit User-Config
@@ -21,24 +21,27 @@ from custom_components.shadow_control.const import DOMAIN
 
 @pytest.fixture
 async def setup_from_user_config(hass: HomeAssistant, mock_minimal_entities):
-    """Setup Shadow Control mit User-Config Block.
-
-    Usage:
-        user_config = {
-            DOMAIN: [{
-                "name": "SC Dummy",
-                "target_cover_entity": ["cover.sc_dummy"],
-                ...
-            }]
-        }
-        await setup_from_user_config(user_config)
-    """
-
     async def _setup(config: dict):
-        """Setup mit gegebener User Config."""
-        assert await async_setup_component(hass, DOMAIN, config)
+        raw_config = config[DOMAIN][0]
+        instance_name = raw_config.get("name")
+
+        # WICHTIG: Erstelle eine Kopie für options, damit das Original-Dict
+        # im Test nicht manipuliert wird
+        options_dict = dict(raw_config)
+
+        entry = MockConfigEntry(
+            domain=DOMAIN,
+            title=instance_name,
+            data={SC_CONF_NAME: instance_name},  # Nur Name in data
+            options=options_dict,  # Alles inkl. sc_internal_values in options
+            entry_id="test_entry_id",
+            version=5,
+        )
+        entry.add_to_hass(hass)
+
+        assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
-        return config
+        return entry
 
     return _setup
 
