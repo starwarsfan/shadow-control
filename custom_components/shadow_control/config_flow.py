@@ -187,12 +187,6 @@ def get_cfg_dynamic_inputs() -> vol.Schema:
             vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
-            # vol.Optional(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value): selector.EntitySelector(
-            #     selector.EntitySelectorConfig(domain=["sensor", "input_number"])
-            # ),
-            # vol.Optional(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value): selector.EntitySelector(
-            #     selector.EntitySelectorConfig(domain=["sensor", "input_number"])
-            # ),
             vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
             ),
@@ -346,9 +340,6 @@ def get_cfg_dynamic_inputs_mode3() -> vol.Schema:
             vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
-            # vol.Optional(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value): selector.EntitySelector(
-            #     selector.EntitySelectorConfig(domain=["sensor", "input_number"])
-            # ),
             vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
             ),
