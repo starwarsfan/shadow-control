@@ -49,9 +49,12 @@ def configure_test_logging():
                 blocked in msg
                 for blocked in [
                     "Error unloading entry Sun for sun",
+                    "Error unloading entry Sun for sensor",
+                    "Config entry was never loaded!",
                     "'NoneType' object has no attribute 'loop'",
                     "Error adding entity sensor.sun_",
                     "'Sun' object has no attribute",
+                    "Entity id already exists - ignoring: sun.sun",
                 ]
             )
 
@@ -60,6 +63,7 @@ def configure_test_logging():
     logging.getLogger().addFilter(sun_filter)
     logging.getLogger("homeassistant.config_entries").addFilter(sun_filter)
     logging.getLogger("homeassistant.components.sensor").addFilter(sun_filter)
+    logging.getLogger("homeassistant.components.sun").addFilter(sun_filter)
 
 
 @pytest.fixture(name="mock_cover")
@@ -76,6 +80,17 @@ def mock_cover_fixture(hass: HomeAssistant) -> str:
         },
     )
     return "cover.test_cover"
+
+
+@pytest.fixture(autouse=True)
+def mock_sun_component():
+    """Mock Sun Component komplett für alle Tests."""
+    with (
+        patch("homeassistant.components.sun.async_setup", return_value=True),
+        patch("homeassistant.components.sun.async_setup_entry", return_value=True),
+        patch("homeassistant.components.sun.async_unload_entry", return_value=True),
+    ):
+        yield
 
 
 @pytest.fixture(name="mock_sun")
