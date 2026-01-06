@@ -13,7 +13,7 @@ MINIMAL_CONFIG = {
     DOMAIN: [
         {
             "name": "Minimal Test",
-            "target_cover_entity": "cover.sc_dummy",
+            "target_cover_entity": ["cover.sc_dummy"],
             "brightness_entity": "input_number.d01_brightness",
             "sun_elevation_entity": "input_number.d03_sun_elevation",
             "sun_azimuth_entity": "input_number.d04_sun_azimuth",
