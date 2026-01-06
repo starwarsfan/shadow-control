@@ -157,15 +157,15 @@ def get_cfg_facade_settings_part2() -> vol.Schema:
             vol.Optional(SCFacadeConfig2.SHUTTER_HEIGHT_STATIC.value, default=1000): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=3000, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig2.MAX_MOVEMENT_DURATION_STATIC.value, default=0): selector.NumberSelector(
-                selector.NumberSelectorConfig(min=1, max=120, step=1, mode=selector.NumberSelectorMode.BOX)
-            ),
-            vol.Optional(SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
-                selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
-            ),
-            vol.Optional(SCFacadeConfig2.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=0): selector.NumberSelector(
-                selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
-            ),
+            vol.Optional(
+                SCFacadeConfig2.MAX_MOVEMENT_DURATION_STATIC.value, default=SCDefaults.MAX_MOVEMENT_DURATION_VALUE.value
+            ): selector.NumberSelector(selector.NumberSelectorConfig(min=1, max=240, step=1, mode=selector.NumberSelectorMode.BOX)),
+            vol.Optional(
+                SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=SCDefaults.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value
+            ): selector.NumberSelector(selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)),
+            vol.Optional(
+                SCFacadeConfig2.MODIFICATION_TOLERANCE_ANGLE_STATIC.value, default=SCDefaults.MODIFICATION_TOLERANCE_ANGLE_STATIC.value
+            ): selector.NumberSelector(selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)),
         }
     )
 
@@ -318,12 +318,12 @@ def get_cfg_facade_settings_part2_mode3() -> vol.Schema:
             vol.Optional(SCFacadeConfig2.SHUTTER_HEIGHT_STATIC.value, default=1000): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=3000, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
-            vol.Optional(SCFacadeConfig2.MAX_MOVEMENT_DURATION_STATIC.value, default=0): selector.NumberSelector(
-                selector.NumberSelectorConfig(min=1, max=120, step=1, mode=selector.NumberSelectorMode.BOX)
-            ),
-            vol.Optional(SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=0): selector.NumberSelector(
-                selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)
-            ),
+            vol.Optional(
+                SCFacadeConfig2.MAX_MOVEMENT_DURATION_STATIC.value, default=SCDefaults.MAX_MOVEMENT_DURATION_VALUE.value
+            ): selector.NumberSelector(selector.NumberSelectorConfig(min=1, max=240, step=1, mode=selector.NumberSelectorMode.BOX)),
+            vol.Optional(
+                SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value, default=SCDefaults.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value
+            ): selector.NumberSelector(selector.NumberSelectorConfig(min=0, max=20, step=1, mode=selector.NumberSelectorMode.BOX)),
         }
     )
 
@@ -482,9 +482,9 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCFacadeConfig1.ELEVATION_SUN_MIN_STATIC.value, default=0): vol.Coerce(float),
         vol.Optional(SCFacadeConfig1.ELEVATION_SUN_MAX_STATIC.value, default=90): vol.Coerce(float),
         vol.Optional(DEBUG_ENABLED, default=False): cv.boolean,
-        vol.Optional(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL.value): vol.Coerce(float),
+        vol.Optional(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL.value, default=SCDefaults.NEUTRAL_POS_HEIGHT_VALUE.value): vol.Coerce(float),
         vol.Optional(SCFacadeConfig2.NEUTRAL_POS_HEIGHT_ENTITY.value): cv.entity_id,
-        vol.Optional(SCInternal.NEUTRAL_POS_ANGLE_MANUAL.value): vol.Coerce(float),
+        vol.Optional(SCInternal.NEUTRAL_POS_ANGLE_MANUAL.value, default=SCDefaults.NEUTRAL_POS_ANGLE_VALUE.value): vol.Coerce(float),
         vol.Optional(SCFacadeConfig2.NEUTRAL_POS_ANGLE_ENTITY.value): cv.entity_id,
         vol.Optional(SCFacadeConfig2.SLAT_WIDTH_STATIC.value, default=95): vol.Coerce(float),
         vol.Optional(SCFacadeConfig2.SLAT_DISTANCE_STATIC.value, default=67): vol.Coerce(float),
@@ -509,9 +509,9 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL.value): cv.boolean,
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value): cv.entity_id,
-        vol.Optional(SCInternal.LOCK_HEIGHT_MANUAL.value): vol.Coerce(float),
+        vol.Optional(SCInternal.LOCK_HEIGHT_MANUAL.value, default=SCDefaults.LOCK_HEIGHT_VALUE.value): vol.Coerce(float),
         vol.Optional(SCDynamicInput.LOCK_HEIGHT_ENTITY.value): cv.entity_id,
-        vol.Optional(SCInternal.LOCK_ANGLE_MANUAL.value): vol.Coerce(float),
+        vol.Optional(SCInternal.LOCK_ANGLE_MANUAL.value, default=SCDefaults.LOCK_ANGLE_VALUE.value): vol.Coerce(float),
         vol.Optional(SCDynamicInput.LOCK_ANGLE_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.MOVEMENT_RESTRICTION_HEIGHT_MANUAL.value): vol.In(
             [
