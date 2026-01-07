@@ -1,6 +1,7 @@
 """Integration Test: Komplette Shutter Automation."""
 
 import logging
+from itertools import count
 from typing import Any
 
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
@@ -118,18 +119,12 @@ async def test_show_initial_state(
 ):
     """Debug: Zeige Initial State."""
 
+    step = count(1)
+
     # Setup instance
     _, _ = await setup_instance(caplog, hass, setup_from_user_config)
 
-    # Zeige alle Shadow Control Entities
-    states = hass.states.async_all()
-    sc_entities = [s for s in states if "sc_test_instance" in s.entity_id]
-
-    _LOGGER.info("=" * 80)
-    _LOGGER.info("SHADOW CONTROL ENTITIES:")
-    for entity in sc_entities:
-        # _LOGGER.info("%s: %s, Attributes: %s", entity.entity_id, entity.state, entity.attributes)
-        _LOGGER.info("%s: %s", entity.entity_id, entity.state)
+    await show_instance_entity_states(hass, next(step))
 
     # Zeige Input Numbers
     _LOGGER.info("=" * 80)
@@ -151,8 +146,12 @@ async def test_sun_entity_update(
 ):
     """Debug: Prüfe ob Sun Updates funktionieren."""
 
+    step = count(1)
+
     # Setup instance
     _, _ = await setup_instance(caplog, hass, setup_from_user_config)
+
+    await show_instance_entity_states(hass, next(step))
 
     _LOGGER.info("=" * 80)
     _LOGGER.info("BEFORE SUN UPDATE:")
@@ -188,6 +187,8 @@ async def test_sun_entity_update(
     if facade_in_sun:
         _LOGGER.info("Facade in Sun: %s, Attributes: %s", facade_in_sun.state, facade_in_sun.attributes)
 
+    await show_instance_entity_states(hass, next(step))
+
 
 async def test_shadow_full_closed(
     hass: HomeAssistant,
@@ -198,8 +199,12 @@ async def test_shadow_full_closed(
 ):
     """Test Timer mit Time Travel."""
 
+    step = count(1)
+
     # Setup instance
     pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config)
+
+    await show_instance_entity_states(hass, next(step))
 
     # Initial State
     sc_state = hass.states.get("sensor.sc_test_instance_state")
@@ -222,6 +227,8 @@ async def test_shadow_full_closed(
     # Time Travel - Spring über den Timer (5s Timer + 1s Buffer)
     _LOGGER.info("Time traveling 6 seconds...")
     await time_travel(seconds=6)
+
+    await show_instance_entity_states(hass, next(step))
 
     # Prüfe dass Timer abgelaufen ist
     sc_state = hass.states.get("sensor.sc_test_instance_state")
@@ -250,3 +257,15 @@ async def setup_instance(caplog, hass: HomeAssistant, setup_from_user_config) ->
     tilt_calls = async_mock_service(hass, "cover", "set_cover_tilt_position")
     pos_calls = async_mock_service(hass, "cover", "set_cover_position")
     return pos_calls, tilt_calls
+
+
+async def show_instance_entity_states(hass: HomeAssistant, i: int):
+    # Zeige alle Shadow Control Entities
+    states = hass.states.async_all()
+    sc_entities = [s for s in states if "sc_test_instance" in s.entity_id]
+
+    _LOGGER.info("=" * 80)
+    _LOGGER.info("SHADOW CONTROL ENTITIES (#%s)", i)
+    for entity in sc_entities:
+        # _LOGGER.info("%s: %s, Attributes: %s", entity.entity_id, entity.state, entity.attributes)
+        _LOGGER.info("%s: %s", entity.entity_id, entity.state)
