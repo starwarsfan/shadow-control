@@ -1,11 +1,13 @@
 """Integration Test: Komplette Shutter Automation."""
 
 import logging
+from typing import Any
 
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import async_mock_service
 
+from custom_components.shadow_control import ShutterState
 from custom_components.shadow_control.const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -116,11 +118,8 @@ async def test_show_initial_state(
 ):
     """Debug: Zeige Initial State."""
 
-    caplog.set_level(logging.DEBUG)
-
-    await setup_from_user_config(TEST_CONFIG)
-    hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
-    await hass.async_block_till_done()
+    # Setup instance
+    _, _ = await setup_instance(caplog, hass, setup_from_user_config)
 
     # Zeige alle Shadow Control Entities
     states = hass.states.async_all()
@@ -152,9 +151,8 @@ async def test_debug_sun_update(
 ):
     """Debug: Prüfe ob Sun Updates funktionieren."""
 
-    caplog.set_level(logging.DEBUG)
-
-    await setup_from_user_config(TEST_CONFIG)
+    # Setup instance
+    _, _ = await setup_instance(caplog, hass, setup_from_user_config)
 
     _LOGGER.info("=" * 80)
     _LOGGER.info("BEFORE SUN UPDATE:")
@@ -200,14 +198,8 @@ async def test_timer_with_time_travel(
 ):
     """Test Timer mit Time Travel."""
 
-    caplog.set_level(logging.DEBUG, logger="custom_components.shadow_control")
-
-    await setup_from_user_config(TEST_CONFIG)
-    hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
-    await hass.async_block_till_done()
-    # Mocke die Cover-Dienste, damit das Dummy-Script gar nicht erst läuft
-    tilt_calls = async_mock_service(hass, "cover", "set_cover_tilt_position")
-    pos_calls = async_mock_service(hass, "cover", "set_cover_position")
+    # Setup instance
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config)
 
     # Initial State
     sc_state = hass.states.get("sensor.tc_01_state")
@@ -369,3 +361,15 @@ async def test_timer_with_time_travel(
 #     # Shadow sollte trotzdem aktiv sein
 #     sc_state = hass.states.get("sensor.tc_01_state")
 #     assert "shadow" in sc_state.state.lower()
+
+
+async def setup_instance(caplog, hass: HomeAssistant, setup_from_user_config) -> tuple[Any, Any]:
+    caplog.set_level(logging.DEBUG, logger="custom_components.shadow_control")
+
+    await setup_from_user_config(TEST_CONFIG)
+    hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
+    await hass.async_block_till_done()
+    # Mocke die Cover-Dienste, damit das Dummy-Script gar nicht erst läuft
+    tilt_calls = async_mock_service(hass, "cover", "set_cover_tilt_position")
+    pos_calls = async_mock_service(hass, "cover", "set_cover_position")
+    return pos_calls, tilt_calls
