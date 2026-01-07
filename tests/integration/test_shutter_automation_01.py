@@ -205,6 +205,7 @@ async def test_shadow_full_closed(
     sc_state = hass.states.get("sensor.sc_test_instance_state")
     initial_state = sc_state.state
     _LOGGER.info("Initial State: %s", initial_state)
+    assert sc_state.state == ShutterState.NEUTRAL.name.lower()
 
     # Trigger Shadow (sollte Timer starten)
     await update_sun(elevation=60, azimuth=180, brightness=70000)
@@ -229,6 +230,9 @@ async def test_shadow_full_closed(
 
     # Der Timer sollte den State geändert haben
     assert sc_state.state != initial_state, f"State sollte sich geändert haben: {initial_state} -> {sc_state.state}"
+
+    # State sollte jetzt Shadow-Full-Closed sein
+    assert sc_state.state == ShutterState.SHADOW_FULL_CLOSED.name.lower()
 
     assert len(pos_calls) > 0
     assert pos_calls[-1].data["position"] == 0  # KNX: 100% geschlossen
