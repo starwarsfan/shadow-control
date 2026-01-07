@@ -240,43 +240,6 @@ async def test_shadow_full_closed(
     assert tilt_calls[-1].data["tilt_position"] == 100
 
 
-# async def test_issue_123_shadow_not_activating(
-#     hass: HomeAssistant,
-#     setup_from_user_config,
-#     time_travel,
-#     update_sun,
-#     caplog,
-# ):
-#     """Test Issue #123: Shadow Control aktiviert nicht bei Mittagssonne."""
-#
-#     caplog.set_level(logging.DEBUG)
-#
-#     await setup_from_user_config(TEST_CONFIG)
-#
-#     cover_state = hass.states.get("cover.tc_01")
-#     initial_position = cover_state.attributes["current_position"]
-#
-#     await update_sun(elevation=60, azimuth=180, brightness=70000)
-#     await time_travel(seconds=6)
-#
-#     sc_state = hass.states.get("sensor.tc_01_state")
-#     assert sc_state is not None, "sensor.tc_01_state nicht gefunden"
-#
-#     # Debug Output
-#     _LOGGER.info("SC State: %s", sc_state.state)
-#     _LOGGER.info("SC Attributes: %s", sc_state.attributes)
-#
-#     facade_in_sun = hass.states.get("binary_sensor.tc_01_facade_in_sun")
-#     if facade_in_sun:
-#         _LOGGER.info("Facade in Sun: %s", facade_in_sun.state)
-#
-#     assert "neutral" in sc_state.state.lower(), f"Shadow sollte aktiv sein, ist aber: {sc_state.state}"
-#
-#     cover_state = hass.states.get("cover.tc_01")
-#     new_position = cover_state.attributes["current_position"]
-#     assert new_position != initial_position, "Cover Position sollte sich geändert haben"
-#
-#
 # async def test_issue_123_timer_sequence(
 #     hass: HomeAssistant,
 #     setup_from_user_config,
