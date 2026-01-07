@@ -143,7 +143,7 @@ async def test_show_initial_state(
     _LOGGER.info("Azimuth: %s", azimuth.state if azimuth else "NOT FOUND")
 
 
-async def test_debug_sun_update(
+async def test_sun_entity_update(
     hass: HomeAssistant,
     setup_from_user_config,
     update_sun,
@@ -189,7 +189,7 @@ async def test_debug_sun_update(
         _LOGGER.info("Facade in Sun: %s, Attributes: %s", facade_in_sun.state, facade_in_sun.attributes)
 
 
-async def test_timer_with_time_travel(
+async def test_shadow_full_closed(
     hass: HomeAssistant,
     setup_from_user_config,
     update_sun,
