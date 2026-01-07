@@ -15,7 +15,7 @@ _LOGGER = logging.getLogger(__name__)
 TEST_CONFIG = {
     DOMAIN: [
         {
-            "name": "TC 01",
+            "name": "SC Test Instance",
             "debug_enabled": False,
             "target_cover_entity": ["cover.sc_dummy"],
             "facade_shutter_type_static": "mode1",
@@ -123,7 +123,7 @@ async def test_show_initial_state(
 
     # Zeige alle Shadow Control Entities
     states = hass.states.async_all()
-    sc_entities = [s for s in states if "tc_01" in s.entity_id]
+    sc_entities = [s for s in states if "sc_test_instance" in s.entity_id]
 
     _LOGGER.info("=" * 80)
     _LOGGER.info("SHADOW CONTROL ENTITIES:")
@@ -160,7 +160,7 @@ async def test_debug_sun_update(
     brightness = hass.states.get("input_number.d01_brightness")
     elevation = hass.states.get("input_number.d03_sun_elevation")
     azimuth = hass.states.get("input_number.d04_sun_azimuth")
-    sc_state = hass.states.get("sensor.sc_dummy_state")
+    sc_state = hass.states.get("sensor.sc_test_instance_state")
 
     _LOGGER.info("Brightness: %s", brightness.state if brightness else "NOT FOUND")
     _LOGGER.info("Elevation: %s", elevation.state if elevation else "NOT FOUND")
@@ -176,7 +176,7 @@ async def test_debug_sun_update(
     brightness = hass.states.get("input_number.d01_brightness")
     elevation = hass.states.get("input_number.d03_sun_elevation")
     azimuth = hass.states.get("input_number.d04_sun_azimuth")
-    sc_state = hass.states.get("sensor.sc_dummy_state")
+    sc_state = hass.states.get("sensor.sc_test_instance_state")
 
     _LOGGER.info("Brightness: %s", brightness.state if brightness else "NOT FOUND")
     _LOGGER.info("Elevation: %s", elevation.state if elevation else "NOT FOUND")
@@ -184,7 +184,7 @@ async def test_debug_sun_update(
     _LOGGER.info("SC State: %s", sc_state.state if sc_state else "NOT FOUND")
 
     # Prüfe ob Facade in Sun ist
-    facade_in_sun = hass.states.get("binary_sensor.sc_dummy_facade_in_sun")
+    facade_in_sun = hass.states.get("binary_sensor.sc_test_instance_facade_in_sun")
     if facade_in_sun:
         _LOGGER.info("Facade in Sun: %s, Attributes: %s", facade_in_sun.state, facade_in_sun.attributes)
 
@@ -202,7 +202,7 @@ async def test_timer_with_time_travel(
     pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config)
 
     # Initial State
-    sc_state = hass.states.get("sensor.tc_01_state")
+    sc_state = hass.states.get("sensor.sc_test_instance_state")
     initial_state = sc_state.state
     _LOGGER.info("Initial State: %s", initial_state)
 
@@ -211,7 +211,7 @@ async def test_timer_with_time_travel(
     await hass.async_block_till_done()
 
     # Prüfe ob Timer gestartet wurde
-    sc_state = hass.states.get("sensor.tc_01_state")
+    sc_state = hass.states.get("sensor.sc_test_instance_state")
     _LOGGER.info("State after sun update: %s", sc_state.state)
 
     # Prüfe Timer Attribute (falls vorhanden)
@@ -223,7 +223,7 @@ async def test_timer_with_time_travel(
     await time_travel(seconds=6)
 
     # Prüfe dass Timer abgelaufen ist
-    sc_state = hass.states.get("sensor.tc_01_state")
+    sc_state = hass.states.get("sensor.sc_test_instance_state")
     _LOGGER.info("State after time travel: %s", sc_state.state)
     # _LOGGER.info("Attributes: %s", sc_state.attributes)
 
@@ -289,13 +289,13 @@ async def test_timer_with_time_travel(
 #     # 2. Nach shadow_after_seconds (5s) sollte Shadow starten
 #     await time_travel(seconds=6)
 #
-#     sc_state = hass.states.get("sensor.tc_01_state")
+#     sc_state = hass.states.get("sensor.sc_test_instance_state")
 #     assert "shadow" in sc_state.state.lower()
 #
 #     # 3. Nach look_through_seconds (5s) sollte Look-Through aktiv sein
 #     await time_travel(seconds=6)
 #
-#     sc_state = hass.states.get("sensor.tc_01_state")
+#     sc_state = hass.states.get("sensor.sc_test_instance_state")
 #     # Je nach State-Namen
 #     assert "look_through" in sc_state.state.lower() or "neutral" in sc_state.state.lower()
 #
@@ -303,7 +303,7 @@ async def test_timer_with_time_travel(
 #     await time_travel(seconds=6)
 #
 #     # TODO: Prüfe finale Position
-#     # cover_state = hass.states.get("cover.tc_01")
+#     # cover_state = hass.states.get("cover.sc_test_instance")
 #
 #
 # async def test_issue_123_dawn_sequence(
@@ -326,7 +326,7 @@ async def test_timer_with_time_travel(
 #     # Nach dawn_after_seconds (5s)
 #     await time_travel(seconds=6)
 #
-#     sc_state = hass.states.get("sensor.tc_01_state")
+#     sc_state = hass.states.get("sensor.sc_test_instance_state")
 #     assert "dawn" in sc_state.state.lower()
 #
 #     # TODO: Assert basierend auf deiner Logik
@@ -359,7 +359,7 @@ async def test_timer_with_time_travel(
 #     assert elapsed < 1.0, f"Test dauerte {elapsed}s - Time Travel funktioniert nicht!"
 #
 #     # Shadow sollte trotzdem aktiv sein
-#     sc_state = hass.states.get("sensor.tc_01_state")
+#     sc_state = hass.states.get("sensor.sc_test_instance_state")
 #     assert "shadow" in sc_state.state.lower()
 
 
