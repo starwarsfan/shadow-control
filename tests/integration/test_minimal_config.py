@@ -2,15 +2,12 @@
 
 import logging
 from itertools import count
-from typing import Any
 
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
-from homeassistant.core import HomeAssistant, State
-from pytest_homeassistant_custom_component.common import async_mock_service
+from homeassistant.core import HomeAssistant
 
 from custom_components.shadow_control.const import DOMAIN
-from tests.integration.conftest import setup_instance, get_entity_and_show_state, \
-    show_instance_entity_states
+from tests.integration.conftest import get_entity_and_show_state, setup_instance, show_instance_entity_states
 
 _LOGGER = logging.getLogger(__name__)
 
