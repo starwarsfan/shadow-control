@@ -200,7 +200,7 @@ async def test_shadow_full_closed(
     # Counter to distinct repeated outputs on the log
     step = count(1)
 
-    # Setup instance
+    # === INIT =====================================================================================
     pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
 
     # Output initial entity states to the log
@@ -210,7 +210,7 @@ async def test_shadow_full_closed(
     state1 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
     assert state1.state == ShutterState.NEUTRAL.name.lower()
 
-    # Trigger Shadow (sollte Timer starten)
+    # === Shadow -> close ==========================================================================
     await update_sun(elevation=60, azimuth=180, brightness=70000)
     await hass.async_block_till_done()
 
