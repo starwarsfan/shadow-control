@@ -17,12 +17,33 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry, async_
 from custom_components.shadow_control.const import DOMAIN, SC_CONF_NAME
 
 
+class SelectiveColoredFormatter(ColoredFormatter):
+    """Formatter, der nur für Test-Files Farben anwendet."""
+
+    def format(self, record):
+        # Wenn der Log aus der Integration kommt, Farben entfernen
+        if record.name.startswith("custom_components"):
+            # Speichere das Original-Format kurzzeitig
+            original_format = self._style._fmt
+            # Setze ein neutrales Format ohne Farben
+            self._style._fmt = "%(levelname)-8s %(filename)-25s:%(lineno)-4s %(message)s"
+            result = logging.Formatter.format(self, record)
+            # Zurücksetzen auf das farbige Format
+            self._style._fmt = original_format
+            return result
+
+        # Ansonsten: Standard colorlog Verhalten
+        return super().format(record)
+
+
 @pytest.fixture(autouse=True, scope="session")
 def setup_logging():
-    # Definiere das Farbschema für die Test-Logs
-    formatter = ColoredFormatter(
-        "%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(message)s",
-        datefmt=None,
+    #color_format = "%(log_color)s%(levelname)-8s%(reset)s %(cyan)s%(filename)-25s:%(lineno)-4s%(reset)s %(blue)s%(message)s%(reset)s"
+    color_format = "%(log_color)s%(levelname)-8s%(reset)s %(cyan)s%(filename)-25s:%(lineno)-4s %(message)s%(reset)s"
+
+    formatter = SelectiveColoredFormatter(
+        color_format,
+        datefmt="%H:%M:%S",
         reset=True,
         log_colors={
             "DEBUG": "cyan",
@@ -31,23 +52,19 @@ def setup_logging():
             "ERROR": "red",
             "CRITICAL": "red,bg_white",
         },
-        secondary_log_colors={},
-        style="%",
     )
 
-    # Greife den Standard-Handler von pytest ab oder erstelle einen neuen
     root_logger = logging.getLogger()
 
-    # Optional: Bestehende Handler säubern, falls HA bereits welche gesetzt hat
-    # for handler in root_logger.handlers:
-    #     root_logger.removeHandler(handler)
+    # Vorhandene Pytest-Handler auf unseren neuen Formatter umstellen
+    if root_logger.handlers:
+        for handler in root_logger.handlers:
+            handler.setFormatter(formatter)
+    else:
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(formatter)
+        root_logger.addHandler(console_handler)
 
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-
-    # Hier ist der Trick: Wir weisen den Formatter nur dem Handler zu,
-    # der während der Tests aktiv ist.
-    root_logger.addHandler(console_handler)
     root_logger.setLevel(logging.INFO)
 
 

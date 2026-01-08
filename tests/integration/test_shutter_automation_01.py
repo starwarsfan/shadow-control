@@ -5,7 +5,7 @@ from itertools import count
 from typing import Any
 
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, State
 from pytest_homeassistant_custom_component.common import async_mock_service
 
 from custom_components.shadow_control import ShutterState
@@ -199,47 +199,42 @@ async def test_shadow_full_closed(
 ):
     """Test Timer mit Time Travel."""
 
+    # Counter to distinct repeated outputs on the log
     step = count(1)
 
     # Setup instance
     pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config)
 
+    # Output initial entity states to the log
     await show_instance_entity_states(hass, next(step))
 
-    # Initial State
-    sc_state = hass.states.get("sensor.sc_test_instance_state")
-    initial_state = sc_state.state
-    _LOGGER.info("Initial State: %s", initial_state)
-    assert sc_state.state == ShutterState.NEUTRAL.name.lower()
+    # Initial instance state
+    state1 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    assert state1.state == ShutterState.NEUTRAL.name.lower()
 
     # Trigger Shadow (sollte Timer starten)
     await update_sun(elevation=60, azimuth=180, brightness=70000)
     await hass.async_block_till_done()
 
     # Prüfe ob Timer gestartet wurde
-    sc_state = hass.states.get("sensor.sc_test_instance_state")
-    _LOGGER.info("State after sun update: %s", sc_state.state)
+    state2 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
 
     # Prüfe Timer Attribute (falls vorhanden)
-    if "next_modification" in sc_state.attributes:
-        _LOGGER.info("Next modification: %s", sc_state.attributes["next_modification"])
+    if "next_modification" in state2.attributes:
+        _LOGGER.info("Next modification: %s", state2.attributes["next_modification"])
 
-    # Time Travel - Spring über den Timer (5s Timer + 1s Buffer)
-    _LOGGER.info("Time traveling 6 seconds...")
     await time_travel(seconds=6)
 
     await show_instance_entity_states(hass, next(step))
 
     # Prüfe dass Timer abgelaufen ist
-    sc_state = hass.states.get("sensor.sc_test_instance_state")
-    _LOGGER.info("State after time travel: %s", sc_state.state)
-    # _LOGGER.info("Attributes: %s", sc_state.attributes)
+    state3 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
 
     # Der Timer sollte den State geändert haben
-    assert sc_state.state != initial_state, f"State sollte sich geändert haben: {initial_state} -> {sc_state.state}"
+    assert state3.state != state1.state, f"State sollte sich geändert haben: {state1.state} -> {state3.state}"
 
     # State sollte jetzt Shadow-Full-Closed sein
-    assert sc_state.state == ShutterState.SHADOW_FULL_CLOSED.name.lower()
+    assert state3.state == ShutterState.SHADOW_FULL_CLOSED.name.lower()
 
     assert len(pos_calls) > 0
     assert pos_calls[-1].data["position"] == 0  # KNX: 100% geschlossen
@@ -271,3 +266,9 @@ async def show_instance_entity_states(hass: HomeAssistant, i: int):
         _LOGGER.info("%s: %s", entity.entity_id, entity.state)
     line = f" SHADOW CONTROL ENTITIES END (#{i}) ==="
     _LOGGER.info("%s%s", "=" * (80 - len(line)), line)
+
+
+async def get_entity_and_show_state(hass: HomeAssistant, entity_id) -> State:
+    entity = hass.states.get(entity_id)
+    _LOGGER.info("State of %s: %s", entity_id, entity.state)
+    return entity
