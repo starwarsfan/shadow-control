@@ -264,8 +264,10 @@ async def show_instance_entity_states(hass: HomeAssistant, i: int):
     states = hass.states.async_all()
     sc_entities = [s for s in states if "sc_test_instance" in s.entity_id]
 
-    _LOGGER.info("=" * 80)
-    _LOGGER.info("SHADOW CONTROL ENTITIES (#%s)", i)
+    line = f" SHADOW CONTROL ENTITIES START (#{i}) ==="
+    _LOGGER.info("%s%s", "=" * (80 - len(line)), line)
     for entity in sc_entities:
         # _LOGGER.info("%s: %s, Attributes: %s", entity.entity_id, entity.state, entity.attributes)
         _LOGGER.info("%s: %s", entity.entity_id, entity.state)
+    line = f" SHADOW CONTROL ENTITIES END (#{i}) ==="
+    _LOGGER.info("%s%s", "=" * (80 - len(line)), line)
