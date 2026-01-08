@@ -65,7 +65,7 @@ TEST_CONFIG = {
                 # "shadow_control_enabled_entity":
                 "shadow_control_enabled_manual": True,
                 # "shadow_brightness_threshold_entity":
-                "shadow_brightness_threshold_manual": 54321,
+                "shadow_brightness_threshold_manual": 50000,
                 # "shadow_after_seconds_entity":
                 "shadow_after_seconds_manual": 5,
                 # "shadow_shutter_max_height_entity": input_number.automation_shadow_max_height_sc_dummy
@@ -87,7 +87,7 @@ TEST_CONFIG = {
                 # "dawn_control_enabled_entity":
                 "dawn_control_enabled_manual": True,
                 # "dawn_brightness_threshold_entity":
-                "dawn_brightness_threshold_manual": 5000,
+                "dawn_brightness_threshold_manual": 500,
                 # "dawn_after_seconds_entity":
                 "dawn_after_seconds_manual": 5,
                 # "dawn_shutter_max_height_entity": input_number.automation_dawn_max_height_sc_dummy
