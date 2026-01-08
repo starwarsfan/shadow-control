@@ -238,3 +238,168 @@ async def test_shadow_full_closed(
     assert pos_calls[-1].data["position"] == 0  # KNX: 100% geschlossen
     assert len(tilt_calls) > 0
     assert tilt_calls[-1].data["tilt_position"] == 100
+
+async def test_full_run_without_assert(
+    hass: HomeAssistant,
+    setup_from_user_config,
+    update_sun,
+    time_travel,
+    caplog,
+):
+    """Test Timer mit Time Travel."""
+
+    # Counter to distinct repeated outputs on the log
+    step = count(1)
+
+    # === INIT =====================================================================================
+    _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+
+    await show_instance_entity_states(hass, next(step))
+
+    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+
+    # === Shadow -> close ==========================================================================
+    await update_sun(elevation=60, azimuth=180, brightness=70000)
+    await hass.async_block_till_done()
+
+    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+
+    await time_travel(seconds=6)
+
+    await show_instance_entity_states(hass, next(step))
+
+    # Prüfe dass Timer abgelaufen ist
+    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+
+
+async def test_dawn_full_closed(
+    hass: HomeAssistant,
+    setup_from_user_config,
+    update_sun,
+    time_travel,
+    caplog,
+):
+    """Test Timer mit Time Travel."""
+
+    # Counter to distinct repeated outputs on the log
+    step = count(1)
+
+    # === INIT =====================================================================================
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+
+    # Output initial entity states to the log
+    await show_instance_entity_states(hass, next(step))
+
+    # Initial instance state
+    state1 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    assert state1.state == ShutterState.NEUTRAL.name.lower()
+
+    # === Dawn -> close ============================================================================
+    await update_sun(elevation=60, azimuth=180, brightness=100)
+    await hass.async_block_till_done()
+
+    # Prüfe ob Timer gestartet wurde
+    state2 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+
+    # Prüfe Timer Attribute (falls vorhanden)
+    if "next_modification" in state2.attributes:
+        _LOGGER.info("Next modification: %s", state2.attributes["next_modification"])
+
+    await time_travel(seconds=6)
+
+    await show_instance_entity_states(hass, next(step))
+
+    # Prüfe dass Timer abgelaufen ist
+    state3 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+
+    # Der Timer sollte den State geändert haben
+    assert state3.state != state1.state, f"State sollte sich geändert haben: {state1.state} -> {state3.state}"
+
+    # State sollte jetzt Shadow-Full-Closed sein
+    assert state3.state == ShutterState.DAWN_FULL_CLOSED.name.lower()
+
+    assert len(pos_calls) > 0
+    assert pos_calls[-1].data["position"] == 0  # KNX: 100% geschlossen
+    assert len(tilt_calls) > 0
+    assert tilt_calls[-1].data["tilt_position"] == 0  # KNX: 100% geschlossen
+
+async def test_look_through_after_dawn_full_closed(
+    hass: HomeAssistant,
+    setup_from_user_config,
+    update_sun,
+    time_travel,
+    caplog,
+):
+    """Test Timer mit Time Travel."""
+
+    # Counter to distinct repeated outputs on the log
+    step = count(1)
+
+    # === INIT =====================================================================================
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+
+    # Output initial entity states to the log
+    await show_instance_entity_states(hass, next(step))
+
+    # Initial instance state
+    state1 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    assert state1.state == ShutterState.NEUTRAL.name.lower()
+
+    # === Dawn -> close ============================================================================
+    await update_sun(elevation=60, azimuth=180, brightness=100)
+    await hass.async_block_till_done()
+
+    # Prüfe ob Timer gestartet wurde
+    state2 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+
+    # Prüfe Timer Attribute (falls vorhanden)
+    if "next_modification" in state2.attributes:
+        _LOGGER.info("Next modification: %s", state2.attributes["next_modification"])
+
+    await time_travel(seconds=6)
+
+    await show_instance_entity_states(hass, next(step))
+
+    # Prüfe dass Timer abgelaufen ist
+    state3 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+
+    # Der Timer sollte den State geändert haben
+    assert state3.state != state1.state, f"State sollte sich geändert haben: {state1.state} -> {state3.state}"
+
+    # State sollte jetzt Shadow-Full-Closed sein
+    assert state3.state == ShutterState.DAWN_FULL_CLOSED.name.lower()
+
+    assert len(pos_calls) > 0
+    assert pos_calls[-1].data["position"] == 0  # KNX: 100% geschlossen
+    assert len(tilt_calls) > 0
+    assert tilt_calls[-1].data["tilt_position"] == 0  # KNX: 100% geschlossen
+
+    # === After Dawn -> Lookthrough timer started ==================================================
+    # Trigger Shadow (sollte Timer starten)
+    await update_sun(elevation=60, azimuth=180, brightness=5000)
+    await hass.async_block_till_done()
+
+    # Prüfe ob Timer gestartet wurde
+    state2 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+
+    # Prüfe Timer Attribute (falls vorhanden)
+    if "next_modification" in state2.attributes:
+        _LOGGER.info("Next modification: %s", state2.attributes["next_modification"])
+
+    await time_travel(seconds=6)
+
+    await show_instance_entity_states(hass, next(step))
+
+    # Prüfe dass Timer abgelaufen ist
+    state3 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+
+    # Der Timer sollte den State geändert haben
+    assert state3.state != state1.state, f"State sollte sich geändert haben: {state1.state} -> {state3.state}"
+
+    # State sollte jetzt Shadow-Full-Closed sein
+    assert state3.state == ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name.lower()
+
+    assert len(pos_calls) > 0
+    assert pos_calls[-1].data["position"] == 0  # KNX: 100% geschlossen
+    assert len(tilt_calls) > 0
+    assert tilt_calls[-1].data["tilt_position"] == 55
