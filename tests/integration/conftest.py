@@ -38,7 +38,7 @@ class SelectiveColoredFormatter(ColoredFormatter):
 
 @pytest.fixture(autouse=True, scope="session")
 def setup_logging():
-    #color_format = "%(log_color)s%(levelname)-8s%(reset)s %(cyan)s%(filename)-25s:%(lineno)-4s%(reset)s %(blue)s%(message)s%(reset)s"
+    # color_format = "%(log_color)s%(levelname)-8s%(reset)s %(cyan)s%(filename)-25s:%(lineno)-4s%(reset)s %(blue)s%(message)s%(reset)s"
     color_format = "%(log_color)s%(levelname)-8s%(reset)s %(cyan)s%(filename)-25s:%(lineno)-4s %(message)s%(reset)s"
 
     formatter = SelectiveColoredFormatter(
