@@ -239,6 +239,7 @@ async def test_shadow_full_closed(
     assert len(tilt_calls) > 0
     assert tilt_calls[-1].data["tilt_position"] == 100
 
+
 async def test_full_run_without_assert(
     hass: HomeAssistant,
     setup_from_user_config,
@@ -252,7 +253,7 @@ async def test_full_run_without_assert(
     step = count(1)
 
     # === INIT =====================================================================================
-    _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
 
     await show_instance_entity_states(hass, next(step))
 
@@ -261,14 +262,36 @@ async def test_full_run_without_assert(
     # === Shadow -> close ==========================================================================
     await update_sun(elevation=60, azimuth=180, brightness=70000)
     await hass.async_block_till_done()
-
+    await time_travel(seconds=6)
+    _LOGGER.info("Height/Angle: %s/%s", pos_calls[-1].data["position"], tilt_calls[-1].data["tilt_position"])
     _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
 
+    # === Shadow -> close ==========================================================================
+    await update_sun(elevation=60, azimuth=180, brightness=5000)
+    await hass.async_block_till_done()
     await time_travel(seconds=6)
+    _LOGGER.info("Height/Angle: %s/%s", pos_calls[-1].data["position"], tilt_calls[-1].data["tilt_position"])
+    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
 
-    await show_instance_entity_states(hass, next(step))
+    # === Shadow -> close ==========================================================================
+    await update_sun(elevation=60, azimuth=180, brightness=5000)
+    await hass.async_block_till_done()
+    await time_travel(seconds=6)
+    _LOGGER.info("Height/Angle: %s/%s", pos_calls[-1].data["position"], tilt_calls[-1].data["tilt_position"])
+    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
 
-    # Prüfe dass Timer abgelaufen ist
+    # === Shadow -> close ==========================================================================
+    await update_sun(elevation=60, azimuth=180, brightness=5000)
+    await hass.async_block_till_done()
+    await time_travel(seconds=6)
+    _LOGGER.info("Height/Angle: %s/%s", pos_calls[-1].data["position"], tilt_calls[-1].data["tilt_position"])
+    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+
+    # === Shadow -> close ==========================================================================
+    await update_sun(elevation=60, azimuth=180, brightness=5000)
+    await hass.async_block_till_done()
+    await time_travel(seconds=6)
+    _LOGGER.info("Height/Angle: %s/%s", pos_calls[-1].data["position"], tilt_calls[-1].data["tilt_position"])
     _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
 
 
@@ -322,6 +345,7 @@ async def test_dawn_full_closed(
     assert pos_calls[-1].data["position"] == 0  # KNX: 100% geschlossen
     assert len(tilt_calls) > 0
     assert tilt_calls[-1].data["tilt_position"] == 0  # KNX: 100% geschlossen
+
 
 async def test_look_through_after_dawn_full_closed(
     hass: HomeAssistant,
