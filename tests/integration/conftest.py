@@ -2,6 +2,7 @@
 
 import logging
 from datetime import timedelta
+from typing import Any
 
 import pytest
 from colorlog import ColoredFormatter
@@ -9,12 +10,15 @@ from homeassistant.components.cover import (
     DOMAIN as COVER_DOMAIN,
 )
 from homeassistant.components.input_number import DOMAIN as INPUT_NUMBER_DOMAIN
-from homeassistant.core import HomeAssistant
+from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
+from homeassistant.core import HomeAssistant, State
 from homeassistant.setup import async_setup_component
 from homeassistant.util import dt as dt_util
-from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed
+from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed, async_mock_service
 
 from custom_components.shadow_control.const import DOMAIN, SC_CONF_NAME
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class SelectiveColoredFormatter(ColoredFormatter):
@@ -336,3 +340,48 @@ def update_sun(hass: HomeAssistant):
         await hass.async_block_till_done()
 
     return _update
+
+
+async def setup_instance(caplog, hass: HomeAssistant, setup_from_user_config, test_config) -> tuple[Any, Any]:
+    caplog.set_level(logging.DEBUG, logger="custom_components.shadow_control")
+
+    await setup_from_user_config(test_config)
+    hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
+    await hass.async_block_till_done()
+    # Mocke die Cover-Dienste, damit das Dummy-Script gar nicht erst läuft
+    tilt_calls = async_mock_service(hass, "cover", "set_cover_tilt_position")
+    pos_calls = async_mock_service(hass, "cover", "set_cover_position")
+    return pos_calls, tilt_calls
+
+
+async def show_instance_entity_states(hass: HomeAssistant, i: int):
+    # Zeige alle Shadow Control Entities
+    states = hass.states.async_all()
+    sc_entities = [s for s in states if "sc_test_instance" in s.entity_id]
+
+    line = f" SHADOW CONTROL ENTITIES START (#{i}) ==="
+    _LOGGER.info("%s%s", "=" * (80 - len(line)), line)
+    for entity in sc_entities:
+        # _LOGGER.info("%s: %s, Attributes: %s", entity.entity_id, entity.state, entity.attributes)
+        _LOGGER.info("%s: %s", entity.entity_id, entity.state)
+    line = f" SHADOW CONTROL ENTITIES END (#{i}) ==="
+    _LOGGER.info("%s%s", "=" * (80 - len(line)), line)
+
+
+async def get_entity_and_show_state(hass: HomeAssistant, entity_id: str, with_attributes: bool = False) -> State:
+    """Get entity state and log it.
+
+    Args:
+        hass: Home Assistant instance
+        entity_id: Entity ID to fetch
+        with_attributes: If True, log attributes as well (default: False)
+
+    Returns:
+        State object of the entity
+    """
+    entity = hass.states.get(entity_id)
+    if with_attributes:
+        _LOGGER.info("State of %s: %s, Attributes: %s", entity_id, entity.state, entity.attributes)
+    else:
+        _LOGGER.info("State of %s: %s", entity_id, entity.state)
+    return entity
