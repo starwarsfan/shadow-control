@@ -1,9 +1,12 @@
 """Test mit minimaler User-Config."""
 
 import logging
+from itertools import count
+from typing import Any
 
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, State
+from pytest_homeassistant_custom_component.common import async_mock_service
 
 from custom_components.shadow_control.const import DOMAIN
 
@@ -12,7 +15,7 @@ _LOGGER = logging.getLogger(__name__)
 MINIMAL_CONFIG = {
     DOMAIN: [
         {
-            "name": "Minimal Test",
+            "name": "SC Test Instance",
             "debug_enabled": False,
             "target_cover_entity": ["cover.sc_dummy"],
             "facade_shutter_type_static": "mode1",
@@ -32,12 +35,15 @@ MINIMAL_CONFIG = {
 async def test_minimal_config_loads(
     hass: HomeAssistant,
     setup_from_user_config,
+    caplog,
 ):
     """Test dass minimale Config lädt."""
 
-    await setup_from_user_config(MINIMAL_CONFIG)
-    hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
-    await hass.async_block_till_done()
+    # Counter to distinct repeated outputs on the log
+    # step = count(1)
+
+    # Setup instance
+    _, _ = await setup_instance(caplog, hass, setup_from_user_config)
 
     # Integration sollte geladen sein
     assert DOMAIN in hass.data
@@ -54,33 +60,26 @@ async def test_show_initial_state(
 ):
     """Debug: Zeige Initial State."""
 
-    caplog.set_level(logging.DEBUG)
+    # Counter to distinct repeated outputs on the log
+    step = count(1)
 
-    await setup_from_user_config(MINIMAL_CONFIG)
+    # Setup instance
+    _, _ = await setup_instance(caplog, hass, setup_from_user_config)
 
     # 2. Prüfen, ob die Entität überhaupt schon im State-Machine ist
     # Falls hier None kommt, sind die Plattformen noch nicht geladen!
-    entity_id = "number.minimal_test_s_brightness_threshold"
-    assert hass.states.get(entity_id) is not None
+    entity = await get_entity_and_show_state(hass, "number.sc_test_instance_s_brightness_threshold")
+    assert entity is not None
 
     hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
     await hass.async_block_till_done()
 
     # Zeige alle Shadow Control Entities
-    states = hass.states.async_all()
-    sc_entities = [s for s in states if "minimal_test" in s.entity_id]
-
-    _LOGGER.info("=" * 80)
-    _LOGGER.info("SHADOW CONTROL ENTITIES:")
-    for entity in sc_entities:
-        # _LOGGER.info("%s: %s, Attributes: %s", entity.entity_id, entity.state, entity.attributes)
-        _LOGGER.info("%s: %s", entity.entity_id, entity.state)
+    await show_instance_entity_states(hass, next(step))
 
     # Prüfe gezielt einen Wert aus 'sc_internal_values'
-    threshold = hass.states.get("number.minimal_test_s_brightness_threshold")
-    if threshold:
-        _LOGGER.info("S-Brightness Threshold: %s (Expected: 15000)", threshold.state)
-        assert threshold.state == "15000"
+    threshold = await get_entity_and_show_state(hass, "number.sc_test_instance_s_brightness_threshold")
+    assert threshold.state == "15000"
 
     # Zeige Input Numbers
     _LOGGER.info("=" * 80)
@@ -92,3 +91,35 @@ async def test_show_initial_state(
     _LOGGER.info("Brightness: %s", brightness.state if brightness else "NOT FOUND")
     _LOGGER.info("Elevation: %s", elevation.state if elevation else "NOT FOUND")
     _LOGGER.info("Azimuth: %s", azimuth.state if azimuth else "NOT FOUND")
+
+
+async def setup_instance(caplog, hass: HomeAssistant, setup_from_user_config) -> tuple[Any, Any]:
+    caplog.set_level(logging.DEBUG, logger="custom_components.shadow_control")
+
+    await setup_from_user_config(MINIMAL_CONFIG)
+    hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
+    await hass.async_block_till_done()
+    # Mocke die Cover-Dienste, damit das Dummy-Script gar nicht erst läuft
+    tilt_calls = async_mock_service(hass, "cover", "set_cover_tilt_position")
+    pos_calls = async_mock_service(hass, "cover", "set_cover_position")
+    return pos_calls, tilt_calls
+
+
+async def show_instance_entity_states(hass: HomeAssistant, i: int):
+    # Zeige alle Shadow Control Entities
+    states = hass.states.async_all()
+    sc_entities = [s for s in states if "sc_test_instance" in s.entity_id]
+
+    line = f" SHADOW CONTROL ENTITIES START (#{i}) ==="
+    _LOGGER.info("%s%s", "=" * (80 - len(line)), line)
+    for entity in sc_entities:
+        # _TEST_LOGGER.info("%s: %s, Attributes: %s", entity.entity_id, entity.state, entity.attributes)
+        _LOGGER.info("%s: %s", entity.entity_id, entity.state)
+    line = f" SHADOW CONTROL ENTITIES END (#{i}) ==="
+    _LOGGER.info("%s%s", "=" * (80 - len(line)), line)
+
+
+async def get_entity_and_show_state(hass: HomeAssistant, entity_id) -> State:
+    entity = hass.states.get(entity_id)
+    _LOGGER.info("State of %s: %s", entity_id, entity.state)
+    return entity

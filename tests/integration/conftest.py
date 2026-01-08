@@ -1,8 +1,10 @@
 """Fixtures für Integration Tests."""
 
+import logging
 from datetime import timedelta
 
 import pytest
+from colorlog import ColoredFormatter
 from homeassistant.components.cover import (
     DOMAIN as COVER_DOMAIN,
 )
@@ -13,6 +15,41 @@ from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed
 
 from custom_components.shadow_control.const import DOMAIN, SC_CONF_NAME
+
+
+@pytest.fixture(autouse=True, scope="session")
+def setup_logging():
+    # Definiere das Farbschema für die Test-Logs
+    formatter = ColoredFormatter(
+        "%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(message)s",
+        datefmt=None,
+        reset=True,
+        log_colors={
+            "DEBUG": "cyan",
+            "INFO": "green",
+            "WARNING": "yellow",
+            "ERROR": "red",
+            "CRITICAL": "red,bg_white",
+        },
+        secondary_log_colors={},
+        style="%",
+    )
+
+    # Greife den Standard-Handler von pytest ab oder erstelle einen neuen
+    root_logger = logging.getLogger()
+
+    # Optional: Bestehende Handler säubern, falls HA bereits welche gesetzt hat
+    # for handler in root_logger.handlers:
+    #     root_logger.removeHandler(handler)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+
+    # Hier ist der Trick: Wir weisen den Formatter nur dem Handler zu,
+    # der während der Tests aktiv ist.
+    root_logger.addHandler(console_handler)
+    root_logger.setLevel(logging.INFO)
+
 
 # ============================================================================
 # Helper: Setup mit User-Config
@@ -168,6 +205,7 @@ def time_travel(hass: HomeAssistant):
 
     async def _travel(*, seconds: int = 0, minutes: int = 0, hours: int = 0):
         """Spring in der Zeit vorwärts."""
+        logging.getLogger().info("Time traveling 6 seconds...")
         delta = timedelta(seconds=seconds, minutes=minutes, hours=hours)
         target_time = dt_util.utcnow() + delta
 
