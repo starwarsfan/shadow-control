@@ -42,7 +42,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
-          flags: unit
+          flags: unittests
           name: codecov-py${{ matrix.python-version }}-ha${{ matrix.ha-version }}
           fail_ci_if_error: false
 
@@ -52,7 +52,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./junit.xml
-          flags: unit
+          flags: unittests
           report_type: test_results
           fail_ci_if_error: false
 
