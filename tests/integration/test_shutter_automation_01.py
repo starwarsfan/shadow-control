@@ -7,8 +7,7 @@ from homeassistant.core import HomeAssistant
 
 from custom_components.shadow_control import ShutterState
 from custom_components.shadow_control.const import DOMAIN
-from tests.integration.conftest import get_entity_and_show_state, setup_instance, show_instance_entity_states, \
-    log_cover_position
+from tests.integration.conftest import get_entity_and_show_state, log_cover_position, setup_instance, show_instance_entity_states
 
 _LOGGER = logging.getLogger(__name__)
 

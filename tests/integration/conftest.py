@@ -381,6 +381,7 @@ async def get_entity_and_show_state(hass: HomeAssistant, entity_id: str, with_at
         _LOGGER.info("State of %s: %s", entity_id, entity.state)
     return entity
 
+
 def log_cover_position(pos_calls, tilt_calls):
     """Log current cover position and tilt angle.
 
