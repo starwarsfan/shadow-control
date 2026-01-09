@@ -27,7 +27,7 @@ class SelectiveColoredFormatter(ColoredFormatter):
     def format(self, record):
         # Wenn der Log aus der Integration kommt, Farben entfernen
         if "shadow_control" in record.name:
-            neutral_formatter = logging.Formatter(fmt="%(levelname)-8s %(filename)-25s:%(lineno)-4s %(message)s", datefmt="%H:%M:%S")
+            neutral_formatter = logging.Formatter(fmt="%(levelname)-8s %(filename)30s: %(lineno)4s %(message)s", datefmt="%H:%M:%S")
             return neutral_formatter.format(record)
 
         # Ansonsten: Standard colorlog Verhalten (für Tests)
@@ -37,7 +37,7 @@ class SelectiveColoredFormatter(ColoredFormatter):
 @pytest.fixture(autouse=True, scope="session")
 def setup_logging():
     # color_format = "%(log_color)s%(levelname)-8s%(reset)s %(cyan)s%(filename)-25s:%(lineno)-4s%(reset)s %(blue)s%(message)s%(reset)s"
-    color_format = "%(log_color)s%(levelname)-8s%(reset)s %(cyan)s%(filename)-25s:%(lineno)-4s %(message)s%(reset)s"
+    color_format = "%(log_color)s%(levelname)-8s%(reset)s %(cyan)s%(filename)30s: %(lineno)4s %(message)s%(reset)s"
 
     formatter = SelectiveColoredFormatter(
         color_format,
