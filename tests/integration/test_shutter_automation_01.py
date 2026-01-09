@@ -7,7 +7,8 @@ from homeassistant.core import HomeAssistant
 
 from custom_components.shadow_control import ShutterState
 from custom_components.shadow_control.const import DOMAIN
-from tests.integration.conftest import get_entity_and_show_state, setup_instance, show_instance_entity_states
+from tests.integration.conftest import get_entity_and_show_state, setup_instance, show_instance_entity_states, \
+    log_cover_position
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -262,36 +263,45 @@ async def test_full_run_without_assert(
     # === Shadow -> close ==========================================================================
     await update_sun(elevation=60, azimuth=180, brightness=70000)
     await hass.async_block_till_done()
-    await time_travel(seconds=6)
-    _LOGGER.info("Height/Angle: %s/%s", pos_calls[-1].data["position"], tilt_calls[-1].data["tilt_position"])
+    await time_travel(seconds=2)
+    log_cover_position(pos_calls, tilt_calls)
+    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    await time_travel(seconds=2)
+    log_cover_position(pos_calls, tilt_calls)
+    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    await time_travel(seconds=2)
+    log_cover_position(pos_calls, tilt_calls)
+    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    await time_travel(seconds=2)
+    log_cover_position(pos_calls, tilt_calls)
     _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
 
     # === Shadow -> close ==========================================================================
     await update_sun(elevation=60, azimuth=180, brightness=5000)
     await hass.async_block_till_done()
     await time_travel(seconds=6)
-    _LOGGER.info("Height/Angle: %s/%s", pos_calls[-1].data["position"], tilt_calls[-1].data["tilt_position"])
+    log_cover_position(pos_calls, tilt_calls)
     _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
 
     # === Shadow -> close ==========================================================================
     await update_sun(elevation=60, azimuth=180, brightness=5000)
     await hass.async_block_till_done()
     await time_travel(seconds=6)
-    _LOGGER.info("Height/Angle: %s/%s", pos_calls[-1].data["position"], tilt_calls[-1].data["tilt_position"])
+    log_cover_position(pos_calls, tilt_calls)
     _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
 
     # === Shadow -> close ==========================================================================
     await update_sun(elevation=60, azimuth=180, brightness=5000)
     await hass.async_block_till_done()
     await time_travel(seconds=6)
-    _LOGGER.info("Height/Angle: %s/%s", pos_calls[-1].data["position"], tilt_calls[-1].data["tilt_position"])
+    log_cover_position(pos_calls, tilt_calls)
     _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
 
     # === Shadow -> close ==========================================================================
     await update_sun(elevation=60, azimuth=180, brightness=5000)
     await hass.async_block_till_done()
     await time_travel(seconds=6)
-    _LOGGER.info("Height/Angle: %s/%s", pos_calls[-1].data["position"], tilt_calls[-1].data["tilt_position"])
+    log_cover_position(pos_calls, tilt_calls)
     _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
 
 
