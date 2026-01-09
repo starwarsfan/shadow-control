@@ -125,7 +125,7 @@ async def mock_minimal_entities(hass: HomeAssistant):
             "d01_brightness": {
                 "min": 0,
                 "max": 100000,
-                "initial": 50000,
+                "initial": 20000,
                 "name": "Brightness",
             },
             "d03_sun_elevation": {
