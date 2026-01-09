@@ -26,17 +26,11 @@ class SelectiveColoredFormatter(ColoredFormatter):
 
     def format(self, record):
         # Wenn der Log aus der Integration kommt, Farben entfernen
-        if record.name.startswith("custom_components"):
-            # Speichere das Original-Format kurzzeitig
-            original_format = self._style._fmt
-            # Setze ein neutrales Format ohne Farben
-            self._style._fmt = "%(levelname)-8s %(filename)-25s:%(lineno)-4s %(message)s"
-            result = logging.Formatter.format(self, record)
-            # Zurücksetzen auf das farbige Format
-            self._style._fmt = original_format
-            return result
+        if "shadow_control" in record.name:
+            neutral_formatter = logging.Formatter(fmt="%(levelname)-8s %(filename)-25s:%(lineno)-4s %(message)s", datefmt="%H:%M:%S")
+            return neutral_formatter.format(record)
 
-        # Ansonsten: Standard colorlog Verhalten
+        # Ansonsten: Standard colorlog Verhalten (für Tests)
         return super().format(record)
 
 
