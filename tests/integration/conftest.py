@@ -220,8 +220,9 @@ def time_travel(hass: HomeAssistant):
 
     async def _travel(*, seconds: int = 0, minutes: int = 0, hours: int = 0):
         """Spring in der Zeit vorwärts."""
-        logging.getLogger().info("Time traveling 6 seconds...")
         delta = timedelta(seconds=seconds, minutes=minutes, hours=hours)
+        total_seconds = delta.total_seconds()
+        logging.getLogger().info("Time traveling %s seconds...", total_seconds)
         target_time = dt_util.utcnow() + delta
 
         # Wichtig: async_fire_time_changed triggert async_call_later Timer
