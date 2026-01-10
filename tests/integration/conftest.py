@@ -343,6 +343,45 @@ def log_cover_position(pos_calls, tilt_calls):
     _LOGGER.info("Height/Angle: %s/%s", height, angle)
 
 
+async def simulate_manual_cover_change(
+    hass: HomeAssistant, entity_id: str, *, position: float | None = None, tilt_position: float | None = None
+) -> None:
+    """Simulate manual cover movement (external change).
+
+    This sets the cover state directly to simulate user intervention,
+    which should trigger auto-lock in Shadow Control.
+
+    Args:
+        hass: Home Assistant instance
+        entity_id: Cover entity ID (e.g., "cover.sc_dummy")
+        position: New height position 0-100 (optional)
+        tilt_position: New tilt/angle position 0-100 (optional)
+    """
+    current_state = hass.states.get(entity_id)
+    if not current_state:
+        _LOGGER.warning("Cover entity %s not found", entity_id)
+        return
+
+    # Kopiere aktuelle Attribute
+    new_attributes = dict(current_state.attributes)
+
+    # Aktualisiere Position(en)
+    if position is not None:
+        new_attributes["current_position"] = int(position)
+        _LOGGER.info("Simulating manual height change: %s -> %s%%", entity_id, position)
+
+    if tilt_position is not None:
+        new_attributes["current_tilt_position"] = int(tilt_position)
+        _LOGGER.info("Simulating manual tilt change: %s -> %s%%", entity_id, tilt_position)
+
+    # Setze neuen State (triggert state_changed Event)
+    hass.states.async_set(entity_id, current_state.state, new_attributes)
+    await hass.async_block_till_done()
+
+    # Gib der Integration Zeit zu reagieren
+    await hass.async_block_till_done()
+
+
 async def time_travel_and_check(
     time_travel_func,
     hass: HomeAssistant,
