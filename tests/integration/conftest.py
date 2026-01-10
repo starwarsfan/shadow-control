@@ -54,16 +54,33 @@ def setup_logging():
 
     root_logger = logging.getLogger()
 
-    # Vorhandene Pytest-Handler auf unseren neuen Formatter umstellen
-    if root_logger.handlers:
-        for handler in root_logger.handlers:
-            handler.setFormatter(formatter)
-    else:
-        console_handler = logging.StreamHandler()
-        console_handler.setFormatter(formatter)
-        root_logger.addHandler(console_handler)
+    # Entferne duplizierte Handler, behalte nur pytest's Handler
+    seen_handler_types = {}
+    unique_handlers = []
 
-    root_logger.setLevel(logging.INFO)
+    for handler in root_logger.handlers:
+        handler_type = type(handler).__name__
+
+        # Behalte nur pytest-spezifische Handler
+        if handler_type in ("_LiveLoggingStreamHandler", "_FileHandler", "LogCaptureHandler"):
+            # Für LogCaptureHandler: nur den ersten behalten
+            if handler_type == "LogCaptureHandler" and handler_type in seen_handler_types:
+                continue  # Skip duplizierte LogCaptureHandler
+
+            seen_handler_types[handler_type] = True
+            handler.setFormatter(formatter)
+            handler.setLevel(logging.DEBUG)
+            unique_handlers.append(handler)
+
+    root_logger.handlers = unique_handlers
+    root_logger.setLevel(logging.DEBUG)
+
+
+#    print("\n=== ROOT LOGGER HANDLERS ===")
+#    for i, handler in enumerate(root_logger.handlers):
+#        print(f"Handler {i}: {type(handler).__name__}, Level: {handler.level} ({logging.getLevelName(handler.level)})")
+#        print(f"  Formatter: {type(handler.formatter).__name__ if handler.formatter else None}")
+#    print("=== END HANDLERS ===\n")
 
 
 # ============================================================================
