@@ -150,12 +150,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:  #
     instance_logger_name = f"{DOMAIN}.{sanitized_instance_name}"
     instance_specific_logger = logging.getLogger(instance_logger_name)
 
-    if entry.options.get(DEBUG_ENABLED, False):
+    instance_specific_logger.handlers.clear()
+    instance_specific_logger.propagate = True  # Erbt von Parent-Logger
+
+    # Debug-Level setzen
+    debug_enabled_value = entry.options.get(DEBUG_ENABLED, False)
+    debug_enabled = debug_enabled_value.lower() in ("true", "1", "yes", "on") if isinstance(debug_enabled_value, str) else bool(debug_enabled_value)
+
+    if debug_enabled:
         instance_specific_logger.setLevel(logging.DEBUG)
-        instance_specific_logger.debug("Debug log for instance '%s' activated.", instance_name)
+
+        instance_specific_logger.info("Debug log for instance '%s' activated.", instance_name)
+        instance_specific_logger.debug("DEBUG TEST: Debug logging is working")
     else:
         instance_specific_logger.setLevel(logging.INFO)
-        instance_specific_logger.debug("Debug log for instance '%s' disabled.", instance_name)
+        instance_specific_logger.info("Debug log for instance '%s' disabled.", instance_name)
 
     # The manager can't work without a configuration.
     if not config_data:
