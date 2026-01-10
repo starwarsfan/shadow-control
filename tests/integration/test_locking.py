@@ -26,8 +26,8 @@ TEST_CONFIG = {
     DOMAIN: [
         {
             "name": "SC Test Instance",
-            # "debug_enabled": False,
-            "debug_enabled": True,
+            "debug_enabled": False,
+            # "debug_enabled": True,
             "target_cover_entity": ["cover.sc_dummy"],
             "facade_shutter_type_static": "mode1",
             #
