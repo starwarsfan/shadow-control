@@ -72,15 +72,15 @@ TEST_CONFIG = {
                 # "shadow_brightness_threshold_entity":
                 "shadow_brightness_threshold_manual": 50000,
                 # "shadow_after_seconds_entity":
-                "shadow_after_seconds_manual": 5,
+                "shadow_after_seconds_manual": 10,
                 # "shadow_shutter_max_height_entity": input_number.automation_shadow_max_height_sc_dummy
                 "shadow_shutter_max_height_manual": 100,
                 # "shadow_shutter_max_angle_entity": input_number.automation_shadow_max_angle_sc_dummy
                 "shadow_shutter_max_angle_manual": 100,
                 # "shadow_shutter_look_through_seconds_entity":
-                "shadow_shutter_look_through_seconds_manual": 5,
+                "shadow_shutter_look_through_seconds_manual": 10,
                 # "shadow_shutter_open_seconds_entity":
-                "shadow_shutter_open_seconds_manual": 5,
+                "shadow_shutter_open_seconds_manual": 10,
                 # "shadow_shutter_look_through_angle_entity":
                 "shadow_shutter_look_through_angle_manual": 54,
                 # "shadow_height_after_sun_entity":
@@ -94,15 +94,15 @@ TEST_CONFIG = {
                 # "dawn_brightness_threshold_entity":
                 "dawn_brightness_threshold_manual": 500,
                 # "dawn_after_seconds_entity":
-                "dawn_after_seconds_manual": 5,
+                "dawn_after_seconds_manual": 10,
                 # "dawn_shutter_max_height_entity": input_number.automation_dawn_max_height_sc_dummy
                 "dawn_shutter_max_height_manual": 100,
                 # "dawn_shutter_max_angle_entity": input_number.automation_dawn_max_angle_sc_dummy
                 "dawn_shutter_max_angle_manual": 100,
                 # "dawn_shutter_look_through_seconds_entity":
-                "dawn_shutter_look_through_seconds_manual": 5,
+                "dawn_shutter_look_through_seconds_manual": 10,
                 # "dawn_shutter_open_seconds_entity":
-                "dawn_shutter_open_seconds_manual": 5,
+                "dawn_shutter_open_seconds_manual": 10,
                 # "dawn_shutter_look_through_angle_entity":
                 "dawn_shutter_look_through_angle_manual": 45,
                 # "dawn_height_after_dawn_entity":
@@ -263,41 +263,51 @@ async def test_full_run_without_assert(
     await show_instance_entity_states(hass, next(step))
 
     _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    _ = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
 
-    # === Shadow -> close ==========================================================================
+    # === open -> close (shadow) ===================================================================
     await update_sun(elevation=60, azimuth=180, brightness=70000)
     await hass.async_block_till_done()
     # await asyncio.sleep(4)
     _ = await time_travel_and_check(
-        time_travel, hass, "sensor.sc_test_instance_state", seconds=4, pos_calls=pos_calls, tilt_calls=tilt_calls, executions=6
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
-    # === Shadow -> close ==========================================================================
+    # === close -> open=============================================================================
     await update_sun(elevation=60, azimuth=180, brightness=5000)
     await hass.async_block_till_done()
     _ = await time_travel_and_check(
-        time_travel, hass, "sensor.sc_test_instance_state", seconds=4, pos_calls=pos_calls, tilt_calls=tilt_calls, executions=6
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
-    # === Shadow -> close ==========================================================================
+    # === open -> close ============================================================================
     await update_sun(elevation=60, azimuth=180, brightness=70000)
     await hass.async_block_till_done()
     _ = await time_travel_and_check(
-        time_travel, hass, "sensor.sc_test_instance_state", seconds=4, pos_calls=pos_calls, tilt_calls=tilt_calls, executions=6
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
-    # === Shadow -> close ==========================================================================
+    # === close -> open ============================================================================
     await update_sun(elevation=60, azimuth=180, brightness=5000)
     await hass.async_block_till_done()
     _ = await time_travel_and_check(
-        time_travel, hass, "sensor.sc_test_instance_state", seconds=4, pos_calls=pos_calls, tilt_calls=tilt_calls, executions=6
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
-    # === Shadow -> close ==========================================================================
+    # === open -> close (dawn) =====================================================================
+    await update_sun(elevation=60, azimuth=180, brightness=400)
+    await hass.async_block_till_done()
+    _ = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
+
+    # === close -> open (dawn) =====================================================================
     await update_sun(elevation=60, azimuth=180, brightness=5000)
     await hass.async_block_till_done()
     _ = await time_travel_and_check(
-        time_travel, hass, "sensor.sc_test_instance_state", seconds=4, pos_calls=pos_calls, tilt_calls=tilt_calls, executions=6
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
 
