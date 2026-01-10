@@ -11,7 +11,7 @@ from tests.integration.conftest import (
     get_entity_and_show_state,
     setup_instance,
     show_instance_entity_states,
-    time_travel_and_check,
+    time_travel_and_check, set_sun_position,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -144,7 +144,6 @@ async def test_show_initial_state(
 async def test_sun_entity_update(
     hass: HomeAssistant,
     setup_from_user_config,
-    update_sun,
     caplog,
 ):
     """Debug: Prüfe ob Sun Updates funktionieren."""
@@ -170,7 +169,7 @@ async def test_sun_entity_update(
     _LOGGER.info("SC State: %s", sc_state.state if sc_state else "NOT FOUND")
 
     # Update Sun
-    await update_sun(elevation=60, azimuth=180, brightness=70000)
+    await set_sun_position(hass, elevation=60, azimuth=180, brightness=70000)
 
     _LOGGER.info("=" * 80)
     _LOGGER.info("AFTER SUN UPDATE:")
@@ -196,7 +195,6 @@ async def test_sun_entity_update(
 async def test_shadow_full_closed(
     hass: HomeAssistant,
     setup_from_user_config,
-    update_sun,
     time_travel,
     caplog,
 ):
@@ -216,7 +214,7 @@ async def test_shadow_full_closed(
     assert state1.state == ShutterState.NEUTRAL.name.lower()
 
     # === Shadow -> close ==========================================================================
-    await update_sun(elevation=60, azimuth=180, brightness=70000)
+    await set_sun_position(hass, elevation=60, azimuth=180, brightness=70000)
     await hass.async_block_till_done()
 
     # Prüfe ob Timer gestartet wurde
@@ -245,7 +243,6 @@ async def test_shadow_full_closed(
 async def test_full_run_without_assert(
     hass: HomeAssistant,
     setup_from_user_config,
-    update_sun,
     time_travel,
     caplog,
 ):
@@ -265,7 +262,7 @@ async def test_full_run_without_assert(
     )
 
     # === open -> close (shadow) ===================================================================
-    await update_sun(elevation=60, azimuth=180, brightness=70000)
+    await set_sun_position(hass, elevation=60, azimuth=180, brightness=70000)
     await hass.async_block_till_done()
     # await asyncio.sleep(4)
     _ = await time_travel_and_check(
@@ -273,35 +270,35 @@ async def test_full_run_without_assert(
     )
 
     # === close -> open=============================================================================
-    await update_sun(elevation=60, azimuth=180, brightness=5000)
+    await set_sun_position(hass, elevation=60, azimuth=180, brightness=5000)
     await hass.async_block_till_done()
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
     # === open -> close ============================================================================
-    await update_sun(elevation=60, azimuth=180, brightness=70000)
+    await set_sun_position(hass, elevation=60, azimuth=180, brightness=70000)
     await hass.async_block_till_done()
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
     # === close -> open ============================================================================
-    await update_sun(elevation=60, azimuth=180, brightness=5000)
+    await set_sun_position(hass, elevation=60, azimuth=180, brightness=5000)
     await hass.async_block_till_done()
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
     # === open -> close (dawn) =====================================================================
-    await update_sun(elevation=60, azimuth=180, brightness=400)
+    await set_sun_position(hass, elevation=60, azimuth=180, brightness=400)
     await hass.async_block_till_done()
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
     # === close -> open (dawn) =====================================================================
-    await update_sun(elevation=60, azimuth=180, brightness=5000)
+    await set_sun_position(hass, elevation=60, azimuth=180, brightness=5000)
     await hass.async_block_till_done()
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -311,7 +308,6 @@ async def test_full_run_without_assert(
 async def test_dawn_full_closed(
     hass: HomeAssistant,
     setup_from_user_config,
-    update_sun,
     time_travel,
     caplog,
 ):
@@ -331,7 +327,7 @@ async def test_dawn_full_closed(
     assert state1.state == ShutterState.NEUTRAL.name.lower()
 
     # === Dawn -> close ============================================================================
-    await update_sun(elevation=60, azimuth=180, brightness=100)
+    await set_sun_position(hass, elevation=60, azimuth=180, brightness=100)
     await hass.async_block_till_done()
 
     # Prüfe ob Timer gestartet wurde
@@ -362,7 +358,6 @@ async def test_dawn_full_closed(
 async def test_look_through_after_dawn_full_closed(
     hass: HomeAssistant,
     setup_from_user_config,
-    update_sun,
     time_travel,
     caplog,
 ):
@@ -385,7 +380,7 @@ async def test_look_through_after_dawn_full_closed(
     assert state1.state == ShutterState.NEUTRAL.name.lower()
 
     # === Dawn -> close ============================================================================
-    await update_sun(elevation=60, azimuth=180, brightness=100)
+    await set_sun_position(hass, elevation=60, azimuth=180, brightness=100)
     await hass.async_block_till_done()
 
     # Prüfe ob Timer gestartet wurde
@@ -415,7 +410,7 @@ async def test_look_through_after_dawn_full_closed(
 
     # === After Dawn -> Lookthrough timer started ==================================================
     # Trigger Shadow (sollte Timer starten)
-    await update_sun(elevation=60, azimuth=180, brightness=5000)
+    await set_sun_position(hass, elevation=60, azimuth=180, brightness=5000)
     await hass.async_block_till_done()
 
     # Prüfe ob Timer gestartet wurde

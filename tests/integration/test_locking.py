@@ -122,7 +122,6 @@ TEST_CONFIG = {
 async def test_lock(
     hass: HomeAssistant,
     setup_from_user_config,
-    update_sun,
     time_travel,
     caplog,
 ):
@@ -166,7 +165,6 @@ async def test_lock(
 async def test_lock_with_position(
     hass: HomeAssistant,
     setup_from_user_config,
-    update_sun,
     time_travel,
     caplog,
 ):
@@ -210,7 +208,6 @@ async def test_lock_with_position(
 async def test_lock_then_lock_with_position(
     hass: HomeAssistant,
     setup_from_user_config,
-    update_sun,
     time_travel,
     caplog,
 ):
@@ -272,7 +269,6 @@ async def test_lock_then_lock_with_position(
 async def test_lock_with_position_then_lock(
     hass: HomeAssistant,
     setup_from_user_config,
-    update_sun,
     time_travel,
     caplog,
 ):
