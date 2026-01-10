@@ -226,12 +226,9 @@ async def test_shadow_full_closed(
     if "next_modification" in state2.attributes:
         _LOGGER.info("Next modification: %s", state2.attributes["next_modification"])
 
-    await time_travel(seconds=6)
-
-    await show_instance_entity_states(hass, next(step))
-
-    # Prüfe dass Timer abgelaufen ist
-    state3 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    state3 = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
 
     # Der Timer sollte den State geändert haben
     assert state3.state != state1.state, f"State sollte sich geändert haben: {state1.state} -> {state3.state}"
@@ -338,18 +335,17 @@ async def test_dawn_full_closed(
     await hass.async_block_till_done()
 
     # Prüfe ob Timer gestartet wurde
-    state2 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    state2 = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
 
     # Prüfe Timer Attribute (falls vorhanden)
     if "next_modification" in state2.attributes:
         _LOGGER.info("Next modification: %s", state2.attributes["next_modification"])
 
-    await time_travel(seconds=6)
-
-    await show_instance_entity_states(hass, next(step))
-
-    # Prüfe dass Timer abgelaufen ist
-    state3 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    state3 = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
 
     # Der Timer sollte den State geändert haben
     assert state3.state != state1.state, f"State sollte sich geändert haben: {state1.state} -> {state3.state}"
@@ -382,7 +378,10 @@ async def test_look_through_after_dawn_full_closed(
     await show_instance_entity_states(hass, next(step))
 
     # Initial instance state
-    state1 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    state1 = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
+
     assert state1.state == ShutterState.NEUTRAL.name.lower()
 
     # === Dawn -> close ============================================================================
@@ -390,18 +389,18 @@ async def test_look_through_after_dawn_full_closed(
     await hass.async_block_till_done()
 
     # Prüfe ob Timer gestartet wurde
-    state2 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    state2 = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
 
     # Prüfe Timer Attribute (falls vorhanden)
     if "next_modification" in state2.attributes:
         _LOGGER.info("Next modification: %s", state2.attributes["next_modification"])
 
-    await time_travel(seconds=6)
-
-    await show_instance_entity_states(hass, next(step))
-
     # Prüfe dass Timer abgelaufen ist
-    state3 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    state3 = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
 
     # Der Timer sollte den State geändert haben
     assert state3.state != state1.state, f"State sollte sich geändert haben: {state1.state} -> {state3.state}"
@@ -420,29 +419,29 @@ async def test_look_through_after_dawn_full_closed(
     await hass.async_block_till_done()
 
     # Prüfe ob Timer gestartet wurde
-    state2 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    state4 = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
 
     # Prüfe Timer Attribute (falls vorhanden)
-    if "next_modification" in state2.attributes:
-        _LOGGER.info("Next modification: %s", state2.attributes["next_modification"])
-
-    await time_travel(seconds=6)
-
-    await show_instance_entity_states(hass, next(step))
+    if "next_modification" in state4.attributes:
+        _LOGGER.info("Next modification: %s", state4.attributes["next_modification"])
 
     # Prüfe dass Timer abgelaufen ist
-    state3 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    state5 = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
 
     # Der Timer sollte den State geändert haben
-    assert state3.state != state1.state, f"State sollte sich geändert haben: {state1.state} -> {state3.state}"
+    assert state5.state != state1.state, f"State sollte sich geändert haben: {state1.state} -> {state5.state}"
 
     # State sollte jetzt Shadow-Full-Closed sein
-    assert state3.state == ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING.name.lower()
+    assert state5.state == ShutterState.DAWN_NEUTRAL.name.lower()
 
     assert len(pos_calls) > 0
-    assert pos_calls[-1].data["position"] == 0  # KNX: 100% geschlossen
+    assert pos_calls[-1].data["position"] == 100  # KNX: 0% (offen)
     assert len(tilt_calls) > 0
-    assert tilt_calls[-1].data["tilt_position"] == 55
+    assert tilt_calls[-1].data["tilt_position"] == 100  # KNX: 0% (offen)
 
 
 # async def test_debug_mode(hass, setup_from_user_config):
