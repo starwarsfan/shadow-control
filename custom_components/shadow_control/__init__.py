@@ -2008,7 +2008,7 @@ class ShadowControlManager:
         if handler_func:
             new_shutter_state = await handler_func()
             if new_shutter_state is not None and new_shutter_state != self.current_shutter_state:
-                self.logger.debug("State change from %s to %s", self.current_shutter_state.name, new_shutter_state.name)
+                self.logger.info("State change from %s to %s", self.current_shutter_state.name, new_shutter_state.name)
                 self.current_shutter_state = new_shutter_state
                 self._update_extra_state_attributes()
                 self.logger.debug("Checking if there might be another change required")
