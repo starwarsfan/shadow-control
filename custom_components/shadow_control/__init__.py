@@ -28,7 +28,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry, entity_registry
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.entity_registry import async_get as async_get_entity_registry
-from homeassistant.helpers.event import async_call_later, async_track_state_change_event
+from homeassistant.helpers.event import async_track_point_in_utc_time, async_track_state_change_event
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import dt as dt_util
 from homeassistant.util import slugify
@@ -3905,8 +3905,8 @@ class ShadowControlManager:
             return
 
         # Save start time and duration
-        current_utc_time = datetime.now(UTC)
-        self._timer_start_time = datetime.now(UTC)
+        current_utc_time = dt_util.utcnow()  # ← GEÄNDERT: Nutze HA's utcnow()
+        self._timer_start_time = current_utc_time
         self._timer_duration_seconds = delay_seconds
 
         self.next_modification_timestamp = current_utc_time + timedelta(seconds=delay_seconds)
@@ -3914,8 +3914,7 @@ class ShadowControlManager:
         local_next_modification = dt_util.as_local(self.next_modification_timestamp)
         self.logger.info("Starting timer for %ss, next modification scheduled for: %s", delay_seconds, local_next_modification)
 
-        # Save callback handle from async_call_later to enable timer canceling
-        self._timer = async_call_later(self.hass, delay_seconds, self._async_timer_callback)
+        self._timer = async_track_point_in_utc_time(self.hass, self._async_timer_callback, self.next_modification_timestamp)
 
         self._update_extra_state_attributes()
 
