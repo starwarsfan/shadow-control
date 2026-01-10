@@ -433,3 +433,11 @@ async def test_look_through_after_dawn_full_closed(
     assert pos_calls[-1].data["position"] == 0  # KNX: 100% geschlossen
     assert len(tilt_calls) > 0
     assert tilt_calls[-1].data["tilt_position"] == 55
+
+
+# async def test_debug_mode(hass, setup_from_user_config):
+#    entry = await setup_from_user_config(TEST_CONFIG)
+#
+#    # Prüfe ob debug_enabled in options ist:
+#    _LOGGER.info("Entry options: %s", entry.options)
+#    assert entry.options.get("debug_enabled") is True
