@@ -267,51 +267,6 @@ def time_travel(hass: HomeAssistant, freezer):
     return _travel
 
 
-@pytest.fixture
-def fast_forward_timers(time_travel):
-    """Auto-forwarde Timer basierend auf Config-Werten.
-
-    Usage:
-        # Timer in Config: shadow_after_seconds_manual: 5
-        await fast_forward_timers("shadow_after_seconds")
-        # Springt automatisch 6 Sekunden vor (Config-Wert + 1)
-    """
-    _config_cache = {}
-
-    async def _fast_forward(timer_key: str, extra_seconds: int = 1):
-        """Forward timer basierend auf Config."""
-        # Hole Config-Wert (müsste aus der Integration gelesen werden)
-        # Für jetzt: manuelle Mappings
-        timer_mapping = {
-            "shadow_after_seconds": "shadow_after_seconds_manual",
-            "dawn_after_seconds": "dawn_after_seconds_manual",
-            "shadow_look_through_seconds": "shadow_shutter_look_through_seconds_manual",
-            "dawn_look_through_seconds": "dawn_shutter_look_through_seconds_manual",
-            "shadow_open_seconds": "shadow_shutter_open_seconds_manual",
-            "dawn_open_seconds": "dawn_shutter_open_seconds_manual",
-            "max_movement_duration": "facade_max_movement_duration_static",
-        }
-
-        config_key = timer_mapping.get(timer_key, timer_key)
-
-        # Hole Wert aus HA Data (falls gespeichert)
-        # Fallback zu Standard-Werten
-        timer_seconds = _config_cache.get(config_key, 5)
-
-        await time_travel(seconds=timer_seconds + extra_seconds)
-
-    # Helper um Config zu cachen
-    def cache_config(config: dict):
-        """Cache config values für Timer."""
-        if DOMAIN in config:
-            for instance in config[DOMAIN]:
-                _config_cache.update(instance)
-
-    _fast_forward.cache_config = cache_config
-
-    return _fast_forward
-
-
 # ============================================================================
 # Helper: Update Sun Position
 # ============================================================================
