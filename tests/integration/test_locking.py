@@ -3,17 +3,20 @@
 import logging
 from itertools import count
 
+import pytest
 from homeassistant.core import HomeAssistant
 
 from custom_components.shadow_control import LockState
 from custom_components.shadow_control.const import DOMAIN
 from tests.integration.conftest import (
     assert_equal,
+    get_cover_position,
     get_entity_and_show_state,
     set_lock_state,
     set_sun_position,
     setup_instance,
     show_instance_entity_states,
+    simulate_manual_cover_change,
     time_travel_and_check,
 )
 
@@ -325,3 +328,64 @@ async def test_lock_with_position_then_lock(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
     assert_equal(state3.state, LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION, "Lock state")
+
+
+@pytest.mark.parametrize(
+    ("shutter_type", "check_angle"),
+    [
+        ("mode1", True),
+        ("mode2", True),
+        ("mode3", False),
+    ],
+)
+async def test_auto_lock_on_manual_change(hass: HomeAssistant, setup_from_user_config, time_travel, caplog, shutter_type, check_angle):
+    """Test that SC auto-locks when user manually moves cover."""
+    # Counter to distinct repeated outputs on the log
+    step = count(1)
+
+    # === INIT =====================================================================================
+    config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
+    config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
+
+    await show_instance_entity_states(hass, next(step))
+
+    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+
+    current_brightness = hass.states.get("input_number.d01_brightness")
+    if current_brightness:
+        await set_sun_position(hass, brightness=70000)
+        _ = await time_travel_and_check(
+            time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=20, pos_calls=pos_calls, tilt_calls=tilt_calls
+        )
+        await set_sun_position(hass, brightness=current_brightness.state)
+        _ = await time_travel_and_check(
+            time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=20, pos_calls=pos_calls, tilt_calls=tilt_calls
+        )
+
+    # Prüfe dass SC den Cover gesteuert hat
+    height, angle = get_cover_position(pos_calls, tilt_calls)
+    assert_equal(height, "100", "SC height")
+    if check_angle:
+        assert_equal(angle, "100", "SC angle")
+
+    # Lock state sollte UNLOCKED sein
+    lock_state = await get_entity_and_show_state(hass, "sensor.sc_test_instance_lock_state")
+    assert_equal(lock_state.state, LockState.UNLOCKED, "Lock state before manual change")
+
+    # USER bewegt Behang manuell!
+    await simulate_manual_cover_change(hass, "cover.sc_dummy", position=50, tilt_position=60)
+
+    # Trigger sensor update
+    if current_brightness:
+        new_brightness = float(current_brightness.state) + 0.1
+        await set_sun_position(hass, brightness=new_brightness)  # Minimal ändern
+    lock_state = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
+    assert_equal(lock_state.state, LockState.LOCKED_BY_EXTERNAL_MODIFICATION, "Lock state after manual change")
+
+    height, angle = get_cover_position(pos_calls, tilt_calls)
+    assert_equal(height, "100", "SC height")
+    if check_angle:
+        assert_equal(angle, "100", "SC angle")
