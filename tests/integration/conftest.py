@@ -463,3 +463,156 @@ async def time_travel_and_check(
             state = await get_entity_and_show_state(hass, entity_id, with_attributes=with_attributes)
 
     return state
+
+
+async def set_entity_state(hass: HomeAssistant, entity_id: str, value: str | float | bool, attributes: dict | None = None) -> None:
+    """Set entity state by calling appropriate service.
+
+    This triggers state change events that integrations can listen to.
+
+    Args:
+        hass: Home Assistant instance
+        entity_id: Entity ID to set
+        value: New value (state for switches, numeric value for numbers, etc.)
+        attributes: Optional attributes dict (currently not used)
+    """
+    domain = entity_id.split(".")[0]
+
+    if domain == "switch":
+        # Switches: turn_on/turn_off
+        service = "turn_on" if value in (True, "on", "ON") else "turn_off"
+        _LOGGER.info("Calling %s.%s for %s (value: %s)", domain, service, entity_id, value)
+        await hass.services.async_call(domain, service, {"entity_id": entity_id}, blocking=True)
+
+    elif domain in ("number", "input_number"):
+        # Numbers: set_value
+        _LOGGER.info("Set %s = %s", entity_id, value)
+        await hass.services.async_call(domain, "set_value", {"entity_id": entity_id, "value": float(value)}, blocking=True)
+
+    elif domain == "input_boolean":
+        # Input booleans: turn_on/turn_off
+        service = "turn_on" if value in (True, "on", "ON") else "turn_off"
+        _LOGGER.info("Called %s.%s for %s", domain, service, entity_id)
+        await hass.services.async_call(domain, service, {"entity_id": entity_id}, blocking=True)
+
+    elif domain == "select":
+        # Select: select_option
+        _LOGGER.info("Set %s = %s", entity_id, value)
+        await hass.services.async_call(domain, "select_option", {"entity_id": entity_id, "option": str(value)}, blocking=True)
+
+    else:
+        # Fallback: Direktes State-Setting (für Sensoren etc.)
+        _LOGGER.warning("No service mapping for domain '%s', using direct state setting for %s", domain, entity_id)
+        hass.states.async_set(entity_id, value, attributes or {})
+
+    await hass.async_block_till_done()
+    await hass.async_block_till_done()  # Zweimal für async Updates
+
+
+async def set_lock_state(
+    hass: HomeAssistant,
+    instance_name: str,
+    *,
+    lock: bool | None = None,
+    lock_with_position: bool | None = None,
+    lock_height: float | None = None,
+    lock_angle: float | None = None,
+) -> None:
+    """Set lock-related entities for a Shadow Control instance.
+
+    Args:
+        hass: Home Assistant instance
+        instance_name: Instance name (e.g., "sc_test_instance")
+        lock: Simple lock state (on/off)
+        lock_with_position: Lock with forced position (on/off)
+        lock_height: Forced height position (0-100)
+        lock_angle: Forced angle position (0-100)
+    """
+    if lock is not None:
+        await set_entity_state(hass, f"switch.{instance_name}_lock", lock)
+
+    if lock_with_position is not None:
+        await set_entity_state(hass, f"switch.{instance_name}_lock_with_position", lock_with_position)
+
+    if lock_height is not None:
+        await set_entity_state(hass, f"number.{instance_name}_zwangsposition_hohe", lock_height)
+
+    if lock_angle is not None:
+        await set_entity_state(hass, f"number.{instance_name}_zwangsposition_lamellenwinkel", lock_angle)
+
+
+async def set_sun_position(
+    hass: HomeAssistant, *, elevation: float | None = None, azimuth: float | None = None, brightness: float | None = None
+) -> None:
+    """Set sun position and brightness for testing.
+
+    Args:
+        hass: Home Assistant instance
+        elevation: Sun elevation in degrees
+        azimuth: Sun azimuth in degrees
+        brightness: Brightness in lux
+    """
+    if elevation is not None:
+        await set_entity_state(hass, "input_number.d03_sun_elevation", str(elevation))
+
+    if azimuth is not None:
+        await set_entity_state(hass, "input_number.d04_sun_azimuth", str(azimuth))
+
+    if brightness is not None:
+        await set_entity_state(hass, "input_number.d01_brightness", str(brightness))
+
+
+def assert_equal(actual, expected, context: str = "Value") -> None:
+    """Assert that actual equals expected with readable error message.
+
+    Handles Enums automatically by comparing .value attributes.
+
+    Args:
+        actual: Actual value (can be string, int, enum, etc.)
+        expected: Expected value (can be string, int, enum, etc.)
+        context: Context for error message (e.g., "Lock state", "Height")
+    """
+    # Handle Enums
+    expected_val = expected.value if hasattr(expected, "value") else expected
+    actual_val = actual.value if hasattr(actual, "value") else actual
+
+    # Convert to same type for comparison
+    if isinstance(expected_val, int) and isinstance(actual_val, str):
+        actual_val = int(actual_val)
+    elif isinstance(expected_val, str) and isinstance(actual_val, int):
+        actual_val = str(actual_val)
+
+    expected_name = expected.name if hasattr(expected, "name") else expected_val
+
+    assert actual_val == expected_val, f"{context} should be {expected_name} ({expected_val}), but is {actual_val}"
+
+    # Success log
+    _LOGGER.info("✓ %s is %s (%s) as expected", context, expected_name, expected_val)
+
+
+def assert_not_equal(actual, expected, context: str = "Value") -> None:
+    """Assert that actual does NOT equal expected with readable error message.
+
+    Handles Enums automatically by comparing .value attributes.
+
+    Args:
+        actual: Actual value (can be string, int, enum, etc.)
+        expected: Expected value (can be string, int, enum, etc.)
+        context: Context for error message (e.g., "Lock state", "Height")
+    """
+    # Handle Enums
+    expected_val = expected.value if hasattr(expected, "value") else expected
+    actual_val = actual.value if hasattr(actual, "value") else actual
+
+    # Convert to same type for comparison
+    if isinstance(expected_val, int) and isinstance(actual_val, str):
+        actual_val = int(actual_val)
+    elif isinstance(expected_val, str) and isinstance(actual_val, int):
+        actual_val = str(actual_val)
+
+    expected_name = expected.name if hasattr(expected, "name") else expected_val
+
+    assert actual_val != expected_val, f"{context} should NOT be {expected_name} ({expected_val}), but it is"
+
+    # Success log
+    _LOGGER.info("✓ %s is NOT %s (%s) as expected, actual: %s", context, expected_name, expected_val, actual_val)
