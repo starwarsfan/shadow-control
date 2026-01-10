@@ -409,6 +409,26 @@ async def get_entity_and_show_state(hass: HomeAssistant, entity_id: str, with_at
     return entity
 
 
+def get_cover_position(pos_calls, tilt_calls) -> tuple[str, str]:
+    """Get formatted height/angle for display.
+
+    Args:
+        pos_calls: List of ServiceCall objects for cover.set_cover_position
+        tilt_calls: List of ServiceCall objects for cover.set_cover_tilt_position
+
+    Returns:
+        Tuple of (height, angle) as strings
+    """
+    if not pos_calls and not tilt_calls:
+        return "N/A", "N/A"
+
+    # ServiceCall.data enthält die Parameter
+    height = str(pos_calls[-1].data.get("position", "N/A")) if pos_calls else "N/A"
+    angle = str(tilt_calls[-1].data.get("tilt_position", "N/A")) if tilt_calls else "N/A"
+
+    return height, angle
+
+
 def log_cover_position(pos_calls, tilt_calls):
     """Log current cover position and tilt angle.
 
@@ -416,6 +436,55 @@ def log_cover_position(pos_calls, tilt_calls):
         pos_calls: List of position service calls
         tilt_calls: List of tilt service calls
     """
-    height = pos_calls[-1].data["position"] if pos_calls else "N/A"
-    angle = tilt_calls[-1].data["tilt_position"] if tilt_calls else "N/A"
+    height, angle = get_cover_position(pos_calls, tilt_calls)
     _LOGGER.info("Height/Angle: %s/%s", height, angle)
+
+
+async def time_travel_and_check(
+    time_travel_func,
+    hass: HomeAssistant,
+    entity_id: str,
+    *,
+    seconds: int = 0,
+    minutes: int = 0,
+    hours: int = 0,
+    pos_calls=None,
+    tilt_calls=None,
+    with_attributes: bool = False,
+    executions: int = 1,
+) -> State:
+    """Time travel and return entity state.
+
+    Args:
+        time_travel_func: The time_travel fixture function
+        hass: Home Assistant instance
+        entity_id: Entity ID to check
+        seconds: Seconds to travel per execution
+        minutes: Minutes to travel per execution
+        hours: Hours to travel per execution
+        pos_calls: Optional position calls list to log
+        tilt_calls: Optional tilt calls list to log
+        with_attributes: Include attributes in log
+        executions: Number of times to execute the time travel (default: 1)
+
+    Returns:
+        State object of the entity after the last execution
+    """
+    state = None
+
+    for _ in range(executions):
+        await time_travel_func(seconds=seconds, minutes=minutes, hours=hours)
+
+        # Log cover position und state auf einer Zeile
+        if pos_calls is not None and tilt_calls is not None:
+            height, angle = get_cover_position(pos_calls, tilt_calls)
+            state = hass.states.get(entity_id)
+
+            if with_attributes:
+                _LOGGER.info("Height/Angle: %s/%s, %s: %s, Attributes: %s", height, angle, entity_id, state.state, state.attributes)
+            else:
+                _LOGGER.info("Height/Angle: %s/%s, %s: %s", height, angle, entity_id, state.state)
+        else:
+            state = await get_entity_and_show_state(hass, entity_id, with_attributes=with_attributes)
+
+    return state
