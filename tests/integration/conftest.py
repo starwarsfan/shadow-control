@@ -533,53 +533,63 @@ def assert_equal(actual, expected, context: str = "Value") -> None:
     """Assert that actual equals expected with readable error message.
 
     Handles Enums automatically by comparing .value attributes.
+    Handles numeric comparisons (int, float, string) flexibly.
 
     Args:
-        actual: Actual value (can be string, int, enum, etc.)
-        expected: Expected value (can be string, int, enum, etc.)
+        actual: Actual value (can be string, int, float, enum, etc.)
+        expected: Expected value (can be string, int, float, enum, etc.)
         context: Context for error message (e.g., "Lock state", "Height")
     """
     # Handle Enums
     expected_val = expected.value if hasattr(expected, "value") else expected
     actual_val = actual.value if hasattr(actual, "value") else actual
 
-    # Convert to same type for comparison
-    if isinstance(expected_val, int) and isinstance(actual_val, str):
-        actual_val = int(actual_val)
-    elif isinstance(expected_val, str) and isinstance(actual_val, int):
-        actual_val = str(actual_val)
+    # Try numeric comparison first (handles "100" vs "100.0" vs 100 vs 100.0)
+    try:
+        expected_num = float(expected_val)
+        actual_num = float(actual_val)
+        expected_val = expected_num
+        actual_val = actual_num
+    except (ValueError, TypeError):
+        # Not numeric, keep as-is for string/other comparison
+        pass
 
     expected_name = expected.name if hasattr(expected, "name") else expected_val
 
     assert actual_val == expected_val, f"{context} should be {expected_name} ({expected_val}), but is {actual_val}"
 
-    # Success log
-    _LOGGER.info("✓ %s is %s (%s) as expected", context, expected_name, expected_val)
+    # Bei Erfolg: Log it!
+    _LOGGER.info("✓ %s is %s (%s)", context, expected_name, expected_val)
 
 
 def assert_not_equal(actual, expected, context: str = "Value") -> None:
     """Assert that actual does NOT equal expected with readable error message.
 
     Handles Enums automatically by comparing .value attributes.
+    Handles numeric comparisons (int, float, string) flexibly.
 
     Args:
-        actual: Actual value (can be string, int, enum, etc.)
-        expected: Expected value (can be string, int, enum, etc.)
+        actual: Actual value (can be string, int, float, enum, etc.)
+        expected: Expected value (can be string, int, float, enum, etc.)
         context: Context for error message (e.g., "Lock state", "Height")
     """
     # Handle Enums
     expected_val = expected.value if hasattr(expected, "value") else expected
     actual_val = actual.value if hasattr(actual, "value") else actual
 
-    # Convert to same type for comparison
-    if isinstance(expected_val, int) and isinstance(actual_val, str):
-        actual_val = int(actual_val)
-    elif isinstance(expected_val, str) and isinstance(actual_val, int):
-        actual_val = str(actual_val)
+    # Try numeric comparison first (handles "100" vs "100.0" vs 100 vs 100.0)
+    try:
+        expected_num = float(expected_val)
+        actual_num = float(actual_val)
+        expected_val = expected_num
+        actual_val = actual_num
+    except (ValueError, TypeError):
+        # Not numeric, keep as-is for string/other comparison
+        pass
 
     expected_name = expected.name if hasattr(expected, "name") else expected_val
 
     assert actual_val != expected_val, f"{context} should NOT be {expected_name} ({expected_val}), but it is"
 
-    # Success log
-    _LOGGER.info("✓ %s is NOT %s (%s) as expected, actual: %s", context, expected_name, expected_val, actual_val)
+    # Bei Erfolg: Log it!
+    _LOGGER.info("✓ %s is NOT %s (%s), actual: %s", context, expected_name, expected_val, actual_val)
