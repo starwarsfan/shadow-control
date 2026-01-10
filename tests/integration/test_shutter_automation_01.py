@@ -9,9 +9,10 @@ from custom_components.shadow_control import ShutterState
 from custom_components.shadow_control.const import DOMAIN
 from tests.integration.conftest import (
     get_entity_and_show_state,
+    set_sun_position,
     setup_instance,
     show_instance_entity_states,
-    time_travel_and_check, set_sun_position,
+    time_travel_and_check,
 )
 
 _LOGGER = logging.getLogger(__name__)
