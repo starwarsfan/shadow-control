@@ -4,7 +4,7 @@
 # import json
 import logging
 import math
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from enum import Enum
 from functools import partial
 from typing import TYPE_CHECKING, Any
@@ -1015,7 +1015,7 @@ class ShadowControlManager:
 
         # Unlock grace period active? Skip manual movement check
         if self._last_unlock_time is not None:
-            elapsed_since_unlock = (datetime.now(UTC) - self._last_unlock_time).total_seconds()
+            elapsed_since_unlock = (dt_util.utcnow() - self._last_unlock_time).total_seconds()
             unlock_grace_period = self._facade_config.max_movement_duration
 
             if elapsed_since_unlock < unlock_grace_period:
@@ -1114,7 +1114,7 @@ class ShadowControlManager:
 
         # Set unlock time if external entity get's unlocked
         if old_state and old_state.state == STATE_ON and new_state.state == STATE_OFF:
-            self._last_unlock_time = datetime.now(UTC)
+            self._last_unlock_time = dt_util.utcnow()
             self.logger.debug("External lock disabled, setting unlock grace period")
 
         # Get internal lock switch
@@ -1628,7 +1628,7 @@ class ShadowControlManager:
                     if new_state.state == "off" and not self._dynamic_config.lock_integration_with_position:
                         # Lock DISABLED
                         self.logger.info("Simple lock was disabled -> waiting for next trigger to reposition")
-                        self._last_unlock_time = datetime.now(UTC)
+                        self._last_unlock_time = dt_util.utcnow()
                         self._previous_shutter_height = self._height_during_lock_state
                         self._previous_shutter_angle = self._angle_during_lock_state
 
@@ -2199,7 +2199,7 @@ class ShadowControlManager:
         self._update_extra_state_attributes()
 
         if send_height_command or send_angle_command:
-            self._last_positioning_time = datetime.now(UTC)
+            self._last_positioning_time = dt_util.utcnow()
             self._last_calculated_height = self.used_shutter_height
             self._last_calculated_angle = self.used_shutter_angle
 
@@ -3553,7 +3553,7 @@ class ShadowControlManager:
             self.logger.warning("max_movement_duration is None, using default 30 seconds")
             grace_period = SCDefaults.MAX_MOVEMENT_DURATION_VALUE.value
 
-        elapsed = (datetime.now(UTC) - self._last_positioning_time).total_seconds()
+        elapsed = (dt_util.utcnow() - self._last_positioning_time).total_seconds()
 
         is_in_progress = elapsed < grace_period
 
@@ -3942,7 +3942,7 @@ class ShadowControlManager:
     def get_remaining_timer_seconds(self) -> float | None:
         """Return remaining time of running timer or None if no timer is running."""
         if self._timer and self._timer_start_time and self._timer_duration_seconds is not None:
-            elapsed_time = (datetime.now(UTC) - self._timer_start_time).total_seconds()
+            elapsed_time = (dt_util.utcnow() - self._timer_start_time).total_seconds()  # ← GEÄNDERT
             remaining_time = self._timer_duration_seconds - elapsed_time
             return max(0.0, remaining_time)  # Only positive values
         return None

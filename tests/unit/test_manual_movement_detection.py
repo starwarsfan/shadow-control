@@ -1,10 +1,11 @@
 """Tests for manual movement detection and auto-lock."""
 
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.core import Event
+from homeassistant.util import dt as dt_util
 
 from custom_components.shadow_control import ShadowControlManager
 from custom_components.shadow_control.const import ShutterType
@@ -69,7 +70,7 @@ class TestManualMovementDetection:
     def test_is_positioning_in_progress_yes(self, manager):
         """Test positioning check returns True when within timer duration."""
         # Positioning happened 10 seconds ago, timer is 30 seconds
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=10)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
         manager._facade_config.max_movement_duration = 30.0
 
         result = manager._is_positioning_in_progress()  # ← Kein await mehr!
@@ -79,7 +80,7 @@ class TestManualMovementDetection:
     def test_is_positioning_in_progress_no(self, manager):
         """Test positioning check returns False when timer expired."""
         # Positioning happened 40 seconds ago, timer is 30 seconds
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
         manager._facade_config.max_movement_duration = 30.0
 
         result = manager._is_positioning_in_progress()  # ← Kein await mehr!
@@ -119,7 +120,7 @@ class TestManualMovementDetection:
     async def test_no_auto_lock_within_grace_period(self, manager):
         """Test that no auto-lock is triggered when positioning timer is active."""
         # Set last positioning to 5 seconds ago (timer: 30s)
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=5)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=5)
         manager._last_calculated_height = 80.0
         manager._last_calculated_angle = 45.0
 

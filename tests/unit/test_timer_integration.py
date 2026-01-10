@@ -1,11 +1,12 @@
 """Tests for timer-based positioning integration."""
 
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import Event, HomeAssistant, State
+from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.shadow_control import ShadowControlManager
@@ -92,7 +93,7 @@ class TestTimerIntegration:
         """Test that new positioning resets the timer."""
 
         # First positioning
-        first_time = datetime.now(UTC)
+        first_time = dt_util.utcnow()
         manager._last_positioning_time = first_time
         manager._last_reported_height = 30.0
         manager._last_reported_angle = 20.0
@@ -127,7 +128,7 @@ class TestTimerIntegration:
         """Test no auto-lock when position matches after timer."""
 
         # Set positioning time 40 seconds ago (timer: 30s)
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
         manager._last_calculated_height = 50.0
         manager._last_calculated_angle = 45.0
 
@@ -154,7 +155,7 @@ class TestTimerIntegration:
         """Test auto-lock when position differs after timer."""
 
         # Set positioning time 40 seconds ago (timer: 30s)
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
         manager._last_calculated_height = 50.0
         manager._last_calculated_angle = 45.0
 
@@ -181,7 +182,7 @@ class TestTimerIntegration:
         """Test no validation when timer still running."""
 
         # Set positioning time 10 seconds ago (timer: 30s - still running!)
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=10)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
         manager._last_reported_height = 30.0
         manager._last_reported_angle = 20.0
 
@@ -218,7 +219,7 @@ class TestTimerIntegration:
         """Test no auto-lock when no position reported during timer."""
 
         # Set positioning time 40 seconds ago (timer: 30s)
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
 
         # NO reported position (cover didn't report back?)
         manager._last_reported_height = None
@@ -244,7 +245,7 @@ class TestTimerIntegration:
         manager._facade_config.shutter_type = ShutterType.MODE3
 
         # Set positioning time 40 seconds ago
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
         manager._last_calculated_height = 50.0
         manager._last_calculated_angle = 45.0
 
@@ -267,17 +268,17 @@ class TestTimerIntegration:
     async def test_unlock_during_timer_grace_period_active(self, manager):
         """Test that unlock during timer activates grace period."""
         # Positioning timer is running
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=10)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
 
         # User unlocks
-        manager._last_unlock_time = datetime.now(UTC)
+        manager._last_unlock_time = dt_util.utcnow()
 
         # Both timers should be active
         assert manager._is_positioning_in_progress() is True
 
         # Simulate manual movement would normally trigger auto-lock
         # But unlock grace period prevents it
-        elapsed_unlock = (datetime.now(UTC) - manager._last_unlock_time).total_seconds()
+        elapsed_unlock = (dt_util.utcnow() - manager._last_unlock_time).total_seconds()
         assert elapsed_unlock < manager._facade_config.max_movement_duration
 
     # ========================================================================
@@ -287,7 +288,7 @@ class TestTimerIntegration:
     async def test_multiple_positioning_dawn_sequence(self, manager):
         """Test multiple positioning commands (like dawn sequence)."""
         # First positioning: Lookthrough position
-        first_time = datetime.now(UTC)
+        first_time = dt_util.utcnow()
         manager._last_positioning_time = first_time
         manager._last_calculated_height = 30.0  # Lookthrough
         manager._last_calculated_angle = 50.0
@@ -322,7 +323,7 @@ class TestTimerIntegration:
     async def test_timer_expired_position_within_tolerance(self, manager):
         """Test no auto-lock when position within tolerance after timer."""
         # Set positioning time 40 seconds ago
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
         manager._last_calculated_height = 50.0
         manager._last_calculated_angle = 45.0
 
@@ -343,7 +344,7 @@ class TestTimerIntegration:
     async def test_timer_expired_height_ok_angle_differs(self, manager):
         """Test auto-lock when height OK but angle differs."""
         # Set positioning time 40 seconds ago
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
         manager._last_calculated_height = 50.0
         manager._last_calculated_angle = 45.0
 
@@ -364,7 +365,7 @@ class TestTimerIntegration:
     async def test_timer_expired_angle_ok_height_differs(self, manager):
         """Test auto-lock when angle OK but height differs."""
         # Set positioning time 40 seconds ago
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
         manager._last_calculated_height = 50.0
         manager._last_calculated_angle = 45.0
 
@@ -386,7 +387,7 @@ class TestTimerIntegration:
         """Test external lock sync works during positioning timer."""
 
         # Timer is running
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=10)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
 
         # Simulate external lock entity state change
         manager._config = {"lock_integration_entity": "input_boolean.external_lock"}
@@ -476,7 +477,7 @@ class TestTimerIntegration:
         assert manager._last_unlock_time is not None
 
         # Verify it's recent
-        elapsed = (datetime.now(UTC) - manager._last_unlock_time).total_seconds()
+        elapsed = (dt_util.utcnow() - manager._last_unlock_time).total_seconds()
         assert elapsed < 1.0  # Should be very recent
 
     # ========================================================================
@@ -486,7 +487,7 @@ class TestTimerIntegration:
     async def test_timer_expired_extreme_position_difference(self, manager):
         """Test auto-lock with extreme position differences."""
         # Set positioning time 40 seconds ago
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
         manager._last_calculated_height = 50.0
         manager._last_calculated_angle = 45.0
 
@@ -511,13 +512,13 @@ class TestTimerIntegration:
         manager._facade_config.max_movement_duration = None
 
         # Set positioning time
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=10)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
 
         # Timer should still work with default value
         assert manager._is_positioning_in_progress() is True
 
         # After default time (30s from SCDefaults), timer should expire
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=35)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=35)
         assert manager._is_positioning_in_progress() is False
 
     # ========================================================================
@@ -527,14 +528,14 @@ class TestTimerIntegration:
     async def test_positioning_during_unlock_grace_period(self, manager):
         """Test positioning can happen during unlock grace period."""
         # Set unlock time 5 seconds ago
-        manager._last_unlock_time = datetime.now(UTC) - timedelta(seconds=5)
+        manager._last_unlock_time = dt_util.utcnow() - timedelta(seconds=5)
 
         # Unlock grace period is still active
-        elapsed = (datetime.now(UTC) - manager._last_unlock_time).total_seconds()
+        elapsed = (dt_util.utcnow() - manager._last_unlock_time).total_seconds()
         assert elapsed < manager._facade_config.max_movement_duration
 
         # New positioning starts
-        manager._last_positioning_time = datetime.now(UTC)
+        manager._last_positioning_time = dt_util.utcnow()
 
         # Both grace periods are active
         assert manager._is_positioning_in_progress() is True
@@ -550,7 +551,7 @@ class TestTimerIntegration:
         """Test cover state changes during timer are stored."""
 
         # Timer is running
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=10)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
         manager._last_calculated_height = 50.0
         manager._last_calculated_angle = 45.0
 
@@ -594,7 +595,7 @@ class TestTimerIntegration:
         """Test cover state change after timer triggers auto-lock check."""
 
         # Timer has expired (40s ago, timer is 30s)
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
         manager._last_calculated_height = 50.0
         manager._last_calculated_angle = 45.0
 
@@ -711,7 +712,7 @@ class TestTimerIntegration:
     async def test_cover_state_change_unlock_grace_period_active(self, manager):
         """Test cover state change ignored during unlock grace period."""
         # Set unlock time 5 seconds ago
-        manager._last_unlock_time = datetime.now(UTC) - timedelta(seconds=5)
+        manager._last_unlock_time = dt_util.utcnow() - timedelta(seconds=5)
 
         # Bind real method
         manager._async_target_cover_entity_state_change_listener = ShadowControlManager._async_target_cover_entity_state_change_listener.__get__(
@@ -752,7 +753,7 @@ class TestTimerIntegration:
         manager._facade_config.shutter_type = ShutterType.MODE3
 
         # Timer is running
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=10)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
         manager._last_calculated_height = 50.0
         manager._last_calculated_angle = 0.0  # Mode3 has no angle
 
@@ -836,7 +837,7 @@ class TestTimerIntegration:
     async def test_complete_dawn_sequence_flow(self, manager):
         """Test complete dawn sequence: Lookthrough → Wait → Open."""
         # Step 1: First positioning to lookthrough
-        first_time = datetime.now(UTC)
+        first_time = dt_util.utcnow()
         manager._last_positioning_time = first_time
         manager._last_calculated_height = 30.0  # Lookthrough height
         manager._last_calculated_angle = 50.0  # Lookthrough angle
@@ -918,7 +919,7 @@ class TestTimerIntegration:
         assert manager._last_reported_angle == 100.0  # 100 - 0
 
         # Wait for timer to expire
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
 
         # Check positioning completed
         await manager._check_positioning_completed()

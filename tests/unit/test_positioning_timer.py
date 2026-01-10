@@ -1,9 +1,10 @@
 """Tests for positioning timer and completion check."""
 
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from homeassistant.util import dt as dt_util
 
 from custom_components.shadow_control import ShadowControlManager
 from custom_components.shadow_control.const import ShutterType
@@ -45,7 +46,7 @@ class TestPositioningTimer:
 
     async def test_check_positioning_timer_still_running(self, manager):
         """Test that check does nothing when timer still running."""
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=10)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
         manager._last_reported_height = 78.0
         manager._last_reported_angle = 43.0
 
@@ -62,7 +63,7 @@ class TestPositioningTimer:
 
     async def test_check_positioning_timer_expired_position_matches(self, manager):
         """Test that no auto-lock when position matches after timer."""
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
         manager._last_reported_height = 80.0  # Matches target
         manager._last_reported_angle = 45.0  # Matches target
 
@@ -81,7 +82,7 @@ class TestPositioningTimer:
 
     async def test_check_positioning_timer_expired_position_differs(self, manager):
         """Test that auto-lock when position differs after timer."""
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
         manager._last_reported_height = 50.0  # Differs from target (80.0)
         manager._last_reported_angle = 30.0  # Differs from target (45.0)
 
@@ -114,7 +115,7 @@ class TestPositioningTimer:
     async def test_check_positioning_mode3_only_height(self, manager):
         """Test Mode3 only checks height, not angle."""
         manager._facade_config.shutter_type = ShutterType.MODE3
-        manager._last_positioning_time = datetime.now(UTC) - timedelta(seconds=40)
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
         manager._last_reported_height = 80.0  # Matches
         manager._last_reported_angle = None  # No angle in Mode3
 
