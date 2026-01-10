@@ -212,10 +212,14 @@ def use_real_timers():
 
 
 @pytest.fixture
-def time_travel(hass: HomeAssistant):
+def time_travel(hass: HomeAssistant, freezer):
     """Fixture zum Zeitsprung für Timer-Tests.
 
-    Diese Fixture funktioniert mit async_call_later Timern.
+    Diese Fixture funktioniert mit async_track_point_in_utc_time und async_call_later Timern.
+
+    Args:
+        hass: Home Assistant instance
+        freezer: pytest-freezegun freezer fixture
     """
 
     async def _travel(*, seconds: int = 0, minutes: int = 0, hours: int = 0):
@@ -223,9 +227,14 @@ def time_travel(hass: HomeAssistant):
         delta = timedelta(seconds=seconds, minutes=minutes, hours=hours)
         total_seconds = delta.total_seconds()
         logging.getLogger().info("Time traveling %s seconds...", total_seconds)
+
+        # Berechne Zielzeit
         target_time = dt_util.utcnow() + delta
 
-        # Wichtig: async_fire_time_changed triggert async_call_later Timer
+        # Bewege freezegun Zeit
+        freezer.move_to(target_time)
+
+        # Wichtig: async_fire_time_changed triggert HA Timer
         async_fire_time_changed(hass, target_time)
 
         # Gib HA Zeit alle Timer-Callbacks zu verarbeiten
