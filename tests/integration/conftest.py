@@ -113,13 +113,13 @@ async def mock_minimal_entities(hass: HomeAssistant):
             "cover_position": {
                 "min": 0,
                 "max": 100,
-                "initial": 50,
+                "initial": 100,  # Full HA-open
                 "name": "Cover Position",
             },
             "cover_tilt_position": {
                 "min": 0,
-                "max": 90,
-                "initial": 45,
+                "max": 100,
+                "initial": 100,  # Full HA-open
                 "name": "Cover Tilt Position",
             },
             "d01_brightness": {
@@ -302,6 +302,24 @@ def update_sun(hass: HomeAssistant):
         brightness: float | None = None,
     ):
         """Update sun position via input_numbers."""
+        prev_elevation = hass.states.get("input_number.d03_sun_elevation")
+        prev_azimuth = hass.states.get("input_number.d04_sun_azimuth")
+        prev_brightness = hass.states.get("input_number.d01_brightness")
+
+        prev_elev_val = float(prev_elevation.state) if prev_elevation else "N/A"
+        prev_azi_val = float(prev_azimuth.state) if prev_azimuth else "N/A"
+        prev_bright_val = float(prev_brightness.state) if prev_brightness else "N/A"
+
+        _LOGGER.info(
+            "Set elevation=%s->%s, azimuth=%s->%s, brightness=%s->%s",
+            prev_elev_val,
+            elevation,
+            prev_azi_val,
+            azimuth,
+            prev_bright_val,
+            brightness if brightness is not None else prev_bright_val,
+        )
+
         await hass.services.async_call(
             "input_number",
             "set_value",
