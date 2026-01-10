@@ -98,6 +98,9 @@ async def setup_from_user_config(hass: HomeAssistant, mock_minimal_entities):
         # im Test nicht manipuliert wird
         options_dict = dict(raw_config)
 
+        # Entferne "name" aus options, da es in data ist
+        options_dict.pop("name", None)
+
         entry = MockConfigEntry(
             domain=DOMAIN,
             title=instance_name,
