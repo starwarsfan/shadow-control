@@ -122,6 +122,23 @@ TEST_CONFIG = {
 }
 
 
+async def test_show_setup(
+    hass: HomeAssistant,
+    setup_from_user_config,
+    time_travel,
+    caplog,
+):
+    """Not really a test but show whole instance configuration."""
+
+    # Counter to distinct repeated outputs on the log
+    step = count(1)
+
+    # === INIT =====================================================================================
+    _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+
+    await show_instance_entity_states(hass, next(step))
+
+
 async def test_lock(
     hass: HomeAssistant,
     setup_from_user_config,
