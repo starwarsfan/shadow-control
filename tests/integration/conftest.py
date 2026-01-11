@@ -245,8 +245,8 @@ def time_travel(hass: HomeAssistant, freezer):
     async def _travel(*, seconds: int = 0, minutes: int = 0, hours: int = 0):
         """Spring in der Zeit vorwärts."""
         delta = timedelta(seconds=seconds, minutes=minutes, hours=hours)
-        total_seconds = delta.total_seconds()
-        logging.getLogger().info("Time traveling %s seconds...", total_seconds)
+        #total_seconds = delta.total_seconds()
+        #logging.getLogger().info("Time traveling %s seconds...", total_seconds)
 
         # Berechne Zielzeit
         target_time = dt_util.utcnow() + delta
@@ -383,19 +383,21 @@ async def simulate_manual_cover_change(
 
 
 async def time_travel_and_check(
-    time_travel_func,
-    hass: HomeAssistant,
-    entity_id: str,
-    *,
-    seconds: int = 0,
-    minutes: int = 0,
-    hours: int = 0,
-    pos_calls=None,
-    tilt_calls=None,
-    with_attributes: bool = False,
-    executions: int = 1,
+        time_travel_func,
+        hass: HomeAssistant,
+        entity_id: str,
+        *,
+        seconds: int = 0,
+        minutes: int = 0,
+        hours: int = 0,
+        pos_calls=None,
+        tilt_calls=None,
+        with_attributes: bool = False,
+        executions: int = 1,
 ) -> State:
     """Time travel and return entity state.
+
+    Logs only at start, on state changes, and at end to reduce output.
 
     Args:
         time_travel_func: The time_travel fixture function
@@ -412,22 +414,55 @@ async def time_travel_and_check(
     Returns:
         State object of the entity after the last execution
     """
-    state = None
-
-    for _ in range(executions):
-        await time_travel_func(seconds=seconds, minutes=minutes, hours=hours)
-
-        # Log cover position und state auf einer Zeile
+    def get_current_state_info():
+        """Get current state and position info."""
+        state = hass.states.get(entity_id)
         if pos_calls is not None and tilt_calls is not None:
             height, angle = get_cover_position(pos_calls, tilt_calls)
-            state = hass.states.get(entity_id)
+            return state, height, angle
+        return state, None, None
 
+    def log_state(state, height, angle, prefix=""):
+        """Log state with optional position info."""
+        if height is not None and angle is not None:
             if with_attributes:
-                _LOGGER.info("Height/Angle: %s/%s, %s: %s, Attributes: %s", height, angle, entity_id, state.state, state.attributes)
+                _LOGGER.info("%-12s → Height/Angle: %-12s %s: %s, Attributes: %s",
+                             prefix, f"{height}/{angle},", entity_id, state.state, state.attributes)
             else:
-                _LOGGER.info("Height/Angle: %s/%s, %s: %s", height, angle, entity_id, state.state)
+                _LOGGER.info("%-12s → Height/Angle: %-12s %s: %s",
+                             prefix, f"{height}/{angle},", entity_id, state.state)
         else:
-            state = await get_entity_and_show_state(hass, entity_id, with_attributes=with_attributes)
+            if with_attributes:
+                _LOGGER.info("%-12s → %s: %s, Attributes: %s",
+                             prefix, entity_id, state.state, state.attributes)
+            else:
+                _LOGGER.info("%-12s → %s: %s",
+                             prefix, entity_id, state.state)
+
+    # 1. Initial state
+    state, height, angle = get_current_state_info()
+    log_state(state, height, angle, "Initial")
+    previous_state_value = state.state
+
+    total_seconds_traveled = 0
+    seconds_per_iteration = seconds + (minutes * 60) + (hours * 3600)
+
+    # 2-4. Time travel loop
+    for i in range(executions):
+        # Time travel (silent)
+        await time_travel_func(seconds=seconds, minutes=minutes, hours=hours)
+        total_seconds_traveled += seconds_per_iteration
+
+        # Check new state
+        state, height, angle = get_current_state_info()
+
+        # Log only on state change or last iteration
+        if state.state != previous_state_value:
+            log_state(state, height, angle, f"After {total_seconds_traveled}s")
+            previous_state_value = state.state
+        elif i == executions - 1:
+            # Last iteration: always log
+            log_state(state, height, angle, f"Final ({total_seconds_traveled}s)")
 
     return state
 
