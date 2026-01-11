@@ -158,7 +158,6 @@ async def test_lock(
     assert_equal(state1.state, LockState.UNLOCKED, "Lock state")
 
     await set_lock_state(hass, "sc_test_instance", lock=True)
-    await hass.async_block_till_done()
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -194,7 +193,6 @@ async def test_lock_with_position(
     assert_equal(state1.state, LockState.UNLOCKED, "Lock state")
 
     await set_lock_state(hass, "sc_test_instance", lock_with_position=True)
-    await hass.async_block_till_done()
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -230,7 +228,6 @@ async def test_lock_then_lock_with_position(
     assert_equal(state1.state, LockState.UNLOCKED, "Lock state")
 
     await set_lock_state(hass, "sc_test_instance", lock=True)
-    await hass.async_block_till_done()
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -247,7 +244,6 @@ async def test_lock_then_lock_with_position(
     assert_equal(state2.state, LockState.LOCKED_MANUALLY, "Lock state")
 
     await set_lock_state(hass, "sc_test_instance", lock_with_position=True)
-    await hass.async_block_till_done()
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -283,7 +279,6 @@ async def test_lock_with_position_then_lock(
     assert_equal(state1.state, LockState.UNLOCKED, "Lock state")
 
     await set_lock_state(hass, "sc_test_instance", lock_with_position=True)
-    await hass.async_block_till_done()
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -300,7 +295,6 @@ async def test_lock_with_position_then_lock(
     assert_equal(state2.state, LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION, "Lock state")
 
     await set_lock_state(hass, "sc_test_instance", lock=True)
-    await hass.async_block_till_done()
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls

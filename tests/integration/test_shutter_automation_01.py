@@ -217,7 +217,6 @@ async def test_shadow_full_closed(
 
     # === Shadow -> close ==========================================================================
     await set_sun_position(hass, elevation=60, azimuth=180, brightness=70000)
-    await hass.async_block_till_done()
 
     # Prüfe ob Timer gestartet wurde
     state2 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
@@ -259,7 +258,6 @@ async def test_full_run_without_assert(
 
     # === open -> close (shadow) ===================================================================
     await set_sun_position(hass, elevation=60, azimuth=180, brightness=70000)
-    await hass.async_block_till_done()
     # await asyncio.sleep(4)
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -267,35 +265,30 @@ async def test_full_run_without_assert(
 
     # === close -> open=============================================================================
     await set_sun_position(hass, elevation=60, azimuth=180, brightness=5000)
-    await hass.async_block_till_done()
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
     # === open -> close ============================================================================
     await set_sun_position(hass, elevation=60, azimuth=180, brightness=70000)
-    await hass.async_block_till_done()
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
     # === close -> open ============================================================================
     await set_sun_position(hass, elevation=60, azimuth=180, brightness=5000)
-    await hass.async_block_till_done()
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
     # === open -> close (dawn) =====================================================================
     await set_sun_position(hass, elevation=60, azimuth=180, brightness=400)
-    await hass.async_block_till_done()
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
     # === close -> open (dawn) =====================================================================
     await set_sun_position(hass, elevation=60, azimuth=180, brightness=5000)
-    await hass.async_block_till_done()
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
@@ -318,7 +311,6 @@ async def test_dawn_full_closed(
 
     # === Dawn -> close ============================================================================
     await set_sun_position(hass, elevation=60, azimuth=180, brightness=100)
-    await hass.async_block_till_done()
 
     # Prüfe ob Timer gestartet wurde
     state2 = await time_travel_and_check(
@@ -365,7 +357,6 @@ async def test_look_through_after_dawn_full_closed(
 
     # === Dawn -> close ============================================================================
     await set_sun_position(hass, elevation=60, azimuth=180, brightness=100)
-    await hass.async_block_till_done()
 
     # Prüfe ob Timer gestartet wurde
     state2 = await time_travel_and_check(
@@ -395,7 +386,6 @@ async def test_look_through_after_dawn_full_closed(
     # === After Dawn -> Lookthrough timer started ==================================================
     # Trigger Shadow (sollte Timer starten)
     await set_sun_position(hass, elevation=60, azimuth=180, brightness=5000)
-    await hass.async_block_till_done()
 
     # Prüfe ob Timer gestartet wurde
     state4 = await time_travel_and_check(
