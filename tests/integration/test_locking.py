@@ -147,15 +147,9 @@ async def test_lock(
 ):
     """Test Timer mit Time Travel."""
 
-    # Counter to distinct repeated outputs on the log
-    step = count(1)
-
     # === INIT =====================================================================================
     pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
 
-    await show_instance_entity_states(hass, next(step))
-
-    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=2, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
@@ -166,7 +160,6 @@ async def test_lock(
     await set_lock_state(hass, "sc_test_instance", lock=True)
     await hass.async_block_till_done()
 
-    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_lock_state")
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
@@ -190,15 +183,9 @@ async def test_lock_with_position(
 ):
     """Test Timer mit Time Travel."""
 
-    # Counter to distinct repeated outputs on the log
-    step = count(1)
-
     # === INIT =====================================================================================
     pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
 
-    await show_instance_entity_states(hass, next(step))
-
-    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=2, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
@@ -209,7 +196,6 @@ async def test_lock_with_position(
     await set_lock_state(hass, "sc_test_instance", lock_with_position=True)
     await hass.async_block_till_done()
 
-    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_lock_state")
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
@@ -233,15 +219,9 @@ async def test_lock_then_lock_with_position(
 ):
     """Test Timer mit Time Travel."""
 
-    # Counter to distinct repeated outputs on the log
-    step = count(1)
-
     # === INIT =====================================================================================
     pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
 
-    await show_instance_entity_states(hass, next(step))
-
-    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=2, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
@@ -252,7 +232,6 @@ async def test_lock_then_lock_with_position(
     await set_lock_state(hass, "sc_test_instance", lock=True)
     await hass.async_block_till_done()
 
-    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_lock_state")
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
@@ -270,7 +249,6 @@ async def test_lock_then_lock_with_position(
     await set_lock_state(hass, "sc_test_instance", lock_with_position=True)
     await hass.async_block_till_done()
 
-    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_lock_state")
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
@@ -294,15 +272,9 @@ async def test_lock_with_position_then_lock(
 ):
     """Test Timer mit Time Travel."""
 
-    # Counter to distinct repeated outputs on the log
-    step = count(1)
-
     # === INIT =====================================================================================
     pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
 
-    await show_instance_entity_states(hass, next(step))
-
-    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=2, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
@@ -313,7 +285,6 @@ async def test_lock_with_position_then_lock(
     await set_lock_state(hass, "sc_test_instance", lock_with_position=True)
     await hass.async_block_till_done()
 
-    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_lock_state")
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
@@ -331,7 +302,6 @@ async def test_lock_with_position_then_lock(
     await set_lock_state(hass, "sc_test_instance", lock=True)
     await hass.async_block_till_done()
 
-    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_lock_state")
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
@@ -357,15 +327,10 @@ async def test_lock_with_position_then_lock(
 )
 async def test_auto_lock_on_manual_change(hass: HomeAssistant, setup_from_user_config, time_travel, caplog, shutter_type, check_angle):
     """Test that SC auto-locks when user manually moves cover."""
-    # Counter to distinct repeated outputs on the log
-    step = count(1)
-
     # === INIT =====================================================================================
     config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
     config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
     pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
-
-    await show_instance_entity_states(hass, next(step))
 
     _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
 
