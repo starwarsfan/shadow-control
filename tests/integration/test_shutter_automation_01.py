@@ -3,6 +3,7 @@
 import logging
 from itertools import count
 
+import pytest
 from homeassistant.core import HomeAssistant
 
 from custom_components.shadow_control import ShutterState
@@ -337,16 +338,21 @@ async def test_dawn_full_closed(
     assert tilt_calls[-1].data["tilt_position"] == 0  # KNX: 100% geschlossen
 
 
-async def test_look_through_after_dawn_full_closed(
-    hass: HomeAssistant,
-    setup_from_user_config,
-    time_travel,
-    caplog,
-):
+@pytest.mark.parametrize(
+    ("shutter_type", "check_angle"),
+    [
+        ("mode1", True),
+        ("mode2", True),
+        ("mode3", False),
+    ],
+)
+async def test_look_through_after_dawn_full_closed(hass: HomeAssistant, setup_from_user_config, time_travel, caplog, shutter_type, check_angle):
     """Test Timer mit Time Travel."""
 
     # === INIT =====================================================================================
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+    config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
+    config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
 
     # Initial instance state
     state1 = await time_travel_and_check(
@@ -380,8 +386,9 @@ async def test_look_through_after_dawn_full_closed(
 
     assert len(pos_calls) > 0
     assert pos_calls[-1].data["position"] == 0  # KNX: 100% geschlossen
-    assert len(tilt_calls) > 0
-    assert tilt_calls[-1].data["tilt_position"] == 0  # KNX: 100% geschlossen
+    if check_angle:
+        assert len(tilt_calls) > 0
+        assert tilt_calls[-1].data["tilt_position"] == 0  # KNX: 100% geschlossen
 
     # === After Dawn -> Lookthrough timer started ==================================================
     # Trigger Shadow (sollte Timer starten)
@@ -409,8 +416,9 @@ async def test_look_through_after_dawn_full_closed(
 
     assert len(pos_calls) > 0
     assert pos_calls[-1].data["position"] == 100  # KNX: 0% (offen)
-    assert len(tilt_calls) > 0
-    assert tilt_calls[-1].data["tilt_position"] == 100  # KNX: 0% (offen)
+    if check_angle:
+        assert len(tilt_calls) > 0
+        assert tilt_calls[-1].data["tilt_position"] == 100  # KNX: 0% (offen)
 
 
 # async def test_debug_mode(hass, setup_from_user_config):
