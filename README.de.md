@@ -870,8 +870,8 @@ Ausgabe dazu:
 [hainstall]: https://my.home-assistant.io/redirect/config_flow_start/?domain=shadow_control
 [hainstallbadge]: https://img.shields.io/badge/dynamic/json?style=for-the-badge&logo=home-assistant&logoColor=ccc&label=usage&suffix=%20installs&cacheSeconds=15600&url=https://analytics.home-assistant.io/custom_integrations.json&query=$.shadow_control.total
 
-[tests]: https://github.com/starwarsfan/shadow-control/actions/workflows/test.yml
-[tests-badge]: https://img.shields.io/github/actions/workflow/status/starwarsfan/shadow-control/test.yml?style=for-the-badge&logo=github&logoColor=ccc&label=Tests
+[tests]: https://github.com/starwarsfan/shadow-control/actions/workflows/unittest.yml
+[tests-badge]: https://img.shields.io/github/actions/workflow/status/starwarsfan/shadow-control/unittest.yml?style=for-the-badge&logo=github&logoColor=ccc&label=Tests
 
 [coverage]: https://app.codecov.io/github/starwarsfan/shadow-control
 [coverage-badge]: https://img.shields.io/codecov/c/github/starwarsfan/shadow-control?style=for-the-badge&logo=codecov&logoColor=ccc&label=Coverage
