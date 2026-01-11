@@ -55,10 +55,7 @@ async def test_minimal_config_loads(
 ):
     """Test dass minimale Config lädt."""
 
-    # Counter to distinct repeated outputs on the log
-    # step = count(1)
-
-    # Setup instance
+    # === INIT =====================================================================================
     _, _ = await setup_instance(caplog, hass, setup_from_user_config, MINIMAL_CONFIG)
 
     # Integration sollte geladen sein
@@ -76,10 +73,7 @@ async def test_show_initial_state(
 ):
     """Debug: Zeige Initial State."""
 
-    # Counter to distinct repeated outputs on the log
-    step = count(1)
-
-    # Setup instance
+    # === INIT =====================================================================================
     _, _ = await setup_instance(caplog, hass, setup_from_user_config, MINIMAL_CONFIG)
 
     # 2. Prüfen, ob die Entität überhaupt schon im State-Machine ist
@@ -89,9 +83,6 @@ async def test_show_initial_state(
 
     hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
     await hass.async_block_till_done()
-
-    # Zeige alle Shadow Control Entities
-    await show_instance_entity_states(hass, next(step))
 
     # Prüfe gezielt einen Wert aus 'sc_internal_values'
     threshold = await get_entity_and_show_state(hass, "number.sc_test_instance_s_brightness_threshold")

@@ -140,12 +140,8 @@ async def test_show_initial_state(
 ):
     """Debug: Zeige Initial State."""
 
-    step = count(1)
-
-    # Setup instance
+    # === INIT =====================================================================================
     _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
-
-    await show_instance_entity_states(hass, next(step))
 
     # Zeige Input Numbers
     _LOGGER.info("=" * 80)
@@ -166,12 +162,8 @@ async def test_sun_entity_update(
 ):
     """Debug: Prüfe ob Sun Updates funktionieren."""
 
-    step = count(1)
-
-    # Setup instance
+    # === INIT =====================================================================================
     _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
-
-    await show_instance_entity_states(hass, next(step))
 
     _LOGGER.info("=" * 80)
     _LOGGER.info("BEFORE SUN UPDATE:")
@@ -207,8 +199,6 @@ async def test_sun_entity_update(
     if facade_in_sun:
         _LOGGER.info("Facade in Sun: %s, Attributes: %s", facade_in_sun.state, facade_in_sun.attributes)
 
-    await show_instance_entity_states(hass, next(step))
-
 
 async def test_shadow_full_closed(
     hass: HomeAssistant,
@@ -218,14 +208,8 @@ async def test_shadow_full_closed(
 ):
     """Test Timer mit Time Travel."""
 
-    # Counter to distinct repeated outputs on the log
-    step = count(1)
-
     # === INIT =====================================================================================
     pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
-
-    # Output initial entity states to the log
-    await show_instance_entity_states(hass, next(step))
 
     # Initial instance state
     state1 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
@@ -266,15 +250,9 @@ async def test_full_run_without_assert(
 ):
     """Test Timer mit Time Travel."""
 
-    # Counter to distinct repeated outputs on the log
-    step = count(1)
-
     # === INIT =====================================================================================
     pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
 
-    await show_instance_entity_states(hass, next(step))
-
-    _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
@@ -331,14 +309,8 @@ async def test_dawn_full_closed(
 ):
     """Test Timer mit Time Travel."""
 
-    # Counter to distinct repeated outputs on the log
-    step = count(1)
-
     # === INIT =====================================================================================
     pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
-
-    # Output initial entity states to the log
-    await show_instance_entity_states(hass, next(step))
 
     # Initial instance state
     state1 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
@@ -381,14 +353,8 @@ async def test_look_through_after_dawn_full_closed(
 ):
     """Test Timer mit Time Travel."""
 
-    # Counter to distinct repeated outputs on the log
-    step = count(1)
-
     # === INIT =====================================================================================
     pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
-
-    # Output initial entity states to the log
-    await show_instance_entity_states(hass, next(step))
 
     # Initial instance state
     state1 = await time_travel_and_check(
