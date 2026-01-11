@@ -245,8 +245,8 @@ def time_travel(hass: HomeAssistant, freezer):
     async def _travel(*, seconds: int = 0, minutes: int = 0, hours: int = 0):
         """Spring in der Zeit vorwärts."""
         delta = timedelta(seconds=seconds, minutes=minutes, hours=hours)
-        #total_seconds = delta.total_seconds()
-        #logging.getLogger().info("Time traveling %s seconds...", total_seconds)
+        # total_seconds = delta.total_seconds()
+        # logging.getLogger().info("Time traveling %s seconds...", total_seconds)
 
         # Berechne Zielzeit
         target_time = dt_util.utcnow() + delta
@@ -383,17 +383,17 @@ async def simulate_manual_cover_change(
 
 
 async def time_travel_and_check(
-        time_travel_func,
-        hass: HomeAssistant,
-        entity_id: str,
-        *,
-        seconds: int = 0,
-        minutes: int = 0,
-        hours: int = 0,
-        pos_calls=None,
-        tilt_calls=None,
-        with_attributes: bool = False,
-        executions: int = 1,
+    time_travel_func,
+    hass: HomeAssistant,
+    entity_id: str,
+    *,
+    seconds: int = 0,
+    minutes: int = 0,
+    hours: int = 0,
+    pos_calls=None,
+    tilt_calls=None,
+    with_attributes: bool = False,
+    executions: int = 1,
 ) -> State:
     """Time travel and return entity state.
 
@@ -414,6 +414,7 @@ async def time_travel_and_check(
     Returns:
         State object of the entity after the last execution
     """
+
     def get_current_state_info():
         """Get current state and position info."""
         state = hass.states.get(entity_id)
@@ -426,18 +427,15 @@ async def time_travel_and_check(
         """Log state with optional position info."""
         if height is not None and angle is not None:
             if with_attributes:
-                _LOGGER.info("%-12s → Height/Angle: %-12s %s: %s, Attributes: %s",
-                             prefix, f"{height}/{angle},", entity_id, state.state, state.attributes)
+                _LOGGER.info(
+                    "%-12s → Height/Angle: %-12s %s: %s, Attributes: %s", prefix, f"{height}/{angle},", entity_id, state.state, state.attributes
+                )
             else:
-                _LOGGER.info("%-12s → Height/Angle: %-12s %s: %s",
-                             prefix, f"{height}/{angle},", entity_id, state.state)
+                _LOGGER.info("%-12s → Height/Angle: %-12s %s: %s", prefix, f"{height}/{angle},", entity_id, state.state)
+        elif with_attributes:
+            _LOGGER.info("%-12s → %s: %s, Attributes: %s", prefix, entity_id, state.state, state.attributes)
         else:
-            if with_attributes:
-                _LOGGER.info("%-12s → %s: %s, Attributes: %s",
-                             prefix, entity_id, state.state, state.attributes)
-            else:
-                _LOGGER.info("%-12s → %s: %s",
-                             prefix, entity_id, state.state)
+            _LOGGER.info("%-12s → %s: %s", prefix, entity_id, state.state)
 
     # 1. Initial state
     state, height, angle = get_current_state_info()
