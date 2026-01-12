@@ -139,16 +139,20 @@ async def test_show_setup(
     await show_instance_entity_states(hass, next(step))
 
 
-async def test_lock(
-    hass: HomeAssistant,
-    setup_from_user_config,
-    time_travel,
-    caplog,
-):
-    """Test Timer mit Time Travel."""
-
+@pytest.mark.parametrize(
+    ("shutter_type", "check_angle"),
+    [
+        ("mode1", True),
+        ("mode2", True),
+        ("mode3", False),
+    ],
+)
+async def test_lock(hass: HomeAssistant, setup_from_user_config, time_travel, caplog, shutter_type, check_angle):
+    """Test that SC auto-locks when user manually moves cover."""
     # === INIT =====================================================================================
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+    config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
+    config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=2, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -172,18 +176,26 @@ async def test_lock(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
     assert_equal(state2.state, LockState.LOCKED_MANUALLY, "Lock state")
+    height, angle = get_cover_position(pos_calls, tilt_calls)
+    assert_equal(height, "N/A", "SC height")
+    if check_angle:
+        assert_equal(angle, "N/A", "SC angle")
 
 
-async def test_lock_with_position(
-    hass: HomeAssistant,
-    setup_from_user_config,
-    time_travel,
-    caplog,
-):
-    """Test Timer mit Time Travel."""
-
+@pytest.mark.parametrize(
+    ("shutter_type", "check_angle"),
+    [
+        ("mode1", True),
+        ("mode2", True),
+        ("mode3", False),
+    ],
+)
+async def test_lock_with_position(hass: HomeAssistant, setup_from_user_config, time_travel, caplog, shutter_type, check_angle):
+    """Test that SC auto-locks when user manually moves cover."""
     # === INIT =====================================================================================
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+    config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
+    config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=2, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -208,17 +220,26 @@ async def test_lock_with_position(
     )
     assert_equal(state2.state, LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION, "Lock state")
 
+    height, angle = get_cover_position(pos_calls, tilt_calls)
+    assert_equal(height, "50", "SC height")
+    if check_angle:
+        assert_equal(angle, "50", "SC angle")
 
-async def test_lock_then_lock_with_position(
-    hass: HomeAssistant,
-    setup_from_user_config,
-    time_travel,
-    caplog,
-):
-    """Test Timer mit Time Travel."""
 
+@pytest.mark.parametrize(
+    ("shutter_type", "check_angle"),
+    [
+        ("mode1", True),
+        ("mode2", True),
+        ("mode3", False),
+    ],
+)
+async def test_lock_then_lock_with_position(hass: HomeAssistant, setup_from_user_config, time_travel, caplog, shutter_type, check_angle):
+    """Test that SC auto-locks when user manually moves cover."""
     # === INIT =====================================================================================
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+    config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
+    config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=2, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -242,6 +263,10 @@ async def test_lock_then_lock_with_position(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
     assert_equal(state2.state, LockState.LOCKED_MANUALLY, "Lock state")
+    height, angle = get_cover_position(pos_calls, tilt_calls)
+    assert_equal(height, "N/A", "SC height")
+    if check_angle:
+        assert_equal(angle, "N/A", "SC angle")
 
     await set_lock_state(hass, "sc_test_instance", lock_with_position=True)
 
@@ -258,18 +283,26 @@ async def test_lock_then_lock_with_position(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
     assert_equal(state3.state, LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION, "Lock state")
+    height, angle = get_cover_position(pos_calls, tilt_calls)
+    assert_equal(height, "50", "SC height")
+    if check_angle:
+        assert_equal(angle, "50", "SC angle")
 
 
-async def test_lock_with_position_then_lock(
-    hass: HomeAssistant,
-    setup_from_user_config,
-    time_travel,
-    caplog,
-):
-    """Test Timer mit Time Travel."""
-
+@pytest.mark.parametrize(
+    ("shutter_type", "check_angle"),
+    [
+        ("mode1", True),
+        ("mode2", True),
+        ("mode3", False),
+    ],
+)
+async def test_lock_with_position_then_lock(hass: HomeAssistant, setup_from_user_config, time_travel, caplog, shutter_type, check_angle):
+    """Test that SC auto-locks when user manually moves cover."""
     # === INIT =====================================================================================
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+    config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
+    config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=2, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -293,6 +326,10 @@ async def test_lock_with_position_then_lock(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
     assert_equal(state2.state, LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION, "Lock state")
+    height, angle = get_cover_position(pos_calls, tilt_calls)
+    assert_equal(height, "50", "SC height")
+    if check_angle:
+        assert_equal(angle, "50", "SC angle")
 
     await set_lock_state(hass, "sc_test_instance", lock=True)
 
@@ -309,6 +346,10 @@ async def test_lock_with_position_then_lock(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
     assert_equal(state3.state, LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION, "Lock state")
+    height, angle = get_cover_position(pos_calls, tilt_calls)
+    assert_equal(height, "50", "SC height")
+    if check_angle:
+        assert_equal(angle, "50", "SC angle")
 
 
 @pytest.mark.parametrize(
