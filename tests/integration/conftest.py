@@ -65,14 +65,18 @@ def setup_logging():
     seen_handler_types = {}
     unique_handlers = []
 
+    # Filter-Funktion um verbose HA-Logs auszufiltern
+    def filter_verbose_ha_logs(record):
+        """Filter out verbose HA internal debug logs."""
+        # Filtere common.py DEBUG messages
+        return not (record.filename == "common.py" and record.levelno == logging.DEBUG)
+
     for handler in root_logger.handlers:
         handler_type = type(handler).__name__
 
-        # Behalte nur pytest-spezifische Handler
         if handler_type in ("_LiveLoggingStreamHandler", "_FileHandler", "LogCaptureHandler"):
-            # Für LogCaptureHandler: nur den ersten behalten
             if handler_type == "LogCaptureHandler" and handler_type in seen_handler_types:
-                continue  # Skip duplizierte LogCaptureHandler
+                continue
 
             seen_handler_types[handler_type] = True
             handler.setFormatter(formatter)
