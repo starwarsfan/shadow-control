@@ -199,3 +199,68 @@ async def test_increasing_sun_azimut(hass: HomeAssistant, setup_from_user_config
     assert_equal(height, "100", "SC height")  # HA 100% == KNX 0%
     if check_angle and shutter_type in {"mode1", "mode2"}:
         assert_equal(angle, "100", "SC angle")  # HA 100% == KNX 0%
+
+
+@pytest.mark.parametrize(
+    ("shutter_type", "check_angle"),
+    [
+        ("mode1", True),
+        ("mode2", True),
+        ("mode3", False),
+    ],
+)
+async def test_increasing_sun_elevation(hass: HomeAssistant, setup_from_user_config, time_travel, caplog, shutter_type, check_angle):
+    """Test that SC closes if sun azimut increases sun position through offset range."""
+    # === INIT =====================================================================================
+    config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
+    config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
+
+    # Initial instance state
+    state1 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
+    assert state1.state == ShutterState.NEUTRAL.name.lower()
+
+    # === Set brightness above threshold and elevation below min value =============================
+    await set_sun_position(hass, elevation=10, azimuth=180, brightness=70000)
+
+    state2 = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=2, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
+
+    # State should not have changed
+    assert_equal(state2.state, state1.state, "Instance state")
+    height, angle = get_cover_position(pos_calls, tilt_calls)
+    assert_equal(height, "N/A", "SC height")
+    if check_angle:
+        assert_equal(angle, "N/A", "SC angle")
+
+    # === Move sun into min-max range ==============================================================
+    await set_sun_position(hass, elevation=60, azimuth=180, brightness=70000)
+
+    state3 = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=10, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
+
+    # State should have changed to SHADOW_FULL_CLOSED
+    assert_equal(state3.state, ShutterState.SHADOW_FULL_CLOSED, "Instance state")
+    height, angle = get_cover_position(pos_calls, tilt_calls)
+    assert_equal(height, "0", "SC height")  # HA 0% == KNX 100%
+    if check_angle:
+        if shutter_type == "mode1":
+            assert_equal(angle, "100", "SC angle")  # HA 100% == KNX 0%
+        elif shutter_type == "mode2":
+            assert_equal(angle, "65", "SC angle")  # HA 100% == KNX 0%
+
+    # === Move sun out of min-max range ============================================================
+    await set_sun_position(hass, elevation=80, azimuth=180, brightness=70000)
+
+    state3 = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=10, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
+
+    # State should have changed back to NEUTRAL
+    assert_equal(state3.state, ShutterState.NEUTRAL, "Instance state")
+    height, angle = get_cover_position(pos_calls, tilt_calls)
+    assert_equal(height, "100", "SC height")  # HA 100% == KNX 0%
+    if check_angle and shutter_type in {"mode1", "mode2"}:
+        assert_equal(angle, "100", "SC angle")  # HA 100% == KNX 0%
