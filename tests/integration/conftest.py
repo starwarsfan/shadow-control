@@ -1,5 +1,6 @@
 """Fixtures für Integration Tests."""
 
+import contextlib
 import logging
 from datetime import timedelta
 from typing import Any
@@ -565,7 +566,7 @@ async def set_sun_position(
 def assert_equal(actual, expected, context: str = "Value") -> None:
     """Assert that actual equals expected with readable error message.
 
-    Handles Enums automatically by comparing .value attributes.
+    Handles Enums automatically by comparing .value or .name attributes.
     Handles numeric comparisons (int, float, string) flexibly.
 
     Args:
@@ -575,19 +576,28 @@ def assert_equal(actual, expected, context: str = "Value") -> None:
     """
     # Handle Enums
     expected_val = expected.value if hasattr(expected, "value") else expected
+    expected_name = expected.name if hasattr(expected, "name") else str(expected)
     actual_val = actual.value if hasattr(actual, "value") else actual
 
-    # Try numeric comparison first (handles "100" vs "100.0" vs 100 vs 100.0)
-    try:
+    # Special handling for Enums: try matching by name OR value
+    if hasattr(expected, "value") and hasattr(expected, "name") and isinstance(actual_val, str):
+        # Expected is an Enum - try matching actual against both name and value
+        # Try matching by name (case-insensitive and with underscores)
+        if actual_val.lower() == expected_name.lower():
+            actual_val = expected_val  # Match found via name
+        elif actual_val.replace("_", "").lower() == expected_name.replace("_", "").lower():
+            actual_val = expected_val  # Match found via normalized name
+        else:
+            # Try numeric conversion as fallback
+            with contextlib.suppress(ValueError, TypeError):
+                actual_val = int(actual_val)
+
+    # Try numeric comparison (handles "100" vs "100.0" vs 100 vs 100.0)
+    with contextlib.suppress(ValueError, TypeError):
         expected_num = float(expected_val)
         actual_num = float(actual_val)
         expected_val = expected_num
         actual_val = actual_num
-    except (ValueError, TypeError):
-        # Not numeric, keep as-is for string/other comparison
-        pass
-
-    expected_name = expected.name if hasattr(expected, "name") else expected_val
 
     assert actual_val == expected_val, f"{context} should be {expected_name} ({expected_val}), but is {actual_val}"
 
@@ -598,7 +608,7 @@ def assert_equal(actual, expected, context: str = "Value") -> None:
 def assert_not_equal(actual, expected, context: str = "Value") -> None:
     """Assert that actual does NOT equal expected with readable error message.
 
-    Handles Enums automatically by comparing .value attributes.
+    Handles Enums automatically by comparing .value or .name attributes.
     Handles numeric comparisons (int, float, string) flexibly.
 
     Args:
@@ -608,19 +618,28 @@ def assert_not_equal(actual, expected, context: str = "Value") -> None:
     """
     # Handle Enums
     expected_val = expected.value if hasattr(expected, "value") else expected
+    expected_name = expected.name if hasattr(expected, "name") else str(expected)
     actual_val = actual.value if hasattr(actual, "value") else actual
 
-    # Try numeric comparison first (handles "100" vs "100.0" vs 100 vs 100.0)
-    try:
+    # Special handling for Enums: try matching by name OR value
+    if hasattr(expected, "value") and hasattr(expected, "name") and isinstance(actual_val, str):
+        # Expected is an Enum - try matching actual against both name and value
+        # Try matching by name (case-insensitive and with underscores)
+        if actual_val.lower() == expected_name.lower():
+            actual_val = expected_val  # Match found via name
+        elif actual_val.replace("_", "").lower() == expected_name.replace("_", "").lower():
+            actual_val = expected_val  # Match found via normalized name
+        else:
+            # Try numeric conversion as fallback
+            with contextlib.suppress(ValueError, TypeError):
+                actual_val = int(actual_val)
+
+    # Try numeric comparison (handles "100" vs "100.0" vs 100 vs 100.0)
+    with contextlib.suppress(ValueError, TypeError):
         expected_num = float(expected_val)
         actual_num = float(actual_val)
         expected_val = expected_num
         actual_val = actual_num
-    except (ValueError, TypeError):
-        # Not numeric, keep as-is for string/other comparison
-        pass
-
-    expected_name = expected.name if hasattr(expected, "name") else expected_val
 
     assert actual_val != expected_val, f"{context} should NOT be {expected_name} ({expected_val}), but it is"
 
