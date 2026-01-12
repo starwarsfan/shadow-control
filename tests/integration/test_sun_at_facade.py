@@ -176,7 +176,7 @@ async def test_increasing_sun_azimut(hass: HomeAssistant, setup_from_user_config
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=10, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
-    # State should not have changed
+    # State should have changed to SHADOW_FULL_CLOSED
     assert_equal(state3.state, ShutterState.SHADOW_FULL_CLOSED, "Instance state")
     height, angle = get_cover_position(pos_calls, tilt_calls)
     assert_equal(height, "0", "SC height")  # HA 0% == KNX 100%
@@ -193,7 +193,7 @@ async def test_increasing_sun_azimut(hass: HomeAssistant, setup_from_user_config
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=10, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
 
-    # State should not have changed
+    # State should have changed back to NEUTRAL
     assert_equal(state3.state, ShutterState.NEUTRAL, "Instance state")
     height, angle = get_cover_position(pos_calls, tilt_calls)
     assert_equal(height, "100", "SC height")  # HA 100% == KNX 0%
