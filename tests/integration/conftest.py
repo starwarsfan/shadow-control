@@ -56,6 +56,11 @@ def setup_logging():
 
     root_logger = logging.getLogger()
 
+    # Filter-Funktion um verbose HA-Logs auszufiltern
+    def filter_verbose_ha_logs(record):
+        """Filter out verbose HA internal debug logs."""
+        return not (record.filename == "common.py" and record.levelno == logging.DEBUG)
+
     # Entferne duplizierte Handler, behalte nur pytest's Handler
     seen_handler_types = {}
     unique_handlers = []
@@ -72,6 +77,7 @@ def setup_logging():
             seen_handler_types[handler_type] = True
             handler.setFormatter(formatter)
             handler.setLevel(logging.DEBUG)
+            handler.addFilter(filter_verbose_ha_logs)  # ← WICHTIG: Filter hinzufügen!
             unique_handlers.append(handler)
 
     root_logger.handlers = unique_handlers
