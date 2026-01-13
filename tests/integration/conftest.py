@@ -269,7 +269,7 @@ def time_travel(hass: HomeAssistant, freezer):
     return _travel
 
 
-async def setup_instance(caplog, hass: HomeAssistant, setup_from_user_config, test_config) -> tuple[Any, Any]:
+async def setup_instance(caplog, hass: HomeAssistant, setup_from_user_config, test_config, time_travel, enforce_positioning=True) -> tuple[Any, Any]:
     caplog.set_level(logging.DEBUG, logger="custom_components.shadow_control")
 
     await setup_from_user_config(test_config)
@@ -278,6 +278,13 @@ async def setup_instance(caplog, hass: HomeAssistant, setup_from_user_config, te
     # Mocke die Cover-Dienste, damit das Dummy-Script gar nicht erst läuft
     tilt_calls = async_mock_service(hass, "cover", "set_cover_tilt_position")
     pos_calls = async_mock_service(hass, "cover", "set_cover_position")
+
+    if enforce_positioning:
+        await set_internal_entity(hass, "sc_test_instance", SCInternal.ENFORCE_POSITIONING_MANUAL)
+        _ = await time_travel_and_check(
+            time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=10, pos_calls=pos_calls, tilt_calls=tilt_calls
+        )
+
     return pos_calls, tilt_calls
 
 
