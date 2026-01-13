@@ -177,9 +177,9 @@ async def test_lock(hass: HomeAssistant, setup_from_user_config, time_travel, ca
     )
     assert_equal(state2.state, LockState.LOCKED_MANUALLY, "Lock state")
     height, angle = get_cover_position(pos_calls, tilt_calls)
-    assert_equal(height, "N/A", "SC height")
+    assert_equal(height, "100", "SC height")
     if check_angle:
-        assert_equal(angle, "N/A", "SC angle")
+        assert_equal(angle, "100", "SC angle")
 
 
 @pytest.mark.parametrize(
@@ -264,9 +264,9 @@ async def test_lock_then_lock_with_position(hass: HomeAssistant, setup_from_user
     )
     assert_equal(state2.state, LockState.LOCKED_MANUALLY, "Lock state")
     height, angle = get_cover_position(pos_calls, tilt_calls)
-    assert_equal(height, "N/A", "SC height")
+    assert_equal(height, "100", "SC height")
     if check_angle:
-        assert_equal(angle, "N/A", "SC angle")
+        assert_equal(angle, "100", "SC angle")
 
     await set_lock_state(hass, "sc_test_instance", lock_with_position=True)
 

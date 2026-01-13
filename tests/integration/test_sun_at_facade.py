@@ -165,9 +165,9 @@ async def test_increasing_sun_azimut(hass: HomeAssistant, setup_from_user_config
     # State should not have changed
     assert_equal(state2.state, state1.state, "Instance state")
     height, angle = get_cover_position(pos_calls, tilt_calls)
-    assert_equal(height, "N/A", "SC height")
+    assert_equal(height, "100", "SC height")
     if check_angle:
-        assert_equal(angle, "N/A", "SC angle")
+        assert_equal(angle, "100", "SC angle")
 
     # === Move sun into offset range ===============================================================
     await set_sun_position(hass, elevation=60, azimuth=180, brightness=70000)
@@ -230,9 +230,9 @@ async def test_increasing_sun_elevation(hass: HomeAssistant, setup_from_user_con
     # State should not have changed
     assert_equal(state2.state, state1.state, "Instance state")
     height, angle = get_cover_position(pos_calls, tilt_calls)
-    assert_equal(height, "N/A", "SC height")
+    assert_equal(height, "100", "SC height")
     if check_angle:
-        assert_equal(angle, "N/A", "SC angle")
+        assert_equal(angle, "100", "SC angle")
 
     # === Move sun into min-max range ==============================================================
     await set_sun_position(hass, elevation=60, azimuth=180, brightness=70000)
