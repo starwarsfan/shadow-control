@@ -131,7 +131,7 @@ async def test_show_setup(
     step = count(1)
 
     # === INIT =====================================================================================
-    _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+    _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG, time_travel)
 
     await show_instance_entity_states(hass, next(step))
 
@@ -149,7 +149,7 @@ async def test_increasing_sun_azimut(hass: HomeAssistant, setup_from_user_config
     # === INIT =====================================================================================
     config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
     config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config, time_travel)
 
     # Initial instance state
     state1 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
@@ -214,7 +214,7 @@ async def test_increasing_sun_elevation(hass: HomeAssistant, setup_from_user_con
     # === INIT =====================================================================================
     config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
     config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config, time_travel)
 
     # Initial instance state
     state1 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")

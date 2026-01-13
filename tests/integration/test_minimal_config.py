@@ -43,7 +43,7 @@ async def test_show_setup(
     step = count(1)
 
     # === INIT =====================================================================================
-    _, _ = await setup_instance(caplog, hass, setup_from_user_config, MINIMAL_CONFIG)
+    _, _ = await setup_instance(caplog, hass, setup_from_user_config, MINIMAL_CONFIG, time_travel)
 
     await show_instance_entity_states(hass, next(step))
 
@@ -51,12 +51,13 @@ async def test_show_setup(
 async def test_minimal_config_loads(
     hass: HomeAssistant,
     setup_from_user_config,
+    time_travel,
     caplog,
 ):
     """Test dass minimale Config lädt."""
 
     # === INIT =====================================================================================
-    _, _ = await setup_instance(caplog, hass, setup_from_user_config, MINIMAL_CONFIG)
+    _, _ = await setup_instance(caplog, hass, setup_from_user_config, MINIMAL_CONFIG, time_travel)
 
     # Integration sollte geladen sein
     assert DOMAIN in hass.data
@@ -69,12 +70,13 @@ async def test_minimal_config_loads(
 async def test_show_initial_state(
     hass: HomeAssistant,
     setup_from_user_config,
+    time_travel,
     caplog,
 ):
     """Debug: Zeige Initial State."""
 
     # === INIT =====================================================================================
-    _, _ = await setup_instance(caplog, hass, setup_from_user_config, MINIMAL_CONFIG)
+    _, _ = await setup_instance(caplog, hass, setup_from_user_config, MINIMAL_CONFIG, time_travel)
 
     # 2. Prüfen, ob die Entität überhaupt schon im State-Machine ist
     # Falls hier None kommt, sind die Plattformen noch nicht geladen!

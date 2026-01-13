@@ -129,7 +129,7 @@ async def test_show_setup(
     step = count(1)
 
     # === INIT =====================================================================================
-    _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+    _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG, time_travel)
 
     await show_instance_entity_states(hass, next(step))
 
@@ -137,12 +137,13 @@ async def test_show_setup(
 async def test_show_initial_state(
     hass: HomeAssistant,
     setup_from_user_config,
+    time_travel,
     caplog,
 ):
     """Debug: Zeige Initial State."""
 
     # === INIT =====================================================================================
-    _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+    _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG, time_travel)
 
     # Zeige Input Numbers
     _LOGGER.info("=" * 80)
@@ -159,12 +160,13 @@ async def test_show_initial_state(
 async def test_sun_entity_update(
     hass: HomeAssistant,
     setup_from_user_config,
+    time_travel,
     caplog,
 ):
     """Debug: Prüfe ob Sun Updates funktionieren."""
 
     # === INIT =====================================================================================
-    _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+    _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG, time_travel)
 
     _LOGGER.info("=" * 80)
     _LOGGER.info("BEFORE SUN UPDATE:")
@@ -210,7 +212,7 @@ async def test_shadow_full_closed(
     """Test Timer mit Time Travel."""
 
     # === INIT =====================================================================================
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG, time_travel)
 
     # Initial instance state
     state1 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
@@ -251,7 +253,7 @@ async def test_full_run_without_assert(
     """Test Timer mit Time Travel."""
 
     # === INIT =====================================================================================
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG, time_travel)
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=12, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -304,7 +306,7 @@ async def test_dawn_full_closed(
     """Test Timer mit Time Travel."""
 
     # === INIT =====================================================================================
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG, time_travel)
 
     # Initial instance state
     state1 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
@@ -352,7 +354,7 @@ async def test_look_through_after_dawn_full_closed(hass: HomeAssistant, setup_fr
     # === INIT =====================================================================================
     config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
     config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config, time_travel)
 
     # Initial instance state
     state1 = await time_travel_and_check(
