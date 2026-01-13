@@ -1169,6 +1169,9 @@ class ShadowControlManager:
         self._height_during_lock_state = current_height
         self._angle_during_lock_state = current_angle
 
+        # WICHTIG: Aktualisiere Lock-State sofort!
+        self.current_lock_state = LockState.LOCKED_BY_EXTERNAL_MODIFICATION
+
         # Set lock via the internal lock switch entity
         lock_entity_id = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_MANUAL)
 
@@ -1177,6 +1180,9 @@ class ShadowControlManager:
             self.logger.info("Auto-lock activated successfully via entity %s", lock_entity_id)
         except (HomeAssistantError, ValueError):
             self.logger.exception("Failed to activate auto-lock")
+
+        # WICHTIG: Trigger Sensor-Updates
+        async_dispatcher_send(self.hass, f"{DOMAIN}_update_{self.name.lower().replace(' ', '_')}")
 
     def unregister_listeners(self) -> None:
         """Unregister all listeners for this manager."""
