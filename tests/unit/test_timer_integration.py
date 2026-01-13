@@ -933,6 +933,9 @@ class TestTimerIntegration:
 
     async def test_auto_lock_sets_correct_lock_state(self, manager):
         """Test auto-lock sets LockState.LOCKED_BY_EXTERNAL_MODIFICATION."""
+        # Manager name must be set
+        manager.name = "Test Manager"
+
         # Mock the internal entity ID
         manager.get_internal_entity_id = MagicMock(return_value="switch.test_lock")
 
