@@ -13,11 +13,12 @@ from homeassistant.components.cover import (
 from homeassistant.components.input_number import DOMAIN as INPUT_NUMBER_DOMAIN
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 from homeassistant.core import HomeAssistant, State
+from homeassistant.helpers import entity_registry as er
 from homeassistant.setup import async_setup_component
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed, async_mock_service
 
-from custom_components.shadow_control.const import DOMAIN, SC_CONF_NAME
+from custom_components.shadow_control.const import DOMAIN, SC_CONF_NAME, SCInternal
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -645,3 +646,52 @@ def assert_not_equal(actual, expected, context: str = "Value") -> None:
 
     # Bei Erfolg: Log it!
     _LOGGER.info("✓ %s is NOT %s (%s), actual: %s", context, expected_name, expected_val, actual_val)
+
+
+async def set_internal_entity(hass: HomeAssistant, instance_name: str, internal_enum: SCInternal, value: str | float | bool | None = None) -> None:
+    """Set internal SC entity value using registry lookup.
+
+    This automatically finds the correct entity ID regardless of translations.
+
+    Args:
+        hass: Home Assistant instance
+        instance_name: SC instance name
+        internal_enum: SCInternal enum value
+        value: Value to set (not needed for buttons)
+
+    Raises:
+        ValueError: If entity cannot be found in registry
+    """
+
+    # Hole Domain vom Enum
+    domain = internal_enum.domain
+
+    # Suche Entity in der Registry
+    registry = er.async_get(hass)
+
+    entity_id = None
+    for entity in registry.entities.values():
+        # Prüfe: richtige Platform, Domain und unique_id enthält den enum value
+        if (
+            entity.platform == "shadow_control"
+            and entity.domain == domain
+            and internal_enum.value in entity.unique_id
+            and instance_name.lower() in entity.entity_id.lower()
+        ):
+            entity_id = entity.entity_id
+            _LOGGER.debug("Found entity %s for %s", entity_id, internal_enum.name)
+            break
+
+    if not entity_id:
+        msg = f"Could not find entity for {internal_enum.name} (domain: {domain}, instance: {instance_name}) in registry"
+        raise ValueError(msg)
+
+    if domain == "button":
+        # Buttons werden gedrückt, kein value nötig
+        await hass.services.async_call("button", "press", {"entity_id": entity_id}, blocking=True)
+        _LOGGER.info("Pressed button: %s", entity_id)
+    else:
+        # Für Switch, Number, Select: Nutze set_entity_state
+        await set_entity_state(hass, entity_id, value)
+
+    await hass.async_block_till_done()
