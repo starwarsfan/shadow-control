@@ -134,7 +134,7 @@ async def test_show_setup(
     step = count(1)
 
     # === INIT =====================================================================================
-    _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG)
+    _, _ = await setup_instance(caplog, hass, setup_from_user_config, TEST_CONFIG, time_travel)
 
     await show_instance_entity_states(hass, next(step))
 
@@ -152,7 +152,7 @@ async def test_lock(hass: HomeAssistant, setup_from_user_config, time_travel, ca
     # === INIT =====================================================================================
     config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
     config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config, time_travel)
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=2, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -195,7 +195,7 @@ async def test_lock_with_position(hass: HomeAssistant, setup_from_user_config, t
     # === INIT =====================================================================================
     config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
     config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config, time_travel)
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=2, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -239,7 +239,7 @@ async def test_lock_then_lock_with_position(hass: HomeAssistant, setup_from_user
     # === INIT =====================================================================================
     config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
     config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config, time_travel)
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=2, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -302,7 +302,7 @@ async def test_lock_with_position_then_lock(hass: HomeAssistant, setup_from_user
     # === INIT =====================================================================================
     config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
     config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config, time_travel)
 
     _ = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=2, pos_calls=pos_calls, tilt_calls=tilt_calls
@@ -365,7 +365,7 @@ async def test_auto_lock_on_manual_change(hass: HomeAssistant, setup_from_user_c
     # === INIT =====================================================================================
     config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
     config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
-    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config)
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config, time_travel)
 
     _ = await get_entity_and_show_state(hass, "sensor.sc_test_instance_state")
 
