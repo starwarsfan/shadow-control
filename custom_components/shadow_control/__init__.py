@@ -1736,11 +1736,8 @@ class ShadowControlManager:
                 self.logger.info("Time changed event received")
             else:
                 self.logger.debug("Unhandled event type: %s", event_type)
-        else:
-            self.logger.info("No specific event data (likely initial run or manual trigger)")
-
-        # TODO: Needs to be implemented later
-        # self._check_if_position_changed_externally(self._dynamic_config.shutter_current_height, self._dynamic_config.shutter_current_angle)
+        # else:
+        #     self.logger.info("No specific event data (likely initial run or manual trigger)")
 
         await self._check_if_facade_is_in_sun()
 
