@@ -47,7 +47,7 @@ TEST_CONFIG = {
             "facade_light_strip_width_static": 0,
             "facade_shutter_height_static": 1000,
             "facade_neutral_pos_height_manual": 0,
-            "facade_neutral_pos_angle_manual": 0,
+            # "facade_neutral_pos_angle_manual": 0,
             "facade_modification_tolerance_height_static": 0,
             "facade_max_movement_duration_static": 18,
             "sc_internal_values": {
@@ -60,15 +60,15 @@ TEST_CONFIG = {
                 "lock_angle_manual": 15,
                 # "lock_angle_entity": input_number.lock_angle_sc_dummy
                 # no_restriction, only_open, only_close
-                "movement_restriction_height_manual": "no_restriction",
-                "movement_restriction_angle_manual": "no_restriction",
+                "movement_restriction_height_manual": "only_open",
+                # "movement_restriction_angle_manual": "no_restriction",
                 # "movement_restriction_height_entity":
                 # "movement_restriction_angle_entity":
                 # "enforce_positioning_entity": input_boolean.d13_enforce_positioning
                 #
                 "facade_neutral_pos_height_manual": 0,
                 # "facade_neutral_pos_height_entity": input_number.g15_neutral_pos_height
-                "facade_neutral_pos_angle_manual": 0,
+                # "facade_neutral_pos_angle_manual": 0,
                 # "facade_neutral_pos_angle_entity": input_number.g16_neutral_pos_angle
                 #
                 # Shadow configuration
@@ -81,13 +81,13 @@ TEST_CONFIG = {
                 # "shadow_shutter_max_height_entity": input_number.automation_shadow_max_height_sc_dummy
                 "shadow_shutter_max_height_manual": 100,
                 # "shadow_shutter_max_angle_entity": input_number.automation_shadow_max_angle_sc_dummy
-                "shadow_shutter_max_angle_manual": 100,
+                # "shadow_shutter_max_angle_manual": 100,
                 # "shadow_shutter_look_through_seconds_entity":
                 "shadow_shutter_look_through_seconds_manual": 10,
                 # "shadow_shutter_open_seconds_entity":
                 "shadow_shutter_open_seconds_manual": 10,
                 # "shadow_shutter_look_through_angle_entity":
-                "shadow_shutter_look_through_angle_manual": 54,
+                # "shadow_shutter_look_through_angle_manual": 54,
                 # "shadow_height_after_sun_entity":
                 "shadow_height_after_sun_manual": 0,
                 # "shadow_angle_after_sun_entity":
@@ -103,13 +103,13 @@ TEST_CONFIG = {
                 # "dawn_shutter_max_height_entity": input_number.automation_dawn_max_height_sc_dummy
                 "dawn_shutter_max_height_manual": 100,
                 # "dawn_shutter_max_angle_entity": input_number.automation_dawn_max_angle_sc_dummy
-                "dawn_shutter_max_angle_manual": 100,
+                # "dawn_shutter_max_angle_manual": 100,
                 # "dawn_shutter_look_through_seconds_entity":
                 "dawn_shutter_look_through_seconds_manual": 10,
                 # "dawn_shutter_open_seconds_entity":
                 "dawn_shutter_open_seconds_manual": 10,
                 # "dawn_shutter_look_through_angle_entity":
-                "dawn_shutter_look_through_angle_manual": 45,
+                # "dawn_shutter_look_through_angle_manual": 45,
                 # "dawn_height_after_dawn_entity":
                 "dawn_height_after_dawn_manual": 0,
                 # "dawn_angle_after_dawn_entity":
@@ -449,13 +449,12 @@ async def test_restart_with_closed_cover_dawn_conditions(
     # Setup Cover - GESCHLOSSEN (wie vom User berichtet)
     # HA: 0%, KNX: 100% (invertiert)
     hass.states.async_set(
-        "cover.test_rollo",
+        "cover.sc_dummy",
         "closed",
         {
             "current_position": 0,  # Geschlossen in HA
             "current_tilt_position": 0,
             "supported_features": 255,
-            "friendly_name": "Test Rollo",
         },
     )
 
@@ -497,7 +496,7 @@ async def test_restart_with_closed_cover_dawn_conditions(
     await setup_from_user_config(TEST_CONFIG)
 
     # Initial State nach Restart
-    cover_state = hass.states.get("cover.test_rollo")
+    cover_state = hass.states.get("cover.sc_dummy")
     _LOGGER.info("Cover State nach Restart: %s", cover_state.state)
     _LOGGER.info("Cover Position nach Restart: %s%%", cover_state.attributes["current_position"])
 
@@ -525,7 +524,7 @@ async def test_restart_with_closed_cover_dawn_conditions(
     # PHASE 4: Prüfe Ergebnis
     # =========================================================================
 
-    cover_state = hass.states.get("cover.test_rollo")
+    cover_state = hass.states.get("cover.sc_dummy")
     _LOGGER.info("Cover Position nach 91s: %s%%", cover_state.attributes["current_position"])
 
     sc_state = hass.states.get("sensor.test_restart_issue_state")
@@ -571,13 +570,12 @@ async def test_restart_with_initial_position(
 
     # Setup Cover mit gewünschter Position
     hass.states.async_set(
-        "cover.test_rollo",
+        "cover.sc_dummy",
         "open" if initial_position > 0 else "closed",
         {
             "current_position": initial_position,
             "current_tilt_position": 0,
             "supported_features": 255,
-            "friendly_name": "Test Rollo",
         },
     )
 
@@ -611,15 +609,14 @@ async def test_restart_with_initial_position(
     # Start SC (= HA Restart)
     await setup_from_user_config(TEST_CONFIG)
 
-    initial_pos = hass.states.get("cover.test_rollo").attributes["current_position"]
+    initial_pos = hass.states.get("cover.sc_dummy").attributes["current_position"]
     _LOGGER.info("Initial Position: %s%%", initial_pos)
 
     # Warte 120s
     await time_travel(seconds=120)
 
-    final_pos = hass.states.get("cover.test_rollo").attributes["current_position"]
+    final_pos = hass.states.get("cover.sc_dummy").attributes["current_position"]
     _LOGGER.info("Final Position: %s%%", final_pos)
 
-    # Bei geschlossenem Cover sollte es geschlossen bleiben
-    if initial_position == 0:
-        assert final_pos == 0, f"Geschlossener Cover sollte geschlossen bleiben! {initial_pos}% -> {final_pos}%"
+    # Position sollte sich nicht ändern
+    assert final_pos == initial_pos, f"Geschlossener Cover sollte geschlossen bleiben! {initial_pos}% -> {final_pos}%"
