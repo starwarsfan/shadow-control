@@ -5,6 +5,7 @@ from itertools import count
 
 import pytest
 from homeassistant.core import HomeAssistant
+from homeassistant.setup import async_setup_component
 
 from custom_components.shadow_control import LockState
 from custom_components.shadow_control.const import DOMAIN
@@ -418,3 +419,207 @@ async def test_auto_lock_on_manual_change(hass: HomeAssistant, setup_from_user_c
     assert_equal(actual_height, 50, "Actual cover should stay at manual position (locked)")
     if check_angle:
         assert_equal(actual_angle, 60, "Actual cover should stay at manual position (locked)")
+
+
+async def test_restart_with_closed_cover_dawn_conditions(
+    hass: HomeAssistant,
+    setup_from_user_config,
+    time_travel,
+    caplog,
+):
+    """Test Issue #XXX: Cover öffnet sich nach HA Neustart.
+
+    Ausgangssituation:
+    - Mode 3 Rollo
+    - Geschlossen (0%)
+    - Nicht gesperrt
+    - Dämmerung (Helligkeit unter Schwelle)
+    - Bewegungseinschränkung: nur öffnen
+
+    Erwartung:
+    - Nach 90s sollte NICHT automatisch geöffnet werden
+    """
+
+    caplog.set_level(logging.DEBUG, logger="custom_components.shadow_control")
+
+    # =========================================================================
+    # PHASE 1: Simuliere Zustand VOR dem Restart
+    # =========================================================================
+
+    # Setup Cover - GESCHLOSSEN (wie vom User berichtet)
+    # HA: 0%, KNX: 100% (invertiert)
+    hass.states.async_set(
+        "cover.test_rollo",
+        "closed",
+        {
+            "current_position": 0,  # Geschlossen in HA
+            "current_tilt_position": 0,
+            "supported_features": 255,
+            "friendly_name": "Test Rollo",
+        },
+    )
+
+    # Setup Input Numbers - Dämmerung
+    input_number_config = {
+        "input_number": {
+            "d01_brightness": {
+                "min": 0,
+                "max": 100000,
+                "initial": 3000,  # ← UNTER Dawn-Schwelle (5000)!
+                "name": "Brightness",
+            },
+            "d03_sun_elevation": {
+                "min": -90,
+                "max": 90,
+                "initial": 5,  # Niedrig (Dämmerung)
+                "name": "Sun Elevation",
+            },
+            "d04_sun_azimuth": {
+                "min": 0,
+                "max": 360,
+                "initial": 90,  # Osten (Morgen)
+                "name": "Sun Azimuth",
+            },
+        }
+    }
+
+    assert await async_setup_component(hass, "input_number", input_number_config)
+    await hass.async_block_till_done()
+
+    # =========================================================================
+    # PHASE 2: Starte Shadow Control (= HA Restart)
+    # =========================================================================
+
+    _LOGGER.info("=" * 80)
+    _LOGGER.info("SIMULATING HA RESTART - Starting Shadow Control")
+    _LOGGER.info("=" * 80)
+
+    await setup_from_user_config(TEST_CONFIG)
+
+    # Initial State nach Restart
+    cover_state = hass.states.get("cover.test_rollo")
+    _LOGGER.info("Cover State nach Restart: %s", cover_state.state)
+    _LOGGER.info("Cover Position nach Restart: %s%%", cover_state.attributes["current_position"])
+
+    sc_state = hass.states.get("sensor.test_restart_issue_state")
+    _LOGGER.info("SC State nach Restart: %s", sc_state.state if sc_state else "NOT FOUND")
+
+    lock_state = hass.states.get("sensor.test_restart_issue_lock_state")
+    _LOGGER.info("Lock State nach Restart: %s", lock_state.state if lock_state else "NOT FOUND")
+
+    # Cover sollte immer noch geschlossen sein
+    assert cover_state.attributes["current_position"] == 0, "Cover sollte direkt nach Restart noch geschlossen sein"
+
+    # =========================================================================
+    # PHASE 3: Warte 90 Sekunden (Dawn Timer)
+    # =========================================================================
+
+    _LOGGER.info("=" * 80)
+    _LOGGER.info("TIME TRAVEL: 91 seconds (past dawn_after_seconds)")
+    _LOGGER.info("=" * 80)
+
+    # Spring über den 90s Dawn Timer
+    await time_travel(seconds=91)
+
+    # =========================================================================
+    # PHASE 4: Prüfe Ergebnis
+    # =========================================================================
+
+    cover_state = hass.states.get("cover.test_rollo")
+    _LOGGER.info("Cover Position nach 91s: %s%%", cover_state.attributes["current_position"])
+
+    sc_state = hass.states.get("sensor.test_restart_issue_state")
+    _LOGGER.info("SC State nach 91s: %s", sc_state.state if sc_state else "NOT FOUND")
+
+    lock_state = hass.states.get("sensor.test_restart_issue_lock_state")
+    _LOGGER.info("Lock State nach 91s: %s", lock_state.state if lock_state else "NOT FOUND")
+
+    # ERWARTUNG: Cover sollte NICHT geöffnet haben
+    # Weil: Bewegungseinschränkung "only_open" bedeutet
+    # "nur öffnen erlaubt" aber nicht "automatisch öffnen"!
+    # ODER: Dawn sollte bei geschlossenem Cover nicht triggern?
+
+    # Das ist der eigentliche Bug-Test:
+    assert cover_state.attributes["current_position"] == 0, (
+        f"BUG: Cover hat sich nach Restart geöffnet! Position: {cover_state.attributes['current_position']}%"
+    )
+
+
+@pytest.mark.parametrize(
+    ("initial_position", "description"),
+    [
+        (0, "geschlossen"),
+        (50, "halb offen"),
+        (100, "offen"),
+    ],
+)
+async def test_restart_with_initial_position(
+    hass: HomeAssistant,
+    setup_from_user_config,
+    time_travel,
+    caplog,
+    initial_position,
+    description,
+):
+    """Test Restart mit verschiedenen initialen Positionen."""
+
+    caplog.set_level(logging.DEBUG, logger="custom_components.shadow_control")
+
+    _LOGGER.info("=" * 80)
+    _LOGGER.info("Testing Restart mit Position: %s%% (%s)", initial_position, description)
+    _LOGGER.info("=" * 80)
+
+    # Setup Cover mit gewünschter Position
+    hass.states.async_set(
+        "cover.test_rollo",
+        "open" if initial_position > 0 else "closed",
+        {
+            "current_position": initial_position,
+            "current_tilt_position": 0,
+            "supported_features": 255,
+            "friendly_name": "Test Rollo",
+        },
+    )
+
+    # Setup Input Numbers (Dawn Bedingungen)
+    input_number_config = {
+        "input_number": {
+            "d01_brightness": {
+                "min": 0,
+                "max": 100000,
+                "initial": 300,  # Unter Dawn-Schwelle
+                "name": "Brightness",
+            },
+            "d03_sun_elevation": {
+                "min": -90,
+                "max": 90,
+                "initial": 5,
+                "name": "Sun Elevation",
+            },
+            "d04_sun_azimuth": {
+                "min": 0,
+                "max": 360,
+                "initial": 90,
+                "name": "Sun Azimuth",
+            },
+        }
+    }
+
+    assert await async_setup_component(hass, "input_number", input_number_config)
+    await hass.async_block_till_done()
+
+    # Start SC (= HA Restart)
+    await setup_from_user_config(TEST_CONFIG)
+
+    initial_pos = hass.states.get("cover.test_rollo").attributes["current_position"]
+    _LOGGER.info("Initial Position: %s%%", initial_pos)
+
+    # Warte 120s
+    await time_travel(seconds=120)
+
+    final_pos = hass.states.get("cover.test_rollo").attributes["current_position"]
+    _LOGGER.info("Final Position: %s%%", final_pos)
+
+    # Bei geschlossenem Cover sollte es geschlossen bleiben
+    if initial_position == 0:
+        assert final_pos == 0, f"Geschlossener Cover sollte geschlossen bleiben! {initial_pos}% -> {final_pos}%"
