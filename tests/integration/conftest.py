@@ -396,6 +396,21 @@ async def simulate_manual_cover_change(
     await hass.async_block_till_done()
 
 
+def get_actual_cover_position(hass: HomeAssistant, cover_entity: str) -> tuple[int, int]:
+    """Get actual current cover position from Home Assistant state.
+
+    This reads the real position from the cover state, not from call tracking.
+    Use this after manual changes or to verify final positions.
+    """
+    cover_state = hass.states.get(cover_entity)
+    if not cover_state:
+        return 0, 0
+
+    height = int(cover_state.attributes.get("current_position", 0))
+    angle = int(cover_state.attributes.get("current_tilt_position", 0))
+    return height, angle
+
+
 async def time_travel_and_check(
     time_travel_func,
     hass: HomeAssistant,

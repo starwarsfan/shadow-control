@@ -10,6 +10,7 @@ from custom_components.shadow_control import LockState
 from custom_components.shadow_control.const import DOMAIN
 from tests.integration.conftest import (
     assert_equal,
+    get_actual_cover_position,
     get_cover_position,
     get_entity_and_show_state,
     set_lock_state,
@@ -389,16 +390,31 @@ async def test_auto_lock_on_manual_change(hass: HomeAssistant, setup_from_user_c
     # USER bewegt Behang manuell!
     await simulate_manual_cover_change(hass, "cover.sc_dummy", position=50, tilt_position=60)
 
+    # Prüfe dass Cover TATSÄCHLICH auf 50/60 ist (nicht SC calls!)
+    actual_height, actual_angle = get_actual_cover_position(hass, "cover.sc_dummy")  # ← NEU!
+    assert_equal(actual_height, 50, "Actual cover height after manual change")
+    if check_angle:
+        assert_equal(actual_angle, 60, "Actual cover angle after manual change")
+
     # Trigger sensor update
     if current_brightness:
         new_brightness = float(current_brightness.state) + 0.1
         await set_sun_position(hass, brightness=new_brightness)  # Minimal ändern
+
     lock_state = await time_travel_and_check(
         time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
     )
     assert_equal(lock_state.state, LockState.LOCKED_BY_EXTERNAL_MODIFICATION, "Lock state after manual change")
 
-    height, angle = get_cover_position(pos_calls, tilt_calls)
-    assert_equal(height, "100", "SC height")
+    # SC sollte NICHT mehr gesteuert haben (weil gelockt)
+    # Also: pos_calls/tilt_calls sollten immer noch bei 100 sein
+    sc_height, sc_angle = get_cover_position(pos_calls, tilt_calls)  # ← Letzter SC Call
+    assert_equal(sc_height, "100", "SC should not have made new calls (still at 100)")
     if check_angle:
-        assert_equal(angle, "100", "SC angle")
+        assert_equal(sc_angle, "100", "SC should not have made new calls (still at 100)")
+
+    # Aber tatsächliche Position sollte bei 50/60 bleiben (vom User)
+    actual_height, actual_angle = get_actual_cover_position(hass, "cover.sc_dummy")  # ← NEU!
+    assert_equal(actual_height, 50, "Actual cover should stay at manual position (locked)")
+    if check_angle:
+        assert_equal(actual_angle, 60, "Actual cover should stay at manual position (locked)")
