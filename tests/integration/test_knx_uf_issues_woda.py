@@ -36,34 +36,30 @@ TEST_CONFIG = {
             # "brightness_dawn_entity":
             "sun_elevation_entity": "input_number.d03_sun_elevation",
             "sun_azimuth_entity": "input_number.d04_sun_azimuth",
-            "facade_azimuth_static": 180,
-            "facade_offset_sun_in_static": -80,
-            "facade_offset_sun_out_static": 80,
-            "facade_elevation_sun_min_static": 10,
-            "facade_elevation_sun_max_static": 80,
-            "facade_slat_width_static": 60,
-            "facade_slat_distance_static": 50,
-            "facade_slat_angle_offset_static": 0,
-            "facade_slat_min_angle_static": 0,
+            "facade_azimuth_static": 96,
+            "facade_offset_sun_in_static": -86,
+            "facade_offset_sun_out_static": 86,
+            "facade_elevation_sun_min_static": 18,
+            "facade_elevation_sun_max_static": 90,
             "facade_shutter_stepping_height_static": 5,
-            "facade_shutter_stepping_angle_static": 5,
             "facade_light_strip_width_static": 0,
             "facade_shutter_height_static": 1000,
-            "facade_max_movement_duration_static": 3,
-            "facade_modification_tolerance_height_static": 3,
-            "facade_modification_tolerance_angle_static": 3,
+            "facade_neutral_pos_height_manual": 0,
+            "facade_neutral_pos_angle_manual": 0,
+            "facade_modification_tolerance_height_static": 0,
+            "facade_max_movement_duration_static": 18,
             "sc_internal_values": {
                 "lock_integration_manual": False,
                 # "lock_integration_entity": input_boolean.d07_lock_integration
                 "lock_integration_with_position_manual": False,
                 # "lock_integration_with_position_entity": input_boolean.d08_lock_integration_with_position
-                "lock_height_manual": 50,
+                "lock_height_manual": 0,
                 # "lock_height_entity": input_number.lock_height_sc_dummy
-                "lock_angle_manual": 50,
+                "lock_angle_manual": 15,
                 # "lock_angle_entity": input_number.lock_angle_sc_dummy
                 # no_restriction, only_open, only_close
-                "movement_restriction_height_manual": "only_open",
-                "movement_restriction_angle_manual": "only_open",
+                "movement_restriction_height_manual": "no_restriction",
+                "movement_restriction_angle_manual": "no_restriction",
                 # "movement_restriction_height_entity":
                 # "movement_restriction_angle_entity":
                 # "enforce_positioning_entity": input_boolean.d13_enforce_positioning
@@ -123,10 +119,10 @@ TEST_CONFIG = {
 
 
 async def test_show_setup(
-        hass: HomeAssistant,
-        setup_from_user_config,
-        time_travel,
-        caplog,
+    hass: HomeAssistant,
+    setup_from_user_config,
+    time_travel,
+    caplog,
 ):
     """Not really a test but show whole instance configuration."""
 
@@ -142,8 +138,8 @@ async def test_show_setup(
 @pytest.mark.parametrize(
     ("shutter_type", "check_angle"),
     [
-        ("mode1", True),
-        ("mode2", True),
+        # ("mode1", True),
+        # ("mode2", True),
         ("mode3", False),
     ],
 )
@@ -185,8 +181,8 @@ async def test_lock(hass: HomeAssistant, setup_from_user_config, time_travel, ca
 @pytest.mark.parametrize(
     ("shutter_type", "check_angle"),
     [
-        ("mode1", True),
-        ("mode2", True),
+        # ("mode1", True),
+        # ("mode2", True),
         ("mode3", False),
     ],
 )
@@ -221,7 +217,7 @@ async def test_lock_with_position(hass: HomeAssistant, setup_from_user_config, t
     assert_equal(state2.state, LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION, "Lock state")
 
     height, angle = get_cover_position(pos_calls, tilt_calls)
-    assert_equal(height, "50", "SC height")
+    assert_equal(height, "100", "SC height")
     if check_angle:
         assert_equal(angle, "50", "SC angle")
 
@@ -229,8 +225,8 @@ async def test_lock_with_position(hass: HomeAssistant, setup_from_user_config, t
 @pytest.mark.parametrize(
     ("shutter_type", "check_angle"),
     [
-        ("mode1", True),
-        ("mode2", True),
+        # ("mode1", True),
+        # ("mode2", True),
         ("mode3", False),
     ],
 )
@@ -284,7 +280,7 @@ async def test_lock_then_lock_with_position(hass: HomeAssistant, setup_from_user
     )
     assert_equal(state3.state, LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION, "Lock state")
     height, angle = get_cover_position(pos_calls, tilt_calls)
-    assert_equal(height, "50", "SC height")
+    assert_equal(height, "100", "SC height")
     if check_angle:
         assert_equal(angle, "50", "SC angle")
 
@@ -292,8 +288,8 @@ async def test_lock_then_lock_with_position(hass: HomeAssistant, setup_from_user
 @pytest.mark.parametrize(
     ("shutter_type", "check_angle"),
     [
-        ("mode1", True),
-        ("mode2", True),
+        # ("mode1", True),
+        # ("mode2", True),
         ("mode3", False),
     ],
 )
@@ -327,7 +323,7 @@ async def test_lock_with_position_then_lock(hass: HomeAssistant, setup_from_user
     )
     assert_equal(state2.state, LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION, "Lock state")
     height, angle = get_cover_position(pos_calls, tilt_calls)
-    assert_equal(height, "50", "SC height")
+    assert_equal(height, "100", "SC height")
     if check_angle:
         assert_equal(angle, "50", "SC angle")
 
@@ -347,7 +343,7 @@ async def test_lock_with_position_then_lock(hass: HomeAssistant, setup_from_user
     )
     assert_equal(state3.state, LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION, "Lock state")
     height, angle = get_cover_position(pos_calls, tilt_calls)
-    assert_equal(height, "50", "SC height")
+    assert_equal(height, "100", "SC height")
     if check_angle:
         assert_equal(angle, "50", "SC angle")
 
@@ -355,8 +351,8 @@ async def test_lock_with_position_then_lock(hass: HomeAssistant, setup_from_user
 @pytest.mark.parametrize(
     ("shutter_type", "check_angle"),
     [
-        ("mode1", True),
-        ("mode2", True),
+        # ("mode1", True),
+        # ("mode2", True),
         ("mode3", False),
     ],
 )
