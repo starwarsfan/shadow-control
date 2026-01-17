@@ -10,6 +10,7 @@ from custom_components.shadow_control import LockState
 from custom_components.shadow_control.const import DOMAIN
 from tests.integration.conftest import (
     assert_equal,
+    get_actual_cover_position,
     get_cover_position,
     get_entity_and_show_state,
     set_lock_state,
@@ -17,7 +18,7 @@ from tests.integration.conftest import (
     setup_instance,
     show_instance_entity_states,
     simulate_manual_cover_change,
-    time_travel_and_check, get_actual_cover_position,
+    time_travel_and_check,
 )
 
 _LOGGER = logging.getLogger(__name__)
