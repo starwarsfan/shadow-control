@@ -458,3 +458,138 @@ class TestPositionShutter:
 
         # Verify NO commands sent
         manager.hass.services.async_call.assert_not_called()
+
+    # ========================================================================
+    # TEST 12: Duplikat-Prüfung während laufendem Timer - Identische Position
+    # ========================================================================
+
+    async def test_duplicate_command_skipped_during_timer(self, manager):
+        """Test that duplicate commands are skipped when timer is running."""
+        # Setup: Simulate positioning in progress
+        manager._timer = MagicMock()  # Timer läuft
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
+        manager._last_calculated_height = 50.0
+        manager._last_calculated_angle = 45.0
+        manager._facade_config.max_movement_duration = 27.0
+
+        # Set previous values
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with IDENTICAL target position while timer is running
+        await manager._position_shutter(50.0, 45.0, stop_timer=False)
+
+        # Verify NO commands sent (duplicate skipped)
+        manager.hass.services.async_call.assert_not_called()
+
+    # ========================================================================
+    # TEST 13: Duplikat-Prüfung - Verschiedene Position während Timer
+    # ========================================================================
+
+    async def test_different_position_sent_during_timer(self, manager):
+        """Test that different positions are sent even when timer is running."""
+        # Setup: Simulate positioning in progress
+        manager._timer = MagicMock()  # Timer läuft
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
+        manager._last_calculated_height = 50.0
+        manager._last_calculated_angle = 45.0
+        manager._facade_config.max_movement_duration = 27.0
+
+        # Set previous values
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with DIFFERENT target position while timer is running
+        await manager._position_shutter(60.0, 55.0, stop_timer=False)
+
+        # Verify commands WERE sent (position changed)
+        assert manager.hass.services.async_call.call_count == 2
+
+    # ========================================================================
+    # TEST 14: Duplikat-Prüfung - Timer ist None (Timer-Callback)
+    # ========================================================================
+
+    async def test_timer_callback_not_blocked(self, manager):
+        """Test that timer callbacks are not blocked by duplicate check."""
+        # Setup: Timer callback situation
+        manager._timer = None  # Timer ist abgelaufen!
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
+        manager._last_calculated_height = 50.0
+        manager._last_calculated_angle = 45.0
+        manager._facade_config.max_movement_duration = 27.0
+
+        # Set previous values (same as target)
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with SAME position but timer is None (callback)
+        await manager._position_shutter(50.0, 45.0, stop_timer=False)
+
+        # Verify NO commands sent because values are identical
+        manager.hass.services.async_call.assert_not_called()
+
+    # ========================================================================
+    # TEST 15: Duplikat-Prüfung - enforce_position_update überschreibt
+    # ========================================================================
+
+    async def test_enforce_overrides_duplicate_check(self, manager):
+        """Test that enforce flag overrides duplicate check."""
+        # Setup: Simulate positioning in progress
+        manager._timer = MagicMock()  # Timer läuft
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
+        manager._last_calculated_height = 50.0
+        manager._last_calculated_angle = 45.0
+        manager._facade_config.max_movement_duration = 27.0
+        manager._enforce_position_update = True  # Enforce!
+
+        # Set previous values
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with IDENTICAL position but enforce is True
+        await manager._position_shutter(50.0, 45.0, stop_timer=False)
+
+        # Verify commands WERE sent (enforce overrides)
+        assert manager.hass.services.async_call.call_count == 2
+
+    # ========================================================================
+    # TEST 16: Duplikat-Prüfung - max_movement_duration ist None
+    # ========================================================================
+
+    async def test_duplicate_check_with_none_duration(self, manager):
+        """Test that duplicate check handles None max_movement_duration."""
+        # Setup: max_duration is None
+        manager._timer = MagicMock()
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
+        manager._last_calculated_height = 50.0
+        manager._last_calculated_angle = 45.0
+        manager._facade_config.max_movement_duration = None  # None!
+
+        # Set previous values
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with IDENTICAL position
+        await manager._position_shutter(50.0, 45.0, stop_timer=False)
+
+        # Verify NO commands sent (values identical)
+        manager.hass.services.async_call.assert_not_called()
+
+    # ========================================================================
+    # TEST 17: _enforce_position_update wird zurückgesetzt
+    # ========================================================================
+
+    async def test_enforce_flag_reset_after_use(self, manager):
+        """Test that enforce flag is reset after being used."""
+        # Set enforce flag
+        manager._enforce_position_update = True
+
+        # Set previous values (same as target)
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call
+        await manager._position_shutter(50.0, 45.0, stop_timer=False)
+
+        # Verify flag was reset
+        assert manager._enforce_position_update is False
