@@ -1,18 +1,14 @@
 """Tests for _position_shutter method."""
 
-from datetime import datetime
+from datetime import timedelta
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.components.cover import CoverEntityFeature
-from homeassistant.const import ATTR_SUPPORTED_FEATURES
-from homeassistant.core import HomeAssistant, State
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from homeassistant.util import dt as dt_util
 
 from custom_components.shadow_control import ShadowControlManager
 from custom_components.shadow_control.const import (
-    DOMAIN,
-    DOMAIN_DATA_MANAGERS,
     LockState,
     ShutterType,
 )
@@ -46,6 +42,7 @@ class TestPositionShutter:
         instance._previous_shutter_angle = 40.0
 
         # Tracking
+        instance._timer = None
         instance._last_positioning_time = None
         instance._last_calculated_height = 0.0
         instance._last_calculated_angle = 0.0
@@ -56,13 +53,26 @@ class TestPositionShutter:
         # Mock methods
         instance._cancel_timer = MagicMock()
         instance._update_extra_state_attributes = MagicMock()
-        instance._should_output_be_updated = MagicMock(side_effect=lambda **kwargs: kwargs.get("new_value"))
+
+        # ✅ FIX: _should_output_be_updated returns new_value
+        def mock_should_output(config_value, new_value, previous_value):
+            return new_value
+
+        instance._should_output_be_updated = MagicMock(side_effect=mock_should_output)
         instance._convert_shutter_angle_percent_to_degrees = MagicMock(return_value=45.0)
+
+        # ✅ NEU: Movement restriction mocks
+        instance._dynamic_config.movement_restriction_height = None
+        instance._dynamic_config.movement_restriction_angle = None
 
         # Mock hass
         instance.hass.states.get = MagicMock(
             return_value=MagicMock(
-                attributes={"supported_features": 15}  # SET_POSITION | SET_TILT_POSITION
+                attributes={
+                    "supported_features": (
+                        CoverEntityFeature.SET_POSITION | CoverEntityFeature.SET_TILT_POSITION  # ✅ ADD THIS!
+                    )
+                }
             )
         )
         instance.hass.services.has_service = MagicMock(return_value=True)
