@@ -2177,9 +2177,6 @@ class ShadowControlManager:
             self._enforce_position_update = False  # Reset enforce positioning flag
 
         # Position all configured shutters
-        self._previous_shutter_height = self.used_shutter_height
-        self._previous_shutter_angle = self.used_shutter_angle
-        self.used_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(self.used_shutter_angle)
         for entity in self._target_cover_entity_id:
             current_cover_state: State | None = self.hass.states.get(entity)
 
@@ -2235,6 +2232,10 @@ class ShadowControlManager:
                         )
                 else:
                     self.logger.debug("Angle '%.2f%%' for entity_id %s not sent, value was the same or restricted.", self.used_shutter_angle, entity)
+
+        self._previous_shutter_height = self.used_shutter_height
+        self._previous_shutter_angle = self.used_shutter_angle
+        self.used_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(self.used_shutter_angle)
 
         # Always update HA state at the end to reflect the latest internal calculated values and attributes
         self._update_extra_state_attributes()
