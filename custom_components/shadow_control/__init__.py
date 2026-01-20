@@ -2174,6 +2174,7 @@ class ShadowControlManager:
             self.logger.debug("Enforcing position update")
             send_height_command = True
             send_angle_command = True
+            self._enforce_position_update = False  # Reset enforce positioning flag
 
         # Position all configured shutters
         self._previous_shutter_height = self.used_shutter_height
