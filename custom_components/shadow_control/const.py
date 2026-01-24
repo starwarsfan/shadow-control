@@ -31,7 +31,9 @@ class SCInternal(Enum):
     NEUTRAL_POS_ANGLE_MANUAL = "facade_neutral_pos_angle_manual"
 
     SHADOW_CONTROL_ENABLED_MANUAL = "shadow_control_enabled_manual"
-    SHADOW_BRIGHTNESS_THRESHOLD_MANUAL = "shadow_brightness_threshold_manual"
+    SHADOW_BRIGHTNESS_THRESHOLD_WINTER_MANUAL = "shadow_brightness_threshold_winter_manual"
+    SHADOW_BRIGHTNESS_THRESHOLD_SUMMER_MANUAL = "shadow_brightness_threshold_summer_manual"
+    SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_MANUAL = "shadow_brightness_threshold_buffer_manual"
     SHADOW_AFTER_SECONDS_MANUAL = "shadow_after_seconds_manual"
     SHADOW_SHUTTER_MAX_HEIGHT_MANUAL = "shadow_shutter_max_height_manual"
     SHADOW_SHUTTER_MAX_ANGLE_MANUAL = "shadow_shutter_max_angle_manual"
@@ -74,7 +76,9 @@ class SCInternal(Enum):
             SCInternal.LOCK_ANGLE_MANUAL,
             SCInternal.NEUTRAL_POS_HEIGHT_MANUAL,
             SCInternal.NEUTRAL_POS_ANGLE_MANUAL,
-            SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MANUAL,
+            SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_WINTER_MANUAL,
+            SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_SUMMER_MANUAL,
+            SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_MANUAL,
             SCInternal.SHADOW_AFTER_SECONDS_MANUAL,
             SCInternal.SHADOW_SHUTTER_MAX_HEIGHT_MANUAL,
             SCInternal.SHADOW_SHUTTER_MAX_ANGLE_MANUAL,
@@ -104,6 +108,8 @@ class SCDynamicInput(Enum):
     BRIGHTNESS_DAWN_ENTITY = "brightness_dawn_entity"
     SUN_ELEVATION_ENTITY = "sun_elevation_entity"
     SUN_AZIMUTH_ENTITY = "sun_azimuth_entity"
+    SUNRISE_ENTITY = "sunrise_entity"
+    SUNSET_ENTITY = "sunset_entity"
     SHUTTER_CURRENT_HEIGHT_ENTITY = "shutter_current_height_entity"
     SHUTTER_CURRENT_ANGLE_ENTITY = "shutter_current_angle_entity"
     LOCK_INTEGRATION_ENTITY = "lock_integration_entity"
@@ -148,7 +154,9 @@ class SCShadowInput(Enum):
     """Shadow configuration enums."""
 
     CONTROL_ENABLED_ENTITY = "shadow_control_enabled_entity"
-    BRIGHTNESS_THRESHOLD_ENTITY = "shadow_brightness_threshold_entity"
+    BRIGHTNESS_THRESHOLD_WINTER_ENTITY = "shadow_brightness_threshold_winter_entity"
+    BRIGHTNESS_THRESHOLD_SUMMER_ENTITY = "shadow_brightness_threshold_summer_entity"
+    BRIGHTNESS_THRESHOLD_BUFFER_ENTITY = "shadow_brightness_threshold_buffer_entity"
     AFTER_SECONDS_ENTITY = "shadow_after_seconds_entity"
     SHUTTER_MAX_HEIGHT_ENTITY = "shadow_shutter_max_height_entity"
     SHUTTER_MAX_ANGLE_ENTITY = "shadow_shutter_max_angle_entity"
@@ -280,7 +288,9 @@ class SCDefaults(Enum):
     MODIFICATION_TOLERANCE_ANGLE_STATIC = 3  # noqa: PIE796
     NEUTRAL_POS_HEIGHT_VALUE = 0  # noqa: PIE796
     NEUTRAL_POS_ANGLE_VALUE = 0  # noqa: PIE796
-    SHADOW_BRIGHTNESS_THRESHOLD_VALUE = 50000
+    SHADOW_BRIGHTNESS_THRESHOLD_WINTER_VALUE = 30000
+    SHADOW_BRIGHTNESS_THRESHOLD_SUMMER_VALUE = 50000
+    SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_VALUE = 500
     SHADOW_AFTER_SECONDS_VALUE = 15
     SHADOW_SHUTTER_MAX_HEIGHT_VALUE = 100
     SHADOW_SHUTTER_MAX_ANGLE_VALUE = 100  # noqa: PIE796
@@ -289,7 +299,7 @@ class SCDefaults(Enum):
     SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_VALUE = 50
     SHADOW_HEIGHT_AFTER_SUN_VALUE = 0  # noqa: PIE796
     SHADOW_ANGLE_AFTER_SUN_VALUE = 0  # noqa: PIE796
-    DAWN_BRIGHTNESS_THRESHOLD_VALUE = 500
+    DAWN_BRIGHTNESS_THRESHOLD_VALUE = 500  # noqa: PIE796
     DAWN_AFTER_SECONDS_VALUE = 15  # noqa: PIE796
     DAWN_SHUTTER_MAX_HEIGHT_VALUE = 100  # noqa: PIE796
     DAWN_SHUTTER_MAX_ANGLE_VALUE = 100  # noqa: PIE796
@@ -305,7 +315,9 @@ INTERNAL_TO_DEFAULTS_MAP = {
     SCInternal.LOCK_ANGLE_MANUAL: SCDefaults.LOCK_ANGLE_VALUE.value,
     SCInternal.NEUTRAL_POS_HEIGHT_MANUAL: SCDefaults.NEUTRAL_POS_HEIGHT_VALUE.value,
     SCInternal.NEUTRAL_POS_ANGLE_MANUAL: SCDefaults.NEUTRAL_POS_ANGLE_VALUE.value,
-    SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MANUAL: SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_VALUE.value,
+    SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_WINTER_MANUAL: SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_WINTER_VALUE.value,
+    SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_SUMMER_MANUAL: SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_SUMMER_VALUE.value,
+    SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_MANUAL: SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_VALUE.value,
     SCInternal.SHADOW_AFTER_SECONDS_MANUAL: SCDefaults.SHADOW_AFTER_SECONDS_VALUE.value,
     SCInternal.SHADOW_SHUTTER_MAX_HEIGHT_MANUAL: SCDefaults.SHADOW_SHUTTER_MAX_HEIGHT_VALUE.value,
     SCInternal.SHADOW_SHUTTER_MAX_ANGLE_MANUAL: SCDefaults.SHADOW_SHUTTER_MAX_ANGLE_VALUE.value,
@@ -330,7 +342,9 @@ NUMBER_INTERNAL_TO_EXTERNAL_MAP = {
     SCInternal.LOCK_ANGLE_MANUAL.value: SCDynamicInput.LOCK_ANGLE_ENTITY.value,
     SCInternal.NEUTRAL_POS_HEIGHT_MANUAL.value: SCFacadeConfig2.NEUTRAL_POS_HEIGHT_ENTITY.value,
     SCInternal.NEUTRAL_POS_ANGLE_MANUAL.value: SCFacadeConfig2.NEUTRAL_POS_ANGLE_ENTITY.value,
-    SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MANUAL.value: SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value,
+    SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_WINTER_MANUAL.value: SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value,
+    SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_SUMMER_MANUAL.value: SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value,
+    SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_MANUAL.value: SCShadowInput.BRIGHTNESS_THRESHOLD_BUFFER_ENTITY.value,
     SCInternal.SHADOW_AFTER_SECONDS_MANUAL.value: SCShadowInput.AFTER_SECONDS_ENTITY.value,
     SCInternal.SHADOW_SHUTTER_MAX_HEIGHT_MANUAL.value: SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value,
     SCInternal.SHADOW_SHUTTER_MAX_ANGLE_MANUAL.value: SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value,
@@ -430,6 +444,22 @@ EXTERNAL_SENSOR_DEFINITIONS = [
         "icon": "mdi:state-machine",
     },
     #
+    # Sun entities for adaptive brightness calculation
+    {
+        "config_key": SCDynamicInput.SUNRISE_ENTITY.value,
+        "translation_key": SCDynamicInput.SUNRISE_ENTITY.value,
+        "unit": None,  # Datetime hat keine Unit
+        "state_class": None,
+        "icon": "mdi:weather-sunset-up",
+    },
+    {
+        "config_key": SCDynamicInput.SUNSET_ENTITY.value,
+        "translation_key": SCDynamicInput.SUNSET_ENTITY.value,
+        "unit": None,
+        "state_class": None,
+        "icon": "mdi:weather-sunset-down",
+    },
+    #
     # Shadow control sensor definitions
     {
         "config_key": SCShadowInput.CONTROL_ENABLED_ENTITY.value,
@@ -439,11 +469,25 @@ EXTERNAL_SENSOR_DEFINITIONS = [
         "icon": "mdi:toggle-switch",
     },
     {
-        "config_key": SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value,
-        "translation_key": SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value,
+        "config_key": SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value,
+        "translation_key": SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value,
         "unit": "lx",
         "state_class": SensorStateClass.MEASUREMENT.value,
         "icon": "mdi:brightness-5",
+    },
+    {
+        "config_key": SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value,
+        "translation_key": SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value,
+        "unit": "lx",
+        "state_class": SensorStateClass.MEASUREMENT.value,
+        "icon": "mdi:brightness-6",
+    },
+    {
+        "config_key": SCShadowInput.BRIGHTNESS_THRESHOLD_BUFFER_ENTITY.value,
+        "translation_key": SCShadowInput.BRIGHTNESS_THRESHOLD_BUFFER_ENTITY.value,
+        "unit": "lx",
+        "state_class": SensorStateClass.MEASUREMENT.value,
+        "icon": "mdi:brightness-4",
     },
     {
         "config_key": SCShadowInput.AFTER_SECONDS_ENTITY.value,
