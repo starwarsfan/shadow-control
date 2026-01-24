@@ -221,7 +221,13 @@ def get_cfg_shadow_settings() -> vol.Schema:
             vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
             ),
-            vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value): selector.EntitySelector(
+            vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            ),
+            vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            ),
+            vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_BUFFER_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             vol.Optional(SCShadowInput.AFTER_SECONDS_ENTITY.value): selector.EntitySelector(
@@ -368,7 +374,13 @@ def get_cfg_shadow_settings_mode3() -> vol.Schema:
             vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
             ),
-            vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value): selector.EntitySelector(
+            vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            ),
+            vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            ),
+            vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_BUFFER_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             vol.Optional(SCShadowInput.AFTER_SECONDS_ENTITY.value): selector.EntitySelector(
@@ -523,8 +535,12 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.SHADOW_CONTROL_ENABLED_MANUAL.value): cv.boolean,
         vol.Optional(SCShadowInput.CONTROL_ENABLED_ENTITY.value): cv.entity_id,
-        vol.Optional(SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MANUAL.value): vol.Coerce(float),
-        vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value): cv.entity_id,
+        vol.Optional(SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_WINTER_MANUAL.value): vol.Coerce(float),
+        vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value): cv.entity_id,
+        vol.Optional(SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_SUMMER_MANUAL.value): vol.Coerce(float),
+        vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value): cv.entity_id,
+        vol.Optional(SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_MANUAL.value): vol.Coerce(float),
+        vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_BUFFER_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.SHADOW_AFTER_SECONDS_MANUAL.value): vol.Coerce(float),
         vol.Optional(SCShadowInput.AFTER_SECONDS_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.SHADOW_SHUTTER_MAX_HEIGHT_MANUAL.value): vol.Coerce(float),
