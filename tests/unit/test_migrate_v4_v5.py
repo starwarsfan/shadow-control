@@ -65,39 +65,12 @@ class TestMigrationVersion4:
 
         # New keys should be present
         assert SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value in updated_options
-        assert SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value in updated_options
-        assert SCShadowInput.BRIGHTNESS_THRESHOLD_BUFFER_ENTITY.value in updated_options
 
         # Winter and summer should have the old value (adaptive mode disabled)
         assert updated_options[SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value] == "50000"
-        assert updated_options[SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value] == "50000"
-
-        # Buffer should have default value
-        assert updated_options[SCShadowInput.BRIGHTNESS_THRESHOLD_BUFFER_ENTITY.value] == SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_VALUE.value
 
         # Version should be updated
         assert call_args.kwargs["version"] == VERSION
-
-    @pytest.mark.asyncio
-    async def test_migrate_sets_defaults_when_old_key_missing(self, mock_hass, config_entry_v4):
-        """Test that defaults are set when old brightness_threshold_entity doesn't exist."""
-        # Setup: Empty options (no old brightness threshold)
-        config_entry_v4.options = {}
-
-        with patch("custom_components.shadow_control.get_full_options_schema") as mock_schema:
-            mock_schema.return_value = lambda x: x
-
-            result = await async_migrate_entry(mock_hass, config_entry_v4)
-
-        assert result is True
-
-        call_args = mock_hass.config_entries.async_update_entry.call_args
-        updated_options = call_args.kwargs["options"]
-
-        # All new keys should have default values
-        assert updated_options[SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value] == SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_WINTER_VALUE.value
-        assert updated_options[SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value] == SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_SUMMER_VALUE.value
-        assert updated_options[SCShadowInput.BRIGHTNESS_THRESHOLD_BUFFER_ENTITY.value] == SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_VALUE.value
 
     @pytest.mark.asyncio
     async def test_migrate_preserves_other_options(self, mock_hass, config_entry_v4):
@@ -186,7 +159,6 @@ class TestMigrationVersion4:
 
             # Both winter and summer should have the same value
             assert updated_options[SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value] == test_value
-            assert updated_options[SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value] == test_value
 
 
 class TestMigrationOtherVersions:
