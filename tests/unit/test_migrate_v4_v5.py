@@ -10,7 +10,6 @@ from homeassistant.core import HomeAssistant
 from custom_components.shadow_control import async_migrate_entry
 from custom_components.shadow_control.const import (
     VERSION,
-    SCDefaults,
     SCShadowInput,
 )
 
