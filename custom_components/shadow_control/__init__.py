@@ -537,12 +537,60 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         return True
 
     if config_entry.version == 4:
-        # Remove no longer existing config options
-        for field_to_remove in SCInternal:
-            static_key = field_to_remove.value.replace("_manual", "_static")
+        # List of deprecated *_static keys to remove (from pre-v5 configs)
+        # Note: Facade *_static keys are legitimate and must be kept!
+        deprecated_static_keys = [
+            "lock_integration_static",
+            "lock_integration_with_position_static",
+            "lock_height_static",
+            "lock_angle_static",
+            "movement_restriction_height_static",
+            "movement_restriction_angle_static",
+            "facade_neutral_pos_height_static",
+            "facade_neutral_pos_angle_static",
+            "shadow_control_enabled_static",
+            "shadow_brightness_threshold_static",
+            "shadow_after_seconds_static",
+            "shadow_shutter_max_height_static",
+            "shadow_shutter_max_angle_static",
+            "shadow_shutter_look_through_seconds_static",
+            "shadow_shutter_open_seconds_static",
+            "shadow_shutter_look_through_angle_static",
+            "shadow_height_after_sun_static",
+            "shadow_angle_after_sun_static",
+            "dawn_control_enabled_static",
+            "dawn_brightness_threshold_static",
+            "dawn_after_seconds_static",
+            "dawn_shutter_max_height_static",
+            "dawn_shutter_max_angle_static",
+            "dawn_shutter_look_through_seconds_static",
+            "dawn_shutter_open_seconds_static",
+            "dawn_shutter_look_through_angle_static",
+            "dawn_height_after_dawn_static",
+            "dawn_angle_after_dawn_static",
+        ]
+
+        for static_key in deprecated_static_keys:
             if static_key in new_options:
                 new_options.pop(static_key)
-                _LOGGER.info("[%s] Removed '%s' from configuration.", DOMAIN, static_key)
+                _LOGGER.info("[%s] Removed deprecated '%s' from configuration.", DOMAIN, static_key)
+
+        # Migrate shadow brightness threshold from single value to winter/summer/buffer
+        old_shadow_brightness_key = "shadow_brightness_threshold_entity"
+        new_winter_key = SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value
+
+        if old_shadow_brightness_key in new_options:
+            # Migrate old value to winter
+            old_value = new_options.pop(old_shadow_brightness_key)
+            new_options[new_winter_key] = old_value
+
+            _LOGGER.info(
+                "[%s] Migrated shadow brightness: '%s' (%s) → %s, summer=empty/unset, buffer=empty/unset",
+                DOMAIN,
+                old_shadow_brightness_key,
+                old_value,
+                new_winter_key,
+            )
 
         try:
             validated_options = get_full_options_schema()(new_options)
