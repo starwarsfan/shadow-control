@@ -992,12 +992,11 @@ class ShadowControlManager:
         new_state: State | None = event.data.get("new_state")
 
         # Ignore state changes involving unavailable/unknown states
-        if (new_state and new_state.state in ['unavailable', 'unknown']) or \
-                (old_state and old_state.state in ['unavailable', 'unknown']):
+        if (new_state and new_state.state in ["unavailable", "unknown"]) or (old_state and old_state.state in ["unavailable", "unknown"]):
             self.logger.debug(
                 "Target cover state change from %s to %s involves unavailable/unknown - ignoring",
                 old_state.state if old_state else "None",
-                new_state.state if new_state else "None"
+                new_state.state if new_state else "None",
             )
             return  # Exit early, don't process this state change
 
@@ -1624,16 +1623,16 @@ class ShadowControlManager:
                         self.logger.info(
                             "Configuration entity '%s' initialized to %s (old_state is None) -> skipping immediate positioning",
                             entity,
-                            new_state.state if new_state else "None"
+                            new_state.state if new_state else "None",
                         )
                         # Don't set force_immediate_positioning
                         # Continue with rest of method (facade check, state processing, etc.)
                     # ✅ Skip if this is a state restore
-                    elif new_state and hasattr(new_state, 'context') and new_state.context.id.startswith('restore_state'):
+                    elif new_state and hasattr(new_state, "context") and new_state.context.id.startswith("restore_state"):
                         self.logger.info(
                             "Configuration entity '%s' restored to %s -> skipping immediate positioning",
                             entity,
-                            new_state.state if new_state else "None"
+                            new_state.state if new_state else "None",
                         )
                         # Don't set force_immediate_positioning
                     else:
