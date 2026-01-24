@@ -38,6 +38,8 @@ TEST_CONFIG = {
             # "brightness_dawn_entity":
             "sun_elevation_entity": "input_number.d03_sun_elevation",
             "sun_azimuth_entity": "input_number.d04_sun_azimuth",
+            # "sunrise_entity": "input_number.sunrise",
+            # "sunset_entity": "input_number.sunset",
             "facade_azimuth_static": 96,
             "facade_offset_sun_in_static": -86,
             "facade_offset_sun_out_static": 86,
@@ -75,7 +77,7 @@ TEST_CONFIG = {
                 # "shadow_control_enabled_entity":
                 "shadow_control_enabled_manual": True,
                 # "shadow_brightness_threshold_entity":
-                "shadow_brightness_threshold_manual": 50000,
+                "shadow_brightness_threshold_winter_manual": 50000,
                 # "shadow_after_seconds_entity":
                 "shadow_after_seconds_manual": 10,
                 # "shadow_shutter_max_height_entity": input_number.automation_shadow_max_height_sc_dummy
