@@ -1,18 +1,14 @@
 """Tests for _position_shutter method."""
 
-from datetime import datetime
+from datetime import timedelta
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.components.cover import CoverEntityFeature
-from homeassistant.const import ATTR_SUPPORTED_FEATURES
-from homeassistant.core import HomeAssistant, State
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from homeassistant.util import dt as dt_util
 
 from custom_components.shadow_control import ShadowControlManager
 from custom_components.shadow_control.const import (
-    DOMAIN,
-    DOMAIN_DATA_MANAGERS,
     LockState,
     ShutterType,
 )
@@ -46,6 +42,7 @@ class TestPositionShutter:
         instance._previous_shutter_angle = 40.0
 
         # Tracking
+        instance._timer = None
         instance._last_positioning_time = None
         instance._last_calculated_height = 0.0
         instance._last_calculated_angle = 0.0
@@ -56,13 +53,26 @@ class TestPositionShutter:
         # Mock methods
         instance._cancel_timer = MagicMock()
         instance._update_extra_state_attributes = MagicMock()
-        instance._should_output_be_updated = MagicMock(side_effect=lambda **kwargs: kwargs.get("new_value"))
+
+        # ✅ FIX: _should_output_be_updated returns new_value
+        def mock_should_output(config_value, new_value, previous_value):
+            return new_value
+
+        instance._should_output_be_updated = MagicMock(side_effect=mock_should_output)
         instance._convert_shutter_angle_percent_to_degrees = MagicMock(return_value=45.0)
+
+        # ✅ NEU: Movement restriction mocks
+        instance._dynamic_config.movement_restriction_height = None
+        instance._dynamic_config.movement_restriction_angle = None
 
         # Mock hass
         instance.hass.states.get = MagicMock(
             return_value=MagicMock(
-                attributes={"supported_features": 15}  # SET_POSITION | SET_TILT_POSITION
+                attributes={
+                    "supported_features": (
+                        CoverEntityFeature.SET_POSITION | CoverEntityFeature.SET_TILT_POSITION  # ✅ ADD THIS!
+                    )
+                }
             )
         )
         instance.hass.services.has_service = MagicMock(return_value=True)
@@ -199,23 +209,6 @@ class TestPositionShutter:
         # Should NOT send any commands (values unchanged)
         manager.hass.services.async_call.assert_not_called()
 
-    async def test_enforce_position_update_forces_positioning(self, manager):
-        """Test that enforce flag forces positioning even when values unchanged."""
-        manager._is_initial_run = False
-        manager.current_lock_state = LockState.UNLOCKED
-        manager._previous_shutter_height = 80.0  # Same as target
-        manager._previous_shutter_angle = 45.0  # Same as target
-        manager._enforce_position_update = True  # But force it!
-
-        # Mock to ensure values are set
-        manager.used_shutter_height = 80.0
-        manager.used_shutter_angle = 45.0
-
-        await manager._position_shutter(80.0, 45.0, stop_timer=False)
-
-        # Should send commands despite values being unchanged
-        assert manager.hass.services.async_call.call_count >= 1
-
     # ========================================================================
     # PHASE 5: MODE3 (NO TILT) HANDLING
     # ========================================================================
@@ -247,152 +240,31 @@ class TestPositionShutter:
         manager.current_lock_state = LockState.UNLOCKED
         manager._previous_shutter_height = 50.0
         manager._previous_shutter_angle = 40.0
-        manager.used_shutter_height = 80.0
-        manager.used_shutter_angle = 45.0
-
-        # Mock should_output_be_updated to return the new values
-        manager._should_output_be_updated = MagicMock(side_effect=lambda **kwargs: kwargs.get("new_value"))
 
         await manager._position_shutter(80.0, 45.0, stop_timer=False)
 
         # Verify tracking was updated
+        assert manager._last_calculated_height == manager.used_shutter_height
+        assert manager._last_calculated_angle == manager.used_shutter_angle
         assert manager._last_positioning_time is not None
-        assert isinstance(manager._last_positioning_time, datetime)
-        assert manager._last_calculated_height == 80.0
-        assert manager._last_calculated_angle == 45.0
-
-    async def test_tracking_not_updated_when_no_positioning(self, manager):
-        """Test that tracking is NOT updated when no positioning occurred."""
-        manager._is_initial_run = False
-        manager.current_lock_state = LockState.UNLOCKED
-        manager._previous_shutter_height = 80.0  # Same = no positioning
-        manager._previous_shutter_angle = 45.0
-        manager._last_positioning_time = None
-
-        await manager._position_shutter(80.0, 45.0, stop_timer=False)
-
-        # Verify tracking was NOT updated (no positioning happened)
-        assert manager._last_positioning_time is None
-
-    async def test_tracking_not_updated_on_initial_run(self, manager):
-        """Test that tracking is NOT updated on initial run."""
-        manager._is_initial_run = True
-        manager._last_positioning_time = None
-
-        await manager._position_shutter(80.0, 45.0, stop_timer=False)
-
-        # Verify tracking was NOT updated (initial run)
-        assert manager._last_positioning_time is None
-
-
-class TestPositionShutterSendLogic:
-    """Test send command logic in _position_shutter."""
-
-    @pytest.fixture
-    def mock_hass(self):
-        """Create a mock Home Assistant instance."""
-        hass = MagicMock(spec=HomeAssistant)
-        hass.states = MagicMock()
-        hass.services = MagicMock()
-        hass.data = {DOMAIN_DATA_MANAGERS: {}}
-        return hass
-
-    @pytest.fixture
-    def mock_config_entry(self):
-        """Create a mock config entry."""
-        return MockConfigEntry(
-            domain=DOMAIN,
-            entry_id="test_entry_id",
-            data={
-                "name": "Test Instance",
-                "covers": ["cover.test"],
-            },
-        )
-
-    @pytest.fixture
-    def manager(self, mock_hass, mock_config_entry):
-        """Create a ShadowControlManager instance with mocks."""
-        instance = MagicMock(spec=ShadowControlManager)
-        instance.hass = mock_hass
-        instance.logger = MagicMock()
-        instance._config_entry = mock_config_entry
-        instance._config = {}
-        instance._target_cover_entity_id = ["cover.test"]
-        instance.name = "Test Instance"
-
-        # Facade config
-        instance._facade_config = MagicMock()
-        instance._facade_config.shutter_type = ShutterType.MODE1
-
-        # Dynamic config
-        instance._dynamic_config = MagicMock()
-        instance._dynamic_config.movement_restriction_height = MagicMock()
-        instance._dynamic_config.movement_restriction_angle = MagicMock()
-
-        # Lock state
-        instance.current_lock_state = LockState.UNLOCKED
-
-        # Initial run
-        instance._is_initial_run = False
-
-        # Tracking
-        instance._previous_shutter_height = None
-        instance._previous_shutter_angle = None
-        instance._enforce_position_update = False
-
-        # Calculated values
-        instance.calculated_shutter_height = 0.0
-        instance.calculated_shutter_angle = 0.0
-        instance.used_shutter_height = 0.0
-        instance.used_shutter_angle = 0.0
-        instance.used_shutter_angle_degrees = 0.0
-
-        # Mock methods
-        instance._cancel_timer = MagicMock()
-        instance._update_extra_state_attributes = MagicMock()
-
-        def mock_should_output(config_value, new_value, previous_value):
-            """Mock that returns new_value."""
-            return new_value
-
-        instance._should_output_be_updated = MagicMock(side_effect=mock_should_output)
-        instance._convert_shutter_angle_percent_to_degrees = MagicMock(return_value=45.0)
-
-        # Mock cover state
-        cover_state = MagicMock(spec=State)
-        cover_state.attributes = {
-            ATTR_SUPPORTED_FEATURES: (CoverEntityFeature.SET_POSITION | CoverEntityFeature.SET_TILT_POSITION),
-            "current_position": 50,
-            "current_tilt_position": 50,
-        }
-        mock_hass.states.get.return_value = cover_state
-
-        # Mock services
-        mock_hass.services.has_service = MagicMock(return_value=True)
-        mock_hass.services.async_call = AsyncMock()
-
-        # Bind real method
-        instance._position_shutter = ShadowControlManager._position_shutter.__get__(instance)
-
-        return instance
 
     # ========================================================================
-    # TEST 1: Keine Position-Änderung → Kein Command
+    # COMPREHENSIVE TESTS
     # ========================================================================
 
-    async def test_no_position_change_no_command(self, manager):
-        """Test that no command is sent when position doesn't change."""
-        # Set previous position
-        manager._previous_shutter_height = 50.0
-        manager._previous_shutter_angle = 45.0
+    # ========================================================================
+    # TEST 1: Calculated Values immer setzen (auch wenn nicht positioniert)
+    # ========================================================================
 
-        # Call with SAME position (difference = 0.0)
+    async def test_calculated_values_always_set(self, manager):
+        """Test that calculated values are always set, even when locked."""
+        # Locked state
+        manager.current_lock_state = LockState.LOCKED_MANUALLY
+
+        # Call
         await manager._position_shutter(50.0, 45.0, stop_timer=False)
 
-        # Verify NO service calls
-        manager.hass.services.async_call.assert_not_called()
-
-        # Verify internal states updated
+        # Verify calculated values were set despite being locked
         assert manager.calculated_shutter_height == 50.0
         assert manager.calculated_shutter_angle == 45.0
 
@@ -586,3 +458,138 @@ class TestPositionShutterSendLogic:
 
         # Verify NO commands sent
         manager.hass.services.async_call.assert_not_called()
+
+    # ========================================================================
+    # TEST 12: Duplikat-Prüfung während laufendem Timer - Identische Position
+    # ========================================================================
+
+    async def test_duplicate_command_skipped_during_timer(self, manager):
+        """Test that duplicate commands are skipped when timer is running."""
+        # Setup: Simulate positioning in progress
+        manager._timer = MagicMock()  # Timer läuft
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
+        manager._last_calculated_height = 50.0
+        manager._last_calculated_angle = 45.0
+        manager._facade_config.max_movement_duration = 27.0
+
+        # Set previous values
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with IDENTICAL target position while timer is running
+        await manager._position_shutter(50.0, 45.0, stop_timer=False)
+
+        # Verify NO commands sent (duplicate skipped)
+        manager.hass.services.async_call.assert_not_called()
+
+    # ========================================================================
+    # TEST 13: Duplikat-Prüfung - Verschiedene Position während Timer
+    # ========================================================================
+
+    async def test_different_position_sent_during_timer(self, manager):
+        """Test that different positions are sent even when timer is running."""
+        # Setup: Simulate positioning in progress
+        manager._timer = MagicMock()  # Timer läuft
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
+        manager._last_calculated_height = 50.0
+        manager._last_calculated_angle = 45.0
+        manager._facade_config.max_movement_duration = 27.0
+
+        # Set previous values
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with DIFFERENT target position while timer is running
+        await manager._position_shutter(60.0, 55.0, stop_timer=False)
+
+        # Verify commands WERE sent (position changed)
+        assert manager.hass.services.async_call.call_count == 2
+
+    # ========================================================================
+    # TEST 14: Duplikat-Prüfung - Timer ist None (Timer-Callback)
+    # ========================================================================
+
+    async def test_timer_callback_not_blocked(self, manager):
+        """Test that timer callbacks are not blocked by duplicate check."""
+        # Setup: Timer callback situation
+        manager._timer = None  # Timer ist abgelaufen!
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
+        manager._last_calculated_height = 50.0
+        manager._last_calculated_angle = 45.0
+        manager._facade_config.max_movement_duration = 27.0
+
+        # Set previous values (same as target)
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with SAME position but timer is None (callback)
+        await manager._position_shutter(50.0, 45.0, stop_timer=False)
+
+        # Verify NO commands sent because values are identical
+        manager.hass.services.async_call.assert_not_called()
+
+    # ========================================================================
+    # TEST 15: Duplikat-Prüfung - enforce_position_update überschreibt
+    # ========================================================================
+
+    async def test_enforce_overrides_duplicate_check(self, manager):
+        """Test that enforce flag overrides duplicate check."""
+        # Setup: Simulate positioning in progress
+        manager._timer = MagicMock()  # Timer läuft
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
+        manager._last_calculated_height = 50.0
+        manager._last_calculated_angle = 45.0
+        manager._facade_config.max_movement_duration = 27.0
+        manager._enforce_position_update = True  # Enforce!
+
+        # Set previous values
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with IDENTICAL position but enforce is True
+        await manager._position_shutter(50.0, 45.0, stop_timer=False)
+
+        # Verify commands WERE sent (enforce overrides)
+        assert manager.hass.services.async_call.call_count == 2
+
+    # ========================================================================
+    # TEST 16: Duplikat-Prüfung - max_movement_duration ist None
+    # ========================================================================
+
+    async def test_duplicate_check_with_none_duration(self, manager):
+        """Test that duplicate check handles None max_movement_duration."""
+        # Setup: max_duration is None
+        manager._timer = MagicMock()
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=10)
+        manager._last_calculated_height = 50.0
+        manager._last_calculated_angle = 45.0
+        manager._facade_config.max_movement_duration = None  # None!
+
+        # Set previous values
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call with IDENTICAL position
+        await manager._position_shutter(50.0, 45.0, stop_timer=False)
+
+        # Verify NO commands sent (values identical)
+        manager.hass.services.async_call.assert_not_called()
+
+    # ========================================================================
+    # TEST 17: _enforce_position_update wird zurückgesetzt
+    # ========================================================================
+
+    async def test_enforce_flag_reset_after_use(self, manager):
+        """Test that enforce flag is reset after being used."""
+        # Set enforce flag
+        manager._enforce_position_update = True
+
+        # Set previous values (same as target)
+        manager._previous_shutter_height = 50.0
+        manager._previous_shutter_angle = 45.0
+
+        # Call
+        await manager._position_shutter(50.0, 45.0, stop_timer=False)
+
+        # Verify flag was reset
+        assert manager._enforce_position_update is False

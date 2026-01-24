@@ -2033,6 +2033,34 @@ class ShadowControlManager:
             self.current_lock_state.name,
         )
 
+        # Check if positioning is already in progress with same target
+        # Skip this check if called from timer callback (timer is already None)
+        if (
+            self._timer is not None  # Only check if timer is running
+            and hasattr(self, "_last_positioning_time")
+            and self._last_positioning_time is not None
+            and not self._enforce_position_update
+        ):
+            time_since_last_positioning = (dt_util.utcnow() - self._last_positioning_time).total_seconds()
+            max_duration = self._facade_config.max_movement_duration
+
+            if (
+                max_duration is not None
+                and time_since_last_positioning < max_duration
+                and hasattr(self, "_last_calculated_height")
+                and hasattr(self, "_last_calculated_angle")
+                and abs(shutter_height_percent - self._last_calculated_height) < 0.001
+                and abs(shutter_angle_percent - self._last_calculated_angle) < 0.001
+            ):
+                self.logger.debug(
+                    "Positioning already in progress (%.1fs of %.1fs elapsed) with identical target (%.1f%% / %.1f%%) - skipping duplicate command",
+                    time_since_last_positioning,
+                    max_duration,
+                    shutter_height_percent,
+                    shutter_angle_percent,
+                )
+                return  # Exit early
+
         # Always handle timer cancellation if required, regardless of initial run or lock state
         if stop_timer:
             self.logger.debug("Canceling timer.")
@@ -2146,11 +2174,9 @@ class ShadowControlManager:
             self.logger.debug("Enforcing position update")
             send_height_command = True
             send_angle_command = True
+            self._enforce_position_update = False  # Reset enforce positioning flag
 
         # Position all configured shutters
-        self._previous_shutter_height = self.used_shutter_height
-        self._previous_shutter_angle = self.used_shutter_angle
-        self.used_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(self.used_shutter_angle)
         for entity in self._target_cover_entity_id:
             current_cover_state: State | None = self.hass.states.get(entity)
 
@@ -2206,6 +2232,10 @@ class ShadowControlManager:
                         )
                 else:
                     self.logger.debug("Angle '%.2f%%' for entity_id %s not sent, value was the same or restricted.", self.used_shutter_angle, entity)
+
+        self._previous_shutter_height = self.used_shutter_height
+        self._previous_shutter_angle = self.used_shutter_angle
+        self.used_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(self.used_shutter_angle)
 
         # Always update HA state at the end to reflect the latest internal calculated values and attributes
         self._update_extra_state_attributes()
