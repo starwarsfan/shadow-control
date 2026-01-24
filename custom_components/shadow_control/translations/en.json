@@ -107,6 +107,8 @@
           "brightness_dawn_entity": "Brightness at dawn",
           "sun_elevation_entity": "Sun elevation",
           "sun_azimuth_entity": "Sun azimuth",
+          "sunrise_entity": "Sunrise",
+          "sunset_entity": "Sunset",
           "shutter_current_height_entity": "Current shutter height",
           "shutter_current_angle_entity": "Current shutter slat angle",
           "lock_integration_entity": "Lock integration",
@@ -122,6 +124,8 @@
           "brightness_dawn_entity": "Brightness at dawn, usually as a the median from multiple brightness sensors.",
           "sun_elevation_entity": "Elevation of the sun, usually from sun entity or a weather station.",
           "sun_azimuth_entity": "Azimuth of the sun, usually from sun entity or a weather station.",
+          "sunrise_entity": "Sunrise, usually from sun entity or a weather station.",
+          "sunset_entity": "Sunset, usually from sun entity or a weather station.",
           "shutter_current_height_entity": "Current shutter height as the returned value from the used actor.",
           "shutter_current_angle_entity": "Current shutter angle as the returned value from the used actor.",
           "lock_integration_entity": "Lock the whole integration to prevent any shutter position modification (by entity).",
@@ -138,7 +142,8 @@
         "description": "Configure how to handle brightness",
         "data": {
           "shadow_control_enabled_entity": "Shadow control enabled",
-          "shadow_brightness_threshold_entity": "Brightness threshold",
+          "shadow_brightness_threshold_winter_entity": "Summer brightness threshold",
+          "shadow_brightness_threshold_summer_entity": "Winter brightness threshold",
           "shadow_after_seconds_entity": "Close after x seconds",
           "shadow_shutter_max_height_entity": "Max shutter height",
           "shadow_shutter_max_angle_entity": "Max shutter angle",
@@ -150,7 +155,8 @@
         },
         "data_description": {
           "shadow_control_enabled_entity": "De-/Activate shadow handling entity.",
-          "shadow_brightness_threshold_entity": "Brightness threshold which must be passed to start shadow handling (by entity).",
+          "shadow_brightness_threshold_winter_entity": "Brightness threshold within summer, which must be passed to start shadow handling (by entity).",
+          "shadow_brightness_threshold_summer_entity": "Brightness threshold within winter, which must be passed to start shadow handling (by entity).",
           "shadow_after_seconds_entity": "Time in seconds to close shutter after passing brightness threshold (by entity).",
           "shadow_shutter_max_height_entity": "Shutter max height at shadow position (by entity).",
           "shadow_shutter_max_angle_entity": "Shutter max slat angle at shadow position (by entity).",
@@ -225,8 +231,11 @@
       "facade_neutral_pos_angle_manual": {
         "name": "Neutral angle"
       },
-      "shadow_brightness_threshold_manual": {
-        "name": "S: Brightness threshold"
+      "shadow_brightness_threshold_winter_manual": {
+        "name": "S: Winter brightness threshold"
+      },
+      "shadow_brightness_threshold_summer_manual": {
+        "name": "S: Summer brightness threshold"
       },
       "shadow_after_seconds_manual": {
         "name": "S: Close after x seconds"
@@ -353,8 +362,11 @@
       "shadow_control_enabled_entity": {
         "name": "S> Control"
       },
-      "shadow_brightness_threshold_entity": {
-        "name": "S> Threshold"
+      "shadow_brightness_threshold_winter_entity": {
+        "name": "S> Winter threshold"
+      },
+      "shadow_brightness_threshold_summer_entity": {
+        "name": "S> Summer threshold"
       },
       "shadow_after_seconds_entity": {
         "name": "B> after"

@@ -107,6 +107,8 @@
           "brightness_dawn_entity": "Helligkeit (Dämmerung)",
           "sun_elevation_entity": "Höhe der Sonne",
           "sun_azimuth_entity": "Azimut der Sonne",
+          "sunrise_entity": "Sonnenaufgang",
+          "sunset_entity": "Sonnenuntergang",
           "shutter_current_height_entity": "Aktuelle Behanghöhe",
           "shutter_current_angle_entity": "Aktueller Behangwinkel",
           "lock_integration_entity": "Integration sperren",
@@ -122,6 +124,8 @@
           "brightness_dawn_entity": "Dämmerungshelligkeit. I.d.R. der Mittelwert mehrerer Helligkeitssensoren.",
           "sun_elevation_entity": "Höhe der Sonne via Sun-Entität oder Wetterstation.",
           "sun_azimuth_entity": "Winkel der Sonne via Sun-Entität oder Wetterstation.",
+          "sunrise_entity": "Sonnenaufgang via Sun-Entität oder Wetterstation.",
+          "sunset_entity": "Sonnenuntergang via Sun-Entität oder Wetterstation.",
           "shutter_current_height_entity": "Aktuelle Behanghöhe als Rückmeldeobjekt vom Aktor.",
           "shutter_current_angle_entity": "Aktueller Lamellenwinkel als Rückmeldeobjekt von Aktor.",
           "lock_integration_entity": "Sperren der gesamten Integration, so dass keine Behangpositionierung erfolgt (via Entität).",
@@ -138,7 +142,8 @@
         "description": "Konfiguriere wie mit dem Lichteinfall auf der Fassade umgegangen werden soll",
         "data": {
           "shadow_control_enabled_entity": "Beschattungssteuerung aktiviert",
-          "shadow_brightness_threshold_entity": "Helligkeitsschwellwert",
+          "shadow_brightness_threshold_winter_entity": "Helligkeitsschwellwert Winter",
+          "shadow_brightness_threshold_summer_entity": "Helligkeitsschwellwert Sommer",
           "shadow_after_seconds_entity": "Schliessen nach x Sekunden",
           "shadow_shutter_max_height_entity": "Maximale Behanghöhe",
           "shadow_shutter_max_angle_entity": "Maximaler Lamellenwinkel",
@@ -150,7 +155,8 @@
         },
         "data_description": {
           "shadow_control_enabled_entity": "De-/Aktivieren der Beschattungssteuerung (via Entität).",
-          "shadow_brightness_threshold_entity": "Schwellwert, nach dessen überschreiten die Beschattung ausgelöst wird (via Entität).",
+          "shadow_brightness_threshold_winter_entity": "Schwellwert, nach dessen überschreiten die Beschattung im Winter ausgelöst wird (via Entität).",
+          "shadow_brightness_threshold_summer_entity": "Schwellwert, nach dessen überschreiten die Beschattung im Sommer ausgelöst wird (via Entität).",
           "shadow_after_seconds_entity": "Zeit in Sekunden nach überschreiten des Helligkeitsschwellwerts, nach welcher der Behang geschlossen wird (via Entität).",
           "shadow_shutter_max_height_entity": "Maximal anzufahrende Höhe bei Beschattung (via Entität).",
           "shadow_shutter_max_angle_entity": "Maximal anzufahrender Winkel bei Beschattung (via Entität).",
@@ -225,8 +231,11 @@
       "facade_neutral_pos_angle_manual": {
         "name": "Neutraler Winkel"
       },
-      "shadow_brightness_threshold_manual": {
-        "name": "B: Helligkeitsschwellwert"
+      "shadow_brightness_threshold_winter_manual": {
+        "name": "B: Helligkeitsschwellwert Winter"
+      },
+      "shadow_brightness_threshold_summer_manual": {
+        "name": "B: Helligkeitsschwellwert Sommer"
       },
       "shadow_after_seconds_manual": {
         "name": "B: Schliessen nach x Sekunden"
@@ -353,8 +362,11 @@
       "shadow_control_enabled_entity": {
         "name": "B> Steuerung"
       },
-      "shadow_brightness_threshold_entity": {
-        "name": "B> Schwellwert"
+      "shadow_brightness_threshold_winter_entity": {
+        "name": "B> Schwellwert Winter"
+      },
+      "shadow_brightness_threshold_summer_entity": {
+        "name": "B> Schwellwert Sommer"
       },
       "shadow_after_seconds_entity": {
         "name": "B> nach"
