@@ -806,6 +806,7 @@ class ShadowControlManager:
 
         self._listeners: list[Callable[[], None]] = []
         self._timer: Callable[[], None] | None = None
+        self._first_event_time = None  # Track first event time for startup grace period
 
         self.logger.debug("Manager initialized for target: %s.", self._target_cover_entity_id)
 
@@ -989,6 +990,16 @@ class ShadowControlManager:
         entity_id = event.data.get("entity_id")
         old_state: State | None = event.data.get("old_state")
         new_state: State | None = event.data.get("new_state")
+
+        # Ignore state changes involving unavailable/unknown states
+        if (new_state and new_state.state in ['unavailable', 'unknown']) or \
+                (old_state and old_state.state in ['unavailable', 'unknown']):
+            self.logger.debug(
+                "Target cover state change from %s to %s involves unavailable/unknown - ignoring",
+                old_state.state if old_state else "None",
+                new_state.state if new_state else "None"
+            )
+            return  # Exit early, don't process this state change
 
         self.logger.debug(
             "Target cover state change detected for %s. Old state: %s, New state: %s.",
@@ -1608,28 +1619,47 @@ class ShadowControlManager:
                 ]
 
                 if entity in config_entities_requiring_immediate_positioning:
-                    # Check if any lock is currently active
-                    lock_active = self._dynamic_config.lock_integration or self._dynamic_config.lock_integration_with_position
-
-                    if lock_active:
+                    # ✅ Skip if old_state is None (initial restore)
+                    if old_state is None:
                         self.logger.info(
-                            "Configuration entity '%s' changed from %s to %s, "
-                            "but lock is active (simple: %s, with_position: %s) -> skipping immediate positioning",
+                            "Configuration entity '%s' initialized to %s (old_state is None) -> skipping immediate positioning",
                             entity,
-                            old_state.state if old_state else "None",
-                            new_state.state if new_state else "None",
-                            self._dynamic_config.lock_integration,
-                            self._dynamic_config.lock_integration_with_position,
+                            new_state.state if new_state else "None"
+                        )
+                        # Don't set force_immediate_positioning
+                        # Continue with rest of method (facade check, state processing, etc.)
+                    # ✅ Skip if this is a state restore
+                    elif new_state and hasattr(new_state, 'context') and new_state.context.id.startswith('restore_state'):
+                        self.logger.info(
+                            "Configuration entity '%s' restored to %s -> skipping immediate positioning",
+                            entity,
+                            new_state.state if new_state else "None"
                         )
                         # Don't set force_immediate_positioning
                     else:
-                        self.logger.info(
-                            "Configuration entity '%s' changed from %s to %s -> forcing immediate positioning",
-                            entity,
-                            old_state.state if old_state else "None",
-                            new_state.state if new_state else "None",
-                        )
-                        force_immediate_positioning = True
+                        # Normal processing after grace period
+                        # Check if any lock is currently active
+                        lock_active = self._dynamic_config.lock_integration or self._dynamic_config.lock_integration_with_position
+
+                        if lock_active:
+                            self.logger.info(
+                                "Configuration entity '%s' changed from %s to %s, "
+                                "but lock is active (simple: %s, with_position: %s) -> skipping immediate positioning",
+                                entity,
+                                old_state.state if old_state else "None",
+                                new_state.state if new_state else "None",
+                                self._dynamic_config.lock_integration,
+                                self._dynamic_config.lock_integration_with_position,
+                            )
+                            # Don't set force_immediate_positioning
+                        else:
+                            self.logger.info(
+                                "Configuration entity '%s' changed from %s to %s -> forcing immediate positioning",
+                                entity,
+                                old_state.state if old_state else "None",
+                                new_state.state if new_state else "None",
+                            )
+                            force_immediate_positioning = True
 
                 if entity == self._config.get(SCShadowInput.CONTROL_ENABLED_ENTITY.value):
                     self.logger.info("Shadow control enable changed to %s", new_state.state)
