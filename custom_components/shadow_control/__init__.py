@@ -33,6 +33,7 @@ from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import dt as dt_util
 from homeassistant.util import slugify
 
+from .adaptive_brightness import AdaptiveBrightnessCalculator
 from .config_flow import YAML_CONFIG_SCHEMA, get_full_options_schema
 from .const import (
     DEBUG_ENABLED,
@@ -624,7 +625,9 @@ class SCShadowControlConfig:
     def __init__(self) -> None:
         """Define defaults for trigger configuration."""
         self.enabled: bool = True
-        self.brightness_threshold: float = SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_VALUE.value
+        self.brightness_threshold_winter: float = SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_WINTER_VALUE.value
+        self.brightness_threshold_summer: float = SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_SUMMER_VALUE.value
+        self.brightness_threshold_buffer: float = SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_VALUE.value
         self.after_seconds: float = SCDefaults.SHADOW_AFTER_SECONDS_VALUE.value
         self.shutter_max_height: float = SCDefaults.SHADOW_SHUTTER_MAX_HEIGHT_VALUE.value
         self.shutter_max_angle: float = SCDefaults.SHADOW_SHUTTER_MAX_ANGLE_VALUE.value
@@ -727,7 +730,9 @@ class ShadowControlManager:
 
         # === Get shadow configuration
         self._shadow_config.enabled = self._config.get(SCShadowInput.CONTROL_ENABLED_ENTITY.value)
-        self._shadow_config.brightness_threshold = self._config.get(SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value)
+        self._shadow_config.brightness_threshold_winter = self._config.get(SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value)
+        self._shadow_config.brightness_threshold_summer = self._config.get(SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value)
+        self._shadow_config.brightness_threshold_buffer = self._config.get(SCShadowInput.BRIGHTNESS_THRESHOLD_BUFFER_ENTITY.value)
         self._shadow_config.after_seconds = self._config.get(SCShadowInput.AFTER_SECONDS_ENTITY.value)
         self._shadow_config.shutter_max_height = self._config.get(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value)
         self._shadow_config.shutter_max_angle = self._config.get(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value)
@@ -784,6 +789,9 @@ class ShadowControlManager:
         # The "calculated_*" vales are the results of position calculation based on current sun position
         self.calculated_shutter_height: float = 0.0
         self.calculated_shutter_angle: float = 0.0
+
+        # Use winter brightness threshold as initial default
+        self.brightness_threshold = self._shadow_config.brightness_threshold_winter
 
         self._effective_elevation: float | None = None
         self._previous_shutter_height: float | None = None
@@ -1326,16 +1334,104 @@ class ShadowControlManager:
         )
         self._shadow_config.enabled = self._get_entity_state_value(SCShadowInput.CONTROL_ENABLED_ENTITY.value, shadow_control_enabled_value, bool)
 
-        # Shadow Brightness Threshold
-        shadow_brightness_threshold_manual = self.get_internal_entity_id(SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MANUAL)
-        shadow_brightness_threshold_value = (
-            self._get_internal_entity_state_value(shadow_brightness_threshold_manual, SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_VALUE.value, float)
-            if shadow_brightness_threshold_manual
-            else SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_VALUE.value
+        # =============================================================
+        # Start of shadow brightness threshold calculation
+        # Shadow Brightness Threshold Winter
+        shadow_brightness_threshold_winter_manual = self.get_internal_entity_id(SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_WINTER_MANUAL)
+        shadow_brightness_threshold_winter_value = (
+            self._get_internal_entity_state_value(
+                shadow_brightness_threshold_winter_manual, SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_WINTER_VALUE.value, float
+            )
+            if shadow_brightness_threshold_winter_manual
+            else SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_WINTER_VALUE.value
         )
-        self._shadow_config.brightness_threshold = self._get_entity_state_value(
-            SCShadowInput.BRIGHTNESS_THRESHOLD_ENTITY.value, shadow_brightness_threshold_value, float
+        self._shadow_config.brightness_threshold_winter = self._get_entity_state_value(
+            SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value, shadow_brightness_threshold_winter_value, float
         )
+
+        # Shadow Brightness Threshold - Summer
+        shadow_brightness_threshold_summer_manual = self.get_internal_entity_id(SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_SUMMER_MANUAL)
+        shadow_brightness_threshold_summer_value = (
+            self._get_internal_entity_state_value(
+                shadow_brightness_threshold_summer_manual, SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_SUMMER_VALUE.value, float
+            )
+            if shadow_brightness_threshold_summer_manual
+            else SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_SUMMER_VALUE.value
+        )
+        self._shadow_config.brightness_threshold_summer = self._get_entity_state_value(
+            SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value, shadow_brightness_threshold_summer_value, float
+        )
+
+        # Shadow Brightness Threshold - Buffer
+        shadow_brightness_threshold_buffer_manual = self.get_internal_entity_id(SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_MANUAL)
+        shadow_brightness_threshold_buffer_value = (
+            self._get_internal_entity_state_value(
+                shadow_brightness_threshold_buffer_manual, SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_VALUE.value, float
+            )
+            if shadow_brightness_threshold_buffer_manual
+            else SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_VALUE.value
+        )
+        self._shadow_config.brightness_threshold_buffer = self._get_entity_state_value(
+            SCShadowInput.BRIGHTNESS_THRESHOLD_BUFFER_ENTITY.value, shadow_brightness_threshold_buffer_value, float
+        )
+
+        # Calculate adaptive or static brightness threshold
+        if self._shadow_config.brightness_threshold_summer > self._shadow_config.brightness_threshold_winter:
+            # Adaptive brightness is enabled
+            self._adaptive_brightness_calculator = AdaptiveBrightnessCalculator(
+                winter_lux=self._shadow_config.brightness_threshold_winter,
+                summer_lux=self._shadow_config.brightness_threshold_summer,
+                buffer=self._shadow_config.brightness_threshold_buffer,
+            )
+
+            if not hasattr(self, "_adaptive_mode_logged"):
+                self.logger.debug(
+                    "Adaptive brightness threshold enabled: winter=%s, summer=%s, buffer=%s",
+                    self._shadow_config.brightness_threshold_winter,
+                    self._shadow_config.brightness_threshold_summer,
+                    self._shadow_config.brightness_threshold_buffer,
+                )
+                self._adaptive_mode_logged = True
+
+            # Calculate current threshold
+            now = dt_util.now()
+            sunrise_str = self._get_entity_state_value(
+                SCDynamicInput.SUNRISE_ENTITY.value,
+                None,
+                str,
+            )
+            sunrise = dt_util.parse_datetime(sunrise_str) if sunrise_str else None
+
+            sunset_str = self._get_entity_state_value(
+                SCDynamicInput.SUNSET_ENTITY.value,
+                None,
+                str,
+            )
+            sunset = dt_util.parse_datetime(sunset_str) if sunset_str else None
+
+            # Only calculate if both sunrise and sunset are available
+            if sunrise and sunset:
+                self.brightness_threshold = self._adaptive_brightness_calculator.calculate_threshold(
+                    current_time=now,
+                    sunrise=sunrise,
+                    sunset=sunset,
+                )
+            else:
+                self.logger.warning(
+                    "Adaptive brightness enabled but sunrise (%s) or sunset (%s) entity not configured or invalid. "
+                    "Using static winter threshold (%s).",
+                    sunrise,
+                    sunset,
+                    self._shadow_config.brightness_threshold_winter,
+                )
+                self.brightness_threshold = self._shadow_config.brightness_threshold_winter
+
+        else:
+            # Static brightness threshold (winter value is used)
+            self._adaptive_brightness_calculator = None
+            self.brightness_threshold = self._shadow_config.brightness_threshold_winter
+        # End of shadow brightness threshold calculation
+        # =============================================================
 
         # Shadow After Seconds
         shadow_after_seconds_manual = self.get_internal_entity_id(SCInternal.SHADOW_AFTER_SECONDS_MANUAL)
@@ -2505,7 +2601,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_FULL_CLOSE_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._dynamic_config.brightness
-            shadow_threshold_close = self._shadow_config.brightness_threshold
+            shadow_threshold_close = self.brightness_threshold
             if current_brightness is not None and shadow_threshold_close is not None and current_brightness > shadow_threshold_close:
                 if self._is_timer_finished():
                     target_height = self._calculate_shutter_height()
@@ -2579,7 +2675,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_FULL_CLOSED")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self._shadow_config.brightness_threshold
+            shadow_threshold_close = self.brightness_threshold
             shadow_open_slat_delay = self._shadow_config.shutter_look_through_seconds
             if (
                 current_brightness is not None
@@ -2643,7 +2739,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self._shadow_config.brightness_threshold
+            shadow_threshold_close = self.brightness_threshold
             shadow_open_slat_angle = self._shadow_config.shutter_look_through_angle
             if (
                 current_brightness is not None
@@ -2722,7 +2818,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_HORIZONTAL_NEUTRAL")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self._shadow_config.brightness_threshold
+            shadow_threshold_close = self.brightness_threshold
             shadow_open_shutter_delay = self._shadow_config.shutter_open_seconds
             if (
                 current_brightness is not None
@@ -2804,7 +2900,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_NEUTRAL_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self._shadow_config.brightness_threshold
+            shadow_threshold_close = self.brightness_threshold
             height_after_shadow = self._shadow_config.height_after_sun
             angle_after_shadow = self._shadow_config.angle_after_sun
             if current_brightness is not None and shadow_threshold_close is not None and current_brightness > shadow_threshold_close:
@@ -2878,7 +2974,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_NEUTRAL")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self._shadow_config.brightness_threshold
+            shadow_threshold_close = self.brightness_threshold
             dawn_handling_active = self._dawn_config.enabled
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_config.brightness_threshold
@@ -2998,7 +3094,7 @@ class ShadowControlManager:
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             self.logger.debug("self._check_if_facade_is_in_sun and self._is_shadow_handling_activated")
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self._shadow_config.brightness_threshold
+            shadow_threshold_close = self.brightness_threshold
             shadow_close_delay = self._shadow_config.after_seconds
             if (
                 current_brightness is not None
@@ -3064,7 +3160,7 @@ class ShadowControlManager:
         current_brightness = self._get_current_brightness()
 
         shadow_handling_active = await self._is_shadow_control_enabled()
-        shadow_threshold_close = self._shadow_config.brightness_threshold
+        shadow_threshold_close = self.brightness_threshold
         shadow_close_delay = self._shadow_config.after_seconds
 
         dawn_handling_active = await self._is_dawn_control_enabled()
