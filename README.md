@@ -242,6 +242,8 @@ This input should be filled with the current elevation of the sun. Usually this 
 
 This input should be filled with the current azimuth of the sun. Usually this value comes from a weather station or the home assistant internal sun entity. Possible values are within the range from 0° to 359°.
 
+sunrise_entity
+sunset_entity
 
 
 
@@ -474,7 +476,7 @@ Additionally to the previous entity configuration, this push button entity could
 With this option, the whole shadow handling could be de-/activated. Default: on
 
 #### Shadow brightness threshold
-(yaml: `shadow_brightness_threshold_manual: true|false` u/o `shadow_brightness_threshold_entity: <entity>`)
+(yaml: `shadow_brightness_threshold_winter_manual: true|false` u/o `shadow_brightness_threshold_entity: <entity>`)
 
 This is the brightness threshold in Lux. If the threshold is exceeded, the timer `shadow_after_seconds` is started. Default: 50000 
 
@@ -607,6 +609,8 @@ shadow_control:
     # Entities holding the current sun position
     sun_elevation_entity: input_number.d03_sun_elevation
     sun_azimuth_entity: input_number.d04_sun_azimuth
+    #sunrise_entity:
+    #sunset_entity:
     #
     # Entities to lock the integration
     lock_integration_manual: false
@@ -665,7 +669,7 @@ shadow_control:
     #shadow_control_enabled_entity:
     shadow_control_enabled_manual: true
     #shadow_brightness_threshold_entity:
-    shadow_brightness_threshold_manual: 50000
+    shadow_brightness_threshold_winter_manual: 50000
     #shadow_after_seconds_entity:
     shadow_after_seconds_manual: 15
     #shadow_shutter_max_height_entity:

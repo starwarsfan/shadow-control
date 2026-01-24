@@ -242,7 +242,8 @@ Hier wird die aktuelle Höhe (Elevation) der Sonne konfiguriert. Dieser Wert kom
 
 Hier wird der aktuelle Winkel (Azimut) der Sonne konfiguriert. Dieser Wert kommt ebenfalls von einer Wetterstation oder direkt von der Home Assistant Sonne-Entität. Gültig ist dabei der Bereich von 0° bis 359°.
 
-
+sunrise_entity
+sunset_entity
 
 
 
@@ -471,7 +472,7 @@ Zusätzlich zur vorherigen Entitätskonfiguration kann diese Push-Button-Entitä
 Mit dieser Option wird die Beschattungssteuerung ein- oder ausgeschaltet. Standardwert: ein
 
 #### Beschattung: Helligkeitsschwellwert
-(yaml: `shadow_brightness_threshold_manual: true|false` u/o `shadow_brightness_threshold_entity: <entity>`)
+(yaml: `shadow_brightness_threshold_winter_manual: true|false` u/o `shadow_brightness_threshold_entity: <entity>`)
 
 Hier wird der Helligkeitsschwellwert in Lux konfiguriert. Wird dieser Wert überschritten, startet der Timer [Beschattung: Schliessen nach x Sekunden](#beschattung-schliessen-nach-x-sekunden). Standardwert: 50000 
 
@@ -604,6 +605,8 @@ shadow_control:
     # Entities holding the current sun position
     sun_elevation_entity: input_number.d03_sun_elevation
     sun_azimuth_entity: input_number.d04_sun_azimuth
+    #sunrise_entity:
+    #sunset_entity:
     #
     # Entities to lock the integration
     lock_integration_manual: false
@@ -662,7 +665,7 @@ shadow_control:
     #shadow_control_enabled_entity:
     shadow_control_enabled_manual: true
     #shadow_brightness_threshold_entity:
-    shadow_brightness_threshold_manual: 50000
+    shadow_brightness_threshold_winter_manual: 50000
     #shadow_after_seconds_entity:
     shadow_after_seconds_manual: 15
     #shadow_shutter_max_height_entity:
