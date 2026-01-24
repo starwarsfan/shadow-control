@@ -37,7 +37,7 @@ class TestHandleStateShadowFullClosed:
     async def test_brightness_drops_starts_timer(self, manager):
         """Test starting the timer to open slats when brightness drops."""
         manager._get_current_brightness.return_value = 10000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
         manager._shadow_config.shutter_look_through_seconds = 300
 
         result = await manager._handle_state_shadow_full_closed()
@@ -48,7 +48,7 @@ class TestHandleStateShadowFullClosed:
     async def test_brightness_remains_high_recalculates(self, manager):
         """Test recalculating and positioning shutter while staying in state."""
         manager._get_current_brightness.return_value = 60000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
         manager._calculate_shutter_height.return_value = 55.0
         manager._calculate_shutter_angle.return_value = 5.0
 
@@ -71,7 +71,7 @@ class TestHandleStateShadowFullClosed:
     async def test_recalculate_error_stays_in_state(self, manager):
         """Test that a calculation error doesn't crash the handler."""
         manager._get_current_brightness.return_value = 60000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
         manager._calculate_shutter_height.return_value = None  # Simulating error
 
         result = await manager._handle_state_shadow_full_closed()

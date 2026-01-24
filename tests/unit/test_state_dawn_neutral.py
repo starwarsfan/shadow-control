@@ -8,7 +8,7 @@ async def _handle_state_dawn_neutral(self) -> ShutterState:
     current_brightness = self._get_current_brightness()
 
     shadow_handling_active = await self._is_shadow_control_enabled()
-    shadow_threshold_close = self._shadow_config.brightness_threshold
+    shadow_threshold_close = self.brightness_threshold
     shadow_close_delay = self._shadow_config.after_seconds
 
     dawn_handling_active = await self._is_dawn_control_enabled()

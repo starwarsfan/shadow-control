@@ -29,7 +29,7 @@ def manager(mock_manager):
     manager._facade_config = MagicMock()
 
     # Defaults to prevent NoneType issues in logical checks
-    manager._shadow_config.brightness_threshold = 50000
+    manager.brightness_threshold = 50000
     manager._shadow_config.after_seconds = 60
     manager._dawn_config.enabled = False
 
@@ -43,7 +43,7 @@ class TestHandleStateShadowNeutral:
     async def test_brightness_spike_triggers_shadow_timer(self, manager):
         """Test transitioning back to shadow timer when sun returns."""
         manager._get_current_brightness.return_value = 60000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
         manager._shadow_config.after_seconds = 120
 
         result = await manager._handle_state_shadow_neutral()

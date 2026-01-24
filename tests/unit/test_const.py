@@ -31,7 +31,7 @@ class TestSCInternal:
         assert SCInternal.LOCK_HEIGHT_MANUAL.domain == "number"
         assert SCInternal.LOCK_ANGLE_MANUAL.domain == "number"
         assert SCInternal.NEUTRAL_POS_HEIGHT_MANUAL.domain == "number"
-        assert SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MANUAL.domain == "number"
+        assert SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_WINTER_MANUAL.domain == "number"
         assert SCInternal.DAWN_AFTER_SECONDS_MANUAL.domain == "number"
 
     def test_domain_property_default_fallback(self):

@@ -37,7 +37,7 @@ class TestHandleStateShadowHorizontalNeutral:
     async def test_brightness_spikes_recloses_shutter(self, manager):
         """Test returning to SHADOW_FULL_CLOSED when brightness increases."""
         manager._get_current_brightness.return_value = 60000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
 
         result = await manager._handle_state_shadow_horizontal_neutral()
 
@@ -47,7 +47,7 @@ class TestHandleStateShadowHorizontalNeutral:
     async def test_brightness_low_starts_open_timer(self, manager):
         """Test starting the timer to fully open shutters (NEUTRAL)."""
         manager._get_current_brightness.return_value = 10000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
         manager._shadow_config.shutter_open_seconds = 600
 
         result = await manager._handle_state_shadow_horizontal_neutral()
@@ -79,7 +79,7 @@ class TestHandleStateShadowHorizontalNeutral:
     async def test_calculation_error_stays_in_state(self, manager):
         """Test handling case where calculation returns None during re-closing."""
         manager._get_current_brightness.return_value = 60000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
         manager._calculate_shutter_height.return_value = None
 
         result = await manager._handle_state_shadow_horizontal_neutral()

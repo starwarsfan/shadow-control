@@ -39,7 +39,7 @@ class TestHandleStateNeutral:
         """Test transitioning to shadow timer when sun hits facade and brightness is high."""
         manager._check_if_facade_is_in_sun.return_value = True
         manager._get_current_brightness.return_value = 60000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
         manager._shadow_config.after_seconds = 60
 
         result = await manager._handle_state_neutral()
@@ -78,7 +78,7 @@ class TestHandleStateNeutral:
         """Test that low brightness prevents shadow trigger even if in sun."""
         manager._check_if_facade_is_in_sun.return_value = True
         manager._get_current_brightness.return_value = 10000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
 
         result = await manager._handle_state_neutral()
 

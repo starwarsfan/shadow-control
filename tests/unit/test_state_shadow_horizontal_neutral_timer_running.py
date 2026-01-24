@@ -27,7 +27,7 @@ def manager(mock_manager):
 
     # Config mocks
     manager._shadow_config = MagicMock()
-    manager._shadow_config.brightness_threshold = 50000
+    manager.brightness_threshold = 50000
     manager._shadow_config.shutter_look_through_angle = 90.0
     manager._facade_config = MagicMock()
 
@@ -41,7 +41,7 @@ class TestHandleStateShadowHorizontalNeutralTimerRunning:
     async def test_brightness_spikes_returns_to_closed(self, manager):
         """Test that a brightness spike cancels the timer and goes back to full closed."""
         manager._get_current_brightness.return_value = 60000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
 
         result = await manager._handle_state_shadow_horizontal_neutral_timer_running()
 
@@ -52,7 +52,7 @@ class TestHandleStateShadowHorizontalNeutralTimerRunning:
     async def test_timer_finishes_opens_slats(self, manager):
         """Test moving to horizontal slats when the timer expires."""
         manager._get_current_brightness.return_value = 10000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
         manager._shadow_config.shutter_look_through_angle = 90.0
         manager._is_timer_finished.return_value = True
 

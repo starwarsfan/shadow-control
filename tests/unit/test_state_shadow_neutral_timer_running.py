@@ -24,7 +24,7 @@ def manager(mock_manager):
 
     # Config mocks
     manager._shadow_config = MagicMock()
-    manager._shadow_config.brightness_threshold = 50000
+    manager.brightness_threshold = 50000
     manager._shadow_config.height_after_sun = 20.0
     manager._shadow_config.angle_after_sun = 10.0
     manager._facade_config = MagicMock()
@@ -39,7 +39,7 @@ class TestHandleStateShadowNeutralTimerRunning:
     async def test_brightness_recovery_cancels_timer(self, manager):
         """Test that brightness spike returns to FULL_CLOSED immediately."""
         manager._get_current_brightness.return_value = 60000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
 
         result = await manager._handle_state_shadow_neutral_timer_running()
 

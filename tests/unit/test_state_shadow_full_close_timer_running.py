@@ -38,7 +38,7 @@ class TestHandleStateShadowFullCloseTimerRunning:
     async def test_waiting_for_timer(self, manager):
         """Test staying in state while timer is still running."""
         manager._dynamic_config.brightness = 60000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
         manager._is_timer_finished.return_value = False
 
         result = await manager._handle_state_shadow_full_close_timer_running()
@@ -49,7 +49,7 @@ class TestHandleStateShadowFullCloseTimerRunning:
     async def test_transition_to_full_closed(self, manager):
         """Test moving to full closed when timer finishes and brightness is high."""
         manager._dynamic_config.brightness = 60000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
         manager._is_timer_finished.return_value = True
 
         result = await manager._handle_state_shadow_full_close_timer_running()
@@ -60,7 +60,7 @@ class TestHandleStateShadowFullCloseTimerRunning:
     async def test_brightness_drops_below_threshold(self, manager):
         """Test transitioning back to SHADOW_NEUTRAL if it gets dark."""
         manager._dynamic_config.brightness = 10000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
 
         result = await manager._handle_state_shadow_full_close_timer_running()
 
@@ -81,7 +81,7 @@ class TestHandleStateShadowFullCloseTimerRunning:
     async def test_calculation_error_stays_in_state(self, manager):
         """Test handling case where height/angle calculation returns None."""
         manager._dynamic_config.brightness = 60000
-        manager._shadow_config.brightness_threshold = 50000
+        manager.brightness_threshold = 50000
         manager._is_timer_finished.return_value = True
         manager._calculate_shutter_height.return_value = None
 
