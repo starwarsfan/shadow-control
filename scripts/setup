@@ -4,5 +4,8 @@ set -e
 
 cd "$(dirname "$0")/.."
 
+# Required within devcontainer
+sudo apt install ffmpeg libturbojpeg0
+
 python3 -m pip install --upgrade pip
-python3 -m pip install --requirement requirements_test.txt
+python3 -m pip install --requirement requirements_dev.txt

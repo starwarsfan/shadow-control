@@ -2,5 +2,14 @@
 
 # Testing
 pytest>=8.0.0
-pytest-homeassistant-custom-component>=0.13.236
+pytest-homeassistant-custom-component
 pytest-cov>=4.0.0
+
+# Required within devcontainer
+hassil
+home_assistant_intents
+PyTurboJPEG
+mutagen
+pymicro_vad
+pyspeex_noise
+ha-ffmpeg
