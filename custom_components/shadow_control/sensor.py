@@ -1,5 +1,7 @@
 """Shadow Control sensor implementation."""
 
+from datetime import datetime
+
 import homeassistant.helpers.entity_registry as er
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -208,7 +210,7 @@ class ShadowControlSensor(SensorEntity):
         if value is None:
             return None
 
-            # 2. Apply the rounding logic for clean UI display
+        # 2. Apply the rounding logic for clean UI display
         if isinstance(value, (float, int)):
             # Round and cast to int to ensure the final output is a whole number,
             # which removes the trailing decimals in the HA frontend.
@@ -314,7 +316,7 @@ class ShadowControlExternalEntityValueSensor(SensorEntity):
         )
 
     @property
-    def native_value(self) -> float | int | str | None:
+    def native_value(self) -> float | int | str | datetime | None:
         """Return the state of the sensor."""
         entity_id = self._external_entity_id
 
@@ -327,6 +329,14 @@ class ShadowControlExternalEntityValueSensor(SensorEntity):
         # Entität existiert nicht oder ist nicht verfügbar
         if state is None or state.state in ("unknown", "unavailable"):
             return None
+
+        # Handle TIMESTAMP device_class: Convert string to datetime
+        if self.device_class == SensorDeviceClass.TIMESTAMP and isinstance(state.state, str):
+            try:
+                return datetime.fromisoformat(state.state)
+            except (ValueError, TypeError):
+                self.logger.warning("Could not parse timestamp '%s' from entity '%s'", state.state, entity_id)
+                return None
 
         # Versuche den Wert zu konvertieren
         try:

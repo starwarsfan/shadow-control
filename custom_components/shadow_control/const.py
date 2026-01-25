@@ -2,7 +2,7 @@
 
 from enum import Enum, IntEnum
 
-from homeassistant.components.sensor import SensorStateClass
+from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 
 DOMAIN = "shadow_control"
 DOMAIN_DATA_MANAGERS = f"{DOMAIN}_managers"  # A good practice for unique keys
@@ -450,6 +450,7 @@ EXTERNAL_SENSOR_DEFINITIONS = [
         "translation_key": SCDynamicInput.SUNRISE_ENTITY.value,
         "unit": None,  # Datetime hat keine Unit
         "state_class": None,
+        "device_class": SensorDeviceClass.TIMESTAMP,
         "icon": "mdi:weather-sunset-up",
     },
     {
@@ -457,6 +458,7 @@ EXTERNAL_SENSOR_DEFINITIONS = [
         "translation_key": SCDynamicInput.SUNSET_ENTITY.value,
         "unit": None,
         "state_class": None,
+        "device_class": SensorDeviceClass.TIMESTAMP,
         "icon": "mdi:weather-sunset-down",
     },
     #
