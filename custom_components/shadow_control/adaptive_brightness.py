@@ -3,6 +3,7 @@
 import logging
 import math
 from datetime import datetime
+from logging import Logger
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -102,33 +103,35 @@ class AdaptiveBrightnessCalculator:
 
         return round(threshold)
 
-    def _get_day_brightness(self, current_time: datetime) -> float:
+    def _get_day_brightness(self, current_time: datetime, winter_lux: float, summer_lux: float) -> float:
         """
         Calculate daily brightness threshold based on distance to summer solstice.
 
-        Linear interpolation between winter_lux (at ±183 days from Jun 21)
-        and summer_lux (at Jun 21).
+        Linear interpolation between winter_lux (at ±183 days from summer solstice)
+        and summer_lux (at summer solstice).
 
         Args:
             current_time: Current datetime
+            winter_lux: Minimum brightness threshold
+            summer_lux: Maximum brightness threshold
 
         Returns:
             Daily brightness threshold in lux
 
         """
-        if self._winter_lux == self._summer_lux:
-            return self._summer_lux
+        if winter_lux == summer_lux:
+            return summer_lux
 
-        # Find next June 21st
+        # Find next summer solstice (hemisphere-aware)
         next_solstice = self._get_next_summer_solstice(current_time)
 
         # Calculate days difference
         diff_days = abs((next_solstice - current_time).days)
 
         # Linear interpolation: max at solstice (0 days), min at ±183 days
-        brightness = self._winter_lux + abs(diff_days - 183) * ((self._summer_lux - self._winter_lux) / 183)
+        brightness = winter_lux + abs(diff_days - 183) * ((summer_lux - winter_lux) / 183)
 
-        _LOGGER.debug("Seasonal calculation: next solstice %s, diff_days=%s, brightness=%s", next_solstice.date(), diff_days, round(brightness))
+        self._logger.debug("Seasonal calculation: next solstice %s, diff_days=%s, brightness=%s", next_solstice.date(), diff_days, round(brightness))
 
         return round(brightness)
 
