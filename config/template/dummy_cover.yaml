@@ -1,0 +1,30 @@
+cover:
+  - name: "Test Shutter"
+    device_class: shutter
+    unique_id: test_shutter_cover
+    position: "{{ states('input_number.test_shutter_position') | int }}"
+    tilt: "{{ states('input_number.test_shutter_tilt') | int }}"
+    open_cover:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.test_shutter_position
+        data:
+          value: 100
+    close_cover:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.test_shutter_position
+        data:
+          value: 0
+    set_cover_position:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.test_shutter_position
+        data:
+          value: "{{ position }}"
+    set_cover_tilt_position:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.test_shutter_tilt
+        data:
+          value: "{{ tilt }}"

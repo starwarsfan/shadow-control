@@ -32,7 +32,7 @@ shadow_control:
   - name: "SC Dummy"
     debug_enabled: false
     target_cover_entity:
-      - cover.sc_dummy
+      - cover.test_shutter
     facade_shutter_type_static: mode1
 
     # Dynamic configuration inputs
