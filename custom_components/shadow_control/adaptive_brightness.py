@@ -135,26 +135,34 @@ class AdaptiveBrightnessCalculator:
 
         return round(brightness)
 
-    @staticmethod
-    def _get_next_summer_solstice(current_time: datetime) -> datetime:
+    def _get_next_summer_solstice(self, current_time: datetime) -> datetime:
         """
-        Get the next June 21st (summer solstice in northern hemisphere).
+        Get the next summer solstice date (hemisphere-aware).
+
+        Northern hemisphere: June 21
+        Southern hemisphere: December 21
 
         Args:
             current_time: Current datetime
 
         Returns:
-            Datetime of next June 21st at midnight
+            Datetime of next summer solstice at midnight
 
         """
         year = current_time.year
         tz = current_time.tzinfo
 
-        # Check if we're past June 21st this year
-        solstice_this_year = datetime(year, 6, 21, 0, 0, 0, tzinfo=tz)
+        # Determine solstice date based on hemisphere
+        if self._is_southern_hemisphere:
+            solstice_month, solstice_day = 12, 21  # December 21 (southern summer)
+        else:
+            solstice_month, solstice_day = 6, 21  # June 21 (northern summer)
+
+        # Check if we're past this year's solstice
+        solstice_this_year = datetime(year, solstice_month, solstice_day, 0, 0, 0, tzinfo=tz)
 
         if current_time > solstice_this_year:
             # Use next year's solstice
-            return datetime(year + 1, 6, 21, 0, 0, 0, tzinfo=tz)
+            return datetime(year + 1, solstice_month, solstice_day, 0, 0, 0, tzinfo=tz)
 
         return solstice_this_year
