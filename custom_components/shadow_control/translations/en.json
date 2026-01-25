@@ -426,6 +426,12 @@
       },
       "dawn_angle_after_dawn_entity": {
         "name": "D> Angle after"
+      },
+      "sunrise_entity": {
+        "name": "Sunrise"
+      },
+      "sunset_entity": {
+        "name": "Sunset"
       }
     },
     "select": {

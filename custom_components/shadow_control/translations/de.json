@@ -426,6 +426,12 @@
       },
       "dawn_angle_after_dawn_entity": {
         "name": "D> Winkel danach"
+      },
+      "sunrise_entity": {
+        "name": "Sonnenaufgang"
+      },
+      "sunset_entity": {
+        "name": "Sonnenuntergang"
       }
     },
     "select": {
