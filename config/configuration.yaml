@@ -8,8 +8,8 @@ frontend:
 
 #automation: !include automations.yaml
 automation: !include_dir_merge_list automations/
-script: !include scripts.yaml
-scene: !include scenes.yaml
+#script: !include scripts.yaml
+#scene: !include scenes.yaml
 
 knx: !include knx/all.yaml
 
