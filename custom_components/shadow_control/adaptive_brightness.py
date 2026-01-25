@@ -31,6 +31,9 @@ class AdaptiveBrightnessCalculator:
         current_time: datetime,
         sunrise: datetime,
         sunset: datetime,
+        winter_lux: float,
+        summer_lux: float,
+        buffer: float,
     ) -> float:
         """
         Calculate the adaptive brightness threshold for the current time.
@@ -39,39 +42,54 @@ class AdaptiveBrightnessCalculator:
             current_time: Current datetime
             sunrise: Today's sunrise datetime
             sunset: Today's sunset datetime
+            winter_lux: Minimum brightness threshold (winter solstice)
+            summer_lux: Maximum brightness threshold (summer solstice)
+            buffer: Y-axis offset for the sine curve (prevents false triggers)
 
         Returns:
             Brightness threshold in lux
 
         """
+        # Ensure buffer >= 0
+        buffer = max(0, buffer)
+
+        # Validation
+        if winter_lux >= summer_lux:
+            self._logger.warning(
+                "Winter lux (%s) should be lower than summer lux (%s). Using winter_lux for both.",
+                winter_lux,
+                summer_lux,
+            )
+            summer_lux = winter_lux
+
         # Validate sun times
         if sunset <= sunrise:
-            _LOGGER.error("Sunset (%s) must be after sunrise (%s). Returning buffer value.", sunset, sunrise)
-            return self._buffer
+            self._logger.error("Sunset (%s) must be after sunrise (%s). Returning buffer value.", sunset, sunrise)
+            return buffer
 
         # Get daily brightness based on season
-        day_brightness = self._get_day_brightness(current_time)
+        day_brightness = self._get_day_brightness(current_time, winter_lux, summer_lux)
 
-        _LOGGER.debug("Daily brightness threshold (seasonal): %s lux", day_brightness)
+        self._logger.debug("Daily brightness threshold (seasonal): %s lux", day_brightness)
 
         # Check if we're between sunrise and sunset
         if not (sunrise <= current_time <= sunset):
-            _LOGGER.debug("Outside sun hours (%s - %s), returning buffer: %s", sunrise.time(), sunset.time(), self._buffer)
-            return self._buffer
+            self._logger.debug("Outside sun hours (%s - %s), returning buffer: %s", sunrise.time(), sunset.time(), buffer)
+            return buffer
 
         # Calculate sine curve parameters
         period_minutes = (sunset - sunrise).total_seconds() / 60
         minutes_since_sunrise = (current_time - sunrise).total_seconds() / 60
 
         # Sine function: f(x) = a * sin(b * (x - c)) + d
-        amplitude = (day_brightness - self._buffer) / 2
+        amplitude = (day_brightness - buffer) / 2
         frequency = (2 * math.pi) / period_minutes
         phase_shift = period_minutes / 4  # Peak at solar noon
-        y_offset = amplitude + self._buffer
+        y_offset = amplitude + buffer
 
         threshold = amplitude * math.sin(frequency * (minutes_since_sunrise - phase_shift)) + y_offset
 
-        _LOGGER.debug(
+        self._logger.debug(
             "Adaptive threshold: %s lux (x=%s min, period=%s min, a=%s, b=%s, c=%s, d=%s)",
             round(threshold),
             round(minutes_since_sunrise),
