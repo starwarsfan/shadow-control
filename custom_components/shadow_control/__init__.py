@@ -716,6 +716,7 @@ class ShadowControlManager:
 
         self.name = self._config[SC_CONF_NAME]
         self._target_cover_entity_id = self._config[TARGET_COVER_ENTITY]
+        self._adaptive_brightness_calculator = None
 
         # Sanitize instance name
         # This handles umlauts, spaces, and special characters automatically
@@ -1426,23 +1427,19 @@ class ShadowControlManager:
         # Calculate adaptive or static brightness threshold
         if self._shadow_config.brightness_threshold_summer > self._shadow_config.brightness_threshold_winter:
             # Adaptive brightness is enabled
-            self._adaptive_brightness_calculator = AdaptiveBrightnessCalculator(
-                winter_lux=self._shadow_config.brightness_threshold_winter,
-                summer_lux=self._shadow_config.brightness_threshold_summer,
-                buffer=self._shadow_config.brightness_threshold_buffer,
-            )
-
-            if not hasattr(self, "_adaptive_mode_logged"):
-                self.logger.debug(
-                    "Adaptive brightness threshold enabled: winter=%s, summer=%s, buffer=%s",
-                    self._shadow_config.brightness_threshold_winter,
-                    self._shadow_config.brightness_threshold_summer,
-                    self._shadow_config.brightness_threshold_buffer,
+            # Create calculator once with latitude (only static config)
+            if not hasattr(self, "_adaptive_brightness_calculator") or self._adaptive_brightness_calculator is None:
+                self._adaptive_brightness_calculator = AdaptiveBrightnessCalculator(
+                    latitude=self.hass.config.latitude,
+                    logger=self.logger,
                 )
-                self._adaptive_mode_logged = True
+                self.logger.info(
+                    "Adaptive brightness calculator initialized: latitude=%s (hemisphere: %s)",
+                    self.hass.config.latitude,
+                    "Southern" if self.hass.config.latitude < 0 else "Northern",
+                )
 
             # Calculate current threshold
-            now = dt_util.now()
             sunrise_str = self._get_entity_state_value(
                 SCDynamicInput.SUNRISE_ENTITY.value,
                 None,
@@ -1459,10 +1456,14 @@ class ShadowControlManager:
 
             # Only calculate if both sunrise and sunset are available
             if sunrise and sunset:
+                now = dt_util.now()
                 self.brightness_threshold = self._adaptive_brightness_calculator.calculate_threshold(
                     current_time=now,
                     sunrise=sunrise,
                     sunset=sunset,
+                    winter_lux=self._shadow_config.brightness_threshold_winter,
+                    summer_lux=self._shadow_config.brightness_threshold_summer,
+                    buffer=self._shadow_config.brightness_threshold_buffer,
                 )
             else:
                 self.logger.warning(
