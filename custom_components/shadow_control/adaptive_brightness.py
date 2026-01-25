@@ -12,29 +12,19 @@ class AdaptiveBrightnessCalculator:
 
     def __init__(
         self,
-        winter_lux: float,
-        summer_lux: float,
-        buffer: float = 10000,
+        latitude: float = 0.0,
+        logger: Logger | None = None,
     ) -> None:
         """
         Initialize the adaptive brightness calculator.
 
         Args:
-            winter_lux: Minimum brightness threshold (winter, around Dec 21)
-            summer_lux: Maximum brightness threshold (summer, at Jun 21)
-            buffer: Y-axis offset for the sine curve (prevents false triggers)
+            latitude: Geographic latitude for hemisphere detection (negative = southern hemisphere)
+            logger: Logger instance to use (falls back to module logger if not provided)
 
         """
-        self._winter_lux = winter_lux
-        self._summer_lux = summer_lux
-        self._buffer = max(0, buffer)  # Ensure buffer >= 0
-
-        # Validation
-        if self._winter_lux >= self._summer_lux:
-            _LOGGER.warning(
-                "Winter lux (%s) should be lower than summer lux (%s). Setting summer_lux = winter_lux.", self._winter_lux, self._summer_lux
-            )
-            self._summer_lux = self._winter_lux
+        self._is_southern_hemisphere = latitude < 0
+        self._logger = logger if logger is not None else _LOGGER
 
     def calculate_threshold(
         self,
