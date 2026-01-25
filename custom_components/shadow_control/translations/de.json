@@ -144,6 +144,7 @@
           "shadow_control_enabled_entity": "Beschattungssteuerung aktiviert",
           "shadow_brightness_threshold_winter_entity": "Helligkeitsschwellwert Winter",
           "shadow_brightness_threshold_summer_entity": "Helligkeitsschwellwert Sommer",
+          "shadow_brightness_threshold_buffer_entity": "Schwellwertpuffer Randbereich",
           "shadow_after_seconds_entity": "Schliessen nach x Sekunden",
           "shadow_shutter_max_height_entity": "Maximale Behanghöhe",
           "shadow_shutter_max_angle_entity": "Maximaler Lamellenwinkel",
@@ -157,6 +158,7 @@
           "shadow_control_enabled_entity": "De-/Aktivieren der Beschattungssteuerung (via Entität).",
           "shadow_brightness_threshold_winter_entity": "Schwellwert, nach dessen überschreiten die Beschattung im Winter ausgelöst wird (via Entität).",
           "shadow_brightness_threshold_summer_entity": "Schwellwert, nach dessen überschreiten die Beschattung im Sommer ausgelöst wird (via Entität).",
+          "shadow_brightness_threshold_buffer_entity": "Der Puffer verschiebt die gesamte Sinus-Kurve der Berechnung nach oben, um Fehlauslösungen im Grenzbereich der Beschattung zu vermeiden.",
           "shadow_after_seconds_entity": "Zeit in Sekunden nach überschreiten des Helligkeitsschwellwerts, nach welcher der Behang geschlossen wird (via Entität).",
           "shadow_shutter_max_height_entity": "Maximal anzufahrende Höhe bei Beschattung (via Entität).",
           "shadow_shutter_max_angle_entity": "Maximal anzufahrender Winkel bei Beschattung (via Entität).",
@@ -232,10 +234,13 @@
         "name": "Neutraler Winkel"
       },
       "shadow_brightness_threshold_winter_manual": {
-        "name": "B: Helligkeitsschwellwert Winter"
+        "name": "B: Winter Helligkeitsschwellwert"
       },
       "shadow_brightness_threshold_summer_manual": {
-        "name": "B: Helligkeitsschwellwert Sommer"
+        "name": "B: Sommer Helligkeitsschwellwert"
+      },
+      "shadow_brightness_threshold_buffer_manual": {
+        "name": "B: Schwellwertpuffer Sommer/Winter"
       },
       "shadow_after_seconds_manual": {
         "name": "B: Schliessen nach x Sekunden"
