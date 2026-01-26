@@ -465,6 +465,12 @@ Additionally to the previous entity configuration, this push button entity could
 
 ### Shadow settings
 
+The shading settings use the prefix **S<number>** to achieve a logical grouping and order of the options. This ensures that the configured values are displayed in this order in the instance view. Note that an option is only visible under **Controls** if no entity has been configured for it. Otherwise, it can be found under **Sensors** and displays the value of the configured entity. Here is an example of the beginning of the controls:
+
+![Controls](/images/controls.png)
+
+
+
 #### S01 Control enabled
 (yaml: `shadow_control_enabled_manual: true|false` u/o `shadow_control_enabled_entity: <entity>`)
 
@@ -524,6 +530,12 @@ This is the shutter angle in %, which should be set after the shadow position. D
 
 
 ### Dawn settings
+
+The dawn settings use the prefix **D<number>** to achieve a logical grouping and order of the options. This ensures that the configured values are displayed in this order in the instance view. Note that an option is only visible under **Controls** if no entity has been configured for it. Otherwise, it can be found under **Sensors** and displays the value of the configured entity. Here is an example of the beginning of the controls:
+
+![Controls](/images/controls.png)
+
+
 
 #### D01 Control enabled
 (yaml: `dawn_control_enabled_manual: true|false` u/o `dawn_control_enabled_entity: <entity>`)

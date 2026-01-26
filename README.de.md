@@ -462,6 +462,12 @@ Zusätzlich zur vorherigen Entitätskonfiguration kann diese Push-Button-Entitä
 
 ### Beschattungseinstellungen
 
+Die Beschattungseinstellungen verwenden den Präfix **B<nummer>**, um eine logische Gruppierung resp. Reihenfolge der Optionen zu erreichen. Damit werden die konfigurierten Werte in der Instanz-Ansicht auch in dieser Reihenfolge dargestellt. Zu beachten ist, dass eine Option nur dann unter **Steuerelemente** zu sehen ist, wenn _keine_ Entität darauf konfiguriert wurde. Anderenfalls ist sie unter **Sensoren** zu finden und zeigt den Wert der konfigurierten Entität. Hier beispielhaft der Anfang der Steuerelemente:
+
+![Steuerelemente](/images/controls.png)
+
+
+
 #### B01 Steuerung aktiv
 (yaml: `shadow_control_enabled_manual: true|false` u/o `shadow_control_enabled_entity: <entity>`)
 
@@ -521,6 +527,12 @@ Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf den hier in 
 
 
 ### Dämmerungseinstellungen
+
+Die Dämmerungseinstellungen verwenden den Präfix **D<nummer>**, um eine logische Gruppierung resp. Reihenfolge der Optionen zu erreichen. Damit werden die konfigurierten Werte in der Instanz-Ansicht auch in dieser Reihenfolge dargestellt. Zu beachten ist, dass eine Option nur dann unter **Steuerelemente** zu sehen ist, wenn _keine_ Entität darauf konfiguriert wurde. Anderenfalls ist sie unter **Sensoren** zu finden und zeigt den Wert der konfigurierten Entität. Hier beispielhaft der Anfang der Steuerelemente:
+
+![Steuerelemente](/images/controls.png)
+
+
 
 #### D01 Steuerung aktiv
 (yaml: `dawn_control_enabled_manual: true|false` u/o `dawn_control_enabled_entity: <entity>`)
