@@ -70,6 +70,8 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
     * [Shadow settings](#shadow-settings)
       * [S01 Control](#s01-control-enabled)
       * [S02 Winter threshold](#s02-winter-threshold)
+      * [S03 Summer threshold](#s03-summer-threshold)
+      * [S04 Threshold buffer summer/winter](#s04-threshold-buffer-summerwinter)
       * [S05 after seconds](#s05-after-seconds)
       * [S06 max height](#s06-max-height)
       * [S07 max angle](#s07-max-angle)
@@ -477,13 +479,23 @@ The shading settings use the prefix **S<number>** to achieve a logical grouping 
 With this option, the whole shadow handling could be de-/activated. Default: on
 
 #### S02 Winter threshold
-(yaml: `shadow_brightness_threshold_winter_manual: true|false` u/o `shadow_brightness_threshold_entity: <entity>`)
+(yaml: `shadow_brightness_threshold_winter_manual: true|false` u/o `shadow_brightness_threshold_winter_entity: <entity>`)
 
-This is the brightness threshold in Lux. If the threshold is exceeded, the timer `shadow_after_seconds` is started. Default: 50000 
+This is the brightness threshold in Lux. If the threshold is exceeded, the timer `shadow_after_seconds` is started. Default: 30000 
+
+Together with the parameters [S03 Summer threshold](#s03-summer-threshold) and [S04 Threshold buffer summer/winter](#s04-threshold-buffer-summerwinter) the brightness difference between summer and winter could be handled. To do so, a sine curve between the two threshold values is computed, where the top of the curve is at summer solstice. Northern and Southern Hemisphere will be handled according to the location of the Home Assistant instance. The sine value for the current day is used as the effective brightness threshold.
+
+This functionality will be used as soon as the value of [S03 Summer threshold](#s03-summer-threshold) is configured with a greater value than this one.
 
 #### S03 Summer threshold
-#### S04 Threshold buffer summer/winter
+(yaml: `shadow_brightness_threshold_summer_manual: true|false` u/o `shadow_brightness_threshold_summer_entity: <entity>`)
 
+Second value for sine curve computation. For details see previous option [S02 Winter threshold](#s02-winter-threshold).
+
+#### S04 Threshold buffer summer/winter
+(yaml: `shadow_brightness_threshold_buffer_manual: true|false` u/o `shadow_brightness_threshold_buffer_entity: <entity>`)
+
+This value is used to shift the entire sine curve from the previous two options upwards to avoid false triggers in the limiting range of shading. For details see [S02 Winter threshold](#s02-winter-threshold).
 
 #### S05 after seconds
 (yaml: `shadow_after_seconds_manual: true|false` u/o `shadow_after_seconds_entity: <entity>`)

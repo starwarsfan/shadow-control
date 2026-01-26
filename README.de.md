@@ -70,6 +70,8 @@ Go to the [English version](/README.md) version of the documentation.
     * [Beschattungseinstellungen](#beschattungseinstellungen)
       * [B01 Steuerung aktiv](#b01-steuerung-aktiv)
       * [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert)
+      * [B03 Sommer Helligkeitsschwellwert](#b03-sommer-helligkeitsschwellwert)
+      * [B04 Schwellwertpuffer Sommer/Winter](#b04-schwellwertpuffer-sommerwinter)
       * [B05 Schliessen nach x Sekunden](#b05-schliessen-nach-x-sekunden)
       * [B06 Maximale Behanghöhe](#b06-maximale-behanghöhe)
       * [B07 Maximaler Lamellenwinkel](#b07-maximaler-lamellenwinkel)
@@ -474,13 +476,23 @@ Die Beschattungseinstellungen verwenden den Präfix **B<nummer>**, um eine logis
 Mit dieser Option wird die Beschattungssteuerung ein- oder ausgeschaltet. Standardwert: ein
 
 #### B02 Winter Helligkeitsschwellwert
-(yaml: `shadow_brightness_threshold_winter_manual: <Wert>` u/o `shadow_brightness_threshold_entity: <entity>`)
+(yaml: `shadow_brightness_threshold_winter_manual: true|false` u/o `shadow_brightness_threshold_winter_entity: <entity>`)
 
-Hier wird der Helligkeitsschwellwert in Lux konfiguriert. Wird dieser Wert überschritten, startet der Timer [B05 Schliessen nach x Sekunden](#b05-schliessen-nach-x-sekunden). Standardwert: 50000 
+Hier wird der Helligkeitsschwellwert in Lux konfiguriert. Wird dieser Wert überschritten, startet der Timer [B05 Schliessen nach x Sekunden](#b05-schliessen-nach-x-sekunden). Standardwert: 30000 
+
+In Verbindung mit dem Parameter [B03 Sommer Helligkeitsschwellwert](#b03-sommer-helligkeitsschwellwert) and [B04 Schwellwertpuffer Sommer/Winter](#b04-schwellwertpuffer-sommerwinter) kann der Helligkeitsunterschied zwischen Sommer und Winter ausgeglichen werden. Dafür wird eine Sinuskurve zwischen diesen beiden Helligkeitswerten berechnet, deren Höhepunkt am Zeitpunkt der Sommersonnenwende ist. Nördliche und südliche Hemisphere wird dabei anhand der Geo-Koordinaten der Home Assistant Instanz berücksichtigt. Der Sinuswert des heutigen Tages wird dann als effektiver Schwellwert verwendet.
+
+Diese Funktionalität ist aktiv, sobald unter [B03 Sommer Helligkeitsschwellwert](#b03-sommer-helligkeitsschwellwert) ein grösserer Wert als dieser hier konfiguriert wird.
 
 #### B03 Sommer Helligkeitsschwellwert
-#### B04 Schwellwertpuffer Sommer/Winter
+(yaml: `shadow_brightness_threshold_summer_manual: true|false` u/o `shadow_brightness_threshold_summer_entity: <entity>`)
 
+Zweiter Wert für die Berechnung der Sinuskurve. Für Details siehe vorherige Option [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert).
+
+#### B04 Schwellwertpuffer Sommer/Winter
+(yaml: `shadow_brightness_threshold_buffer_manual: true|false` u/o `shadow_brightness_threshold_buffer_entity: <entity>`)
+
+Dieser Wert wird verwendet, um die Sinuskurve der vorherigen Optionen nach oben zu verschieben, um Fehlauslösungen im Grenzbereich der Beschattung zu vermeiden. Für Details siehe [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert).
 
 #### B05 Schliessen nach x Sekunden
 (yaml: `shadow_after_seconds_manual: <Wert>` u/o `shadow_after_seconds_entity: <entity>`)
