@@ -392,10 +392,6 @@ Siehe Beschreibung unter [Höhe der Sonne](#sun-elevation).
 
 Siehe Beschreibung unter [Azimut der Sonne](#sun-azimuth).
 
-#### Aktuelle Behanghöhe
-
-#### Aktueller Behangwinkel
-
 #### Integration sperren
 (yaml: `lock_integration_manual: true|false` u/o `lock_integration_entity: <entity>`)
 
