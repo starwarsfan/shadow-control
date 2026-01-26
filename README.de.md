@@ -532,47 +532,47 @@ Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf den hier in 
 Mit dieser Option wird die Dämmerungssteuerung ein- oder ausgeschaltet. Standardwert: ein
 
 #### Dämmerung: Helligkeitsschwellwert
-(yaml: `dawn_brightness_threshold_manual: true|false` u/o `dawn_brightness_threshold_entity: <entity>`)
+(yaml: `dawn_brightness_threshold_manual: <Wert>` u/o `dawn_brightness_threshold_entity: <entity>`)
 
 Hier wird der Helligkeitsschwellwert in Lux konfiguriert. Wird dieser Wert unterschritten, startet der Timer [Dämmerung: Schliessen nach x Sekunden](#dämmerung-schliessen-nach-x-sekunden). Standardwert: 500
 
 #### Dämmerung: Schliessen nach x Sekunden
-(yaml: `dawn_after_seconds_manual: true|false` u/o `dawn_after_seconds_entity: <entity>`)
+(yaml: `dawn_after_seconds_manual: <Wert>` u/o `dawn_after_seconds_entity: <entity>`)
 
 Hier wird der Zeitraum in Sekunden konfiguriert, nachdem der Behang nach Unterschreiten des [Helligkeitsschwellwertes](#dämmerung-helligkeitsschwellwert) geschlossen werden soll. Standardwert: 120
 
 #### Dämmerung: Maximale Höhe
-(yaml: `dawn_shutter_max_height_manual: true|false` u/o `dawn_shutter_max_height_entity: <entity>`)
+(yaml: `dawn_shutter_max_height_manual: <Wert>` u/o `dawn_shutter_max_height_entity: <entity>`)
 
 Hier kann die maximale Behanghöhe angegeben werden. Das wird bspw. verwendet, um den Behang nicht bis ganz auf den Boden zu fahren, damit ein festfrieren im Winter vermieden wird. Standardwert: 100
 
 #### Dämmerung: Maximaler Lamellenwinkel
-(yaml: `dawn_shutter_max_angle_manual: true|false` u/o `dawn_shutter_max_angle_entity: <entity>`)
+(yaml: `dawn_shutter_max_angle_manual: <Wert>` u/o `dawn_shutter_max_angle_entity: <entity>`)
 
 Hier kann der maximale Lamellenwinkel angegeben werden. Das wird bspw. verwendet, um den Behang nicht ganz zu schliessen, damit ein zusammenfrieren der Lamellen im Winter vermieden wird. Standardwert: 100
 
 #### Dämmerung: Durchsichtposition nach x Sekunden
-(yaml: `dawn_shutter_look_through_seconds_manual: true|false` u/o `dawn_shutter_look_through_seconds_entity: <entity>`)
+(yaml: `dawn_shutter_look_through_seconds_manual: <Wert>` u/o `dawn_shutter_look_through_seconds_entity: <entity>`)
 
 Steigt die Helligkeit über den Schwellwert von [Dämmerung: Helligkeitsschwellwert](#dämmerung-helligkeitsschwellwert), wird der Behang nach der hier angegeben Zeit auf Durchsichtposition gefahren. Standardwert: 120
 
 #### Dämmerung: Öffnen nach x Sekunden
-(yaml: `dawn_shutter_open_seconds_manual: true|false` u/o `dawn_shutter_open_seconds_entity: <entity>`)
+(yaml: `dawn_shutter_open_seconds_manual: <Wert>` u/o `dawn_shutter_open_seconds_entity: <entity>`)
 
 Nachdem der Behang auf Durchsichtsposition gefahren wurde, wird er nach der hier konfigurierten Zeit ganz geöffnet. Standardwert: 3600
 
 #### Dämmerung: Durchsichtswinkel
-(yaml: `dawn_shutter_look_through_angle_manual: true|false` u/o `dawn_shutter_look_through_angle_entity: <entity>`)
+(yaml: `dawn_shutter_look_through_angle_manual: <Wert>` u/o `dawn_shutter_look_through_angle_entity: <entity>`)
 
 Hier wird der Lamellenwinkel der Durchsichtsposition in % konfiguriert. Standardwert: 0
 
 #### Dämmerung: Höhe nach Dämmerungsposition
-(yaml: `dawn_height_after_dawn_manual: true|false` u/o `dawn_height_after_dawn_entity: <entity>`)
+(yaml: `dawn_height_after_dawn_manual: <Wert>` u/o `dawn_height_after_dawn_entity: <entity>`)
 
 Wenn keine Dämmerungssituation mehr vorliegt, wird der Behang auf die hier in % konfigurierte Höhe gefahren. Standardwert: 0
 
 #### Dämmerung: Lamellenwinkel nach Dämmerungsposition
-(yaml: `dawn_angle_after_dawn_manual: true|false` u/o `dawn_angle_after_dawn_entity: <entity>`)
+(yaml: `dawn_angle_after_dawn_manual: <Wert>` u/o `dawn_angle_after_dawn_entity: <entity>`)
 
 Wenn keine Dämmerungssituation mehr vorliegt, wird der Behang auf den hier in % konfigurierten Lamellenwinkel gefahren. Standardwert: 0
 
