@@ -396,10 +396,6 @@ See the description at [Sun elevation](#sun-elevation).
 
 See the description at [Sun azimuth](#sun-azimuth).
 
-#### Current shutter height
-
-#### Current shutter slat angle
-
 #### Lock integration
 (yaml: `lock_integration_manual: true|false` u/o `lock_integration_entity: <entity>`)
 
