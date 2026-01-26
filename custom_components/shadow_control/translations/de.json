@@ -234,37 +234,37 @@
         "name": "Neutraler Winkel"
       },
       "shadow_brightness_threshold_winter_manual": {
-        "name": "B: Winter Helligkeitsschwellwert"
+        "name": "B02 Winter Helligkeitsschwellwert"
       },
       "shadow_brightness_threshold_summer_manual": {
-        "name": "B: Sommer Helligkeitsschwellwert"
+        "name": "B03 Sommer Helligkeitsschwellwert"
       },
       "shadow_brightness_threshold_buffer_manual": {
-        "name": "B: Schwellwertpuffer Sommer/Winter"
+        "name": "B04 Schwellwertpuffer Sommer/Winter"
       },
       "shadow_after_seconds_manual": {
-        "name": "B: Schliessen nach x Sekunden"
+        "name": "B05 Schliessen nach x Sekunden"
       },
       "shadow_shutter_max_height_manual": {
-        "name": "B: Maximale Behanghöhe"
+        "name": "B06 Maximale Behanghöhe"
       },
       "shadow_shutter_max_angle_manual": {
-        "name": "B: Maximaler Lamellenwinkel"
+        "name": "B07 Maximaler Lamellenwinkel"
       },
       "shadow_shutter_look_through_seconds_manual": {
-        "name": "B: Durchsicht nach x Sekunden"
+        "name": "B08 Durchsicht nach x Sekunden"
       },
       "shadow_shutter_open_seconds_manual": {
-        "name": "B: Öffnen nach x Sekunden"
+        "name": "B09 Öffnen nach x Sekunden"
       },
       "shadow_shutter_look_through_angle_manual": {
-        "name": "B: Durchsichtwinkel"
+        "name": "B10 Durchsichtwinkel"
       },
       "shadow_height_after_sun_manual": {
-        "name": "B: Höhe nach Beschattung"
+        "name": "B11 Höhe nach Beschattung"
       },
       "shadow_angle_after_sun_manual": {
-        "name": "B: Winkel nach Beschattung"
+        "name": "B12 Winkel nach Beschattung"
       },
       "dawn_brightness_threshold_manual": {
         "name": "D: Dämmerungsschwellwert"
@@ -365,37 +365,40 @@
         "name": "> Neutraler Winkel"
       },
       "shadow_control_enabled_entity": {
-        "name": "B> Steuerung"
+        "name": "B01 Steuerung aktiv"
       },
       "shadow_brightness_threshold_winter_entity": {
-        "name": "B> Schwellwert Winter"
+        "name": "B02 Schwellwert Winter"
       },
       "shadow_brightness_threshold_summer_entity": {
-        "name": "B> Schwellwert Sommer"
+        "name": "B03 Schwellwert Sommer"
+      },
+      "shadow_brightness_threshold_buffer_entity": {
+        "name": "B04 Schwellwertpuffer Sommer/Winter"
       },
       "shadow_after_seconds_entity": {
-        "name": "B> nach"
+        "name": "B05 nach"
       },
       "shadow_shutter_max_height_entity": {
-        "name": "B> max Höhe"
+        "name": "B06 max Höhe"
       },
       "shadow_shutter_max_angle_entity": {
-        "name": "B> max Winkel"
+        "name": "B07 max Winkel"
       },
       "shadow_shutter_look_through_seconds_entity": {
-        "name": "B> Durchsicht nach"
+        "name": "B08 Durchsicht nach"
       },
       "shadow_shutter_open_seconds_entity": {
-        "name": "B> Öffnen nach"
+        "name": "B09 Öffnen nach"
       },
       "shadow_shutter_look_through_angle_entity": {
-        "name": "B> Durchsichtwinkel"
+        "name": "B10 Durchsichtwinkel"
       },
       "shadow_height_after_sun_entity": {
-        "name": "B> Höhe danach"
+        "name": "B11 Höhe danach"
       },
       "shadow_angle_after_sun_entity": {
-        "name": "B> Winkel danach"
+        "name": "B12 Winkel danach"
       },
       "dawn_control_enabled_entity": {
         "name": "D> Steuerung"
@@ -457,7 +460,7 @@
         "name": "Debug-Modus"
       },
       "shadow_control_enabled_manual": {
-        "name": "B. Steuerung aktiv"
+        "name": "B01 Steuerung aktiv"
       },
       "dawn_control_enabled_manual": {
         "name": "D. Steuerung aktiv"

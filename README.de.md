@@ -68,16 +68,16 @@ Go to the [English version](/README.md) version of the documentation.
       * [Winkelveränderung einschränken](#winkelveränderung-einschränken)
       * [Zwangspositionierung auslösen](#zwangspositionierung-auslösen)
     * [Beschattungseinstellungen](#beschattungseinstellungen)
-      * [Beschattungssteuerung aktiviert](#beschattungssteuerung-aktiviert)
-      * [Beschattung: Helligkeitsschwellwert](#beschattung-helligkeitsschwellwert)
-      * [Beschattung: Schliessen nach x Sekunden](#beschattung-schliessen-nach-x-sekunden)
-      * [Beschattung: Maximale Höhe](#beschattung-maximale-höhe)
-      * [Beschattung: Maximaler Lamellenwinkel](#beschattung-maximaler-lamellenwinkel)
-      * [Beschattung: Durchsichtposition nach x Sekunden](#beschattung-durchsichtposition-nach-x-sekunden)
-      * [Beschattung: Öffnen nach x Sekunden](#beschattung-öffnen-nach-x-sekunden)
-      * [Beschattung: Durchsichtswinkel](#beschattung-durchsichtswinkel)
-      * [Beschattung: Höhe nach Beschattung](#beschattung-höhe-nach-beschattung)
-      * [Beschattung: Lamellenwinkel nach Beschattung](#beschattung-lamellenwinkel-nach-beschattung)
+      * [B01 Steuerung aktiv](#b01-steuerung-aktiv)
+      * [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert)
+      * [B05 Schliessen nach x Sekunden](#b05-schliessen-nach-x-sekunden)
+      * [B06 Maximale Behanghöhe](#b06-maximale-behanghöhe)
+      * [B07 Maximaler Lamellenwinkel](#b07-maximaler-lamellenwinkel)
+      * [B08 Durchsicht nach x Sekunden](#b08-durchsicht-nach-x-sekunden)
+      * [B09 Öffnen nach x Sekunden](#b09-öffnen-nach-x-sekunden)
+      * [B10 Durchsichtwinkel](#b10-durchsichtwinkel)
+      * [B11 Höhe nach Beschattung](#b11-höhe-nach-beschattung)
+      * [B12 Winkel nach Beschattung](#b12-winkel-nach-beschattung)
     * [Dämmerungseinstellungen](#dämmerungseinstellungen)
       * [Dämmerungssteuerung aktiviert](#dämmerungssteuerung-aktiviert)
       * [Dämmerung: Helligkeitsschwellwert](#dämmerung-helligkeitsschwellwert)
@@ -160,8 +160,8 @@ Die Berechnung der Position wird durch die Aktualisierung der folgenden Eingäng
 * [Azimut der Sonne](#azimut-der-sonne)
 * [Integration sperren](#integration-sperren)
 * [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition)
-* [Beschattungssteuerung ein/aus](#beschattungssteuerung-aktiviert)
-* [Dämmerungssteuerung ein/aus](#dämmerungssteuerung-aktiviert)
+* [Beschattungssteuerung ein/aus](#b01-steuerung-aktiv)
+* [Dämmerungssteuerung ein/aus](#d01-steuerung-aktiv)
 
 Der konfigurierte Behang wird nur dann neu positioniert, wenn sich die berechneten Werte seit dem letzten Lauf der Integration geändert haben. Damit wird die unnötige Neupositionierung der Raffstorenlamellen verhindert.
 
@@ -466,53 +466,57 @@ Zusätzlich zur vorherigen Entitätskonfiguration kann diese Push-Button-Entitä
 
 ### Beschattungseinstellungen
 
-#### Beschattungssteuerung aktiviert
+#### B01 Steuerung aktiv
 (yaml: `shadow_control_enabled_manual: true|false` u/o `shadow_control_enabled_entity: <entity>`)
 
 Mit dieser Option wird die Beschattungssteuerung ein- oder ausgeschaltet. Standardwert: ein
 
-#### Beschattung: Helligkeitsschwellwert
-(yaml: `shadow_brightness_threshold_winter_manual: true|false` u/o `shadow_brightness_threshold_entity: <entity>`)
+#### B02 Winter Helligkeitsschwellwert
+(yaml: `shadow_brightness_threshold_winter_manual: <Wert>` u/o `shadow_brightness_threshold_entity: <entity>`)
 
-Hier wird der Helligkeitsschwellwert in Lux konfiguriert. Wird dieser Wert überschritten, startet der Timer [Beschattung: Schliessen nach x Sekunden](#beschattung-schliessen-nach-x-sekunden). Standardwert: 50000 
+Hier wird der Helligkeitsschwellwert in Lux konfiguriert. Wird dieser Wert überschritten, startet der Timer [B05 Schliessen nach x Sekunden](#b05-schliessen-nach-x-sekunden). Standardwert: 50000 
 
-#### Beschattung: Schliessen nach x Sekunden
-(yaml: `shadow_after_seconds_manual: true|false` u/o `shadow_after_seconds_entity: <entity>`)
+#### B03 Sommer Helligkeitsschwellwert
+#### B04 Schwellwertpuffer Sommer/Winter
 
-Hier wird der Zeitraum in Sekunden konfiguriert, nachdem der Behang nach Überschreiten des [Helligkeitsschwellwertes](#beschattung-helligkeitsschwellwert) geschlossen werden soll. Standardwert: 120
 
-#### Beschattung: Maximale Höhe
-(yaml: `shadow_shutter_max_height_manual: true|false` u/o `shadow_shutter_max_height_entity: <entity>`)
+#### B05 Schliessen nach x Sekunden
+(yaml: `shadow_after_seconds_manual: <Wert>` u/o `shadow_after_seconds_entity: <entity>`)
+
+Hier wird der Zeitraum in Sekunden konfiguriert, nachdem der Behang nach Überschreiten des [Helligkeitsschwellwertes](#b02-winter-helligkeitsschwellwert) geschlossen werden soll. Standardwert: 120
+
+#### B06 Maximale Behanghöhe
+(yaml: `shadow_shutter_max_height_manual: <Wert>` u/o `shadow_shutter_max_height_entity: <entity>`)
 
 Hier kann die maximale Behanghöhe angegeben werden. Das wird bspw. verwendet, um den Behang nicht bis ganz auf den Boden zu fahren, damit ein festfrieren im Winter vermieden wird. Standardwert: 100 
 
-#### Beschattung: Maximaler Lamellenwinkel
-(yaml: `shadow_shutter_max_angle_manual: true|false` u/o `shadow_shutter_max_angle_entity: <entity>`)
+#### B07 Maximaler Lamellenwinkel
+(yaml: `shadow_shutter_max_angle_manual: <Wert>` u/o `shadow_shutter_max_angle_entity: <entity>`)
 
 Hier kann der maximale Lamellenwinkel angegeben werden. Das wird bspw. verwendet, um den Behang nicht ganz zu schliessen, damit ein zusammenfrieren der Lamellen im Winter vermieden wird. Standardwert: 100
 
-#### Beschattung: Durchsichtposition nach x Sekunden
-(yaml: `shadow_shutter_look_through_seconds_manual: true|false` u/o `shadow_shutter_look_through_seconds_entity: <entity>`)
+#### B08 Durchsicht nach x Sekunden
+(yaml: `shadow_shutter_look_through_seconds_manual: <Wert>` u/o `shadow_shutter_look_through_seconds_entity: <entity>`)
 
-Fällt die Helligkeit unter den Schwellwert von [Beschattung: Helligkeitsschwellwert](#beschattung-helligkeitsschwellwert), wird der Behang nach der hier angegeben Zeit auf Durchsichtsposition gefahren. Standardwert: 900
+Fällt die Helligkeit unter den Schwellwert von [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert), wird der Behang nach der hier angegeben Zeit auf Durchsichtsposition gefahren. Standardwert: 900
 
-#### Beschattung: Öffnen nach x Sekunden
-(yaml: `shadow_shutter_open_seconds_manual: true|false` u/o `shadow_shutter_open_seconds_entity: <entity>`)
+#### B09 Öffnen nach x Sekunden
+(yaml: `shadow_shutter_open_seconds_manual: <Wert>` u/o `shadow_shutter_open_seconds_entity: <entity>`)
 
 Nachdem der Behang auf Durchsichtsposition gefahren wurde, wird er nach der hier konfigurierten Zeit ganz geöffnet. Standardwert: 3600
 
-#### Beschattung: Durchsichtswinkel
-(yaml: `shadow_shutter_look_through_angle_manual: true|false` u/o `shadow_shutter_look_through_angle_entity: <entity>`)
+#### B10 Durchsichtwinkel
+(yaml: `shadow_shutter_look_through_angle_manual: <Wert>` u/o `shadow_shutter_look_through_angle_entity: <entity>`)
 
 Hier wird der Lamellenwinkel der Durchsichtsposition in % konfiguriert. Standardwert: 0
 
-#### Beschattung: Höhe nach Beschattung
-(yaml: `shadow_height_after_sun_manual: true|false` u/o `shadow_height_after_sun_entity: <entity>`)
+#### B11 Höhe nach Beschattung
+(yaml: `shadow_height_after_sun_manual: <Wert>` u/o `shadow_height_after_sun_entity: <entity>`)
 
 Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf die hier in % konfigurierte Höhe gefahren. Standardwert: 0
 
-#### Beschattung: Lamellenwinkel nach Beschattung
-(yaml: `shadow_angle_after_sun_manual: true|false` u/o `shadow_angle_after_sun_entity: <entity>`)
+#### B12 Winkel nach Beschattung
+(yaml: `shadow_angle_after_sun_manual: <Wert>` u/o `shadow_angle_after_sun_entity: <entity>`)
 
 Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf den hier in % konfigurierten Lamellenwinkel gefahren. Standardwert: 0
 
@@ -522,7 +526,7 @@ Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf den hier in 
 
 ### Dämmerungseinstellungen
 
-#### Dämmerungssteuerung aktiviert
+#### D01 Steuerung aktiv
 (yaml: `dawn_control_enabled_manual: true|false` u/o `dawn_control_enabled_entity: <entity>`)
 
 Mit dieser Option wird die Dämmerungssteuerung ein- oder ausgeschaltet. Standardwert: ein
