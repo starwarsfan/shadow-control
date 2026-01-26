@@ -25,6 +25,7 @@
 * Implement automatic instance lock in case shutters are modified manually
 * New config option `facade_max_movement_duration_static` to configure max movement duration from full closed to full open
 * Activate automatic testing and add a ton of testcases ;-)
+* Implement new feature to handle shadow brightness threshold according to summer solstice. To handle this the parameter `shadow_brightness_threshold_*` was renamed to `shadow_brightness_threshold_winter_*` and two new parameters were introduced: `shadow_brightness_threshold_summer_*` and `shadow_brightness_threshold_buffer_*`. As soon as `shadow_brightness_threshold_summer_*` is configured with a value greater than `shadow_brightness_threshold_winter_*`, the used brightness threshold will be computed using a sine curve between the two threshold values, with top of the curve at summer solstice. Northern and Southern Hemisphere will be handled according to the location of the Home Assistant instance. Option `shadow_brightness_threshold_buffer_*` could be used to shift the entire sine curve upwards to avoid false triggers in the limiting range of shading.
 
 ## 0.10.0
 * Bugfix: Fixed position handling if movement is restricted and integration gets unlocked
