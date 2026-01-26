@@ -267,31 +267,31 @@
         "name": "B12 Winkel nach Beschattung"
       },
       "dawn_brightness_threshold_manual": {
-        "name": "D: Dämmerungsschwellwert"
+        "name": "D02 Dämmerungsschwellwert"
       },
       "dawn_after_seconds_manual": {
-        "name": "D: Schliessen nach x Sekunden"
+        "name": "D03 Schliessen nach x Sekunden"
       },
       "dawn_shutter_max_height_manual": {
-        "name": "D: Maximale Behanghöhe"
+        "name": "D04 Maximale Behanghöhe"
       },
       "dawn_shutter_max_angle_manual": {
-        "name": "D: Maximaler Lamellenwinkel"
+        "name": "D05 Maximaler Lamellenwinkel"
       },
       "dawn_shutter_look_through_seconds_manual": {
-        "name": "D: Durchsicht nach x Sekunden"
+        "name": "D06 Durchsicht nach x Sekunden"
       },
       "dawn_shutter_open_seconds_manual": {
-        "name": "D: Öffnen nach x Sekunden"
+        "name": "D07 Öffnen nach x Sekunden"
       },
       "dawn_shutter_look_through_angle_manual": {
-        "name": "D: Durchsichtwinkel"
+        "name": "D08 Durchsichtwinkel"
       },
       "dawn_height_after_dawn_manual": {
-        "name": "D: Höhe nach Dämmerung"
+        "name": "D09 Höhe nach Dämmerung"
       },
       "dawn_angle_after_dawn_manual": {
-        "name": "D: Winkel nach Dämmerung"
+        "name": "D10 Winkel nach Dämmerung"
       }
     },
     "sensor": {
@@ -401,34 +401,34 @@
         "name": "B12 Winkel danach"
       },
       "dawn_control_enabled_entity": {
-        "name": "D> Steuerung"
+        "name": "D01 Steuerung"
       },
       "dawn_brightness_threshold_entity": {
-        "name": "D> Schwellwert"
+        "name": "D02 Schwellwert"
       },
       "dawn_after_seconds_entity": {
-        "name": "D> nach"
+        "name": "D03 nach"
       },
       "dawn_shutter_max_height_entity": {
-        "name": "D> max Höhe"
+        "name": "D04 max Höhe"
       },
       "dawn_shutter_max_angle_entity": {
-        "name": "D> max Winkel"
+        "name": "D05 max Winkel"
       },
       "dawn_shutter_look_through_seconds_entity": {
-        "name": "D> Durchsicht nach"
+        "name": "D06 Durchsicht nach"
       },
       "dawn_shutter_open_seconds_entity": {
-        "name": "D> Öffnen nach"
+        "name": "D07 Öffnen nach"
       },
       "dawn_shutter_look_through_angle_entity": {
-        "name": "D> Durchsichtwinkel"
+        "name": "D08 Durchsichtwinkel"
       },
       "dawn_height_after_dawn_entity": {
-        "name": "D> Höhe danach"
+        "name": "D09 Höhe danach"
       },
       "dawn_angle_after_dawn_entity": {
-        "name": "D> Winkel danach"
+        "name": "D10 Winkel danach"
       },
       "sunrise_entity": {
         "name": "Sonnenaufgang"
@@ -463,7 +463,7 @@
         "name": "B01 Steuerung aktiv"
       },
       "dawn_control_enabled_manual": {
-        "name": "D. Steuerung aktiv"
+        "name": "D01 Steuerung aktiv"
       },
       "lock_integration_manual": {
         "name": "Sperren"
