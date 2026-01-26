@@ -234,64 +234,64 @@
         "name": "Neutral angle"
       },
       "shadow_brightness_threshold_winter_manual": {
-        "name": "S: Winter brightness threshold"
+        "name": "S02 Winter brightness threshold"
       },
       "shadow_brightness_threshold_summer_manual": {
-        "name": "S: Summer brightness threshold"
+        "name": "S03 Summer brightness threshold"
       },
       "shadow_brightness_threshold_buffer_manual": {
-        "name": "B: Threshold buffer summer/winter"
+        "name": "S04 Threshold buffer summer/winter"
       },
       "shadow_after_seconds_manual": {
-        "name": "S: Close after x seconds"
+        "name": "S05 Close after x seconds"
       },
       "shadow_shutter_max_height_manual": {
-        "name": "S: Max shutter height"
+        "name": "S06 Max shutter height"
       },
       "shadow_shutter_max_angle_manual": {
-        "name": "S: Max shutter angle"
+        "name": "S07 Max shutter angle"
       },
       "shadow_shutter_look_through_seconds_manual": {
-        "name": "S: Look through after x seconds"
+        "name": "S08 Look through after x seconds"
       },
       "shadow_shutter_open_seconds_manual": {
-        "name": "S: Open after x seconds"
+        "name": "S09 Open after x seconds"
       },
       "shadow_shutter_look_through_angle_manual": {
-        "name": "S: Look through angle"
+        "name": "S10 Look through angle"
       },
       "shadow_height_after_sun_manual": {
-        "name": "S: Height after shadow"
+        "name": "S11 Height after shadow"
       },
       "shadow_angle_after_sun_manual": {
-        "name": "S: Angle after shadow"
+        "name": "S12 Angle after shadow"
       },
       "dawn_brightness_threshold_manual": {
-        "name": "D: Brightness threshold"
+        "name": "D02 Brightness threshold"
       },
       "dawn_after_seconds_manual": {
-        "name": "D: Close after x seconds"
+        "name": "D03 Close after x seconds"
       },
       "dawn_shutter_max_height_manual": {
-        "name": "D: Max shutter height"
+        "name": "D04 Max shutter height"
       },
       "dawn_shutter_max_angle_manual": {
-        "name": "D: Max shutter angle"
+        "name": "D05 Max shutter angle"
       },
       "dawn_shutter_look_through_seconds_manual": {
-        "name": "D: Look through after x seconds"
+        "name": "D06 Look through after x seconds"
       },
       "dawn_shutter_open_seconds_manual": {
-        "name": "D: Open after x seconds"
+        "name": "D07 Open after x seconds"
       },
       "dawn_shutter_look_through_angle_manual": {
-        "name": "D: Look through angle"
+        "name": "D08 Look through angle"
       },
       "dawn_height_after_dawn_manual": {
-        "name": "D: Height after dawn"
+        "name": "D09 Height after dawn"
       },
       "dawn_angle_after_dawn_manual": {
-        "name": "D: Angle after dawn"
+        "name": "D10 Angle after dawn"
       }
     },
     "sensor": {
@@ -365,67 +365,70 @@
         "name": "> Neutral angle"
       },
       "shadow_control_enabled_entity": {
-        "name": "S> Control"
+        "name": "S01 Control enabled"
       },
       "shadow_brightness_threshold_winter_entity": {
-        "name": "S> Winter threshold"
+        "name": "S02 Winter threshold"
       },
       "shadow_brightness_threshold_summer_entity": {
-        "name": "S> Summer threshold"
+        "name": "S03 Summer threshold"
+      },
+      "shadow_brightness_threshold_buffer_entity": {
+        "name": "S04 Threshold buffer summer/winter"
       },
       "shadow_after_seconds_entity": {
-        "name": "B> after"
+        "name": "S05 after seconds"
       },
       "shadow_shutter_max_height_entity": {
-        "name": "B> max height"
+        "name": "S06 max height"
       },
       "shadow_shutter_max_angle_entity": {
-        "name": "B> max angle"
+        "name": "S07 max angle"
       },
       "shadow_shutter_look_through_seconds_entity": {
-        "name": "B> Look through"
+        "name": "S08 Look through"
       },
       "shadow_shutter_open_seconds_entity": {
-        "name": "B> Open after"
+        "name": "S09 Open after"
       },
       "shadow_shutter_look_through_angle_entity": {
-        "name": "B> Look through angle"
+        "name": "S10 Look through angle"
       },
       "shadow_height_after_sun_entity": {
-        "name": "B> Height after"
+        "name": "S11 Height after"
       },
       "shadow_angle_after_sun_entity": {
-        "name": "B> Angle after"
+        "name": "S12 Angle after"
       },
       "dawn_control_enabled_entity": {
-        "name": "D> Control"
+        "name": "D01 Control enabled"
       },
       "dawn_brightness_threshold_entity": {
-        "name": "D> Threshold"
+        "name": "D02 Threshold"
       },
       "dawn_after_seconds_entity": {
-        "name": "D> after"
+        "name": "D03 after seconds"
       },
       "dawn_shutter_max_height_entity": {
-        "name": "D> max height"
+        "name": "D04 max height"
       },
       "dawn_shutter_max_angle_entity": {
-        "name": "D> max angle"
+        "name": "D05 max angle"
       },
       "dawn_shutter_look_through_seconds_entity": {
-        "name": "D> Look through after"
+        "name": "D06 Look through after"
       },
       "dawn_shutter_open_seconds_entity": {
-        "name": "D> Open after"
+        "name": "D07 Open after seconds"
       },
       "dawn_shutter_look_through_angle_entity": {
-        "name": "D> Look through angle"
+        "name": "D08 Look through angle"
       },
       "dawn_height_after_dawn_entity": {
-        "name": "D> Height after"
+        "name": "D09 Height after seconds"
       },
       "dawn_angle_after_dawn_entity": {
-        "name": "D> Angle after"
+        "name": "D10 Angle after seconds"
       },
       "sunrise_entity": {
         "name": "Sunrise"

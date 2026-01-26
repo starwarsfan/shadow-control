@@ -68,27 +68,27 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
       * [Movement restriction angle](#movement-restriction-angle)
       * [Enforce shutter positioning](#enforce-shutter-positioning)
     * [Shadow settings](#shadow-settings)
-      * [Shadow control enabled](#shadow-control-enabled)
-      * [Shadow brightness threshold](#shadow-brightness-threshold)
-      * [Shadow after seconds](#shadow-after-seconds)
-      * [Shadow max height](#shadow-max-height)
-      * [Shadow max angle](#shadow-max-angle)
-      * [Shadow look through seconds](#shadow-look-through-seconds)
-      * [Shadow open seconds](#shadow-open-seconds)
-      * [Shadow look through angle](#shadow-look-through-angle)
-      * [Shadow height after sun](#shadow-height-after-sun)
-      * [Shadow angle after sun](#shadow-angle-after-sun)
+      * [S01 Control](#s01-control-enabled)
+      * [S02 Winter threshold](#s02-winter-threshold)
+      * [S05 after seconds](#s05-after-seconds)
+      * [S06 max height](#s06-max-height)
+      * [S07 max angle](#s07-max-angle)
+      * [S08 Look through](#s08-look-through)
+      * [S09 Open after](#s09-open-after)
+      * [S10 Look through angle](#s10-look-through-angle)
+      * [S11 Height after](#s11-height-after)
+      * [S12 Angle after](#s12-angle-after)
     * [Dawn settings](#dawn-settings)
-      * [Dawn control enabled](#dawn-control-enabled)
-      * [Dawn brightness threshold](#dawn-brightness-threshold)
-      * [Dawn after seconds](#dawn-after-seconds)
-      * [Dawn max height](#dawn-max-height)
-      * [Dawn max angle](#dawn-max-angle)
-      * [Dawn look through seconds](#dawn-look-through-seconds)
-      * [Dawn open seconds](#dawn-open-seconds)
-      * [Dawn look through angle](#dawn-look-through-angle)
-      * [After dawn height](#after-dawn-height)
-      * [After dawn angle](#after-dawn-angle)
+      * [D01 Control enabled](#d01-control-enabled)
+      * [D02 Threshold](#d02-threshold)
+      * [D03 after seconds](#d03-after-seconds)
+      * [D04 max height](#d04-max-height)
+      * [D05 max angle](#d05-max-angle)
+      * [D06 Look through after](#d06-look-through-after)
+      * [D07 Open after seconds](#d07-open-after-seconds)
+      * [D08 Look through angle](#d08-look-through-angle)
+      * [D09 Height after seconds](#d09-height-after-seconds)
+      * [D10 Angle after seconds](#d10-angle-after-seconds)
   * [Configuration by yaml](#configuration-by-yaml)
     * [Example YAML configuration](#example-yaml-configuration)
 * [State, return values and direct options](#state-return-values-and-direct-options)
@@ -160,14 +160,14 @@ The integration will be triggered by updating the following entities:
 * [Sun azimuth](#sun-azimuth)
 * [Lock integration](#lock-integration)
 * [Lock integration with position](#lock-integration-with-position)
-* [Shadow handling dis-/enabled state](#shadow-control-enabled)
-* [Dawn handling dis-/enabled state](#dawn-control-enabled)
+* [Shadow handling dis-/enabled state](#s01-control)
+* [Dawn handling dis-/enabled state](#d01-control-enabled)
 
 The configured cover entity will only be updated if a value has changed since the last run of the integration, which prevents unnecessary movements.
 
 ## Entity precedence
-
 Attention: For all options the configured entity variant takes precedence! That means if a entity is configured, the entity value will be used. Additionally the internal entity for this option will be removed. To prevent this, you need to clear the entity configuration.
+
 
 # Installation
 
@@ -244,7 +244,6 @@ This input should be filled with the current azimuth of the sun. Usually this va
 
 sunrise_entity
 sunset_entity
-
 
 
 
@@ -466,52 +465,56 @@ Additionally to the previous entity configuration, this push button entity could
 
 ### Shadow settings
 
-#### Shadow control enabled
+#### S01 Control enabled
 (yaml: `shadow_control_enabled_manual: true|false` u/o `shadow_control_enabled_entity: <entity>`)
 
 With this option, the whole shadow handling could be de-/activated. Default: on
 
-#### Shadow brightness threshold
+#### S02 Winter threshold
 (yaml: `shadow_brightness_threshold_winter_manual: true|false` u/o `shadow_brightness_threshold_entity: <entity>`)
 
 This is the brightness threshold in Lux. If the threshold is exceeded, the timer `shadow_after_seconds` is started. Default: 50000 
 
-#### Shadow after seconds
+#### S03 Summer threshold
+#### S04 Threshold buffer summer/winter
+
+
+#### S05 after seconds
 (yaml: `shadow_after_seconds_manual: true|false` u/o `shadow_after_seconds_entity: <entity>`)
 
 This is the number of seconds which should be passed after the exceedance of `shadow_brightness_threshold`, until the shutter will be moved to the shadow position. Default: 120
 
-#### Shadow max height
+#### S06 max height
 (yaml: `shadow_shutter_max_height_manual: true|false` u/o `shadow_shutter_max_height_entity: <entity>`)
 
 Max height of the shutter in case of shadow position in %. Default: 100 
 
-#### Shadow max angle
+#### S07 max angle
 (yaml: `shadow_shutter_max_angle_manual: true|false` u/o `shadow_shutter_max_angle_entity: <entity>`)
 
 Max angle of the shutter in case of shadow position in %. Default: 100 
 
-#### Shadow look through seconds
+#### S08 Look through
 (yaml: `shadow_shutter_look_through_seconds_manual: true|false` u/o `shadow_shutter_look_through_seconds_entity: <entity>`)
 
 If brightness falls below the value of `shadow_brightness_threshold`, the shutter slats will be moved to horizontal position after the configured number of seconds. Default: 900
 
-#### Shadow open seconds
+#### S09 Open after
 (yaml: `shadow_shutter_open_seconds_manual: true|false` u/o `shadow_shutter_open_seconds_entity: <entity>`)
 
 If brightness stays below the value of `shadow_brightness_threshold`, the shutter will be fully opened after the configured number of seconds. Default: 3600
 
-#### Shadow look through angle
+#### S10 Look through angle
 (yaml: `shadow_shutter_look_through_angle_manual: true|false` u/o `shadow_shutter_look_through_angle_entity: <entity>`)
 
 This is the shutter slat angle in %, which should be used at the "look through" position. Default: 0
 
-#### Shadow height after sun
+#### S11 Height after
 (yaml: `shadow_height_after_sun_manual: true|false` u/o `shadow_height_after_sun_entity: <entity>`)
 
 This is the shutter height in %, which should be set after the shadow position. Default: 0
 
-#### Shadow angle after sun
+#### S12 Angle after
 (yaml: `shadow_angle_after_sun_manual: true|false` u/o `shadow_angle_after_sun_entity: <entity>`)
 
 This is the shutter angle in %, which should be set after the shadow position. Default: 0
@@ -522,52 +525,52 @@ This is the shutter angle in %, which should be set after the shadow position. D
 
 ### Dawn settings
 
-#### Dawn control enabled
+#### D01 Control enabled
 (yaml: `dawn_control_enabled_manual: true|false` u/o `dawn_control_enabled_entity: <entity>`)
 
 With this option, the whole dawn handling could be de-/activated. Default: on
 
-#### Dawn brightness threshold
+#### D02 Threshold
 (yaml: `dawn_brightness_threshold_manual: true|false` u/o `dawn_brightness_threshold_entity: <entity>`)
 
 This is the brightness threshold in Lux. If the threshold is undercut, the timer `dawn_after_seconds` is started. Default: 500
 
-#### Dawn after seconds
+#### D03 after seconds
 (yaml: `dawn_after_seconds_manual: true|false` u/o `dawn_after_seconds_entity: <entity>`)
 
 This is the number of seconds which should be passed after `dawn_brightness_threshold` was undercut, until the shutter will be moved to the dawn position. Default: 120
 
-#### Dawn max height
+#### D04 max height
 (yaml: `dawn_shutter_max_height_manual: true|false` u/o `dawn_shutter_max_height_entity: <entity>`)
 
 Max height of the shutter in case of dawn position in %. Default: 100
 
-#### Dawn max angle
+#### D05 max angle
 (yaml: `dawn_shutter_max_angle_manual: true|false` u/o `dawn_shutter_max_angle_entity: <entity>`)
 
 Max angle of the shutter in case of dawn position in %. Default: 100
 
-#### Dawn look through seconds
+#### D06 Look through after
 (yaml: `dawn_shutter_look_through_seconds_manual: true|false` u/o `dawn_shutter_look_through_seconds_entity: <entity>`)
 
 If brightness exceeds the value of `dawn_brightness_threshold`, the shutter slats will be moved to horizontal position after the configured number of seconds. Default: 120
 
-#### Dawn open seconds
+#### D07 Open after seconds
 (yaml: `dawn_shutter_open_seconds_manual: true|false` u/o `dawn_shutter_open_seconds_entity: <entity>`)
 
 If brightness stays above the value of `dawn_brightness_threshold`, the shutter will be fully opened after the configured number of seconds. Default: 3600
 
-#### Dawn look through angle
+#### D08 Look through angle
 (yaml: `dawn_shutter_look_through_angle_manual: true|false` u/o `dawn_shutter_look_through_angle_entity: <entity>`)
 
 This is the shutter slat angle in %, which should be used at the "look through" position. Default: 0
 
-#### After dawn height
+#### D09 Height after seconds
 (yaml: `dawn_height_after_dawn_manual: true|false` u/o `dawn_height_after_dawn_entity: <entity>`)
 
 This is the shutter height in %, which should be set after the dawn position. Default: 0
 
-#### After dawn angle
+#### D10 Angle after seconds
 (yaml: `dawn_angle_after_dawn_manual: true|false` u/o `dawn_angle_after_dawn_entity: <entity>`)
 
 This is the shutter angle in %, which should be set after the dawn position. Default: 0
