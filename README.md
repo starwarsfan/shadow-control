@@ -490,12 +490,12 @@ This functionality will be used as soon as the value of [S03 Summer threshold](#
 #### S03 Summer threshold
 (yaml: `shadow_brightness_threshold_summer_manual: true|false` u/o `shadow_brightness_threshold_summer_entity: <entity>`)
 
-Second value for sine curve computation. For details see previous option [S02 Winter threshold](#s02-winter-threshold).
+Second value for sine curve computation. For details see previous option [S02 Winter threshold](#s02-winter-threshold). Default: 50000
 
 #### S04 Threshold buffer summer/winter
 (yaml: `shadow_brightness_threshold_buffer_manual: true|false` u/o `shadow_brightness_threshold_buffer_entity: <entity>`)
 
-This value is used to shift the entire sine curve from the previous two options upwards to avoid false triggers in the limiting range of shading. For details see [S02 Winter threshold](#s02-winter-threshold).
+This value is used to shift the entire sine curve from the previous two options upwards to avoid false triggers in the limiting range of shading. For details see [S02 Winter threshold](#s02-winter-threshold). Default: 1000
 
 #### S05 after seconds
 (yaml: `shadow_after_seconds_manual: true|false` u/o `shadow_after_seconds_entity: <entity>`)

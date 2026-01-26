@@ -487,12 +487,12 @@ Diese Funktionalität ist aktiv, sobald unter [B03 Sommer Helligkeitsschwellwert
 #### B03 Sommer Helligkeitsschwellwert
 (yaml: `shadow_brightness_threshold_summer_manual: true|false` u/o `shadow_brightness_threshold_summer_entity: <entity>`)
 
-Zweiter Wert für die Berechnung der Sinuskurve. Für Details siehe vorherige Option [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert).
+Zweiter Wert für die Berechnung der Sinuskurve. Für Details siehe vorherige Option [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert). Default: 50000
 
 #### B04 Schwellwertpuffer Sommer/Winter
 (yaml: `shadow_brightness_threshold_buffer_manual: true|false` u/o `shadow_brightness_threshold_buffer_entity: <entity>`)
 
-Dieser Wert wird verwendet, um die Sinuskurve der vorherigen Optionen nach oben zu verschieben, um Fehlauslösungen im Grenzbereich der Beschattung zu vermeiden. Für Details siehe [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert).
+Dieser Wert wird verwendet, um die Sinuskurve der vorherigen Optionen nach oben zu verschieben, um Fehlauslösungen im Grenzbereich der Beschattung zu vermeiden. Für Details siehe [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert). Default: 1000
 
 #### B05 Schliessen nach x Sekunden
 (yaml: `shadow_after_seconds_manual: <Wert>` u/o `shadow_after_seconds_entity: <entity>`)
