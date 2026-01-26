@@ -80,14 +80,14 @@ async def test_show_initial_state(
 
     # 2. Prüfen, ob die Entität überhaupt schon im State-Machine ist
     # Falls hier None kommt, sind die Plattformen noch nicht geladen!
-    entity = await get_entity_and_show_state(hass, "number.sc_test_instance_s_winter_brightness_threshold")
+    entity = await get_entity_and_show_state(hass, "number.sc_test_instance_s02_winter_brightness_threshold")
     assert entity is not None
 
     hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
     await hass.async_block_till_done()
 
     # Prüfe gezielt einen Wert aus 'sc_internal_values'
-    threshold = await get_entity_and_show_state(hass, "number.sc_test_instance_s_winter_brightness_threshold")
+    threshold = await get_entity_and_show_state(hass, "number.sc_test_instance_s02_winter_brightness_threshold")
     assert threshold.state == "15000"
 
     # Zeige Input Numbers
