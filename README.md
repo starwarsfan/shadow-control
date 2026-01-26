@@ -467,7 +467,7 @@ Additionally to the previous entity configuration, this push button entity could
 
 ### Shadow settings
 
-The shading settings use the prefix **S<number>** to achieve a logical grouping and order of the options. This ensures that the configured values are displayed in this order in the instance view. Note that an option is only visible under **Controls** if no entity has been configured for it. Otherwise, it can be found under **Sensors** and displays the value of the configured entity. Here is an example of the beginning of the controls:
+The shading settings use the prefix **S&lt;number&gt;** to achieve a logical grouping and order of the options. This ensures that the configured values are displayed in this order in the instance view. Note that an option is only visible under **Controls** if no entity has been configured for it. Otherwise, it can be found under **Sensors** and displays the value of the configured entity. Here is an example of the beginning of the controls:
 
 ![Controls](/images/controls.png)
 
@@ -543,7 +543,7 @@ This is the shutter angle in %, which should be set after the shadow position. D
 
 ### Dawn settings
 
-The dawn settings use the prefix **D<number>** to achieve a logical grouping and order of the options. This ensures that the configured values are displayed in this order in the instance view. Note that an option is only visible under **Controls** if no entity has been configured for it. Otherwise, it can be found under **Sensors** and displays the value of the configured entity. Here is an example of the beginning of the controls:
+The dawn settings use the prefix **D&lt;number&gt;** to achieve a logical grouping and order of the options. This ensures that the configured values are displayed in this order in the instance view. Note that an option is only visible under **Controls** if no entity has been configured for it. Otherwise, it can be found under **Sensors** and displays the value of the configured entity. Here is an example of the beginning of the controls:
 
 ![Controls](/images/controls.png)
 
