@@ -85,11 +85,11 @@ shadow_control:
     #shadow_control_enabled_entity:
     shadow_control_enabled_manual: true
     #shadow_brightness_threshold_winter_entity:
-    shadow_brightness_threshold_winter_manual: 30000
+    #shadow_brightness_threshold_winter_manual: 30000
     #shadow_brightness_threshold_summer_entity:
-    shadow_brightness_threshold_summer_manual: 50000
+    #shadow_brightness_threshold_summer_manual: 50000
     #shadow_brightness_threshold_buffer_entity:
-    shadow_brightness_threshold_buffer_manual: 1000
+    #shadow_brightness_threshold_buffer_manual: 1000
     #shadow_after_seconds_entity:
     shadow_after_seconds_manual: 10
     shadow_shutter_max_height_entity: input_number.automation_shadow_max_height_sc_dummy
@@ -179,11 +179,11 @@ shadow_control:
     #shadow_control_enabled_entity:
     shadow_control_enabled_manual: true
     #shadow_brightness_threshold_winter_entity:
-    shadow_brightness_threshold_winter_manual: 30000
+    #shadow_brightness_threshold_winter_manual: 30000
     #shadow_brightness_threshold_summer_entity:
-    shadow_brightness_threshold_summer_manual: 50000
+    #shadow_brightness_threshold_summer_manual: 50000
     #shadow_brightness_threshold_buffer_entity:
-    shadow_brightness_threshold_buffer_manual: 1000
+    #shadow_brightness_threshold_buffer_manual: 1000
     #shadow_after_seconds_entity:
     shadow_after_seconds_manual: 10
     #shadow_shutter_max_height_entity:
@@ -260,11 +260,11 @@ shadow_control:
     #shadow_control_enabled_entity:
     shadow_control_enabled_manual: true
     #shadow_brightness_threshold_winter_entity:
-    shadow_brightness_threshold_winter_manual: 30000
+    #shadow_brightness_threshold_winter_manual: 30000
     #shadow_brightness_threshold_summer_entity:
-    shadow_brightness_threshold_summer_manual: 50000
+    #shadow_brightness_threshold_summer_manual: 50000
     #shadow_brightness_threshold_buffer_entity:
-    shadow_brightness_threshold_buffer_manual: 1000
+    #shadow_brightness_threshold_buffer_manual: 1000
     #shadow_after_seconds_entity:
     shadow_after_seconds_manual: 10
     #shadow_shutter_max_height_entity:
