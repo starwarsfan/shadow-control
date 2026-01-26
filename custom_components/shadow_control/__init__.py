@@ -1457,14 +1457,35 @@ class ShadowControlManager:
             # Only calculate if both sunrise and sunset are available
             if sunrise and sunset:
                 now = dt_util.now()
-                self.brightness_threshold = self._adaptive_brightness_calculator.calculate_threshold(
-                    current_time=now,
-                    sunrise=sunrise,
-                    sunset=sunset,
-                    winter_lux=self._shadow_config.brightness_threshold_winter,
-                    summer_lux=self._shadow_config.brightness_threshold_summer,
-                    buffer=self._shadow_config.brightness_threshold_buffer,
-                )
+
+                # Wenn Sunrise in der Zukunft (morgen), nimm den von heute
+                if sunrise.date() > now.date():
+                    # Berechne Sunrise für heute
+                    sunrise = sunrise.replace(year=now.year, month=now.month, day=now.day)
+
+                # Wenn Sunset in der Vergangenheit (gestern), nimm den von heute
+                if sunset.date() < now.date():
+                    # Berechne Sunset für morgen
+                    sunset = sunset.replace(year=now.year, month=now.month, day=now.day) + timedelta(days=1)
+
+                # Finale Validierung: Sunset muss nach Sunrise sein
+                if sunset <= sunrise:
+                    self.logger.warning(
+                        "Invalid sun times after normalization: sunrise=%s, sunset=%s. Using static winter threshold.",
+                        sunrise,
+                        sunset,
+                    )
+                    self.brightness_threshold = self._shadow_config.brightness_threshold_winter
+                else:
+                    # Berechne Threshold
+                    self.brightness_threshold = self._adaptive_brightness_calculator.calculate_threshold(
+                        current_time=now,
+                        sunrise=sunrise,
+                        sunset=sunset,
+                        winter_lux=self._shadow_config.brightness_threshold_winter,
+                        summer_lux=self._shadow_config.brightness_threshold_summer,
+                        buffer=self._shadow_config.brightness_threshold_buffer,
+                    )
             else:
                 self.logger.warning(
                     "Adaptive brightness enabled but sunrise (%s) or sunset (%s) entity not configured or invalid. "
