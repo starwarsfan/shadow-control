@@ -435,6 +435,9 @@
       },
       "sunset_entity": {
         "name": "Sonnenuntergang"
+      },
+      "sensor_brightness_threshold_active": {
+        "name": "Aktiver Helligkeitsschwellwert"
       }
     },
     "select": {

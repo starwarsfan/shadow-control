@@ -276,6 +276,7 @@ class SensorEntries(Enum):
     LOCK_STATE = "lock_state"
     NEXT_SHUTTER_MODIFICATION = "next_shutter_modification"
     IS_IN_SUN = "is_in_sun"
+    BRIGHTNESS_THRESHOLD_ACTIVE = "brightness_threshold_active"
 
 
 class SCDefaults(Enum):

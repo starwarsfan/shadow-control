@@ -174,6 +174,26 @@ async def mock_minimal_entities(hass: HomeAssistant):
     assert await async_setup_component(hass, INPUT_NUMBER_DOMAIN, input_number_config)
     await hass.async_block_till_done()
 
+    # Input DateTime helpers for sunrise/sunset (for adaptive brightness tests)
+    input_datetime_config = {
+        "input_datetime": {
+            "sunrise": {
+                "name": "Sunrise Time",
+                "has_date": True,
+                "has_time": True,
+            },
+            "sunset": {
+                "name": "Sunset Time",
+                "has_date": True,
+                "has_time": True,
+            },
+        }
+    }
+
+    # Setup Input DateTime
+    assert await async_setup_component(hass, "input_datetime", input_datetime_config)
+    await hass.async_block_till_done()
+
     # Setup Cover mit Template Platform
     cover_config = {
         COVER_DOMAIN: [
@@ -220,6 +240,10 @@ async def mock_minimal_entities(hass: HomeAssistant):
             "input_number.d01_brightness",
             "input_number.d03_sun_elevation",
             "input_number.d04_sun_azimuth",
+        ],
+        "input_datetimes": [
+            "input_datetime.sunrise",
+            "input_datetime.sunset",
         ],
     }
 

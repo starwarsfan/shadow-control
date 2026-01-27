@@ -93,7 +93,7 @@ class TestSensorEntities:
         entities_added = []
         await sensor_async_setup_entry(mock_hass, mock_config_entry, lambda entities, _: entities_added.extend(entities))
         # Corrected assertion: mode1/2 includes angles (10)
-        assert len(entities_added) == 10
+        assert len(entities_added) == 11
 
     async def test_async_setup_entry_skips_angle_mode3(self, mock_hass, mock_config_entry):
         """Test that angle sensors are skipped for MODE3 shutters."""
@@ -101,7 +101,7 @@ class TestSensorEntities:
         entities_added = []
         await sensor_async_setup_entry(mock_hass, mock_config_entry, lambda entities, _: entities_added.extend(entities))
         # Corrected assertion: mode3 skips angles (7)
-        assert len(entities_added) == 7
+        assert len(entities_added) == 8
 
     async def test_internal_sensor_value_rounding(self, mock_manager):
         """Test that float values from manager are rounded in the UI."""

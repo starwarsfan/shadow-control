@@ -1,6 +1,6 @@
 """Shadow Control sensor implementation."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 import homeassistant.helpers.entity_registry as er
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
@@ -44,6 +44,7 @@ async def async_setup_entry(
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.LOCK_STATE),
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.NEXT_SHUTTER_MODIFICATION),
         ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.IS_IN_SUN),
+        ShadowControlSensor(manager, config_entry.entry_id, SensorEntries.BRIGHTNESS_THRESHOLD_ACTIVE),
     ]
 
     if shutter_type_value != ShutterType.MODE3.value:
@@ -170,6 +171,11 @@ class ShadowControlSensor(SensorEntity):
             self._attr_native_unit_of_measurement = None
         elif self._sensor_entry_type == SensorEntries.IS_IN_SUN:
             self._attr_icon = "mdi:sun-angle-outline"
+        elif self._sensor_entry_type == SensorEntries.BRIGHTNESS_THRESHOLD_ACTIVE:
+            self._attr_native_unit_of_measurement = "lx"
+            self._attr_icon = "mdi:brightness-6"
+            self._attr_state_class = "measurement"
+            self._attr_device_class = SensorDeviceClass.ILLUMINANCE
 
         # Connect with the device (important for UI)
         self._attr_device_info = DeviceInfo(
@@ -206,6 +212,9 @@ class ShadowControlSensor(SensorEntity):
         if self._sensor_entry_type == SensorEntries.IS_IN_SUN:
             # For boolean states, ensure it's a native Python boolean
             value = bool(self._manager.is_in_sun)
+        if self._sensor_entry_type == SensorEntries.BRIGHTNESS_THRESHOLD_ACTIVE:
+            # Return the currently active/calculated brightness threshold
+            value = self._manager.brightness_threshold
 
         if value is None:
             return None
@@ -333,10 +342,15 @@ class ShadowControlExternalEntityValueSensor(SensorEntity):
         # Handle TIMESTAMP device_class: Convert string to datetime
         if self.device_class == SensorDeviceClass.TIMESTAMP and isinstance(state.state, str):
             try:
-                return datetime.fromisoformat(state.state)
+                dt = datetime.fromisoformat(state.state)
+                # Add UTC timezone if missing (input_datetime returns naive datetime)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=UTC)
             except (ValueError, TypeError):
                 self.logger.warning("Could not parse timestamp '%s' from entity '%s'", state.state, entity_id)
                 return None
+            else:
+                return dt
 
         # Versuche den Wert zu konvertieren
         try:
