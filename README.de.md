@@ -21,6 +21,8 @@ Go to the [English version](/README.md) version of the documentation.
 * [Einführung](#einführung)
   * [TL;DR – Kurzform](#tldr--kurzform)
   * [Beschreibung – Langform](#beschreibung--langform)
+  * [Adaptiver Helligkeitsschwellwert](#adaptiver-helligkeitsschwellwert)
+  * [Betriebsarten](#betriebsarten)
   * [Entitäten-Vorrang](#entitäten-vorrang)
 * [Installation](#installation)
 * [Konfiguration](#konfiguration)
@@ -120,20 +122,16 @@ In den folgenden Abschnitten gilt Folgendes:
 * Das Wort "Fassade" ist gleichbedeutend mit "Fenster" oder "Tür", da es hier lediglich den Bezug zum Azimut eines Objektes in Blickrichtung von innen nach aussen darstellt.
 * Das Wort "Behang" bezieht sich auf Raffstoren. In der Home Assistant Terminologie ist das ein "cover", was aus Sicht dieser Integration das Gleiche ist.
 * Die gesamte interne Logik wurde ursprünglich für die Interaktion mit KNX-Systemen entwickelt. Der Hauptunterschied ist daher die Handhabung von Prozentwerten. **Shadow Control** wird mit Home Assistant korrekt interagieren aber die Konfiguration sowie die Logausgaben verwenden 0 % als geöffnet und 100 % als geschlossen.
-* Viele Einstellungen sind jeweils in zwei Ausprägungen vorhanden. Einmal als statischer Wert und einmal als Entität. Wird ein Wert fix konfiguriert und soll sich zur Laufzeit nicht ändern, wird das über die statische Konfiguration gemacht. Soll der Wert aber dynamisch angepasst werden können, muss er mit einer entsprechenden Entität verknüpft werden.
-* Viele Einstellungen können via verknüpfter Entität modifiziert werden, stellen aber parallel dazu Instanz-spezifische Entitäten automatisch bereit. Damit können diese Einstellungen auch in Automationen verwendet werden, ohne durch eine Änderung einen Reload der Integration auszulösen. Konkret sind das die folgenden Settings, welche eigene Entitäten bereitstellen:
-  * [Integration sperren](#integration-sperren)
-  * [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition)
-  * [Zwangsposition Höhe](#zwangsposition-höhe)
-  * [Zwangsposition Lamellenwinkel](#zwangsposition-lamellenwinkel)
-  * [Höhenveränderung einschränken](#höhenveränderung-einschränken)
-  * [Winkelveränderung einschränken](#winkelveränderung-einschränken)
-  * [Alle Beschattungseinstellungen](#beschattungseinstellungen)
-  * [Alle Dämmerungseinstellungen](#dämmerungseinstellungen)
+* Fast alle Einstellungen 
+  * stellen eigene Steuerelemente bereit, welche auf der Instanz-Ansicht direkt modifiziert werden können. Damit können die Werte der Optionen einfach verändert und angepasst werden.
+  * können bei Bedarf mit eigenen Entitäten verknüpft werden. Sobald davon Gebrauch gemacht wird, wird kein Steuerelement sondern ein Sensor erstellt, welcher den aktuellen Wert der verknüpften Entität zeigt. Damit können die Werte der Optionen dynamisch angepasst werden, bspw. durch vorgelagerte Automationen.
+
+
 
 ## TL;DR – Kurzform
 
 * Raffstoren- und Jalousie-Steuerung basierend auf Helligkeitsschwellwerten und verschiedenen Timern
+* Adaptiver Helligkeitsschwellwert
 * Höhe und Lamellenwinkel für Beschattung und Dämmerung separat konfigurierbar
   * Beschattungs- resp. Dämmerungsposition nach Helligkeitsschwellwert und Zeit X
   * Durchsicht-Position nach Helligkeitsschwellwert und Zeit Y
@@ -151,6 +149,20 @@ In den folgenden Abschnitten gilt Folgendes:
 Basierend auf verschiedenen Eingangswerten wird die Integration die Positionierung des Behangs übernehmen. Damit das funktioniert, muss die jeweilige Instanz mit dem Azimut der Fassade, dem Sonnenstand sowie der dortigen Helligkeit konfiguriert werden. Zusätzlich sind viele weitere Details konfigurierbar, um den Beschattungsvorgang resp. den entsprechenden Bereich unter direkter Sonneneinstrahlung zu definieren und somit direktes Sonnenlicht im Raum zu verhindern oder einzuschränken.
 
 Die berechnete Behanghöhe sowie der Lamellenwinkel hängen von der momentanen Helligkeit, den konfigurierten Schwellwerten, der Abmessung der Lamellen, Timern und weiteren Einstellungen ab. Die verschiedenen Timer werden je nach momentanem Zustand der Integration gestartet.
+
+## Adaptiver Helligkeitsschwellwert
+
+_Hinweis: Die Funktionalität des adaptiven Helligkeitsschwellwertes basiert auf dem Edomi-LBS 19001445 von Hardy Köpf (harry7922). Vielen Dank!_
+
+Zwischen dem Sonnenaufgang und Sonnenuntergang wird eine Helligkeitsschwelle über eine Sinus-Kurve mit einem Tageshöchstwert berechnet. Der Tageshöchstwert wird dabei über eine lineare Formel ermittelt. Dies dient dazu, die Varianz der Helligkeit zwischen Winter und Sommer auszugleichen. 
+
+Zur Sommersonnenwende steht die Sonne am höchsten. Das ist auf der Nordhalbkugel jährlich am 21.06. bzw. auf der Südhalbkugel am 21.12. der Fall. **Shadow Control** ermittelt aus den Geo-Koordinaten der Home Assistant-Instanz, ob sich diese auf der Nord- oder der Südhalbkugel befindet. Ausgehend von der verwendeten Sommersonnenwende wird über eine lineare Formel ein tagesaktueller Helligkeits-Schwellwert ermittelt. Im Hochsommer ist erst ab einem höheren LUX-Wert der Himmel klar und Sonnenschein, im Winter ist das bei bereits deutlich weniger LUX der Fall. Die Untergrenze und Obergrenze definieren dabei die Varianz zwischen Winter und Sommer. Somit wird benutzerspezifisch definiert, welche Helligkeit im Hochsommer und welche Helligkeit im Winter benötigt wird, damit um die Beschattung auszulösen. Zwischen diesen beiden Werten wird über eine lineare Funktion der tagesaktuelle Wert ermittelt.
+
+Die Konfigurationsoptionen dazu sind [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert), [B03 Sommer Helligkeitsschwellwert](#b03-sommer-helligkeitsschwellwert) und [B04 Schwellwertpuffer Sommer/Winter](#b04-schwellwertpuffer-sommerwinter).
+
+
+
+## Betriebsarten
 
 Grundsätzlich gibt es zwei Betriebsarten: _Beschattung_ und _Dämmerung_, welche unabhängig voneinander eingerichtet werden.
 

@@ -21,6 +21,8 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
 * [Introduction](#introduction)
   * [TL;DR – in short](#tldr--in-short)
   * [What it does - long version](#what-it-does---long-version)
+  * [Adaptive brightness control](#adaptive-brightness-control)
+  * [Operating modes](#operating-modes)
   * [Entity precedence](#entity-precedence)
 * [Installation](#installation)
 * [Configuration](#configuration)
@@ -120,20 +122,16 @@ Within further description:
 * The word "facade" is similar to "window" or "door," as it simply references the azimuth of an object in the sense of viewing direction from within that object to the outside.
 * The word "shutter" references rolling shutters. In the Home Assistant terminology, this is called a "cover". From the pov of this integration it's the same.
 * The whole internal logic was initially developed to interact with a KNX system, so the main difference is the handling of %-values. **Shadow Control** will interact with Home Assistant correct, but the configuration as well as the log output is using 0% as fully open and 100% as fully closed.
-* Most options are available with two flavors for each configuration: Once as a static configuration and once as an entity configuration. If you need to configure something without the possibility to change that value on demand, you should use the static configuration entry. If you need to modify something on demand, use the entity configuration and choose the corresponding entity, which holds the required value. If you change the used entity, it will be taken into account within the next execution of the integration instance.
-* A lot of settings could be modified using configured entities but also provide own instance specific entities. So these entities could be used within automations to modify the configuration without triggering a integration reload. These are the configurations, which provide own entities beside the entity configuration option:
-  * [Lock integration](#lock-integration)
-  * [Lock integration with position](#lock-integration-with-position)
-  * [Enforced position height](#enforced-position-height)
-  * [Enforced position slat angle](#enforced-position-slat-angle)
-  * [Movement restriction height](#movement-restriction-height)
-  * [Movement restriction angle](#movement-restriction-angle)
-  * [All shadow settings](#shadow-settings)
-  * [All dawn settings](#dawn-settings)
+* Most options 
+  * provide own controls, which could be modified on the instance view. So they could be modified easily there.
+  * can be configured with own entities. As soon as this possibility is used, there's no control created but a corresponding sensor, which displays the current value of the connected entity. So the used values could be dynamically modified like with a automation in front of the instance.
+
+
 
 ## TL;DR – in short
 
 * Control venetian blinds or vertical blinds based on brightness thresholds and timers
+* Adaptive brightness control
 * Height and slat angle are separately configurable for shadow and dawn
   * Shadow respectively dawn position after a brightness threshold plus time X
   * Look through position after a brightness threshold plus time Y
@@ -151,6 +149,22 @@ Within further description:
 Based on several input values, the integration handles the positioning of rolling shutters. To do so, the integration needs to be configured with the azimuth of the facade, for which the shutters should be controlled. Additionally, some offset and min-max values will be used to define the area within the facade is illuminated by the sun. If the sun is within that range and the configured brightness threshold is exceeded for a (also configurable) amount of time, the shutters will be positioned to prevent direct sunlight in the room.
 
 The determined shutter height and tilt angle depend on the current brightness, configured thresholds, dimensions of your shutter slats, some timers, and more settings. The different timers will be activated according to the current state of the integration.
+
+
+
+## Adaptive brightness control
+
+_Note: The functionality of the adaptive brightness threshold is based on Edomi-LBS 19001445 by Hardy Köpf (harry7922). Thank you!_
+
+Between sunrise and sunset, a brightness threshold is calculated using a sine curve with a daily maximum value. This daily maximum value is determined using a linear formula. This serves to compensate for the variance in brightness between winter and summer.
+
+At the summer solstice, the sun is at its highest point. This occurs annually on June 21st in the Northern Hemisphere and on December 21st in the Southern Hemisphere. **Shadow Control** determines from the geographic coordinates of the Home Assistant instance whether it is located in the Northern or Southern Hemisphere. Based on the summer solstice date used, a daily brightness threshold is calculated using a linear formula. In midsummer, the sky is only clear and sunny at a higher LUX value, while in winter, this occurs at significantly lower LUX values. The lower and upper limits define the variance between winter and summer. This allows for a user-specific definition of the brightness required in midsummer and winter to trigger the shading. The current daily value is then calculated between these two values using a linear function.
+
+The configuration options for this feature are [S02 Winter threshold](#s02-winter-threshold), [S03 Summer threshold](#s03-summer-threshold) and [S04 Threshold buffer summer/winter](#s04-threshold-buffer-summerwinter).
+
+
+
+## Operating modes
 
 In general, there are two different operation modes: _Shadow_ and _Dawn_. Both modes will be configured independently.
 
