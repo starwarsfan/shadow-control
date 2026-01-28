@@ -76,8 +76,8 @@ Go to the [English version](/README.md) version of the documentation.
       * [B06 Maximale Behanghöhe](#b06-maximale-behanghöhe)
       * [B07 Maximaler Lamellenwinkel](#b07-maximaler-lamellenwinkel)
       * [B08 Durchsicht nach x Sekunden](#b08-durchsicht-nach-x-sekunden)
-      * [B09 Öffnen nach x Sekunden](#b09-öffnen-nach-x-sekunden)
-      * [B10 Durchsichtwinkel](#b10-durchsichtwinkel)
+      * [B09 Durchsichtwinkel](#b09-durchsichtwinkel)
+      * [B10 Öffnen nach x Sekunden](#b10-öffnen-nach-x-sekunden)
       * [B11 Höhe nach Beschattung](#b11-höhe-nach-beschattung)
       * [B12 Winkel nach Beschattung](#b12-winkel-nach-beschattung)
     * [Dämmerungseinstellungen](#dämmerungseinstellungen)
@@ -87,8 +87,8 @@ Go to the [English version](/README.md) version of the documentation.
       * [D04 Maximale Behanghöhe](#d04-maximale-behanghöhe)
       * [D05 Maximaler Lamellenwinkel](#d05-maximaler-lamellenwinkel)
       * [D06 Durchsicht nach x Sekunden](#d06-durchsicht-nach-x-sekunden)
-      * [D07 Öffnen nach x Sekunden](#d07-öffnen-nach-x-sekunden)
-      * [D08 Durchsichtwinkel](#d08-durchsichtwinkel)
+      * [D07 Durchsichtwinkel](#d07-durchsichtwinkel)
+      * [D08 Öffnen nach x Sekunden](#d08-öffnen-nach-x-sekunden)
       * [D09 Höhe nach Dämmerung](#d09-höhe-nach-dämmerung)
       * [D10 Winkel nach Dämmerung](#d10-winkel-nach-dämmerung)
   * [Konfiguration via yaml](#konfiguration-via-yaml)
@@ -514,15 +514,15 @@ Hier kann der maximale Lamellenwinkel angegeben werden. Das wird bspw. verwendet
 
 Fällt die Helligkeit unter den Schwellwert von [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert), wird der Behang nach der hier angegeben Zeit auf Durchsichtsposition gefahren. Standardwert: 900
 
-#### B09 Öffnen nach x Sekunden
-(yaml: `shadow_shutter_open_seconds_manual: <Wert>` u/o `shadow_shutter_open_seconds_entity: <entity>`)
-
-Nachdem der Behang auf Durchsichtsposition gefahren wurde, wird er nach der hier konfigurierten Zeit ganz geöffnet. Standardwert: 3600
-
-#### B10 Durchsichtwinkel
+#### B09 Durchsichtwinkel
 (yaml: `shadow_shutter_look_through_angle_manual: <Wert>` u/o `shadow_shutter_look_through_angle_entity: <entity>`)
 
 Hier wird der Lamellenwinkel der Durchsichtsposition in % konfiguriert. Standardwert: 0
+
+#### B10 Öffnen nach x Sekunden
+(yaml: `shadow_shutter_open_seconds_manual: <Wert>` u/o `shadow_shutter_open_seconds_entity: <entity>`)
+
+Nachdem der Behang auf Durchsichtsposition gefahren wurde, wird er nach der hier konfigurierten Zeit ganz geöffnet. Standardwert: 3600
 
 #### B11 Höhe nach Beschattung
 (yaml: `shadow_height_after_sun_manual: <Wert>` u/o `shadow_height_after_sun_entity: <entity>`)
@@ -576,15 +576,15 @@ Hier kann der maximale Lamellenwinkel angegeben werden. Das wird bspw. verwendet
 
 Steigt die Helligkeit über den Schwellwert von [D02 Dämmerungsschwellwert](#d02-dämmerungsschwellwert), wird der Behang nach der hier angegeben Zeit auf Durchsichtposition gefahren. Standardwert: 120
 
-#### D07 Öffnen nach x Sekunden
-(yaml: `dawn_shutter_open_seconds_manual: <Wert>` u/o `dawn_shutter_open_seconds_entity: <entity>`)
-
-Nachdem der Behang auf Durchsichtsposition gefahren wurde, wird er nach der hier konfigurierten Zeit ganz geöffnet. Standardwert: 3600
-
-#### D08 Durchsichtwinkel
+#### D07 Durchsichtwinkel
 (yaml: `dawn_shutter_look_through_angle_manual: <Wert>` u/o `dawn_shutter_look_through_angle_entity: <entity>`)
 
 Hier wird der Lamellenwinkel der Durchsichtsposition in % konfiguriert. Standardwert: 0
+
+#### D08 Öffnen nach x Sekunden
+(yaml: `dawn_shutter_open_seconds_manual: <Wert>` u/o `dawn_shutter_open_seconds_entity: <entity>`)
+
+Nachdem der Behang auf Durchsichtsposition gefahren wurde, wird er nach der hier konfigurierten Zeit ganz geöffnet. Standardwert: 3600
 
 #### D09 Höhe nach Dämmerung
 (yaml: `dawn_height_after_dawn_manual: <Wert>` u/o `dawn_height_after_dawn_entity: <entity>`)

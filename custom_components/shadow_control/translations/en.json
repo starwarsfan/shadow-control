@@ -149,8 +149,8 @@
           "shadow_shutter_max_height_entity": "S06 max height",
           "shadow_shutter_max_angle_entity": "S07 max angle",
           "shadow_shutter_look_through_seconds_entity": "S08 Look through",
-          "shadow_shutter_open_seconds_entity": "S09 Open after",
-          "shadow_shutter_look_through_angle_entity": "S10 Look through angle",
+          "shadow_shutter_look_through_angle_entity": "S09 Look through angle",
+          "shadow_shutter_open_seconds_entity": "S10 Open after",
           "shadow_height_after_sun_entity": "S11 Height after",
           "shadow_angle_after_sun_entity": "S12 Angle after"
         },
@@ -163,8 +163,8 @@
           "shadow_shutter_max_height_entity": "Shutter max height at shadow position (by entity).",
           "shadow_shutter_max_angle_entity": "Shutter max slat angle at shadow position (by entity).",
           "shadow_shutter_look_through_seconds_entity": "Time to look through position in seconds after brightness threshold was undercut (by entity).",
-          "shadow_shutter_open_seconds_entity": "Time to open the shutter after look through position (by entity).",
           "shadow_shutter_look_through_angle_entity": "Look through slat angle (by entity).",
+          "shadow_shutter_open_seconds_entity": "Time to open the shutter after look through position (by entity).",
           "shadow_height_after_sun_entity": "Height after shadow (by entity).",
           "shadow_angle_after_sun_entity": "Slat angle after shadow (by entity)."
         }
@@ -254,11 +254,11 @@
       "shadow_shutter_look_through_seconds_manual": {
         "name": "S08 Look through after x seconds"
       },
-      "shadow_shutter_open_seconds_manual": {
-        "name": "S09 Open after x seconds"
-      },
       "shadow_shutter_look_through_angle_manual": {
-        "name": "S10 Look through angle"
+        "name": "S09 Look through angle"
+      },
+      "shadow_shutter_open_seconds_manual": {
+        "name": "S10 Open after x seconds"
       },
       "shadow_height_after_sun_manual": {
         "name": "S11 Height after shadow"
@@ -388,11 +388,11 @@
       "shadow_shutter_look_through_seconds_entity": {
         "name": "S08 Look through"
       },
-      "shadow_shutter_open_seconds_entity": {
-        "name": "S09 Open after"
-      },
       "shadow_shutter_look_through_angle_entity": {
-        "name": "S10 Look through angle"
+        "name": "S09 Look through angle"
+      },
+      "shadow_shutter_open_seconds_entity": {
+        "name": "S10 Open after"
       },
       "shadow_height_after_sun_entity": {
         "name": "S11 Height after"

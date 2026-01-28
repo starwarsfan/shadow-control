@@ -149,8 +149,8 @@
           "shadow_shutter_max_height_entity": "B06 Maximale Behanghöhe",
           "shadow_shutter_max_angle_entity": "B07 Maximaler Lamellenwinkel",
           "shadow_shutter_look_through_seconds_entity": "B08 Durchsicht nach x Sekunden",
-          "shadow_shutter_open_seconds_entity": "B09 Öffnen nach x Sekunden",
-          "shadow_shutter_look_through_angle_entity": "B10 Durchsichtwinkel",
+          "shadow_shutter_look_through_angle_entity": "B09 Durchsichtwinkel",
+          "shadow_shutter_open_seconds_entity": "B10 Öffnen nach x Sekunden",
           "shadow_height_after_sun_entity": "B11 Höhe nach Beschattung",
           "shadow_angle_after_sun_entity": "B12 Winkel nach Beschattung"
         },
@@ -163,8 +163,8 @@
           "shadow_shutter_max_height_entity": "Maximal anzufahrende Höhe bei Beschattung (via Entität).",
           "shadow_shutter_max_angle_entity": "Maximal anzufahrender Winkel bei Beschattung (via Entität).",
           "shadow_shutter_look_through_seconds_entity": "Zeit in Sekunden nach unterschreiten des Helligkeitsschwellwerts, nach welcher der Behang auf Durchsicht gestellt wird (via Entität).",
-          "shadow_shutter_open_seconds_entity": "Zeit in Sekunden nach Durchsichtstellung, nach welcher der Behang geöffnet wird (via Entität).",
           "shadow_shutter_look_through_angle_entity": "Lamellenwinkel für Durchsichtstellung (via Entität).",
+          "shadow_shutter_open_seconds_entity": "Zeit in Sekunden nach Durchsichtstellung, nach welcher der Behang geöffnet wird (via Entität).",
           "shadow_height_after_sun_entity": "Nach Beschattung anzufahrende Behanghöhe (via Entität).",
           "shadow_angle_after_sun_entity": "Nach Beschattung anzufahrender Lamellenwinkel (via Entität)."
         }
@@ -179,8 +179,8 @@
           "dawn_shutter_max_height_entity": "D04 Maximale Behanghöhe",
           "dawn_shutter_max_angle_entity": "D05 Maximaler Lamellenwinkel",
           "dawn_shutter_look_through_seconds_entity": "D06 Durchsicht nach x Sekunden",
-          "dawn_shutter_open_seconds_entity": "D07 Öffnen nach x Sekunden",
-          "dawn_shutter_look_through_angle_entity": "D08 Durchsichtwinkel",
+          "dawn_shutter_look_through_angle_entity": "D07 Durchsichtwinkel",
+          "dawn_shutter_open_seconds_entity": "D08 Öffnen nach x Sekunden",
           "dawn_height_after_dawn_entity": "D09 Höhe nach Dämmerung",
           "dawn_angle_after_dawn_entity": "D10 Winkel nach Dämmerung"
         },
@@ -191,8 +191,8 @@
           "dawn_shutter_max_height_entity": "Maximal anzufahrende Höhe bei Dämmerung (via Entität).",
           "dawn_shutter_max_angle_entity": "Maximal anzufahrender Winkel bei Dämmerung (via Entität).",
           "dawn_shutter_look_through_seconds_entity": "Zeit in Sekunden nach überschreiten des Helligkeitsschwellwerts, nach welcher der Behang auf Durchsicht gestellt wird (via Entität).",
-          "dawn_shutter_open_seconds_entity": "Zeit in Sekunden nach Durchsichtstellung, nach welcher der Behang geöffnet wird (via Entität).",
           "dawn_shutter_look_through_angle_entity": "Lamellenwinkel für Durchsichtstellung (via Entität).",
+          "dawn_shutter_open_seconds_entity": "Zeit in Sekunden nach Durchsichtstellung, nach welcher der Behang geöffnet wird (via Entität).",
           "dawn_height_after_dawn_entity": "Nach Dämmerung anzufahrende Behanghöhe (via Entität).",
           "dawn_angle_after_dawn_entity": "Nach Dämmerung anzufahrender Lamellenwinkel (via Entität)."
         }
@@ -243,55 +243,55 @@
         "name": "B04 Schwellwertpuffer Sommer/Winter"
       },
       "shadow_after_seconds_manual": {
-        "name": "B05 Schliessen nach x Sekunden"
+        "name": "B05 Schliessen nach"
       },
       "shadow_shutter_max_height_manual": {
-        "name": "B06 Maximale Behanghöhe"
+        "name": "B06 max Höhe"
       },
       "shadow_shutter_max_angle_manual": {
-        "name": "B07 Maximaler Lamellenwinkel"
+        "name": "B07 max Winkel"
       },
       "shadow_shutter_look_through_seconds_manual": {
-        "name": "B08 Durchsicht nach x Sekunden"
-      },
-      "shadow_shutter_open_seconds_manual": {
-        "name": "B09 Öffnen nach x Sekunden"
+        "name": "B08 Durchsicht nach"
       },
       "shadow_shutter_look_through_angle_manual": {
-        "name": "B10 Durchsichtwinkel"
+        "name": "B09 Durchsichtwinkel"
+      },
+      "shadow_shutter_open_seconds_manual": {
+        "name": "B10 Öffnen nach"
       },
       "shadow_height_after_sun_manual": {
-        "name": "B11 Höhe nach Beschattung"
+        "name": "B11 Höhe danach"
       },
       "shadow_angle_after_sun_manual": {
-        "name": "B12 Winkel nach Beschattung"
+        "name": "B12 Winkel danach"
       },
       "dawn_brightness_threshold_manual": {
         "name": "D02 Dämmerungsschwellwert"
       },
       "dawn_after_seconds_manual": {
-        "name": "D03 Schliessen nach x Sekunden"
+        "name": "D03 Schliessen nach"
       },
       "dawn_shutter_max_height_manual": {
-        "name": "D04 Maximale Behanghöhe"
+        "name": "D04 max Höhe"
       },
       "dawn_shutter_max_angle_manual": {
-        "name": "D05 Maximaler Lamellenwinkel"
+        "name": "D05 max Winkel"
       },
       "dawn_shutter_look_through_seconds_manual": {
-        "name": "D06 Durchsicht nach x Sekunden"
-      },
-      "dawn_shutter_open_seconds_manual": {
-        "name": "D07 Öffnen nach x Sekunden"
+        "name": "D06 Durchsicht nach"
       },
       "dawn_shutter_look_through_angle_manual": {
-        "name": "D08 Durchsichtwinkel"
+        "name": "D07 Durchsichtwinkel"
+      },
+      "dawn_shutter_open_seconds_manual": {
+        "name": "D08 Öffnen nach"
       },
       "dawn_height_after_dawn_manual": {
-        "name": "D09 Höhe nach Dämmerung"
+        "name": "D09 Höhe danach"
       },
       "dawn_angle_after_dawn_manual": {
-        "name": "D10 Winkel nach Dämmerung"
+        "name": "D10 Winkel danach"
       }
     },
     "sensor": {
@@ -368,16 +368,16 @@
         "name": "B01 Steuerung aktiv"
       },
       "shadow_brightness_threshold_winter_entity": {
-        "name": "B02 Schwellwert Winter"
+        "name": "B02 Winter Helligkeitsschwellwert"
       },
       "shadow_brightness_threshold_summer_entity": {
-        "name": "B03 Schwellwert Sommer"
+        "name": "B03 Sommer Helligkeitsschwellwert"
       },
       "shadow_brightness_threshold_buffer_entity": {
         "name": "B04 Schwellwertpuffer Sommer/Winter"
       },
       "shadow_after_seconds_entity": {
-        "name": "B05 nach"
+        "name": "B05 Schliessen nach"
       },
       "shadow_shutter_max_height_entity": {
         "name": "B06 max Höhe"
@@ -388,11 +388,11 @@
       "shadow_shutter_look_through_seconds_entity": {
         "name": "B08 Durchsicht nach"
       },
-      "shadow_shutter_open_seconds_entity": {
-        "name": "B09 Öffnen nach"
-      },
       "shadow_shutter_look_through_angle_entity": {
-        "name": "B10 Durchsichtwinkel"
+        "name": "B09 Durchsichtwinkel"
+      },
+      "shadow_shutter_open_seconds_entity": {
+        "name": "B10 Öffnen nach"
       },
       "shadow_height_after_sun_entity": {
         "name": "B11 Höhe danach"
@@ -404,10 +404,10 @@
         "name": "D01 Steuerung"
       },
       "dawn_brightness_threshold_entity": {
-        "name": "D02 Schwellwert"
+        "name": "D02 Dämmerungsschwellwert"
       },
       "dawn_after_seconds_entity": {
-        "name": "D03 nach"
+        "name": "D03 Schliessen nach"
       },
       "dawn_shutter_max_height_entity": {
         "name": "D04 max Höhe"
@@ -418,11 +418,11 @@
       "dawn_shutter_look_through_seconds_entity": {
         "name": "D06 Durchsicht nach"
       },
-      "dawn_shutter_open_seconds_entity": {
-        "name": "D07 Öffnen nach"
-      },
       "dawn_shutter_look_through_angle_entity": {
-        "name": "D08 Durchsichtwinkel"
+        "name": "D07 Durchsichtwinkel"
+      },
+      "dawn_shutter_open_seconds_entity": {
+        "name": "D08 Öffnen nach"
       },
       "dawn_height_after_dawn_entity": {
         "name": "D09 Höhe danach"

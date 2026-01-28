@@ -76,8 +76,8 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
       * [S06 max height](#s06-max-height)
       * [S07 max angle](#s07-max-angle)
       * [S08 Look through](#s08-look-through)
-      * [S09 Open after](#s09-open-after)
-      * [S10 Look through angle](#s10-look-through-angle)
+      * [S09 Look through angle](#s09-look-through-angle)
+      * [S10 Open after](#s10-open-after)
       * [S11 Height after](#s11-height-after)
       * [S12 Angle after](#s12-angle-after)
     * [Dawn settings](#dawn-settings)
@@ -87,8 +87,8 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
       * [D04 max height](#d04-max-height)
       * [D05 max angle](#d05-max-angle)
       * [D06 Look through after](#d06-look-through-after)
-      * [D07 Open after seconds](#d07-open-after-seconds)
-      * [D08 Look through angle](#d08-look-through-angle)
+      * [D07 Look through angle](#d07-look-through-angle)
+      * [D08 Open after seconds](#d08-open-after-seconds)
       * [D09 Height after seconds](#d09-height-after-seconds)
       * [D10 Angle after seconds](#d10-angle-after-seconds)
   * [Configuration by yaml](#configuration-by-yaml)
@@ -517,15 +517,15 @@ Max angle of the shutter in case of shadow position in %. Default: 100
 
 If brightness falls below the value of `shadow_brightness_threshold`, the shutter slats will be moved to horizontal position after the configured number of seconds. Default: 900
 
-#### S09 Open after
-(yaml: `shadow_shutter_open_seconds_manual: true|false` u/o `shadow_shutter_open_seconds_entity: <entity>`)
-
-If brightness stays below the value of `shadow_brightness_threshold`, the shutter will be fully opened after the configured number of seconds. Default: 3600
-
-#### S10 Look through angle
+#### S09 Look through angle
 (yaml: `shadow_shutter_look_through_angle_manual: true|false` u/o `shadow_shutter_look_through_angle_entity: <entity>`)
 
 This is the shutter slat angle in %, which should be used at the "look through" position. Default: 0
+
+#### S10 Open after
+(yaml: `shadow_shutter_open_seconds_manual: true|false` u/o `shadow_shutter_open_seconds_entity: <entity>`)
+
+If brightness stays below the value of `shadow_brightness_threshold`, the shutter will be fully opened after the configured number of seconds. Default: 3600
 
 #### S11 Height after
 (yaml: `shadow_height_after_sun_manual: true|false` u/o `shadow_height_after_sun_entity: <entity>`)
@@ -579,15 +579,15 @@ Max angle of the shutter in case of dawn position in %. Default: 100
 
 If brightness exceeds the value of `dawn_brightness_threshold`, the shutter slats will be moved to horizontal position after the configured number of seconds. Default: 120
 
-#### D07 Open after seconds
-(yaml: `dawn_shutter_open_seconds_manual: true|false` u/o `dawn_shutter_open_seconds_entity: <entity>`)
-
-If brightness stays above the value of `dawn_brightness_threshold`, the shutter will be fully opened after the configured number of seconds. Default: 3600
-
-#### D08 Look through angle
+#### D07 Look through angle
 (yaml: `dawn_shutter_look_through_angle_manual: true|false` u/o `dawn_shutter_look_through_angle_entity: <entity>`)
 
 This is the shutter slat angle in %, which should be used at the "look through" position. Default: 0
+
+#### D08 Open after seconds
+(yaml: `dawn_shutter_open_seconds_manual: true|false` u/o `dawn_shutter_open_seconds_entity: <entity>`)
+
+If brightness stays above the value of `dawn_brightness_threshold`, the shutter will be fully opened after the configured number of seconds. Default: 3600
 
 #### D09 Height after seconds
 (yaml: `dawn_height_after_dawn_manual: true|false` u/o `dawn_height_after_dawn_entity: <entity>`)
