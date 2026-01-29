@@ -117,15 +117,6 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
 
 **Shadow Control** is the migration of my Edomi-LBS "Beschattungssteuerung-NG" to Home Assistant. As Edomi was [sentenced to death](https://knx-user-forum.de/forum/projektforen/edomi/1956975-quo-vadis-edomi) and because I'm not really happy with the existing solutions to automate my shutters, I decided to migrate my LBS (Edomi name for **L**ogic**B**au**S**tein, a logic block) to a Home Assistant integration. To do so was a nice deep dive into the backgrounds of Home Assistant, the idea behind and how it works. Feel free to use the integration on your needs.
 
-Within further description:
-
-* The word "facade" is similar to "window" or "door," as it simply references the azimuth of an object in the sense of viewing direction from within that object to the outside.
-* The word "shutter" references rolling shutters. In the Home Assistant terminology, this is called a "cover". From the pov of this integration it's the same.
-* The whole internal logic was initially developed to interact with a KNX system, so the main difference is the handling of %-values. **Shadow Control** will interact with Home Assistant correct, but the configuration as well as the log output is using 0% as fully open and 100% as fully closed.
-* Most options 
-  * provide own controls, which could be modified on the instance view. So they could be modified easily there.
-  * can be configured with own entities. As soon as this possibility is used, there's no control created but a corresponding sensor, which displays the current value of the connected entity. So the used values could be dynamically modified like with a automation in front of the instance.
-
 
 
 ## TL;DR – in short
@@ -177,17 +168,36 @@ The integration will be triggered by updating the following entities:
 * [Lock integration](#lock-integration)
 * [Lock integration with position](#lock-integration-with-position)
 * [Shadow handling dis-/enabled state](#s01-control)
+* [S06 max height](#s06-max-height)
+* [S07 max angle](#s07-max-angle)
 * [Dawn handling dis-/enabled state](#d01-control-enabled)
+* [D04 max height](#d04-max-height)
+* [D05 max angle](#d05-max-angle)
+* [enforce shutter positioning](#enforce-shutter-positioning)
 
 The configured cover entity will only be updated if a value has changed since the last run of the integration, which prevents unnecessary movements.
+
+
 
 ## Entity precedence
 Attention: For all options the configured entity variant takes precedence! That means if a entity is configured, the entity value will be used. Additionally the internal entity for this option will be removed. To prevent this, you need to clear the entity configuration.
 
 
+
 # Installation
 
 **Shadow Control** is a default HACS integration, so you can install the integration by searching for it within HACS. After that, restart Home-Assistant and add the integration.
+
+Within further description:
+
+* The word "facade" is similar to "window" or "door," as it simply references the azimuth of an object in the sense of viewing direction from within that object to the outside.
+* The word "shutter" references rolling shutters. In the Home Assistant terminology, this is called a "cover". From the pov of this integration it's the same.
+* The whole internal logic was initially developed to interact with a KNX system, so the main difference is the handling of %-values. **Shadow Control** will interact with Home Assistant correct, but the configuration as well as the log output is using 0% as fully open and 100% as fully closed.
+* Most options
+  * provide own controls, which could be modified on the instance view. So they could be modified easily there.
+  * can be configured with own entities. As soon as this possibility is used, there's no control created but a corresponding sensor, which displays the current value of the connected entity. So the used values could be dynamically modified like with a automation in front of the instance.
+
+
 
 # Configuration
 
@@ -807,6 +817,8 @@ On this entity the integration publishes the next point in time, where a running
 `is_in_sun`
 This entity is either `True`, if the sun within the min-max-offset and the min-max-height range. Otherwise `False`.
 
+
+
 ## Direct options
 
 Right on each device page some options could be switched on/off directly:
@@ -814,6 +826,8 @@ Right on each device page some options could be switched on/off directly:
 ![Controls](/images/controls.png)
 
 Modifying these options is the same as modifying them within the configuration flow.
+
+
 
 # Configuration export
 

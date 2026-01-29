@@ -117,15 +117,6 @@ Go to the [English version](/README.md) version of the documentation.
 
 **Shadow Control** ist die Portierung des Edomi-LBS "Beschattungssteuerung-NG" für Home Assistant. Da Edomi [zum Tode verurteilt wurde](https://knx-user-forum.de/forum/projektforen/edomi/1956975-quo-vadis-edomi) und ich mit den bestehenden Beschattungslösungen nicht wirklich zufrieden war, habe ich mich dazu entschlossen, meinen LBS (Edomi-Bezeichnung für **L**ogic**B**au**S**tein) in eine Home Assistant Integration zu portieren. Das war ein sehr interessanter "Tauchgang" in die Hintergründe von Homa Assistant, der Idee dahinter und wie das Ganze im Detail funktioniert. Viel Spass mit der Integration.
 
-In den folgenden Abschnitten gilt Folgendes:
-
-* Das Wort "Fassade" ist gleichbedeutend mit "Fenster" oder "Tür", da es hier lediglich den Bezug zum Azimut eines Objektes in Blickrichtung von innen nach aussen darstellt.
-* Das Wort "Behang" bezieht sich auf Raffstoren. In der Home Assistant Terminologie ist das ein "cover", was aus Sicht dieser Integration das Gleiche ist.
-* Die gesamte interne Logik wurde ursprünglich für die Interaktion mit KNX-Systemen entwickelt. Der Hauptunterschied ist daher die Handhabung von Prozentwerten. **Shadow Control** wird mit Home Assistant korrekt interagieren aber die Konfiguration sowie die Logausgaben verwenden 0 % als geöffnet und 100 % als geschlossen.
-* Fast alle Einstellungen 
-  * stellen eigene Steuerelemente bereit, welche auf der Instanz-Ansicht direkt modifiziert werden können. Damit können die Werte der Optionen einfach verändert und angepasst werden.
-  * können bei Bedarf mit eigenen Entitäten verknüpft werden. Sobald davon Gebrauch gemacht wird, wird kein Steuerelement sondern ein Sensor erstellt, welcher den aktuellen Wert der verknüpften Entität zeigt. Damit können die Werte der Optionen dynamisch angepasst werden, bspw. durch vorgelagerte Automationen.
-
 
 
 ## TL;DR – Kurzform
@@ -149,6 +140,8 @@ In den folgenden Abschnitten gilt Folgendes:
 Basierend auf verschiedenen Eingangswerten wird die Integration die Positionierung des Behangs übernehmen. Damit das funktioniert, muss die jeweilige Instanz mit dem Azimut der Fassade, dem Sonnenstand sowie der dortigen Helligkeit konfiguriert werden. Zusätzlich sind viele weitere Details konfigurierbar, um den Beschattungsvorgang resp. den entsprechenden Bereich unter direkter Sonneneinstrahlung zu definieren und somit direktes Sonnenlicht im Raum zu verhindern oder einzuschränken.
 
 Die berechnete Behanghöhe sowie der Lamellenwinkel hängen von der momentanen Helligkeit, den konfigurierten Schwellwerten, der Abmessung der Lamellen, Timern und weiteren Einstellungen ab. Die verschiedenen Timer werden je nach momentanem Zustand der Integration gestartet.
+
+
 
 ## Adaptiver Helligkeitsschwellwert
 
@@ -175,17 +168,36 @@ Die Berechnung der Position wird durch die Aktualisierung der folgenden Eingäng
 * [Integration sperren](#integration-sperren)
 * [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition)
 * [Beschattungssteuerung ein/aus](#b01-steuerung-aktiv)
+* [B06 Maximale Behanghöhe](#b06-maximale-behanghöhe)
+* [B07 Maximaler Lamellenwinkel](#b07-maximaler-lamellenwinkel)
 * [Dämmerungssteuerung ein/aus](#d01-steuerung-aktiv)
+* [D04 Maximale Behanghöhe](#d04-maximale-behanghöhe)
+* [D05 Maximaler Lamellenwinkel](#d05-maximaler-lamellenwinkel)
+* [Zwangspositionierung auslösen](#zwangspositionierung-auslösen)
 
 Der konfigurierte Behang wird nur dann neu positioniert, wenn sich die berechneten Werte seit dem letzten Lauf der Integration geändert haben. Damit wird die unnötige Neupositionierung der Raffstorenlamellen verhindert.
+
+
 
 ## Entitäten-Vorrang
 Achtung: Bei allen Optionen hat die Entity-Verknüpfung Vorrang! Das bedeutet, dass sobald eine Entität konfiguriert wird, wird deren Wert verwendet. Ausserdem werden die internen Entitäten aus dem System entfernt. Um die internen Entitäten wiederzuverwenden, muss die Entity-Verknüpfung gelöscht werden.
 
 
+
 # Installation
 
 **Shadow Control** ist eine Default-Integration in HACS. Zur Installation genügt es also, in HACS danach zu suchen, die Integration hinzuzufügen und Home-Assistant neu zu starten. Im Anschluss kann die Integration unter _Einstellungen > Geräte und Dienste_ hinzugefügt werden.
+
+In den folgenden Abschnitten gilt Folgendes:
+
+* Das Wort "Fassade" ist gleichbedeutend mit "Fenster" oder "Tür", da es hier lediglich den Bezug zum Azimut eines Objektes in Blickrichtung von innen nach aussen darstellt.
+* Das Wort "Behang" bezieht sich auf Raffstoren. In der Home Assistant Terminologie ist das ein "cover", was aus Sicht dieser Integration das Gleiche ist.
+* Die gesamte interne Logik wurde ursprünglich für die Interaktion mit KNX-Systemen entwickelt. Der Hauptunterschied ist daher die Handhabung von Prozentwerten. **Shadow Control** wird mit Home Assistant korrekt interagieren aber die Konfiguration sowie die Logausgaben verwenden 0 % als geöffnet und 100 % als geschlossen.
+* Fast alle Einstellungen
+  * stellen eigene Steuerelemente bereit, welche auf der Instanz-Ansicht direkt modifiziert werden können. Damit können die Werte der Optionen einfach verändert und angepasst werden.
+  * können bei Bedarf mit eigenen Entitäten verknüpft werden. Sobald davon Gebrauch gemacht wird, wird kein Steuerelement sondern ein Sensor erstellt, welcher den aktuellen Wert der verknüpften Entität zeigt. Damit können die Werte der Optionen dynamisch angepasst werden, bspw. durch vorgelagerte Automationen.
+
+
 
 # Konfiguration
 
@@ -802,6 +814,8 @@ Auf dieser Entität steht der Zeitpunkt der nächsten Behang-Positionierung zur 
 `is_in_sun`
 Der Wert ist `True`, wenn sich die Sonne im min-max-Offsetbereich und min-max-Höhenbereich befindet. Anderenfalls `False`.
 
+
+
 ## Direkte Optionen
 
 Direkt auf der Geräteseite einer Instanz können diverse Optionen direkt geschaltet werden:
@@ -809,6 +823,8 @@ Direkt auf der Geräteseite einer Instanz können diverse Optionen direkt gescha
 ![Steuerelemente](/images/controls.png)
 
 Das Ändern dieser Optionen entspricht dem Ändern der Konfiguration im ConfigFlow. Die Änderungen werden sofort übernommen und die Behangpositionierung wird entsprechend angepasst.
+
+
 
 # Konfiguration-Export
 
