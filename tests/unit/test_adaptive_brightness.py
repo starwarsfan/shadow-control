@@ -2,6 +2,8 @@
 
 from datetime import UTC, datetime, timedelta, timezone
 
+import pytest
+
 from custom_components.shadow_control.adaptive_brightness import AdaptiveBrightnessCalculator
 
 
@@ -329,3 +331,495 @@ class TestIntegration:
 
         # Should be at maximum (summer)
         assert brightness == 70000
+
+
+class TestDawnProtection:
+    """Test dawn threshold protection feature."""
+
+    def test_no_dawn_threshold_uses_buffer(self):
+        """Test that without dawn_threshold, buffer is used as-is."""
+        calc = AdaptiveBrightnessCalculator(latitude=50.0)
+
+        current = datetime(2024, 1, 15, 5, 0, 0, tzinfo=UTC)  # Before sunrise
+        sunrise = datetime(2024, 1, 15, 8, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
+
+        threshold = calc.calculate_threshold(
+            current,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,
+            dawn_threshold=None,  # No dawn protection
+        )
+
+        assert threshold == 1000  # Returns original buffer
+
+    def test_dawn_lower_than_buffer_no_adjustment(self):
+        """Test that when dawn < buffer, no adjustment is needed."""
+        calc = AdaptiveBrightnessCalculator(latitude=50.0)
+
+        sunrise = datetime(2024, 6, 21, 6, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 6, 21, 20, 0, 0, tzinfo=UTC)
+        noon = datetime(2024, 6, 21, 13, 0, 0, tzinfo=UTC)
+
+        threshold = calc.calculate_threshold(
+            noon,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=10000,  # Higher than dawn
+            dawn_threshold=5000,
+        )
+
+        # No adjustment - buffer already high enough
+        assert threshold > 10000  # Above buffer at noon
+
+    def test_dawn_higher_than_buffer_adjusts_minimum(self, caplog):
+        """Test that when dawn > buffer, effective_buffer is raised."""
+        calc = AdaptiveBrightnessCalculator(latitude=50.0)
+
+        current = datetime(2024, 1, 15, 5, 0, 0, tzinfo=UTC)  # Before sunrise
+        sunrise = datetime(2024, 1, 15, 8, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
+
+        threshold = calc.calculate_threshold(
+            current,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,  # Lower than dawn
+            dawn_threshold=5000,
+        )
+
+        # Should return dawn + 1000 (safety margin) = 6000
+        assert threshold == 6000
+
+        # Should log the adjustment
+        assert "Adjusting adaptive brightness curve minimum" in caplog.text
+        assert "from 1000 lx to 6000 lx" in caplog.text
+
+    def test_minimum_never_below_dawn_at_sunrise(self):
+        """Test that threshold at sunrise never falls below dawn + safety."""
+        calc = AdaptiveBrightnessCalculator(latitude=50.0)
+
+        sunrise = datetime(2024, 1, 15, 8, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
+
+        dawn_threshold = 5000
+        expected_min = dawn_threshold + 1000  # Safety margin
+
+        # Test at sunrise (where sine curve would normally be at minimum)
+        threshold = calc.calculate_threshold(
+            sunrise,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,
+            dawn_threshold=dawn_threshold,
+        )
+
+        assert threshold >= expected_min
+
+    def test_minimum_maintained_throughout_day(self):
+        """Test that threshold stays above dawn + safety at all times."""
+        calc = AdaptiveBrightnessCalculator(latitude=50.0)
+
+        sunrise = datetime(2024, 1, 15, 8, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
+
+        dawn_threshold = 5000
+        expected_min = dawn_threshold + 1000
+
+        # Test multiple times throughout the day
+        test_times = [
+            sunrise,  # 08:00 - sunrise
+            sunrise.replace(hour=10),  # 10:00 - morning
+            sunrise.replace(hour=12),  # 12:00 - noon
+            sunrise.replace(hour=14),  # 14:00 - afternoon
+            sunset,  # 16:00 - sunset
+        ]
+
+        for time in test_times:
+            threshold = calc.calculate_threshold(
+                time,
+                sunrise,
+                sunset,
+                winter_lux=30000,
+                summer_lux=50000,
+                buffer=1000,
+                dawn_threshold=dawn_threshold,
+            )
+
+            assert threshold >= expected_min, f"Failed at {time.hour}:00 - threshold {threshold} < minimum {expected_min}"
+
+    def test_real_world_winter_scenario(self):
+        """Test realistic winter scenario with your actual values."""
+        calc = AdaptiveBrightnessCalculator(latitude=47.0)  # Zürich
+
+        # January 29, 2026
+        sunrise = datetime(2026, 1, 29, 7, 30, 0, tzinfo=UTC)
+        sunset = datetime(2026, 1, 29, 17, 0, 0, tzinfo=UTC)
+        noon = datetime(2026, 1, 29, 12, 0, 0, tzinfo=UTC)
+
+        threshold = calc.calculate_threshold(
+            noon,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,
+            dawn_threshold=5000,
+        )
+
+        # At noon in winter, threshold should be above dawn + safety
+        assert threshold > 6000  # Above dawn + 1000
+        assert threshold < 35000  # But not too high (it's winter)
+
+    def test_curve_shifted_up_with_dawn(self):
+        """Test that dawn protection shifts the entire curve upward."""
+        calc = AdaptiveBrightnessCalculator(latitude=50.0)
+
+        sunrise = datetime(2024, 6, 21, 6, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 6, 21, 20, 0, 0, tzinfo=UTC)
+        noon = datetime(2024, 6, 21, 13, 0, 0, tzinfo=UTC)
+
+        # Without dawn
+        threshold_no_dawn = calc.calculate_threshold(
+            noon,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,
+            dawn_threshold=None,
+        )
+
+        # With dawn
+        threshold_with_dawn = calc.calculate_threshold(
+            noon,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,
+            dawn_threshold=5000,
+        )
+
+        # With dawn, the curve baseline is higher
+        assert threshold_with_dawn >= threshold_no_dawn
+
+    def test_extreme_dawn_threshold(self):
+        """Test with very high dawn threshold."""
+        calc = AdaptiveBrightnessCalculator(latitude=50.0)
+
+        sunrise = datetime(2024, 1, 15, 8, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
+
+        # Dawn higher than winter_lux
+        threshold = calc.calculate_threshold(
+            sunrise,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,
+            dawn_threshold=35000,  # Very high!
+        )
+
+        # Should be dawn + 1000 = 36000
+        assert threshold == 36000
+
+    def test_zero_buffer_with_dawn(self):
+        """Test that zero buffer works with dawn protection."""
+        calc = AdaptiveBrightnessCalculator(latitude=50.0)
+
+        current = datetime(2024, 1, 15, 5, 0, 0, tzinfo=UTC)  # Before sunrise
+        sunrise = datetime(2024, 1, 15, 8, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
+
+        threshold = calc.calculate_threshold(
+            current,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=0,  # Zero
+            dawn_threshold=5000,
+        )
+
+        # Should use dawn + 1000 = 6000, not 0
+        assert threshold == 6000
+
+
+class TestDawnThresholdProtection:
+    """Test dawn threshold protection feature."""
+
+    def test_no_dawn_threshold_no_adjustment(self):
+        """Test that without dawn_threshold, buffer is used as-is."""
+        calc = AdaptiveBrightnessCalculator(latitude=47.0)
+
+        current = datetime(2024, 1, 15, 5, 0, 0, tzinfo=UTC)  # Before sunrise
+        sunrise = datetime(2024, 1, 15, 8, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
+
+        threshold = calc.calculate_threshold(
+            current,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,
+            dawn_threshold=None,  # No dawn protection
+        )
+
+        # Should return original buffer
+        assert threshold == 1000
+
+    def test_dawn_lower_than_buffer_no_adjustment(self):
+        """Test that when dawn < buffer, no adjustment is made."""
+        calc = AdaptiveBrightnessCalculator(latitude=47.0)
+
+        sunrise = datetime(2024, 1, 15, 8, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
+        current = datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC)
+
+        threshold = calc.calculate_threshold(
+            current,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=10000,  # Higher than dawn
+            dawn_threshold=5000,
+        )
+
+        # No adjustment needed - buffer already high enough
+        # Threshold should be calculated normally
+        assert threshold > 10000  # Above buffer at noon
+
+    def test_dawn_higher_than_buffer_adjusts_minimum(self, caplog):
+        """Test that when dawn > buffer, effective_buffer is raised."""
+        calc = AdaptiveBrightnessCalculator(latitude=47.0)
+
+        current = datetime(2024, 1, 15, 5, 0, 0, tzinfo=UTC)  # Before sunrise
+        sunrise = datetime(2024, 1, 15, 8, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
+
+        threshold = calc.calculate_threshold(
+            current,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,  # Lower than dawn
+            dawn_threshold=5000,
+        )
+
+        # Should return dawn + 1000 (safety margin) = 6000
+        assert threshold == 6000
+
+        # Should log the adjustment
+        assert "Adjusting adaptive brightness curve minimum" in caplog.text
+        assert "from 1000 lx to 6000 lx" in caplog.text
+
+    def test_minimum_always_above_dawn_at_sunrise(self):
+        """Test that threshold at sunrise never falls below dawn + safety."""
+        calc = AdaptiveBrightnessCalculator(latitude=47.0)
+
+        sunrise = datetime(2024, 1, 15, 8, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
+
+        dawn_threshold = 5000
+        expected_min = dawn_threshold + 1000  # Safety margin
+
+        # Test at sunrise (where sine curve is at minimum)
+        threshold = calc.calculate_threshold(
+            sunrise,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,
+            dawn_threshold=dawn_threshold,
+        )
+
+        # Should be at or above the safe minimum
+        assert threshold >= expected_min
+
+    def test_minimum_always_above_dawn_throughout_day(self):
+        """Test that threshold never falls below dawn + safety at any time of day."""
+        calc = AdaptiveBrightnessCalculator(latitude=47.0)
+
+        sunrise = datetime(2024, 1, 15, 8, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
+
+        dawn_threshold = 5000
+        expected_min = dawn_threshold + 1000
+
+        # Test multiple times throughout the day
+        times = [
+            sunrise,  # Start of day
+            sunrise.replace(hour=10),  # Morning
+            sunrise.replace(hour=12),  # Noon
+            sunrise.replace(hour=14),  # Afternoon
+            sunset,  # End of day
+        ]
+
+        for time in times:
+            threshold = calc.calculate_threshold(
+                time,
+                sunrise,
+                sunset,
+                winter_lux=30000,
+                summer_lux=50000,
+                buffer=1000,
+                dawn_threshold=dawn_threshold,
+            )
+
+            assert threshold >= expected_min, f"Threshold {threshold} below minimum at {time.hour}:00"
+
+    def test_adjustment_only_logged_once(self, caplog):
+        """Test that adjustment is only logged once per calculation."""
+        calc = AdaptiveBrightnessCalculator(latitude=47.0)
+
+        sunrise = datetime(2024, 1, 15, 8, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
+
+        # First call - should log
+        caplog.clear()
+        calc.calculate_threshold(
+            sunrise,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,
+            dawn_threshold=5000,
+        )
+
+        log_count_1 = caplog.text.count("Adjusting adaptive brightness curve minimum")
+        assert log_count_1 == 1
+
+        # Second call - should log again (not cached)
+        caplog.clear()
+        calc.calculate_threshold(
+            sunrise.replace(hour=12),
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,
+            dawn_threshold=5000,
+        )
+
+        log_count_2 = caplog.text.count("Adjusting adaptive brightness curve minimum")
+        assert log_count_2 == 1
+
+    def test_real_world_scenario_winter_with_dawn(self):
+        """Test realistic winter scenario with dawn protection."""
+        calc = AdaptiveBrightnessCalculator(latitude=47.0)
+
+        # January 29, 2026 - real date from your dev instance
+        sunrise = datetime(2026, 1, 29, 7, 30, 0, tzinfo=UTC)
+        sunset = datetime(2026, 1, 29, 17, 0, 0, tzinfo=UTC)
+        current = datetime(2026, 1, 29, 12, 0, 0, tzinfo=UTC)  # Noon
+
+        threshold = calc.calculate_threshold(
+            current,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,
+            dawn_threshold=5000,
+        )
+
+        # At noon in winter, threshold should be well above dawn
+        assert threshold > 6000  # Above dawn + safety
+        assert threshold < 35000  # But below summer max
+
+    def test_effective_buffer_affects_amplitude(self):
+        """Test that effective_buffer changes the curve amplitude."""
+        calc = AdaptiveBrightnessCalculator(latitude=47.0)
+
+        sunrise = datetime(2024, 6, 21, 6, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 6, 21, 20, 0, 0, tzinfo=UTC)
+        noon = datetime(2024, 6, 21, 13, 0, 0, tzinfo=UTC)
+
+        # Without dawn (buffer = 1000)
+        threshold_no_dawn = calc.calculate_threshold(
+            noon,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,
+            dawn_threshold=None,
+        )
+
+        # With dawn (effective_buffer = 6000)
+        threshold_with_dawn = calc.calculate_threshold(
+            noon,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,
+            dawn_threshold=5000,
+        )
+
+        # With higher effective_buffer, the curve is shifted up
+        # At noon both should be high, but with_dawn should be slightly higher
+        # due to the shifted baseline
+        assert threshold_with_dawn >= threshold_no_dawn
+
+    def test_high_dawn_threshold(self):
+        """Test with unusually high dawn threshold."""
+        calc = AdaptiveBrightnessCalculator(latitude=47.0)
+
+        sunrise = datetime(2024, 1, 15, 8, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
+
+        # Dawn threshold higher than winter_lux - extreme case
+        threshold = calc.calculate_threshold(
+            sunrise,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=1000,
+            dawn_threshold=35000,  # Very high!
+        )
+
+        # Should be dawn + 1000 = 36000
+        assert threshold == 36000
+
+    def test_zero_buffer_with_dawn(self):
+        """Test that zero buffer works correctly with dawn protection."""
+        calc = AdaptiveBrightnessCalculator(latitude=47.0)
+
+        current = datetime(2024, 1, 15, 5, 0, 0, tzinfo=UTC)  # Before sunrise
+        sunrise = datetime(2024, 1, 15, 8, 0, 0, tzinfo=UTC)
+        sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
+
+        threshold = calc.calculate_threshold(
+            current,
+            sunrise,
+            sunset,
+            winter_lux=30000,
+            summer_lux=50000,
+            buffer=0,  # Zero buffer
+            dawn_threshold=5000,
+        )
+
+        # Should return dawn + 1000 = 6000 (not 0)
+        assert threshold == 6000
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])
