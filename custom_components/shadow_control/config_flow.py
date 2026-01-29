@@ -15,6 +15,7 @@ from voluptuous import Any
 
 from .const import (
     DEBUG_ENABLED,
+    DEPRECATED_CONFIG_KEYS,
     DOMAIN,
     SC_CONF_NAME,
     TARGET_COVER_ENTITY,
@@ -480,6 +481,22 @@ def get_full_options_schema_mode3() -> vol.Schema:
 # End of Voluptuous schemas for options
 # =================================================================================================
 
+# =================================================================================================
+# Generate YAML schema entries for all deprecated keys
+DEPRECATED_YAML_SCHEMA_ENTRIES = {}
+for key in DEPRECATED_CONFIG_KEYS:
+    # Automatically determine type based on key name
+    if "entity" in key:
+        DEPRECATED_YAML_SCHEMA_ENTRIES[vol.Optional(key)] = cv.entity_id
+    elif "enabled" in key or "lock" in key:
+        DEPRECATED_YAML_SCHEMA_ENTRIES[vol.Optional(key)] = vol.Coerce(bool)
+    elif "restriction" in key:
+        DEPRECATED_YAML_SCHEMA_ENTRIES[vol.Optional(key)] = cv.string
+    else:
+        # Default to float for numeric values
+        DEPRECATED_YAML_SCHEMA_ENTRIES[vol.Optional(key)] = vol.Coerce(float)
+
+
 YAML_CONFIG_SCHEMA = vol.Schema(
     {
         vol.Required(SC_CONF_NAME): cv.string,  # Name ist hier erforderlich und einzigartig
@@ -591,6 +608,11 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.DAWN_ANGLE_AFTER_DAWN_MANUAL.value): vol.Coerce(float),
         vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value): cv.entity_id,
+        #
+        # ====================================================================
+        # DEPRECATED OPTIONS (backward compatibility - will trigger warnings)
+        # ====================================================================
+        **DEPRECATED_YAML_SCHEMA_ENTRIES,
     }
 )
 
