@@ -35,6 +35,7 @@ from homeassistant.util import slugify
 
 from .adaptive_brightness import AdaptiveBrightnessCalculator
 from .config_flow import YAML_CONFIG_SCHEMA, get_full_options_schema
+from .config_validation import validate_and_warn_deprecated_config
 from .const import (
     DEBUG_ENABLED,
     DOMAIN,
@@ -98,10 +99,23 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     if DOMAIN in config:
         for entry_config in config[DOMAIN]:
-            # Import YAML configuration into ConfigEntry, separated the same way than
-            # on the ConfigFlow: Name in 'data', rest in 'options'
+            # Get instance name for validation
+            instance_name = entry_config.get(SC_CONF_NAME, "Unknown")
 
-            # Remove name from YAML configuration
+            # =================================================================
+            # Validate and warn about deprecated configuration in YAML
+            # This modifies entry_config in-place and also returns it
+            # =================================================================
+            validate_and_warn_deprecated_config(
+                hass,
+                entry_config,
+                _LOGGER,
+                instance_name,
+            )
+            # End of deprecated config validation
+            # =================================================================
+
+            # Import YAML configuration into ConfigEntry
             instance_name = entry_config.pop(SC_CONF_NAME)
 
             hass.async_create_task(
@@ -175,6 +189,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:  #
             entry.entry_id,
         )
         return False
+
+    # =================================================================
+    # Validate and warn about deprecated configuration
+    # =================================================================
+    config_data = validate_and_warn_deprecated_config(
+        hass,
+        config_data,
+        instance_specific_logger,
+        instance_name,
+    )
+    # End of deprecated config validation
+    # =================================================================
 
     # The cover to handle with this integration
     target_cover_entity_id = config_data.get(TARGET_COVER_ENTITY)
