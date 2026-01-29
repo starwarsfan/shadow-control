@@ -638,11 +638,16 @@ The entries within the configuration follow the mentioned keywords within the do
 ```yaml
 shadow_control:
   - name: "Büro West"
-    # Either 'mode1', 'mode2' or 'mode3'
+    #
+    # Configure shutter mode by entering 'mode1', 'mode2' or 'mode3'
     # All *_angle_* settings will be ignored on mode3
     facade_shutter_type_static: mode1
+    #
+    # List of cover entities to handle by this Shadow Control instance
     target_cover_entity:
       - cover.fenster_buro_west
+    #
+    # Enable debug mode for way more log output
     debug_enabled: false
     #
     # =======================================================================
@@ -656,8 +661,10 @@ shadow_control:
     # Entities holding the current sun position
     sun_elevation_entity: input_number.d03_sun_elevation
     sun_azimuth_entity: input_number.d04_sun_azimuth
-    #sunrise_entity:
-    #sunset_entity:
+    #
+    # Entities with next sunrise/sunset for adaptive brightness calculation
+    #sunrise_entity: sensor.sun_next_rising
+    #sunset_entity: sensor.sun_next_setting
     #
     # Entities to lock the integration
     lock_integration_manual: false
@@ -686,7 +693,7 @@ shadow_control:
     #movement_restriction_angle_entity:
     #
     # Entity to enforce the shutter positioning
-    enforce_positioning_entity: input_boolean.d13_enforce_positioning
+    #enforce_positioning_entity: input_boolean.d13_enforce_positioning
     #
     # =======================================================================
     # General facade configuration
@@ -715,8 +722,12 @@ shadow_control:
     # Shadow configuration
     #shadow_control_enabled_entity:
     shadow_control_enabled_manual: true
-    #shadow_brightness_threshold_entity:
-    shadow_brightness_threshold_winter_manual: 50000
+    #shadow_brightness_threshold_winter_entity:
+    #shadow_brightness_threshold_winter_manual: 30000
+    #shadow_brightness_threshold_summer_entity:
+    #shadow_brightness_threshold_summer_manual: 50000
+    #shadow_brightness_threshold_buffer_entity:
+    #shadow_brightness_threshold_buffer_manual: 1000
     #shadow_after_seconds_entity:
     shadow_after_seconds_manual: 15
     #shadow_shutter_max_height_entity:
