@@ -621,3 +621,192 @@ EXTERNAL_SENSOR_DEFINITIONS = [
         "icon": "mdi:rotate-3d",
     },
 ]
+
+# =============================================================================
+# Deprecated Configuration Keys
+# =============================================================================
+# Keys that are no longer supported but accepted for backward compatibility.
+# They will trigger warnings and be ignored during setup.
+DEPRECATED_CONFIG_KEYS = {
+    # v5 Migration - Adaptive Brightness
+    "shadow_brightness_threshold_manual": {
+        "replacement": [
+            "shadow_brightness_threshold_winter_manual",
+            "shadow_brightness_threshold_summer_manual",
+        ],
+        "deprecated_in": "v5 (Adaptive Brightness)",
+        "migration_hint": (
+            "Replace with 'shadow_brightness_threshold_winter_manual' and "
+            "'shadow_brightness_threshold_summer_manual' in sc_internal_values. "
+            "Set both to the same value for static behavior, or different values for adaptive brightness."
+        ),
+    },
+    "shadow_brightness_threshold_entity": {
+        "replacement": [
+            "shadow_brightness_threshold_winter_entity",
+            "shadow_brightness_threshold_summer_entity",
+        ],
+        "deprecated_in": "v5 (Adaptive Brightness)",
+        "migration_hint": (
+            "Replace with 'shadow_brightness_threshold_winter_entity' and "
+            "'shadow_brightness_threshold_summer_entity'. "
+            "Set both to the same entity for static behavior, or different entities for adaptive brightness."
+        ),
+    },
+    # v5 Migration - Deprecated *_static keys (non-facade)
+    "lock_integration_static": {
+        "replacement": ["lock_integration_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'lock_integration_manual' in sc_internal_values.",
+    },
+    "lock_integration_with_position_static": {
+        "replacement": ["lock_integration_with_position_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'lock_integration_with_position_manual' in sc_internal_values.",
+    },
+    "lock_height_static": {
+        "replacement": ["lock_height_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'lock_height_manual' in sc_internal_values.",
+    },
+    "lock_angle_static": {
+        "replacement": ["lock_angle_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'lock_angle_manual' in sc_internal_values.",
+    },
+    "movement_restriction_height_static": {
+        "replacement": ["movement_restriction_height_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'movement_restriction_height_manual' in sc_internal_values.",
+    },
+    "movement_restriction_angle_static": {
+        "replacement": ["movement_restriction_angle_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'movement_restriction_angle_manual' in sc_internal_values.",
+    },
+    "facade_neutral_pos_height_static": {
+        "replacement": ["facade_neutral_pos_height_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'facade_neutral_pos_height_manual' in sc_internal_values.",
+    },
+    "facade_neutral_pos_angle_static": {
+        "replacement": ["facade_neutral_pos_angle_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'facade_neutral_pos_angle_manual' in sc_internal_values.",
+    },
+    "shadow_control_enabled_static": {
+        "replacement": ["shadow_control_enabled_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'shadow_control_enabled_manual' in sc_internal_values.",
+    },
+    "shadow_brightness_threshold_static": {
+        "replacement": [
+            "shadow_brightness_threshold_winter_manual",
+            "shadow_brightness_threshold_summer_manual",
+        ],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'shadow_brightness_threshold_winter_manual' and 'shadow_brightness_threshold_summer_manual' in sc_internal_values.",
+    },
+    "shadow_after_seconds_static": {
+        "replacement": ["shadow_after_seconds_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'shadow_after_seconds_manual' in sc_internal_values.",
+    },
+    "shadow_shutter_max_height_static": {
+        "replacement": ["shadow_shutter_max_height_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'shadow_shutter_max_height_manual' in sc_internal_values.",
+    },
+    "shadow_shutter_max_angle_static": {
+        "replacement": ["shadow_shutter_max_angle_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'shadow_shutter_max_angle_manual' in sc_internal_values.",
+    },
+    "shadow_shutter_look_through_seconds_static": {
+        "replacement": ["shadow_shutter_look_through_seconds_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'shadow_shutter_look_through_seconds_manual' in sc_internal_values.",
+    },
+    "shadow_shutter_open_seconds_static": {
+        "replacement": ["shadow_shutter_open_seconds_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'shadow_shutter_open_seconds_manual' in sc_internal_values.",
+    },
+    "shadow_shutter_look_through_angle_static": {
+        "replacement": ["shadow_shutter_look_through_angle_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'shadow_shutter_look_through_angle_manual' in sc_internal_values.",
+    },
+    "shadow_height_after_sun_static": {
+        "replacement": ["shadow_height_after_sun_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'shadow_height_after_sun_manual' in sc_internal_values.",
+    },
+    "shadow_angle_after_sun_static": {
+        "replacement": ["shadow_angle_after_sun_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'shadow_angle_after_sun_manual' in sc_internal_values.",
+    },
+    "dawn_control_enabled_static": {
+        "replacement": ["dawn_control_enabled_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'dawn_control_enabled_manual' in sc_internal_values.",
+    },
+    "dawn_brightness_threshold_static": {
+        "replacement": ["dawn_brightness_threshold_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'dawn_brightness_threshold_manual' in sc_internal_values.",
+    },
+    "dawn_after_seconds_static": {
+        "replacement": ["dawn_after_seconds_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'dawn_after_seconds_manual' in sc_internal_values.",
+    },
+    "dawn_shutter_max_height_static": {
+        "replacement": ["dawn_shutter_max_height_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'dawn_shutter_max_height_manual' in sc_internal_values.",
+    },
+    "dawn_shutter_max_angle_static": {
+        "replacement": ["dawn_shutter_max_angle_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'dawn_shutter_max_angle_manual' in sc_internal_values.",
+    },
+    "dawn_shutter_look_through_seconds_static": {
+        "replacement": ["dawn_shutter_look_through_seconds_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'dawn_shutter_look_through_seconds_manual' in sc_internal_values.",
+    },
+    "dawn_shutter_open_seconds_static": {
+        "replacement": ["dawn_shutter_open_seconds_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'dawn_shutter_open_seconds_manual' in sc_internal_values.",
+    },
+    "dawn_shutter_look_through_angle_static": {
+        "replacement": ["dawn_shutter_look_through_angle_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'dawn_shutter_look_through_angle_manual' in sc_internal_values.",
+    },
+    "dawn_height_after_dawn_static": {
+        "replacement": ["dawn_height_after_dawn_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'dawn_height_after_dawn_manual' in sc_internal_values.",
+    },
+    "dawn_angle_after_dawn_static": {
+        "replacement": ["dawn_angle_after_dawn_manual"],
+        "deprecated_in": "v5",
+        "migration_hint": "Use 'dawn_angle_after_dawn_manual' in sc_internal_values.",
+    },
+    # v2 Migration - Old lock keys
+    # Commented out here as they already exist in later versions
+    # "lock_height_entity": {
+    #     "replacement": ["lock_height_manual"],
+    #     "deprecated_in": "v2",
+    #     "migration_hint": "Use 'lock_height_manual' in sc_internal_values.",
+    # },
+    # "lock_angle_entity": {
+    #     "replacement": ["lock_angle_manual"],
+    #     "deprecated_in": "v2",
+    #     "migration_hint": "Use 'lock_angle_manual' in sc_internal_values.",
+    # },
+}
