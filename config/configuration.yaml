@@ -162,6 +162,10 @@ shadow_control:
     dawn_shutter_look_through_angle_static: 42
     dawn_height_after_dawn_static: 42
     dawn_angle_after_dawn_static: 42
+    #
+    # ========================================================================
+    # Unknown options to check error handling
+    #foobar: 23
 
   # =========================================================================
   - name: "SC Dummy 2"

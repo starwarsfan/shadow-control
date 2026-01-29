@@ -617,7 +617,8 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         # DEPRECATED OPTIONS (backward compatibility - will trigger warnings)
         # ====================================================================
         **DEPRECATED_YAML_SCHEMA_ENTRIES,
-    }
+    },
+    extra=vol.PREVENT_EXTRA,
 )
 
 
