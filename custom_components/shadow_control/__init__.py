@@ -769,8 +769,23 @@ class ShadowControlManager:
         # === Get dynamic configuration inputs
         self._dynamic_config.brightness = self._config.get(SCDynamicInput.BRIGHTNESS_ENTITY.value)
         self._dynamic_config.brightness_dawn = self._config.get(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value)
-        self._dynamic_config.sun_elevation = self._config.get(SCDynamicInput.SUN_ELEVATION_ENTITY.value)
-        self._dynamic_config.sun_azimuth = self._config.get(SCDynamicInput.SUN_AZIMUTH_ENTITY.value)
+
+        # Sun elevation - read from attribute if sun.sun, else from state
+        self._dynamic_config.sun_elevation = self._get_entity_state_value(
+            SCDynamicInput.SUN_ELEVATION_ENTITY.value,
+            0.0,
+            float,
+            attribute_name="elevation",  # ← For sun.sun, read elevation attribute
+        )
+
+        # Sun azimuth - read from attribute if sun.sun, else from state
+        self._dynamic_config.sun_azimuth = self._get_entity_state_value(
+            SCDynamicInput.SUN_AZIMUTH_ENTITY.value,
+            0.0,
+            float,
+            attribute_name="azimuth",  # ← For sun.sun, read azimuth attribute
+        )
+
         self._dynamic_config.shutter_current_height = self._config.get(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value)
         self._dynamic_config.shutter_current_angle = self._config.get(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value)
         self._dynamic_config.lock_integration = self._config.get(SCInternal.LOCK_INTEGRATION_MANUAL.value)
@@ -1359,8 +1374,23 @@ class ShadowControlManager:
         # Dynamic Inputs (entity states or static values)
         self._dynamic_config.brightness = self._get_entity_state_value(SCDynamicInput.BRIGHTNESS_ENTITY.value, 0.0, float)
         self._dynamic_config.brightness_dawn = self._get_entity_state_value(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value, -1.0, float)
-        self._dynamic_config.sun_elevation = self._get_entity_state_value(SCDynamicInput.SUN_ELEVATION_ENTITY.value, 0.0, float)
-        self._dynamic_config.sun_azimuth = self._get_entity_state_value(SCDynamicInput.SUN_AZIMUTH_ENTITY.value, 0.0, float)
+
+        # Sun elevation - read from attribute if sun.sun, else from state
+        self._dynamic_config.sun_elevation = self._get_entity_state_value(
+            SCDynamicInput.SUN_ELEVATION_ENTITY.value,
+            0.0,
+            float,
+            attribute_name="elevation",  # ← For sun.sun, read elevation attribute
+        )
+
+        # Sun azimuth - read from attribute if sun.sun, else from state
+        self._dynamic_config.sun_azimuth = self._get_entity_state_value(
+            SCDynamicInput.SUN_AZIMUTH_ENTITY.value,
+            0.0,
+            float,
+            attribute_name="azimuth",  # ← For sun.sun, read azimuth attribute
+        )
+
         self._dynamic_config.shutter_current_height = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value, -1.0, float)
         self._dynamic_config.shutter_current_angle = self._get_entity_state_value(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value, -1.0, float)
 
@@ -3940,18 +3970,58 @@ class ShadowControlManager:
         self._last_reported_height = None
         self._last_reported_angle = None
 
-    def _get_entity_state_value(self, key: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
-        """Extract dynamic value from an entity state."""
-        # Type conversion and default will be handled
-        entity_id = self._config.get(key)  # This will be the string entity_id or None
-        return self._get_state_value(entity_id=entity_id, default=default, expected_type=expected_type, log_warning=log_warning)
+    def _get_entity_state_value(
+        self,
+        key: str,
+        default: Any,
+        expected_type: type,
+        log_warning: bool = True,
+        attribute_name: str | None = None,  # ← NEW
+    ) -> Any:
+        """
+        Extract dynamic value from an entity state or attribute.
+
+        Args:
+            key: Configuration key for entity_id
+            default: Default value if entity not found or conversion fails
+            expected_type: Type to convert value to
+            log_warning: Whether to log warnings
+            attribute_name: Optional attribute name to read instead of state
+
+        """
+        entity_id = self._config.get(key)
+        return self._get_state_value(
+            entity_id=entity_id,
+            default=default,
+            expected_type=expected_type,
+            log_warning=log_warning,
+            attribute_name=attribute_name,
+        )
 
     def _get_internal_entity_state_value(self, entity_id: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
         """Extract dynamic value from an entity state."""
         return self._get_state_value(entity_id=entity_id, default=default, expected_type=expected_type, log_warning=log_warning)
 
-    def _get_state_value(self, entity_id: str, default: Any, expected_type: type, log_warning: bool = True) -> Any:
-        """Extract dynamic value from an entity state."""
+    def _get_state_value(
+        self,
+        entity_id: str,
+        default: Any,
+        expected_type: type,
+        log_warning: bool = True,
+        attribute_name: str | None = None,
+    ) -> Any:
+        """
+        Extract dynamic value from an entity state or attribute.
+
+        Args:
+            entity_id: Entity ID to read from
+            default: Default value if entity not found or conversion fails
+            expected_type: Type to convert value to
+            log_warning: Whether to log warnings
+            attribute_name: Optional attribute name to read instead of state.
+                           Only used if the attribute actually exists on the entity.
+
+        """
         if entity_id in [None, "none"]:
             # Directly return the default value for None or "none" without logging warnings
             return default
@@ -3969,21 +4039,66 @@ class ShadowControlManager:
             return default
 
         try:
+            # Try to read from attribute if specified and it exists
+            if attribute_name:
+                attr_value = state.attributes.get(attribute_name)
+                if attr_value is not None:
+                    # Attribute exists - use it (e.g., sun.sun has elevation/azimuth)
+                    value = attr_value
+                    self.logger.debug(
+                        "Reading attribute '%s' from entity '%s': %s",
+                        attribute_name,
+                        entity_id,
+                        value,
+                    )
+                else:
+                    # Attribute doesn't exist - fall back to state (e.g., input_number)
+                    if state.state in ["unavailable", "unknown"]:
+                        if log_warning:
+                            self.logger.debug(
+                                "Entity '%s' is unavailable or unknown. Using default: %s",
+                                entity_id,
+                                default,
+                            )
+                        return default
+                    value = state.state
+                    self.logger.debug(
+                        "Attribute '%s' not found in '%s', using state: %s",
+                        attribute_name,
+                        entity_id,
+                        value,
+                    )
+            else:
+                # No attribute requested - read from state
+                if state.state in ["unavailable", "unknown"]:
+                    if log_warning:
+                        self.logger.debug(
+                            "Entity '%s' is unavailable or unknown. Using default: %s",
+                            entity_id,
+                            default,
+                        )
+                    return default
+                value = state.state
+
+            # Type conversion
             if expected_type is bool:
-                return state.state == STATE_ON
+                return str(value).lower() in ["on", "true", "1"]
             if expected_type is int:
-                return int(float(state.state))  # Handle cases where state might be "10.0"
+                return int(float(value))
             if expected_type is float:
-                return float(state.state)
-            return expected_type(state.state)
-        except (ValueError, TypeError):
+                return float(value)
+            return expected_type(value)
+
+        except (ValueError, TypeError) as e:
             if log_warning:
                 self.logger.warning(
-                    "Failed to convert state '%s' of entity '%s' to type %s. Using default: %s",
-                    state.state,
+                    "Failed to convert %s '%s' of entity '%s' to type %s. Using default: %s. Error: %s",
+                    "attribute" if attribute_name and attr_value is not None else "state",
+                    value,
                     entity_id,
                     expected_type.__name__,
                     default,
+                    e,
                 )
             return default
 

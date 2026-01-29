@@ -74,11 +74,11 @@ def get_cfg_minimal_options() -> vol.Schema:
             vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
-            vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value, default="sun.sun"): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sun", "sensor", "input_number"])
             ),
-            vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value, default="sun.sun"): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sun", "sensor", "input_number"])
             ),
         }
     )
@@ -182,11 +182,11 @@ def get_cfg_dynamic_inputs() -> vol.Schema:
             vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
-            vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value, default="sun.sun"): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sun", "sensor", "input_number"])
             ),
-            vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value, default="sun.sun"): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sun", "sensor", "input_number"])
             ),
             vol.Optional(SCDynamicInput.SUNRISE_ENTITY.value, default="sensor.sun_next_rising"): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
@@ -347,11 +347,11 @@ def get_cfg_dynamic_inputs_mode3() -> vol.Schema:
             vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
-            vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value, default="sun.sun"): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sun", "sensor", "input_number"])
             ),
-            vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value, default="sun.sun"): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sun", "sensor", "input_number"])
             ),
             vol.Optional(SCDynamicInput.SUNRISE_ENTITY.value, default="sensor.sun_next_rising"): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
@@ -539,8 +539,8 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         ): vol.Coerce(float),
         vol.Optional(SCDynamicInput.BRIGHTNESS_ENTITY.value): cv.entity_id,
         vol.Optional(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value): cv.entity_id,
-        vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value): cv.entity_id,
-        vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value): cv.entity_id,
+        vol.Optional(SCDynamicInput.SUN_ELEVATION_ENTITY.value, default="sun.sun"): cv.entity_id,
+        vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value, default="sun.sun"): cv.entity_id,
         vol.Optional(SCDynamicInput.SUNRISE_ENTITY.value, default="sensor.sun_next_rising"): cv.entity_id,
         vol.Optional(SCDynamicInput.SUNSET_ENTITY.value, default="sensor.sun_next_setting"): cv.entity_id,
         vol.Optional(SCInternal.LOCK_INTEGRATION_MANUAL.value): cv.boolean,

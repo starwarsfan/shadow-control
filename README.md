@@ -659,8 +659,8 @@ shadow_control:
     #brightness_dawn_entity: input_number.d02_brightness_dawn
     #
     # Entities holding the current sun position
-    sun_elevation_entity: input_number.d03_sun_elevation
-    sun_azimuth_entity: input_number.d04_sun_azimuth
+    #sun_elevation_entity: sun.sun
+    #sun_azimuth_entity: sun.sun
     #
     # Entities with next sunrise/sunset for adaptive brightness calculation
     #sunrise_entity: sensor.sun_next_rising
