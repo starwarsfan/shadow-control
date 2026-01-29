@@ -1511,6 +1511,7 @@ class ShadowControlManager:
                         winter_lux=self._shadow_config.brightness_threshold_winter,
                         summer_lux=self._shadow_config.brightness_threshold_summer,
                         buffer=self._shadow_config.brightness_threshold_buffer,
+                        dawn_threshold=self._dawn_config.brightness_threshold,
                     )
             else:
                 self.logger.warning(
