@@ -488,12 +488,16 @@ for key in DEPRECATED_CONFIG_KEYS:
     # Automatically determine type based on key name
     if "entity" in key:
         DEPRECATED_YAML_SCHEMA_ENTRIES[vol.Optional(key)] = cv.entity_id
-    elif "enabled" in key or "lock" in key:
+    elif "enabled" in key:
+        # Keys with "enabled" are boolean
+        DEPRECATED_YAML_SCHEMA_ENTRIES[vol.Optional(key)] = vol.Coerce(bool)
+    elif key.startswith("lock_integration"):
+        # lock_integration_* keys are boolean
         DEPRECATED_YAML_SCHEMA_ENTRIES[vol.Optional(key)] = vol.Coerce(bool)
     elif "restriction" in key:
         DEPRECATED_YAML_SCHEMA_ENTRIES[vol.Optional(key)] = cv.string
     else:
-        # Default to float for numeric values
+        # Default to float for numeric values (lock_height, lock_angle, etc.)
         DEPRECATED_YAML_SCHEMA_ENTRIES[vol.Optional(key)] = vol.Coerce(float)
 
 
