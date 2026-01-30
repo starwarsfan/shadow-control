@@ -1,6 +1,6 @@
 """Tests for async_calculate_and_apply_cover_position method."""
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -54,8 +54,15 @@ class TestAsyncCalculateAndApplyCoverPosition:
 
         instance._last_unlock_time = None
 
+        # Grace period attributes
+        instance._ha_start_time = datetime.now(tz=UTC) - timedelta(seconds=35)  # Beyond grace period by default
+        instance._ha_restart_grace_period_seconds = 30
+
         # Bind the actual method to the mock instance
         instance.async_calculate_and_apply_cover_position = ShadowControlManager.async_calculate_and_apply_cover_position.__get__(instance)
+
+        # Bind grace period check method
+        instance._is_in_ha_restart_grace_period = ShadowControlManager._is_in_ha_restart_grace_period.__get__(instance)
 
         return instance
 
@@ -147,7 +154,7 @@ class TestAsyncCalculateAndApplyCoverPosition:
             {
                 "entity_id": test_entity,
                 "old_state": MagicMock(state="80"),
-                "new_state": MagicMock(state="90"),
+                "new_state": MagicMock(state="90", spec=["state"]),  # Only allow 'state' attribute
             },
         )
 
