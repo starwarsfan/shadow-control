@@ -4,7 +4,7 @@
 # import json
 import logging
 import math
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 from functools import partial
 from typing import TYPE_CHECKING, Any
@@ -904,8 +904,60 @@ class ShadowControlManager:
 
         self._listeners: list[Callable[[], None]] = []
         self._timer: Callable[[], None] | None = None
+        self._first_event_time = None  # Track first event time for startup grace period
+
+        # Track when HA started to implement grace period
+        self._ha_start_time: datetime | None = None
+        self._ha_restart_grace_period_seconds = 30  # 30 Sekunden nach HA-Start
+
+        # Listen to HA started event
+        self.hass.bus.async_listen_once(
+            EVENT_HOMEASSISTANT_STARTED,
+            self._async_ha_started_listener,
+        )
 
         self.logger.debug("Manager initialized for target: %s.", self._target_cover_entity_id)
+
+    async def _async_ha_started_listener(self, event: Event) -> None:
+        """
+        Handle Home Assistant started event.
+
+        Sets the start time to enable grace period checking.
+        During grace period, config entity changes are not treated as
+        force_immediate_positioning to prevent unnecessary shutter movement
+        during state restore.
+
+        Args:
+            event: The HA started event
+
+        """
+        self._ha_start_time = datetime.now(tz=UTC)
+        self.logger.info(
+            "Home Assistant started. Grace period of %ds active to prevent shutter movement during state restore.",
+            self._ha_restart_grace_period_seconds,
+        )
+
+    def _is_in_ha_restart_grace_period(self) -> bool:
+        """
+        Check if we're still in HA restart grace period.
+
+        During this period (default 30s after HA start), config entity changes
+        from state restore should not trigger force_immediate_positioning.
+
+        This prevents the "bang" issue where shutters at 0% height with 90° tilt
+        close completely (0°) and then reopen to 90° after HA restart.
+
+        Returns:
+            True if within grace period, False otherwise
+
+        """
+        if self._ha_start_time is None:
+            # HA started event not received yet - assume we're in grace period
+            # This handles the brief window before EVENT_HOMEASSISTANT_STARTED fires
+            return True
+
+        time_since_start = (datetime.now(tz=UTC) - self._ha_start_time).total_seconds()
+        return time_since_start < self._ha_restart_grace_period_seconds
 
     def _handle_movement_restriction(self) -> None:
         """Handle movement restriction configuration."""
@@ -1087,6 +1139,15 @@ class ShadowControlManager:
         entity_id = event.data.get("entity_id")
         old_state: State | None = event.data.get("old_state")
         new_state: State | None = event.data.get("new_state")
+
+        # Ignore state changes involving unavailable/unknown states
+        if (new_state and new_state.state in ["unavailable", "unknown"]) or (old_state and old_state.state in ["unavailable", "unknown"]):
+            self.logger.debug(
+                "Target cover state change from %s to %s involves unavailable/unknown - ignoring",
+                old_state.state if old_state else "None",
+                new_state.state if new_state else "None",
+            )
+            return  # Exit early, don't process this state change
 
         self.logger.debug(
             "Target cover state change detected for %s. Old state: %s, New state: %s.",
@@ -1831,28 +1892,61 @@ class ShadowControlManager:
                 ]
 
                 if entity in config_entities_requiring_immediate_positioning:
-                    # Check if any lock is currently active
-                    lock_active = self._dynamic_config.lock_integration or self._dynamic_config.lock_integration_with_position
-
-                    if lock_active:
+                    # ✅ NEW: Check grace period FIRST (catches all restart scenarios)
+                    if self._is_in_ha_restart_grace_period():
                         self.logger.info(
-                            "Configuration entity '%s' changed from %s to %s, "
-                            "but lock is active (simple: %s, with_position: %s) -> skipping immediate positioning",
+                            "Configuration entity '%s' changed from %s to %s during HA restart grace period "
+                            "(within %ds of HA start). Skipping immediate positioning to prevent "
+                            "unnecessary shutter movement after restart.",
                             entity,
                             old_state.state if old_state else "None",
                             new_state.state if new_state else "None",
-                            self._dynamic_config.lock_integration,
-                            self._dynamic_config.lock_integration_with_position,
+                            self._ha_restart_grace_period_seconds,
+                        )
+                        # Continue with normal processing (facade check, state processing)
+                        # but don't force immediate positioning
+
+                    # ✅ Skip if old_state is None (initial restore)
+                    elif old_state is None:
+                        self.logger.info(
+                            "Configuration entity '%s' initialized to %s (old_state is None) -> skipping immediate positioning",
+                            entity,
+                            new_state.state if new_state else "None",
+                        )
+                        # Don't set force_immediate_positioning
+                        # Continue with rest of method (facade check, state processing, etc.)
+                    # ✅ Skip if this is a state restore
+                    elif new_state and hasattr(new_state, "context") and new_state.context.id.startswith("restore_state"):
+                        self.logger.info(
+                            "Configuration entity '%s' restored to %s -> skipping immediate positioning",
+                            entity,
+                            new_state.state if new_state else "None",
                         )
                         # Don't set force_immediate_positioning
                     else:
-                        self.logger.info(
-                            "Configuration entity '%s' changed from %s to %s -> forcing immediate positioning",
-                            entity,
-                            old_state.state if old_state else "None",
-                            new_state.state if new_state else "None",
-                        )
-                        force_immediate_positioning = True
+                        # Normal processing after grace period
+                        # Check if any lock is currently active
+                        lock_active = self._dynamic_config.lock_integration or self._dynamic_config.lock_integration_with_position
+
+                        if lock_active:
+                            self.logger.info(
+                                "Configuration entity '%s' changed from %s to %s, "
+                                "but lock is active (simple: %s, with_position: %s) -> skipping immediate positioning",
+                                entity,
+                                old_state.state if old_state else "None",
+                                new_state.state if new_state else "None",
+                                self._dynamic_config.lock_integration,
+                                self._dynamic_config.lock_integration_with_position,
+                            )
+                            # Don't set force_immediate_positioning
+                        else:
+                            self.logger.info(
+                                "Configuration entity '%s' changed from %s to %s -> forcing immediate positioning",
+                                entity,
+                                old_state.state if old_state else "None",
+                                new_state.state if new_state else "None",
+                            )
+                            force_immediate_positioning = True
 
                 if entity == self._config.get(SCShadowInput.CONTROL_ENABLED_ENTITY.value):
                     self.logger.info("Shadow control enable changed to %s", new_state.state)
