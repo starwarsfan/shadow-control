@@ -25,9 +25,10 @@
 * Implement automatic instance lock in case shutters are modified manually
 * New config option `facade_max_movement_duration_static` to configure max movement duration from full closed to full open
 * Activate automatic testing and add a ton of testcases ;-)
-* Implement new feature to handle shadow brightness threshold according to summer solstice. To handle this the parameter `shadow_brightness_threshold_*` was renamed to `shadow_brightness_threshold_winter_*` and two new parameters were introduced: `shadow_brightness_threshold_summer_*` and `shadow_brightness_threshold_buffer_*`. As soon as `shadow_brightness_threshold_summer_*` is configured with a value greater than `shadow_brightness_threshold_winter_*`, the used brightness threshold will be computed using a sine curve between the two threshold values, with top of the curve at summer solstice. Northern and Southern Hemisphere will be handled according to the location of the Home Assistant instance. Option `shadow_brightness_threshold_buffer_*` could be used to shift the entire sine curve upwards to avoid false triggers in the limiting range of shading.
+* Implement new feature to handle shadow brightness threshold according to summer solstice. To handle this the parameter `shadow_brightness_threshold_*` was renamed to `shadow_brightness_threshold_winter_*` and two new parameters were introduced: `shadow_brightness_threshold_summer_*` and `shadow_brightness_threshold_buffer_*`. 
 * Update naming of shadow and dawn configuration entries. Now they are streamlined from the configuration through the instance view up to the German and English documentation. Additionally they use a prefixes like "**S01 ...**", "**S02 ...**" ("**B01 ...**", "**B01 ...**" in German) and "**D01 ...**", "**D02 ...**" a.s.o. to define a logical order of **S**hadow and **D**awn configuration entries. This order is used within the ConfigFlow as well as the instance view.
 * Error handling in case the used yaml configuration contains deprecated configuration keys from previous **Shadow Control** versions.
+* As Sun integration is already a dependency, use it as default configuration for sun elevation, azimuth, sunrise and sunset.
 
 ## 0.10.0
 * Bugfix: Fixed position handling if movement is restricted and integration gets unlocked
