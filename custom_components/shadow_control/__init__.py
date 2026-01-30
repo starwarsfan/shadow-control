@@ -4384,6 +4384,19 @@ class ShadowControlManager:
 
     async def _async_timer_callback(self, now) -> None:
         """Trigger position calculation."""
+        # Check grace period first!
+        if self._is_in_ha_restart_grace_period():
+            self.logger.info(
+                "Timer finished during HA restart grace period (within %ds of HA start). "
+                "Skipping recalculation to prevent shutter movement during state restore.",
+                self._ha_restart_grace_period_seconds,
+            )
+            # Reset timer vars so we don't have stale state
+            self._timer = None
+            self._timer_start_time = None
+            self._timer_duration_seconds = None
+            return
+
         self.logger.info("Timer finished, triggering recalculation")
         # Reset vars, as timer is finished
         self._timer = None
