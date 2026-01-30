@@ -1140,6 +1140,14 @@ class ShadowControlManager:
         old_state: State | None = event.data.get("old_state")
         new_state: State | None = event.data.get("new_state")
 
+        # Cancel timer if cover becomes unavailable (HA restart)
+        if new_state and new_state.state == "unavailable" and self._timer is not None:
+            self.logger.info("Cover became unavailable (likely HA restart). Cancelling active timer to prevent movement after restart.")
+            self._timer()  # Cancel the timer
+            self._timer = None
+            self._timer_start_time = None
+            self._timer_duration_seconds = None
+
         # Ignore state changes involving unavailable/unknown states
         if (new_state and new_state.state in ["unavailable", "unknown"]) or (old_state and old_state.state in ["unavailable", "unknown"]):
             self.logger.debug(
