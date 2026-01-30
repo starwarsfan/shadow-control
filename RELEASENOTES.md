@@ -1,36 +1,38 @@
 # Changes
 
 ## 0.11.0
-* Breaking changes:
-  * **Important: If you're using yaml configuration, you must rename the following options within your yaml files before updating to version 0.11.0 or higher!**
-    * lock_integration_**static** -> lock_integration_**manual**
-    * lock_integration_with_position_**static** -> lock_integration_with_position_**manual**
-    * lock_height_**static** -> lock_height_**manual**
-    * lock_angle_**static** -> lock_angle_**manual**
-    * movement_restriction_height_**static** -> movement_restriction_height_**manual**
-    * movement_restriction_angle_**static** -> movement_restriction_angle_**manual**
-    * facade_neutral_pos_height_**static** -> facade_neutral_pos_height_**manual**
-    * facade_neutral_pos_angle_**static** -> facade_neutral_pos_angle_**manual**
-    * All options with **_static** suffix to **_manual** suffix within **shadow** configuration
-    * All options with **_static** suffix to **_manual** suffix within **dawn** configuration
-  * These renamed options are no longer configuration entries within ConfigFlow. They are now dynamically created as `switch`, `number` or `select` entities per **Shadow Control** instance and could be used either right on the instance detail view or directly within own automations. See [README.md](README.md) for naming of these entities.
-* New features:
-  * New additional entity `enforce_positioning_manual` with push button functionality to trigger recalculation and positioning of the shutter.
-  * Use HA internal slugify functionality to sanitize instance names
-  * Implement automatic instance lock in case shutters are modified manually
-  * New config option `facade_max_movement_duration_static` to configure max movement duration from full closed to full open
-  * Activate automatic testing and add a ton of testcases ;-)
-  * Implement new feature to handle shadow brightness threshold according to summer solstice. To handle this the parameter `shadow_brightness_threshold_*` was renamed to `shadow_brightness_threshold_winter_*` and two new parameters were introduced: `shadow_brightness_threshold_summer_*` and `shadow_brightness_threshold_buffer_*`. Check [Adaptive brightness control](README.md#adaptive-brightness-control) or the readme.md of your UI language for details. Thx to Hardy Köpf (harry7922) for the original implementation within the Edomi-LBS 19001445!
-  * Update naming of shadow and dawn configuration entries. Now they are streamlined from the configuration through the instance view up to the German and English documentation. Additionally, they use prefixes like "**S01 ...**", "**S02 ...**" ("**B01 ...**", "**B01 ...**" in German) and "**D01 ...**", "**D02 ...**" a.s.o. to define a logical order of **S**hadow and **D**awn configuration entries. This order is used within the ConfigFlow as well as the instance view.
-  * As Sun integration is already a dependency, use it as default configuration for sun elevation, azimuth, sunrise and sunset.
-* Fixes:
-  * Fix usage of default values if configuring a new instance via HA UI ConfigFlow.
-  * Enforcing of shutter positioning works now with configured external entity as well as a corresponding button on the instance view in parallel.
-  * Movement restriction handling for external entities refactored. The external entities could now use strings according to the used UI translation. Check [Movement restriction height within README.md](README.md#movement-restriction-height) or the readme.md of your UI language for details.
-  * Fix shutter repositioning after release of lock with position
-  * Fix initialization after Home Assistant restart
-  * Fix ignored lock in case lock is active and shutter are modified manually
-  * Error handling in case the used yaml configuration contains deprecated configuration keys from previous **Shadow Control** versions.
+### Breaking changes:
+* **Important: If you're using yaml configuration, you must rename the following options within your yaml files before updating to version 0.11.0 or higher!**
+  * lock_integration_**static** -> lock_integration_**manual**
+  * lock_integration_with_position_**static** -> lock_integration_with_position_**manual**
+  * lock_height_**static** -> lock_height_**manual**
+  * lock_angle_**static** -> lock_angle_**manual**
+  * movement_restriction_height_**static** -> movement_restriction_height_**manual**
+  * movement_restriction_angle_**static** -> movement_restriction_angle_**manual**
+  * facade_neutral_pos_height_**static** -> facade_neutral_pos_height_**manual**
+  * facade_neutral_pos_angle_**static** -> facade_neutral_pos_angle_**manual**
+  * All options with **_static** suffix to **_manual** suffix within **shadow** configuration
+  * All options with **_static** suffix to **_manual** suffix within **dawn** configuration
+* These renamed options are no longer configuration entries within ConfigFlow. They are now dynamically created as `switch`, `number` or `select` entities per **Shadow Control** instance and could be used either right on the instance detail view or directly within own automations. See [README.md](README.md) for naming of these entities.
+
+### New features:
+* New additional entity `enforce_positioning_manual` with push button functionality to trigger recalculation and positioning of the shutter.
+* Use HA internal slugify functionality to sanitize instance names
+* Implement automatic instance lock in case shutters are modified manually
+* New config option `facade_max_movement_duration_static` to configure max movement duration from full closed to full open
+* Activate automatic testing and add a ton of testcases ;-)
+* Implement new feature to handle shadow brightness threshold according to summer solstice. To handle this the parameter `shadow_brightness_threshold_*` was renamed to `shadow_brightness_threshold_winter_*` and two new parameters were introduced: `shadow_brightness_threshold_summer_*` and `shadow_brightness_threshold_buffer_*`. Check [Adaptive brightness control](README.md#adaptive-brightness-control) or the readme.md of your UI language for details. Thx to Hardy Köpf (harry7922) for the original implementation within the Edomi-LBS 19001445!
+* Update naming of shadow and dawn configuration entries. Now they are streamlined from the configuration through the instance view up to the German and English documentation. Additionally, they use prefixes like "**S01 ...**", "**S02 ...**" ("**B01 ...**", "**B01 ...**" in German) and "**D01 ...**", "**D02 ...**" a.s.o. to define a logical order of **S**hadow and **D**awn configuration entries. This order is used within the ConfigFlow as well as the instance view.
+* As Sun integration is already a dependency, use it as default configuration for sun elevation, azimuth, sunrise and sunset.
+
+### Fixes:
+* Fix usage of default values if configuring a new instance via HA UI ConfigFlow.
+* Enforcing of shutter positioning works now with configured external entity as well as a corresponding button on the instance view in parallel.
+* Movement restriction handling for external entities refactored. The external entities could now use strings according to the used UI translation. Check [Movement restriction height within README.md](README.md#movement-restriction-height) or the readme.md of your UI language for details.
+* Fix shutter repositioning after release of lock with position
+* Fix initialization after Home Assistant restart
+* Fix ignored lock in case lock is active and shutter are modified manually
+* Error handling in case the used yaml configuration contains deprecated configuration keys from previous **Shadow Control** versions.
 
 ## 0.10.0
 * Bugfix: Fixed position handling if movement is restricted and integration gets unlocked
