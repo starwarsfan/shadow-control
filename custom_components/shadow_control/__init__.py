@@ -776,9 +776,6 @@ class ShadowControlManager:
         self._dawn_config = SCDawnControlConfig()
 
         # === Get dynamic configuration inputs
-        self._dynamic_config.brightness = self._config.get(SCDynamicInput.BRIGHTNESS_ENTITY.value)
-        self._dynamic_config.brightness_dawn = self._config.get(SCDynamicInput.BRIGHTNESS_DAWN_ENTITY.value)
-
         # Sun elevation - read from attribute if sun.sun, else from state
         self._dynamic_config.sun_elevation = self._get_entity_state_value(
             SCDynamicInput.SUN_ELEVATION_ENTITY.value,
@@ -786,7 +783,6 @@ class ShadowControlManager:
             float,
             attribute_name="elevation",  # ← For sun.sun, read elevation attribute
         )
-
         # Sun azimuth - read from attribute if sun.sun, else from state
         self._dynamic_config.sun_azimuth = self._get_entity_state_value(
             SCDynamicInput.SUN_AZIMUTH_ENTITY.value,
@@ -794,16 +790,7 @@ class ShadowControlManager:
             float,
             attribute_name="azimuth",  # ← For sun.sun, read azimuth attribute
         )
-
-        self._dynamic_config.shutter_current_height = self._config.get(SCDynamicInput.SHUTTER_CURRENT_HEIGHT_ENTITY.value)
-        self._dynamic_config.shutter_current_angle = self._config.get(SCDynamicInput.SHUTTER_CURRENT_ANGLE_ENTITY.value)
-        self._dynamic_config.lock_integration = self._config.get(SCInternal.LOCK_INTEGRATION_MANUAL.value)
-        self._dynamic_config.lock_integration_with_position = self._config.get(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL.value)
-        self._dynamic_config.lock_height = self._config.get(SCInternal.LOCK_HEIGHT_MANUAL.value)
-        self._dynamic_config.lock_angle = self._config.get(SCInternal.LOCK_ANGLE_MANUAL.value)
-
         self._handle_movement_restriction()
-
         self._dynamic_config.enforce_positioning_entity = self._config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value)
 
         # === Get general facade configuration
@@ -826,32 +813,6 @@ class ShadowControlManager:
         self._facade_config.max_movement_duration = self._config.get(SCFacadeConfig2.MAX_MOVEMENT_DURATION_STATIC.value)
         self._facade_config.modification_tolerance_height = self._config.get(SCFacadeConfig2.MODIFICATION_TOLERANCE_HEIGHT_STATIC.value)
         self._facade_config.modification_tolerance_angle = self._config.get(SCFacadeConfig2.MODIFICATION_TOLERANCE_ANGLE_STATIC.value)
-
-        # === Get shadow configuration
-        self._shadow_config.enabled = self._config.get(SCShadowInput.CONTROL_ENABLED_ENTITY.value)
-        self._shadow_config.brightness_threshold_winter = self._config.get(SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value)
-        self._shadow_config.brightness_threshold_summer = self._config.get(SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value)
-        self._shadow_config.brightness_threshold_buffer = self._config.get(SCShadowInput.BRIGHTNESS_THRESHOLD_BUFFER_ENTITY.value)
-        self._shadow_config.after_seconds = self._config.get(SCShadowInput.AFTER_SECONDS_ENTITY.value)
-        self._shadow_config.shutter_max_height = self._config.get(SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY.value)
-        self._shadow_config.shutter_max_angle = self._config.get(SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY.value)
-        self._shadow_config.shutter_look_through_seconds = self._config.get(SCShadowInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value)
-        self._shadow_config.shutter_open_seconds = self._config.get(SCShadowInput.SHUTTER_OPEN_SECONDS_ENTITY.value)
-        self._shadow_config.shutter_look_through_angle = self._config.get(SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value)
-        self._shadow_config.height_after_sun = self._config.get(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value)
-        self._shadow_config.angle_after_sun = self._config.get(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value)
-
-        # === Get dawn configuration
-        self._dawn_config.enabled = self._config.get(SCDawnInput.CONTROL_ENABLED_ENTITY.value)
-        self._dawn_config.brightness_threshold = self._config.get(SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value)
-        self._dawn_config.after_seconds = self._config.get(SCDawnInput.AFTER_SECONDS_ENTITY.value)
-        self._dawn_config.shutter_max_height = self._config.get(SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value)
-        self._dawn_config.shutter_max_angle = self._config.get(SCDawnInput.SHUTTER_MAX_ANGLE_ENTITY.value)
-        self._dawn_config.shutter_look_through_seconds = self._config.get(SCDawnInput.SHUTTER_LOOK_THROUGH_SECONDS_ENTITY.value)
-        self._dawn_config.shutter_open_seconds = self._config.get(SCDawnInput.SHUTTER_OPEN_SECONDS_ENTITY.value)
-        self._dawn_config.shutter_look_through_angle = self._config.get(SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value)
-        self._dawn_config.height_after_dawn = self._config.get(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value)
-        self._dawn_config.angle_after_dawn = self._config.get(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value)
 
         # Define dictionary with all state handlers
         self._state_handlers: dict[ShutterState, Callable[[], Awaitable[ShutterState]]] = {
