@@ -258,7 +258,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:  #
                 domain = internal_enum.domain
                 if domain == "number":
                     _LOGGER.debug("Setting value of number %s to %s", entity_id, value)
-                    await hass.services.async_call("number", "set_value", {"entity_id": entity_id, "value": value}, blocking=True)
+                    await hass.services.async_call(
+                        "number",
+                        "set_value",
+                        {"entity_id": entity_id, "value": float(value)},  # ← float() Cast!
+                        blocking=True,
+                    )
                 elif domain == "switch":
                     _LOGGER.debug("Setting value of switch %s to %s", entity_id, value)
                     service = "turn_on" if value else "turn_off"
@@ -292,7 +297,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:  #
                     domain = internal_member.domain
                     if domain == "number":
                         _LOGGER.debug("Initializing internal number entity %s with default value %s", entity_id, default_val)
-                        await hass.services.async_call("number", "set_value", {"entity_id": entity_id, "value": default_val})
+                        await hass.services.async_call(
+                            "number",
+                            "set_value",
+                            {"entity_id": entity_id, "value": float(default_val)},  # ← float() Cast!
+                        )
                     elif domain == "switch":
                         service = "turn_on" if default_val else "turn_off"
                         _LOGGER.debug("Initializing internal switch entity %s with default value %s", entity_id, service)
