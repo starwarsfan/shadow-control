@@ -439,21 +439,21 @@ Dieser Eingang hat Vorrang vor [Integration sperren](#integration-sperren). Werd
 Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
 #### Zwangsposition Höhe
-(yaml: `lock_height_manual: true|false` u/o `lock_height_entity: <entity>`)
+(yaml: `lock_height_manual: <Wert>` u/o `lock_height_entity: <entity>`)
 
 Anzufahrende Höhe in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
 Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
 #### Zwangsposition Lamellenwinkel
-(yaml: `lock_angle_manual: true|false` u/o `lock_angle_entity: <entity>`)
+(yaml: `lock_angle_manual: <Wert>` u/o `lock_angle_entity: <entity>`)
 
 Anzufahrender Lamellenwinkel in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
 Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
 #### Höhenveränderung einschränken
-(yaml: `movement_restriction_height_manual: true|false` u/o `movement_restriction_height_entity: <entity>`)
+(yaml: `movement_restriction_height_manual: <siehe-unten>` u/o `movement_restriction_height_entity: <entity>`)
 
 Mit diesem Setting kann die Bewegungsrichtung der Höhenpositionierung wie folgt eingeschränkt werden
 
@@ -469,7 +469,7 @@ Das kann dafür verwendet werden, dass der Behang nach der Beschattung nicht zun
 Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
 #### Winkelveränderung einschränken
-(yaml: `movement_restriction_angle_manual: true|false` u/o `movement_restriction_angle_entity: <entity>`)
+(yaml: `movement_restriction_angle_manual: <siehe-unten>` u/o `movement_restriction_angle_entity: <entity>`)
 
 Siehe [Höhenveränderung einschränken](#höhenveränderung-einschränken), hier nur für den Lamellenwinkel.
 
@@ -500,7 +500,7 @@ Die Beschattungseinstellungen verwenden den Präfix **B&lt;nummer&gt;**, um eine
 Mit dieser Option wird die Beschattungssteuerung ein- oder ausgeschaltet. Standardwert: ein
 
 #### B02 Winter Helligkeitsschwellwert
-(yaml: `shadow_brightness_threshold_winter_manual: true|false` u/o `shadow_brightness_threshold_winter_entity: <entity>`)
+(yaml: `shadow_brightness_threshold_winter_manual: <Wert>` u/o `shadow_brightness_threshold_winter_entity: <entity>`)
 
 Hier wird der Helligkeitsschwellwert in Lux konfiguriert. Wird dieser Wert überschritten, startet der Timer [B05 Schliessen nach x Sekunden](#b05-schliessen-nach-x-sekunden). Standardwert: 30000 
 
@@ -509,12 +509,12 @@ In Verbindung mit dem Parameter [B03 Sommer Helligkeitsschwellwert](#b03-sommer-
 Diese Funktionalität ist aktiv, sobald unter [B03 Sommer Helligkeitsschwellwert](#b03-sommer-helligkeitsschwellwert) ein grösserer Wert als dieser hier konfiguriert wird.
 
 #### B03 Sommer Helligkeitsschwellwert
-(yaml: `shadow_brightness_threshold_summer_manual: true|false` u/o `shadow_brightness_threshold_summer_entity: <entity>`)
+(yaml: `shadow_brightness_threshold_summer_manual: <Wert>` u/o `shadow_brightness_threshold_summer_entity: <entity>`)
 
 Zweiter Wert für die Berechnung der Sinuskurve. Für Details siehe vorherige Option [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert). Default: 50000
 
 #### B04 Schwellwertpuffer Sommer/Winter
-(yaml: `shadow_brightness_threshold_buffer_manual: true|false` u/o `shadow_brightness_threshold_buffer_entity: <entity>`)
+(yaml: `shadow_brightness_threshold_buffer_manual: <Wert>` u/o `shadow_brightness_threshold_buffer_entity: <entity>`)
 
 Dieser Wert wird verwendet, um die Sinuskurve der vorherigen Optionen nach oben zu verschieben, um Fehlauslösungen im Grenzbereich der Beschattung zu vermeiden. Für Details siehe [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert). Default: 1000
 
