@@ -379,6 +379,27 @@ Um den Lichtstreifen aus [Lichtstreifenbreite](#lichtstreifenbreite) zu berechne
 
 Gibt die Dauer der Bewegung von vollständig geschlossen (unten) bis vollständig offen (oben) in Sekunden an. Dieser Wert wird benötigt, um die automatische Instanzsperre korrekt durchzuführen, wenn der Behang manuell bewegt wird.
 
+Bei der Konfiguration der verwendeten Cover-Instanzen ist zu beachten, dass die `travelling_time_up`- und `travelling_time_down`-Werte korrekt angegeben werden müssen! Diese Werte werden von Home Assistant zum Animieren der Slider auf dem UI verwendet und somit wird beim Bewegen des Behangs über die konfigurierte Zeit hinweg stetig hoch bzw. runter gezählt. Das kann unter `Entwicklerwerkzeuge > Zustände` auf der jeweiligen Cover-Entität beobachtet werden. Damit ist das aber auch der Positionswert, welcher als Rückmeldung bei der **Shadow Control** Instanz ankommt. Diese Werte dürfen auf keinen Fall grösser als `facade_max_movement_duration_static` sein! Es empfiehlt sich, die beiden Travelling-Time-Werte auf die gemessene Verfahrzeit des Behangs und `facade_max_movement_duration_static` jeweils zwei bis drei Sekunden länger zu konfigurieren.
+
+Beispiel aus der **Shadow Control** Instanz-Konfiguration:
+```yaml
+  facade_max_movement_duration_static: 35
+```
+
+Beispiel der KNX-Cover-Konfiguration:
+```yaml
+- name: "Fenster Büro West"
+  move_long_address: "1/0/17"
+  move_short_address: "1/0/17"
+  stop_address: "1/1/17"
+  position_address: "1/2/17"
+  position_state_address: "1/3/17"
+  travelling_time_down: 32
+  travelling_time_up: 32
+  angle_address: "1/2/117"
+  angle_state_address: "1/3/117"
+```
+
 #### Toleranz Höhenänderung
 (yaml: `facade_modification_tolerance_height_static`)
 

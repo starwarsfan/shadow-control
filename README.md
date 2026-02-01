@@ -379,6 +379,27 @@ To compute the light strip given with the previous configuration option, the int
 
 Define the movement duration from fully closed (down) to fully open (up) in seconds. This is required to handle automatic instance lock properly in case the shutter position is modified manually.
 
+Within the configuration of the cover instances, it is important to ensure that the `travelling_time_up` and `travelling_time_down` values are specified correctly! These values are used by Home Assistant to animate the sliders on the UI, and thus the countdown is continuously incremented or decremented as the blind moves over the configured time. This can be observed under `Developer Tools > States` on the respective cover entity. This is also the position value that is received as feedback by the **Shadow Control** instance and these values must never be greater than `facade_max_movement_duration_static`! It is recommended to configure the two Travelling Time values to match the measured travel time of the blind and to add two to three seconds to the value at `facade_max_movement_duration_static`.
+
+Example within **Shadow Control** instance configuration:
+```yaml
+  facade_max_movement_duration_static: 35
+```
+
+Example of KNX cover configuration:
+```yaml
+- name: "Fenster Büro West"
+  move_long_address: "1/0/17"
+  move_short_address: "1/0/17"
+  stop_address: "1/1/17"
+  position_address: "1/2/17"
+  position_state_address: "1/3/17"
+  travelling_time_down: 32
+  travelling_time_up: 32
+  angle_address: "1/2/117"
+  angle_state_address: "1/3/117"
+```
+
 #### Tolerance height modification
 (yaml: `facade_modification_tolerance_height_static`)
 
