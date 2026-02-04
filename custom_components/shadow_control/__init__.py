@@ -1518,6 +1518,12 @@ class ShadowControlManager:
         self._shadow_config.brightness_threshold_buffer = self._get_entity_state_value(
             SCShadowInput.BRIGHTNESS_THRESHOLD_BUFFER_ENTITY.value, shadow_brightness_threshold_buffer_value, float
         )
+        self.logger.debug(
+            "Winter: %s, Summer: %s, Buffer: %s",
+            self._shadow_config.brightness_threshold_winter,
+            self._shadow_config.brightness_threshold_summer,
+            self._shadow_config.brightness_threshold_buffer,
+        )
 
         # Calculate adaptive or static brightness threshold
         if self._shadow_config.brightness_threshold_summer > self._shadow_config.brightness_threshold_winter:
@@ -1553,30 +1559,59 @@ class ShadowControlManager:
             if sunrise and sunset:
                 now = dt_util.now()
 
-                # Wenn Sunrise in der Zukunft (morgen), nimm den von heute
-                if sunrise.date() > now.date():
-                    # Berechne Sunrise für heute
-                    sunrise = sunrise.replace(year=now.year, month=now.month, day=now.day)
+                # Convert all times to local timezone for consistent date comparison
+                # This is critical for users in timezones far from UTC (e.g., NZ = UTC+13)
+                # where sunrise/sunset entities might be in UTC but appear to be "tomorrow"
+                sunrise_local = dt_util.as_local(sunrise)
+                sunset_local = dt_util.as_local(sunset)
 
-                # Wenn Sunset in der Vergangenheit (gestern), nimm den von heute
-                if sunset.date() < now.date():
-                    # Berechne Sunset für morgen
-                    sunset = sunset.replace(year=now.year, month=now.month, day=now.day) + timedelta(days=1)
+                self.logger.debug(
+                    "Sun times before normalization: sunrise=%s (local: %s), sunset=%s (local: %s), now=%s",
+                    sunrise,
+                    sunrise_local,
+                    sunset,
+                    sunset_local,
+                    now,
+                )
 
-                # Finale Validierung: Sunset muss nach Sunrise sein
-                if sunset <= sunrise:
+                # Normalize sunrise to "today" if it's currently showing as "tomorrow"
+                # This happens when sunrise entity points to next sunrise (which is tomorrow morning)
+                if sunrise_local.date() > now.date():
+                    self.logger.debug(
+                        "Sunrise is tomorrow (%s), adjusting to today by subtracting 1 day",
+                        sunrise_local.date(),
+                    )
+                    sunrise_local = sunrise_local - timedelta(days=1)
+
+                # Normalize sunset to "tomorrow" if it's currently showing as "yesterday"
+                # This can happen around midnight when sunset entity hasn't updated yet
+                if sunset_local.date() < now.date():
+                    self.logger.debug(
+                        "Sunset is yesterday (%s), adjusting to tomorrow by adding 1 day",
+                        sunset_local.date(),
+                    )
+                    sunset_local = sunset_local + timedelta(days=1)
+
+                self.logger.debug(
+                    "Sun times after normalization: sunrise=%s, sunset=%s",
+                    sunrise_local,
+                    sunset_local,
+                )
+
+                # Final validation: Sunset must be after sunrise
+                if sunset_local <= sunrise_local:
                     self.logger.warning(
                         "Invalid sun times after normalization: sunrise=%s, sunset=%s. Using static winter threshold.",
-                        sunrise,
-                        sunset,
+                        sunrise_local,
+                        sunset_local,
                     )
                     self.brightness_threshold = self._shadow_config.brightness_threshold_winter
                 else:
-                    # Berechne Threshold
+                    # Calculate threshold using local times
                     self.brightness_threshold = self._adaptive_brightness_calculator.calculate_threshold(
                         current_time=now,
-                        sunrise=sunrise,
-                        sunset=sunset,
+                        sunrise=sunrise_local,
+                        sunset=sunset_local,
                         winter_lux=self._shadow_config.brightness_threshold_winter,
                         summer_lux=self._shadow_config.brightness_threshold_summer,
                         buffer=self._shadow_config.brightness_threshold_buffer,
