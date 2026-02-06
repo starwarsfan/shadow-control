@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 550" style="background: white;">
+  <!-- Title -->
+  <text x="400" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#333">
+    Adaptive Helligkeitsschwelle
+  </text>
+  
+  <!-- Three horizontal baseline lines -->
+  <!-- 0 lx line (bottom) -->
+  <line x1="80" y1="480" x2="720" y2="480" stroke="#999" stroke-width="1"/>
+  <text x="40" y="485" font-size="12" fill="#999">0 lx</text>
+  <text x="750" y="485" font-size="11" fill="#999">(ganz dunkel)</text>
+  
+  <!-- Dawn threshold line (middle) -->
+  <line x1="80" y1="440" x2="720" y2="440" stroke="#ff9800" stroke-width="2"/>
+  <text x="40" y="445" font-size="11" fill="#ff9800" font-weight="bold">Dämmerungs-</text>
+  <text x="40" y="458" font-size="11" fill="#ff9800" font-weight="bold">schwellwert</text>
+  
+  <!-- Buffer line (top baseline) -->
+  <line x1="80" y1="400" x2="720" y2="400" stroke="#666" stroke-width="2"/>
+  <text x="40" y="390" font-size="10" fill="#666" font-weight="bold">Puffer</text>
+  <text x="40" y="402" font-size="10" fill="#666">(minimaler</text>
+  <text x="40" y="413" font-size="10" fill="#666">Beschattungs-</text>
+  <text x="40" y="424" font-size="10" fill="#666">schwellwert)</text>
+  
+  <!-- Sine curve (adaptive brightness throughout the day) -->
+  <!-- Starts at sunrise (120, 400) and ends at sunset (680, 400) -->
+  <path d="M 120,400 
+           Q 160,380 200,340
+           Q 240,280 280,220
+           Q 320,170 360,150
+           Q 400,140 440,150
+           Q 480,170 520,220
+           Q 560,280 600,340
+           Q 640,380 680,400"
+        fill="none" stroke="#4a90e2" stroke-width="3"/>
+  
+  <!-- Seasonal variation line (STRAIGHT diagonal) - touches sine curve at peak (400, 140) -->
+  <!-- Calculate line that goes through peak: from winter (left, at buffer level) to summer (right, higher) -->
+  <!-- Line equation: passes through (400, 140) with gentle upward slope -->
+  <line x1="80" y1="175" x2="720" y2="105" stroke="#ff6b6b" stroke-width="2" stroke-dasharray="5,5"/>
+  
+  <!-- Winter threshold label (at left side) -->
+  <text x="85" y="165" font-size="12" fill="#ff6b6b" font-weight="bold">Winter-</text>
+  <text x="85" y="180" font-size="12" fill="#ff6b6b" font-weight="bold">schwellwert</text>
+  
+  <!-- Summer threshold label (at right side top) -->
+  <circle cx="720" cy="105" r="4" fill="#ff6b6b"/>
+  <text x="720" y="90" font-size="12" fill="#ff6b6b" font-weight="bold" text-anchor="end">Sommerschwellwert</text>
+  <text x="720" y="77" font-size="11" fill="#999" text-anchor="end">(Sommersonnenwende)</text>
+  
+  <!-- Sunrise marker - moved right to where curve touches buffer line -->
+  <circle cx="120" cy="400" r="5" fill="#ffa500"/>
+  <text x="120" y="515" font-size="12" fill="#ffa500" text-anchor="middle">Sonnen-</text>
+  <text x="120" y="530" font-size="12" fill="#ffa500" text-anchor="middle">aufgang</text>
+  
+  <!-- Sunset marker - moved left to where curve touches buffer line -->
+  <circle cx="680" cy="400" r="5" fill="#ff6347"/>
+  <text x="680" y="515" font-size="12" fill="#ff6347" text-anchor="middle">Sonnen-</text>
+  <text x="680" y="530" font-size="12" fill="#ff6347" text-anchor="middle">untergang</text>
+  
+  <!-- "Today" marker - at the peak of sine curve where red line touches -->
+  <circle cx="400" cy="140" r="6" fill="#00c851" stroke="white" stroke-width="2"/>
+  <line x1="400" y1="140" x2="400" y2="100" stroke="#00c851" stroke-width="2"/>
+  <text x="400" y="90" font-size="14" fill="#00c851" font-weight="bold" text-anchor="middle">Heute</text>
+  
+  <!-- Legend box - narrower and positioned to not cover curve -->
+  <rect x="570" y="220" width="200" height="140" fill="#f8f9fa" stroke="#ddd" stroke-width="1" rx="5"/>
+  <text x="580" y="240" font-size="13" font-weight="bold" fill="#333">Legende:</text>
+  
+  <line x1="580" y1="255" x2="610" y2="255" stroke="#4a90e2" stroke-width="3"/>
+  <text x="620" y="260" font-size="12" fill="#333">Tägliche Kurve</text>
+  
+  <line x1="580" y1="275" x2="610" y2="275" stroke="#ff6b6b" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="620" y="280" font-size="12" fill="#333">Jahresverlauf</text>
+  
+  <line x1="580" y1="295" x2="610" y2="295" stroke="#666" stroke-width="2"/>
+  <text x="620" y="300" font-size="12" fill="#333">Puffer (Nacht)</text>
+  
+  <line x1="580" y1="315" x2="610" y2="315" stroke="#ff9800" stroke-width="2"/>
+  <text x="620" y="320" font-size="12" fill="#333">Dämmerung</text>
+  
+  <circle cx="595" cy="335" r="4" fill="#00c851"/>
+  <text x="620" y="340" font-size="12" fill="#333">Aktueller Wert</text>
+  
+  <!-- Axis labels -->
+  <text x="400" y="545" font-size="13" fill="#666" text-anchor="middle">Tageszeit</text>
+  <text x="20" y="280" font-size="13" fill="#666" transform="rotate(-90 20 280)">Helligkeitsschwelle (lx)</text>
+  
+  <!-- Time markers -->
+  <text x="200" y="500" font-size="11" fill="#999" text-anchor="middle">Vormittag</text>
+  <text x="400" y="500" font-size="11" fill="#999" text-anchor="middle">Mittag</text>
+  <text x="600" y="500" font-size="11" fill="#999" text-anchor="middle">Nachmittag</text>
+</svg>
