@@ -67,7 +67,7 @@ class SCInternal(Enum):
             SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL,
         ):
             return "select"
-        if self in (SCInternal.ENFORCE_POSITIONING_MANUAL,):
+        if self == SCInternal.ENFORCE_POSITIONING_MANUAL:
             return "button"
         if self in (
             SCInternal.LOCK_HEIGHT_MANUAL,
