@@ -1574,8 +1574,11 @@ class ShadowControlManager:
                     now,
                 )
 
+                # Handle sun_next_rising/sun_next_setting sensors
+                # These sensors always point to NEXT occurrence, so after sunset both are tomorrow
+                # We need to normalize both back to "today" to get today's sun period
+
                 # Normalize sunrise to "today" if it's currently showing as "tomorrow"
-                # This happens when sunrise entity points to next sunrise (which is tomorrow morning)
                 if sunrise_local.date() > now.date():
                     self.logger.debug(
                         "Sunrise is tomorrow (%s), adjusting to today by subtracting 1 day",
@@ -1583,8 +1586,18 @@ class ShadowControlManager:
                     )
                     sunrise_local = sunrise_local - timedelta(days=1)
 
-                # Normalize sunset to "tomorrow" if it's currently showing as "yesterday"
+                # Normalize sunset to "today" if it's currently showing as "tomorrow"
+                # This happens with sun_next_setting sensor after today's sunset has passed
+                if sunset_local.date() > now.date():
+                    self.logger.debug(
+                        "Sunset is tomorrow (%s), adjusting to today by subtracting 1 day",
+                        sunset_local.date(),
+                    )
+                    sunset_local = sunset_local - timedelta(days=1)
+
+                # Legacy normalization: Handle edge case where sunset is "yesterday"
                 # This can happen around midnight when sunset entity hasn't updated yet
+                # (Only relevant for non-next sensors)
                 if sunset_local.date() < now.date():
                     self.logger.debug(
                         "Sunset is yesterday (%s), adjusting to tomorrow by adding 1 day",

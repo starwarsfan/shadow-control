@@ -92,6 +92,22 @@ class AdaptiveBrightnessCalculator:
 
         self._logger.debug("Daily brightness threshold (seasonal): %s lux", day_brightness)
 
+        # Handle sun_next_rising/sun_next_setting sensors
+        # These sensors always point to the NEXT occurrence, so:
+        # - After sunset: both sunrise and sunset are tomorrow
+        # - Before sunrise: sunrise is today, sunset is tomorrow
+        if sunrise > current_time and sunset > current_time:
+            # Both times in future = we're in the night (after sunset or before sunrise)
+            self._logger.debug(
+                "Both sunrise (%s) and sunset (%s) are in the future (current time: %s). "
+                "This indicates we are in the night period. Returning buffer: %s",
+                sunrise,
+                sunset,
+                current_time,
+                effective_buffer,
+            )
+            return effective_buffer
+
         # Check if we're between sunrise and sunset
         if not (sunrise <= current_time <= sunset):
             self._logger.debug(
