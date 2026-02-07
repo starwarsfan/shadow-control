@@ -505,7 +505,7 @@ async def set_entity_state(hass: HomeAssistant, entity_id: str, value: str | flo
         value: New value (state for switches, numeric value for numbers, etc.)
         attributes: Optional attributes dict (currently not used)
     """
-    domain = entity_id.split(".")[0]
+    domain = entity_id.split(".", maxsplit=1)[0]
 
     if domain == "switch":
         # Switches: turn_on/turn_off
