@@ -60,15 +60,14 @@ class AdaptiveBrightnessCalculator:
         # CRITICAL: If dawn is enabled, ensure the sine curve minimum
         # is high enough to keep shadow threshold above dawn at all times
         effective_minimal = minimal
-        if dawn_threshold is not None:
+        if dawn_threshold is not None and minimal < dawn_threshold:
             # Shadow must always be above dawn + safety margin
-            if minimal < dawn_threshold:
-                self._logger.info(
-                    "Adjusting adaptive brightness curve minimum from %.0f lx to dawn threshold %.0f lx.",
-                    minimal,
-                    dawn_threshold,
-                )
-                effective_minimal = dawn_threshold
+            self._logger.info(
+                "Adjusting adaptive brightness curve minimum from %.0f lx to dawn threshold %.0f lx.",
+                minimal,
+                dawn_threshold,
+            )
+            effective_minimal = dawn_threshold
 
         # Validation
         if winter_lux >= summer_lux:
