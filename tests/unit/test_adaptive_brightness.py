@@ -395,12 +395,12 @@ class TestDawnProtection:
             dawn_threshold=5000,
         )
 
-        # Should return dawn + 1000 (safety margin) = 6000
-        assert threshold == 6000
+        # Should return dawn
+        assert threshold == 5000
 
         # Should log the adjustment
         assert "Adjusting adaptive brightness curve minimum" in caplog.text
-        assert "from 1000 lx to 6000 lx" in caplog.text
+        assert "from 1000 lx to dawn threshold 5000 lx" in caplog.text
 
     def test_minimum_never_below_dawn_at_sunrise(self):
         """Test that threshold at sunrise never falls below dawn + safety."""
@@ -410,7 +410,7 @@ class TestDawnProtection:
         sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
 
         dawn_threshold = 5000
-        expected_min = dawn_threshold + 1000  # Safety margin
+        expected_min = dawn_threshold
 
         # Test at sunrise (where sine curve would normally be at minimum)
         threshold = calc.calculate_threshold(
@@ -433,7 +433,7 @@ class TestDawnProtection:
         sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
 
         dawn_threshold = 5000
-        expected_min = dawn_threshold + 1000
+        expected_min = dawn_threshold
 
         # Test multiple times throughout the day
         test_times = [
@@ -531,8 +531,8 @@ class TestDawnProtection:
             dawn_threshold=35000,  # Very high!
         )
 
-        # Should be dawn + 1000 = 36000
-        assert threshold == 36000
+        # Should be dawn
+        assert threshold == 35000
 
     def test_zero_buffer_with_dawn(self):
         """Test that zero buffer works with dawn protection."""
@@ -552,8 +552,8 @@ class TestDawnProtection:
             dawn_threshold=5000,
         )
 
-        # Should use dawn + 1000 = 6000, not 0
-        assert threshold == 6000
+        # Should use dawn
+        assert threshold == 5000
 
 
 class TestDawnThresholdProtection:
@@ -620,12 +620,12 @@ class TestDawnThresholdProtection:
             dawn_threshold=5000,
         )
 
-        # Should return dawn + 1000 (safety margin) = 6000
-        assert threshold == 6000
+        # Should return dawn
+        assert threshold == 5000
 
         # Should log the adjustment
         assert "Adjusting adaptive brightness curve minimum" in caplog.text
-        assert "from 1000 lx to 6000 lx" in caplog.text
+        assert "from 1000 lx to dawn threshold 5000 lx" in caplog.text
 
     def test_minimum_always_above_dawn_at_sunrise(self):
         """Test that threshold at sunrise never falls below dawn + safety."""
@@ -635,7 +635,7 @@ class TestDawnThresholdProtection:
         sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
 
         dawn_threshold = 5000
-        expected_min = dawn_threshold + 1000  # Safety margin
+        expected_min = dawn_threshold
 
         # Test at sunrise (where sine curve is at minimum)
         threshold = calc.calculate_threshold(
@@ -659,7 +659,7 @@ class TestDawnThresholdProtection:
         sunset = datetime(2024, 1, 15, 16, 0, 0, tzinfo=UTC)
 
         dawn_threshold = 5000
-        expected_min = dawn_threshold + 1000
+        expected_min = dawn_threshold
 
         # Test multiple times throughout the day
         times = [
@@ -796,8 +796,8 @@ class TestDawnThresholdProtection:
             dawn_threshold=35000,  # Very high!
         )
 
-        # Should be dawn + 1000 = 36000
-        assert threshold == 36000
+        # Should be dawn
+        assert threshold == 35000
 
     def test_zero_buffer_with_dawn(self):
         """Test that zero buffer works correctly with dawn protection."""
@@ -817,8 +817,8 @@ class TestDawnThresholdProtection:
             dawn_threshold=5000,
         )
 
-        # Should return dawn + 1000 = 6000 (not 0)
-        assert threshold == 6000
+        # Should return dawn
+        assert threshold == 5000
 
 
 if __name__ == "__main__":
