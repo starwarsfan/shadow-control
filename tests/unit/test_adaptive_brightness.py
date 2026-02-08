@@ -395,12 +395,12 @@ class TestDawnProtection:
             dawn_threshold=5000,
         )
 
-        # Should return dawn
-        assert threshold == 5000
+        # Should return dawn + 1lx
+        assert threshold == 5001
 
         # Should log the adjustment
         assert "Adjusting adaptive brightness curve minimum" in caplog.text
-        assert "from 1000 lx to dawn threshold 5000 lx" in caplog.text
+        assert "from 1000 lx to 5001 lx to maintain shadow threshold above dawn" in caplog.text
 
     def test_minimum_never_below_dawn_at_sunrise(self):
         """Test that threshold at sunrise never falls below dawn + safety."""
@@ -532,7 +532,7 @@ class TestDawnProtection:
         )
 
         # Should be dawn
-        assert threshold == 35000
+        assert threshold == 35001
 
     def test_zero_buffer_with_dawn(self):
         """Test that zero buffer works with dawn protection."""
@@ -552,8 +552,8 @@ class TestDawnProtection:
             dawn_threshold=5000,
         )
 
-        # Should use dawn
-        assert threshold == 5000
+        # Should use dawn + 1lx
+        assert threshold == 5001
 
 
 class TestDawnThresholdProtection:
@@ -620,12 +620,12 @@ class TestDawnThresholdProtection:
             dawn_threshold=5000,
         )
 
-        # Should return dawn
-        assert threshold == 5000
+        # Should return dawn + 1lx
+        assert threshold == 5001
 
         # Should log the adjustment
         assert "Adjusting adaptive brightness curve minimum" in caplog.text
-        assert "from 1000 lx to dawn threshold 5000 lx" in caplog.text
+        assert "from 1000 lx to 5001 lx to maintain shadow threshold above dawn" in caplog.text
 
     def test_minimum_always_above_dawn_at_sunrise(self):
         """Test that threshold at sunrise never falls below dawn + safety."""
@@ -797,7 +797,7 @@ class TestDawnThresholdProtection:
         )
 
         # Should be dawn
-        assert threshold == 35000
+        assert threshold == 35001
 
     def test_zero_buffer_with_dawn(self):
         """Test that zero buffer works correctly with dawn protection."""
@@ -817,8 +817,8 @@ class TestDawnThresholdProtection:
             dawn_threshold=5000,
         )
 
-        # Should return dawn
-        assert threshold == 5000
+        # Should return dawn + 1lx
+        assert threshold == 5001
 
 
 if __name__ == "__main__":

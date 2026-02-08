@@ -46,7 +46,7 @@ class AdaptiveBrightnessCalculator:
             sunset: Today's sunset datetime
             winter_lux: Minimum brightness threshold (winter solstice)
             summer_lux: Maximum brightness threshold (summer solstice)
-            minimal: Minimal value for the sine curve
+            minimal: Minimum value of the sine curve (nighttime baseline)
             dawn_threshold: Optional dawn brightness threshold. If provided,
                           ensures shadow threshold stays above dawn throughout the entire day
 
@@ -54,22 +54,25 @@ class AdaptiveBrightnessCalculator:
             Brightness threshold in lux
 
         """
-        # Ensure minmal >= 0
+        # Ensure minimal >= 0
         minimal = max(0, minimal)
 
-        # CRITICAL: If dawn is enabled, ensure the sine curve minimum
+        # CRITICAL: If dawn is enabled, ensure the sine curve minimum (minimal)
         # is high enough to keep shadow threshold above dawn at all times
         effective_minimal = minimal
         if dawn_threshold is not None and minimal < dawn_threshold:
             # Shadow must always be above dawn + safety margin
+            min_minimal = dawn_threshold + 1  # 1 lx safety margin to separate min shadow from dawn culculation wise
             self._logger.info(
-                "Adjusting adaptive brightness curve minimum from %.0f lx to dawn threshold %.0f lx.",
+                "Adjusting adaptive brightness curve minimum from %.0f lx to %.0f lx "
+                "to maintain shadow threshold above dawn threshold (%.0f lx) at all times.",
                 minimal,
+                min_minimal,
                 dawn_threshold,
             )
-            effective_minimal = dawn_threshold
+            effective_minimal = min_minimal
 
-        # Validation
+        # Validation: winter < summer
         if winter_lux >= summer_lux:
             self._logger.warning(
                 "Winter lux (%s) should be lower than summer lux (%s). Using winter_lux for both.",
@@ -88,7 +91,18 @@ class AdaptiveBrightnessCalculator:
 
         self._logger.debug("Daily brightness threshold (seasonal): %s lux", day_brightness)
 
-        # Handle sun_next_rising/sun_next_setting sensors
+        # CRITICAL VALIDATION: Minimal must not exceed daily brightness
+        # This would invert the sine curve (negative amplitude)
+        if effective_minimal > day_brightness:
+            self._logger.info(  # INFO statt WARNING
+                "Minimal threshold (%s lx) exceeds daily brightness (%s lx) due to dawn protection. "
+                "Using minimal as constant threshold throughout the day. This is expected behavior.",
+                effective_minimal,
+                day_brightness,
+            )
+            return effective_minimal
+
+        # CRITICAL FIX: Handle sun_next_rising/sun_next_setting sensors
         # These sensors always point to the NEXT occurrence, so:
         # - After sunset: both sunrise and sunset are tomorrow
         # - Before sunrise: sunrise is today, sunset is tomorrow
