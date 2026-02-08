@@ -56,7 +56,7 @@ BASE_CONFIG = {
                 "shadow_control_enabled_manual": True,
                 "shadow_brightness_threshold_winter_manual": 30000,
                 "shadow_brightness_threshold_summer_manual": 70000,
-                "shadow_brightness_threshold_buffer_manual": 5000,
+                "shadow_brightness_threshold_minimal_manual": 5000,
                 "shadow_after_seconds_manual": 10,
                 "shadow_shutter_max_height_manual": 100,
                 "shadow_shutter_max_angle_manual": 100,

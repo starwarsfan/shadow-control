@@ -34,7 +34,7 @@ class AdaptiveBrightnessCalculator:
         sunset: datetime,
         winter_lux: float,
         summer_lux: float,
-        buffer: float,
+        minimal: float,
         dawn_threshold: float | None = None,
     ) -> float:
         """
@@ -46,7 +46,7 @@ class AdaptiveBrightnessCalculator:
             sunset: Today's sunset datetime
             winter_lux: Minimum brightness threshold (winter solstice)
             summer_lux: Maximum brightness threshold (summer solstice)
-            buffer: Y-axis offset for the sine curve (prevents false triggers)
+            minimal: Minimal value for the sine curve
             dawn_threshold: Optional dawn brightness threshold. If provided,
                           ensures shadow threshold stays above dawn throughout the entire day
 
@@ -54,24 +54,21 @@ class AdaptiveBrightnessCalculator:
             Brightness threshold in lux
 
         """
-        # Ensure buffer >= 0
-        buffer = max(0, buffer)
+        # Ensure minmal >= 0
+        minimal = max(0, minimal)
 
-        # CRITICAL: If dawn is enabled, ensure the sine curve minimum (buffer)
+        # CRITICAL: If dawn is enabled, ensure the sine curve minimum
         # is high enough to keep shadow threshold above dawn at all times
-        effective_buffer = buffer
+        effective_minimal = minimal
         if dawn_threshold is not None:
             # Shadow must always be above dawn + safety margin
-            min_buffer = dawn_threshold + 1000  # 1000 lx safety margin
-            if buffer < min_buffer:
+            if minimal < dawn_threshold:
                 self._logger.info(
-                    "Adjusting adaptive brightness curve minimum from %.0f lx to %.0f lx "
-                    "to maintain shadow threshold above dawn threshold (%.0f lx) at all times.",
-                    buffer,
-                    min_buffer,
+                    "Adjusting adaptive brightness curve minimum from %.0f lx to dawn threshold %.0f lx.",
+                    minimal,
                     dawn_threshold,
                 )
-                effective_buffer = min_buffer
+                effective_minimal = dawn_threshold
 
         # Validation
         if winter_lux >= summer_lux:
@@ -84,8 +81,8 @@ class AdaptiveBrightnessCalculator:
 
         # Validate sun times
         if sunset <= sunrise:
-            self._logger.error("Sunset (%s) must be after sunrise (%s). Returning buffer value.", sunset, sunrise)
-            return effective_buffer
+            self._logger.error("Sunset (%s) must be after sunrise (%s). Returning minimal value.", sunset, sunrise)
+            return effective_minimal
 
         # Get daily brightness based on season
         day_brightness = self._get_day_brightness(current_time, winter_lux, summer_lux)
@@ -100,34 +97,34 @@ class AdaptiveBrightnessCalculator:
             # Both times in future = we're in the night (after sunset or before sunrise)
             self._logger.debug(
                 "Both sunrise (%s) and sunset (%s) are in the future (current time: %s). "
-                "This indicates we are in the night period. Returning buffer: %s",
+                "This indicates we are in the night period. Returning minimal: %s",
                 sunrise,
                 sunset,
                 current_time,
-                effective_buffer,
+                effective_minimal,
             )
-            return effective_buffer
+            return effective_minimal
 
         # Check if we're between sunrise and sunset
         if not (sunrise <= current_time <= sunset):
             self._logger.debug(
-                "Outside sun hours (%s - %s), returning buffer: %s",
+                "Outside sun hours (%s - %s), returning minimal: %s",
                 sunrise.time(),
                 sunset.time(),
-                effective_buffer,
+                effective_minimal,
             )
-            return effective_buffer
+            return effective_minimal
 
         # Calculate sine curve parameters
         period_minutes = (sunset - sunrise).total_seconds() / 60
         minutes_since_sunrise = (current_time - sunrise).total_seconds() / 60
 
         # Sine function: f(x) = a * sin(b * (x - c)) + d
-        # Using effective_buffer ensures the curve minimum stays above dawn threshold
-        amplitude = (day_brightness - effective_buffer) / 2
+        # Using effective_minimal ensures the curve minimum stays above dawn threshold
+        amplitude = (day_brightness - effective_minimal) / 2
         frequency = (2 * math.pi) / period_minutes
         phase_shift = period_minutes / 4  # Peak at solar noon
-        y_offset = amplitude + effective_buffer
+        y_offset = amplitude + effective_minimal
 
         threshold = amplitude * math.sin(frequency * (minutes_since_sunrise - phase_shift)) + y_offset
 

@@ -123,12 +123,12 @@ async def async_setup_entry(
         ShadowControlNumber(
             hass,
             config_entry,
-            key=SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_MANUAL.value,
+            key=SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MINIMAL_MANUAL.value,
             instance_name=sanitized_instance_name,
             logger=instance_logger,
             description=NumberEntityDescription(
-                key=SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_MANUAL.value,
-                name="Shadow brightness threshold buffer",  # default (English) fallback if no translation found
+                key=SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MINIMAL_MANUAL.value,
+                name="Min brightness threshold",  # default (English) fallback if no translation found
                 native_min_value=0.0,
                 native_max_value=5000.0,
                 native_step=10.0,

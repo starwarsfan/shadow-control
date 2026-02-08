@@ -59,7 +59,7 @@ BASE_CONFIG = {
                 "shadow_control_enabled_manual": True,
                 "shadow_brightness_threshold_winter_manual": 30000,
                 "shadow_brightness_threshold_summer_manual": 70000,
-                "shadow_brightness_threshold_buffer_manual": 5000,
+                "shadow_brightness_threshold_minimal_manual": 5000,
                 "shadow_after_seconds_manual": 10,
                 "shadow_shutter_max_height_manual": 100,
                 "shadow_shutter_max_angle_manual": 100,
@@ -257,7 +257,7 @@ async def test_adaptive_brightness_with_dawn_protection(
                     "shadow_control_enabled_manual": True,
                     "shadow_brightness_threshold_winter_manual": 30000,  # Low
                     "shadow_brightness_threshold_summer_manual": 50000,
-                    "shadow_brightness_threshold_buffer_manual": 1000,  # Very low buffer
+                    "shadow_brightness_threshold_minimal_manual": 1000,  # Very low buffer
                     "shadow_after_seconds_manual": 10,
                     "shadow_shutter_max_height_manual": 100,
                     "shadow_shutter_max_angle_manual": 100,
@@ -341,7 +341,7 @@ async def test_adaptive_brightness_no_dawn_uses_buffer(
                     "shadow_control_enabled_manual": True,
                     "shadow_brightness_threshold_winter_manual": 30000,
                     "shadow_brightness_threshold_summer_manual": 50000,
-                    "shadow_brightness_threshold_buffer_manual": 1000,
+                    "shadow_brightness_threshold_minimal_manual": 1000,
                     "shadow_after_seconds_manual": 10,
                     "shadow_shutter_max_height_manual": 100,
                     "shadow_shutter_max_angle_manual": 100,

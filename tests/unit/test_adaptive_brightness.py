@@ -165,7 +165,7 @@ class TestCalculateThreshold:
         sunrise = datetime(2024, 6, 21, 6, 0, 0, tzinfo=UTC)
         sunset = datetime(2024, 6, 21, 20, 0, 0, tzinfo=UTC)
 
-        threshold = calc.calculate_threshold(current, sunrise, sunset, winter_lux=50000, summer_lux=70000, buffer=10000)
+        threshold = calc.calculate_threshold(current, sunrise, sunset, winter_lux=50000, summer_lux=70000, minimal=10000)
 
         assert threshold == 10000
 
@@ -177,7 +177,7 @@ class TestCalculateThreshold:
         sunrise = datetime(2024, 6, 21, 6, 0, 0, tzinfo=UTC)
         sunset = datetime(2024, 6, 21, 20, 0, 0, tzinfo=UTC)
 
-        threshold = calc.calculate_threshold(current, sunrise, sunset, winter_lux=50000, summer_lux=70000, buffer=10000)
+        threshold = calc.calculate_threshold(current, sunrise, sunset, winter_lux=50000, summer_lux=70000, minimal=10000)
 
         assert threshold == 10000
 
@@ -190,7 +190,7 @@ class TestCalculateThreshold:
         sunset = datetime(2024, 6, 21, 20, 0, 0, tzinfo=UTC)
         solar_noon = datetime(2024, 6, 21, 13, 0, 0, tzinfo=UTC)  # Midpoint
 
-        threshold = calc.calculate_threshold(solar_noon, sunrise, sunset, winter_lux=50000, summer_lux=70000, buffer=10000)
+        threshold = calc.calculate_threshold(solar_noon, sunrise, sunset, winter_lux=50000, summer_lux=70000, minimal=10000)
 
         # day_brightness will be ~69781 (1 day from solstice)
         # Peak = day_brightness (not 70000)
@@ -205,7 +205,7 @@ class TestCalculateThreshold:
         sunset = datetime(2024, 6, 21, 20, 0, 0, tzinfo=UTC)
 
         # Test at sunrise (x=0)
-        threshold = calc.calculate_threshold(sunrise, sunrise, sunset, winter_lux=50000, summer_lux=70000, buffer=10000)
+        threshold = calc.calculate_threshold(sunrise, sunrise, sunset, winter_lux=50000, summer_lux=70000, minimal=10000)
 
         # At x=0 the sine curve is at its minimum
         # Result should be close to buffer (10000)
@@ -219,7 +219,7 @@ class TestCalculateThreshold:
         sunrise = datetime(2024, 6, 21, 20, 0, 0, tzinfo=UTC)  # Invalid!
         sunset = datetime(2024, 6, 21, 6, 0, 0, tzinfo=UTC)
 
-        threshold = calc.calculate_threshold(current, sunrise, sunset, winter_lux=50000, summer_lux=70000, buffer=10000)
+        threshold = calc.calculate_threshold(current, sunrise, sunset, winter_lux=50000, summer_lux=70000, minimal=10000)
 
         assert threshold == 10000
         assert "must be after sunrise" in caplog.text
@@ -238,7 +238,7 @@ class TestCalculateThreshold:
             sunset,
             winter_lux=70000,
             summer_lux=50000,
-            buffer=10000,  # Invalid!
+            minimal=10000,  # Invalid!
         )
 
         assert "should be lower than summer lux" in caplog.text
@@ -259,7 +259,7 @@ class TestCalculateThreshold:
             sunset,
             winter_lux=50000,
             summer_lux=70000,
-            buffer=-5000,  # Negative!
+            minimal=-5000,  # Negative!
         )
 
         # Should return 0 (corrected buffer)
@@ -274,11 +274,11 @@ class TestCalculateThreshold:
 
         # 2 hours before noon
         before_noon = datetime(2024, 6, 21, 11, 0, 0, tzinfo=UTC)
-        threshold_before = calc.calculate_threshold(before_noon, sunrise, sunset, winter_lux=50000, summer_lux=70000, buffer=10000)
+        threshold_before = calc.calculate_threshold(before_noon, sunrise, sunset, winter_lux=50000, summer_lux=70000, minimal=10000)
 
         # 2 hours after noon
         after_noon = datetime(2024, 6, 21, 15, 0, 0, tzinfo=UTC)
-        threshold_after = calc.calculate_threshold(after_noon, sunrise, sunset, winter_lux=50000, summer_lux=70000, buffer=10000)
+        threshold_after = calc.calculate_threshold(after_noon, sunrise, sunset, winter_lux=50000, summer_lux=70000, minimal=10000)
 
         # Should be equal (or very close due to rounding)
         assert abs(threshold_before - threshold_after) <= 1
@@ -307,7 +307,7 @@ class TestIntegration:
 
         thresholds = []
         for time, label in times:
-            threshold = calc.calculate_threshold(time, sunrise, sunset, winter_lux=50000, summer_lux=70000, buffer=10000)
+            threshold = calc.calculate_threshold(time, sunrise, sunset, winter_lux=50000, summer_lux=70000, minimal=10000)
             thresholds.append((label, threshold))
 
         # Verify general pattern
@@ -350,7 +350,7 @@ class TestDawnProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,
+            minimal=1000,
             dawn_threshold=None,  # No dawn protection
         )
 
@@ -370,7 +370,7 @@ class TestDawnProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=10000,  # Higher than dawn
+            minimal=10000,  # Higher than dawn
             dawn_threshold=5000,
         )
 
@@ -391,7 +391,7 @@ class TestDawnProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,  # Lower than dawn
+            minimal=1000,  # Lower than dawn
             dawn_threshold=5000,
         )
 
@@ -419,7 +419,7 @@ class TestDawnProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,
+            minimal=1000,
             dawn_threshold=dawn_threshold,
         )
 
@@ -451,7 +451,7 @@ class TestDawnProtection:
                 sunset,
                 winter_lux=30000,
                 summer_lux=50000,
-                buffer=1000,
+                minimal=1000,
                 dawn_threshold=dawn_threshold,
             )
 
@@ -472,7 +472,7 @@ class TestDawnProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,
+            minimal=1000,
             dawn_threshold=5000,
         )
 
@@ -495,7 +495,7 @@ class TestDawnProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,
+            minimal=1000,
             dawn_threshold=None,
         )
 
@@ -506,7 +506,7 @@ class TestDawnProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,
+            minimal=1000,
             dawn_threshold=5000,
         )
 
@@ -527,7 +527,7 @@ class TestDawnProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,
+            minimal=1000,
             dawn_threshold=35000,  # Very high!
         )
 
@@ -548,7 +548,7 @@ class TestDawnProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=0,  # Zero
+            minimal=0,  # Zero
             dawn_threshold=5000,
         )
 
@@ -573,7 +573,7 @@ class TestDawnThresholdProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,
+            minimal=1000,
             dawn_threshold=None,  # No dawn protection
         )
 
@@ -594,7 +594,7 @@ class TestDawnThresholdProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=10000,  # Higher than dawn
+            minimal=10000,  # Higher than dawn
             dawn_threshold=5000,
         )
 
@@ -616,7 +616,7 @@ class TestDawnThresholdProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,  # Lower than dawn
+            minimal=1000,  # Lower than dawn
             dawn_threshold=5000,
         )
 
@@ -644,7 +644,7 @@ class TestDawnThresholdProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,
+            minimal=1000,
             dawn_threshold=dawn_threshold,
         )
 
@@ -677,7 +677,7 @@ class TestDawnThresholdProtection:
                 sunset,
                 winter_lux=30000,
                 summer_lux=50000,
-                buffer=1000,
+                minimal=1000,
                 dawn_threshold=dawn_threshold,
             )
 
@@ -698,7 +698,7 @@ class TestDawnThresholdProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,
+            minimal=1000,
             dawn_threshold=5000,
         )
 
@@ -713,7 +713,7 @@ class TestDawnThresholdProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,
+            minimal=1000,
             dawn_threshold=5000,
         )
 
@@ -735,7 +735,7 @@ class TestDawnThresholdProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,
+            minimal=1000,
             dawn_threshold=5000,
         )
 
@@ -758,7 +758,7 @@ class TestDawnThresholdProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,
+            minimal=1000,
             dawn_threshold=None,
         )
 
@@ -769,7 +769,7 @@ class TestDawnThresholdProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,
+            minimal=1000,
             dawn_threshold=5000,
         )
 
@@ -792,7 +792,7 @@ class TestDawnThresholdProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=1000,
+            minimal=1000,
             dawn_threshold=35000,  # Very high!
         )
 
@@ -813,7 +813,7 @@ class TestDawnThresholdProtection:
             sunset,
             winter_lux=30000,
             summer_lux=50000,
-            buffer=0,  # Zero buffer
+            minimal=0,  # Zero buffer
             dawn_threshold=5000,
         )
 

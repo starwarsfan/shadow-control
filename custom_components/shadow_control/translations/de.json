@@ -144,7 +144,7 @@
           "shadow_control_enabled_entity": "B01 Steuerung aktiv",
           "shadow_brightness_threshold_winter_entity": "B02 Winter Helligkeitsschwellwert",
           "shadow_brightness_threshold_summer_entity": "B03 Sommer Helligkeitsschwellwert",
-          "shadow_brightness_threshold_buffer_entity": "B04 Schwellwertpuffer Sommer/Winter",
+          "shadow_brightness_threshold_minimal_entity": "B04 Minimaler Helligkeitsschwellwert",
           "shadow_after_seconds_entity": "B05 Schliessen nach x Sekunden",
           "shadow_shutter_max_height_entity": "B06 Maximale Behanghöhe",
           "shadow_shutter_max_angle_entity": "B07 Maximaler Lamellenwinkel",
@@ -158,7 +158,7 @@
           "shadow_control_enabled_entity": "De-/Aktivieren der Beschattungssteuerung (via Entität).",
           "shadow_brightness_threshold_winter_entity": "Schwellwert, nach dessen überschreiten die Beschattung im Winter ausgelöst wird (via Entität).",
           "shadow_brightness_threshold_summer_entity": "Schwellwert, nach dessen überschreiten die Beschattung im Sommer ausgelöst wird (via Entität).",
-          "shadow_brightness_threshold_buffer_entity": "Der Puffer verschiebt die gesamte Sinus-Kurve der Berechnung nach oben, um Fehlauslösungen im Grenzbereich der Beschattung zu vermeiden.",
+          "shadow_brightness_threshold_minimal_entity": "Minimaler Schwellwert, welcher bei adaptiver Beschattungssteuerung den tiefsten Punkt der Sinuskurve definiert, welcher bei Sonnenauf- und Sonnenuntergang erreicht wird.",
           "shadow_after_seconds_entity": "Zeit in Sekunden nach überschreiten des Helligkeitsschwellwerts, nach welcher der Behang geschlossen wird (via Entität).",
           "shadow_shutter_max_height_entity": "Maximal anzufahrende Höhe bei Beschattung (via Entität).",
           "shadow_shutter_max_angle_entity": "Maximal anzufahrender Winkel bei Beschattung (via Entität).",
@@ -239,8 +239,8 @@
       "shadow_brightness_threshold_summer_manual": {
         "name": "B03 Sommer Helligkeitsschwellwert"
       },
-      "shadow_brightness_threshold_buffer_manual": {
-        "name": "B04 Schwellwertpuffer Sommer/Winter"
+      "shadow_brightness_threshold_minimal_manual": {
+        "name": "B04 Minimaler Helligkeitsschwellwert"
       },
       "shadow_after_seconds_manual": {
         "name": "B05 Schliessen nach"
@@ -373,8 +373,8 @@
       "shadow_brightness_threshold_summer_entity": {
         "name": "B03 Sommer Helligkeitsschwellwert"
       },
-      "shadow_brightness_threshold_buffer_entity": {
-        "name": "B04 Schwellwertpuffer Sommer/Winter"
+      "shadow_brightness_threshold_minimal_entity": {
+        "name": "B04 Minimaler Helligkeitsschwellwert"
       },
       "shadow_after_seconds_entity": {
         "name": "B05 Schliessen nach"

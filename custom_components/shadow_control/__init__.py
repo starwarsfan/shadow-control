@@ -610,7 +610,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                 new_options.pop(static_key)
                 _LOGGER.info("[%s] Removed deprecated '%s' from configuration.", DOMAIN, static_key)
 
-        # Migrate shadow brightness threshold from single value to winter/summer/buffer
+        # Migrate shadow brightness threshold from single value to winter/summer/minimal
         old_shadow_brightness_key = "shadow_brightness_threshold_entity"
         new_winter_key = SCShadowInput.BRIGHTNESS_THRESHOLD_WINTER_ENTITY.value
 
@@ -620,7 +620,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             new_options[new_winter_key] = old_value
 
             _LOGGER.info(
-                "[%s] Migrated shadow brightness: '%s' (%s) → %s, summer=empty/unset, buffer=empty/unset",
+                "[%s] Migrated shadow brightness: '%s' (%s) → %s, summer=empty/unset, minimal=empty/unset",
                 DOMAIN,
                 old_shadow_brightness_key,
                 old_value,
@@ -710,7 +710,7 @@ class SCShadowControlConfig:
         self.enabled: bool = True
         self.brightness_threshold_winter: float = SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_WINTER_VALUE.value
         self.brightness_threshold_summer: float = SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_SUMMER_VALUE.value
-        self.brightness_threshold_buffer: float = SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_VALUE.value
+        self.brightness_threshold_minimal: float = SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_MINIMAL_VALUE.value
         self.after_seconds: float = SCDefaults.SHADOW_AFTER_SECONDS_VALUE.value
         self.shutter_max_height: float = SCDefaults.SHADOW_SHUTTER_MAX_HEIGHT_VALUE.value
         self.shutter_max_angle: float = SCDefaults.SHADOW_SHUTTER_MAX_ANGLE_VALUE.value
@@ -1506,23 +1506,23 @@ class ShadowControlManager:
             SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value, shadow_brightness_threshold_summer_value, float
         )
 
-        # Shadow Brightness Threshold - Buffer
-        shadow_brightness_threshold_buffer_manual = self.get_internal_entity_id(SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_MANUAL)
-        shadow_brightness_threshold_buffer_value = (
+        # Shadow Brightness Threshold - Minimal
+        shadow_brightness_threshold_minimal_manual = self.get_internal_entity_id(SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MINIMAL_MANUAL)
+        shadow_brightness_threshold_minimal_value = (
             self._get_internal_entity_state_value(
-                shadow_brightness_threshold_buffer_manual, SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_VALUE.value, float
+                shadow_brightness_threshold_minimal_manual, SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_MINIMAL_VALUE.value, float
             )
-            if shadow_brightness_threshold_buffer_manual
-            else SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_BUFFER_VALUE.value
+            if shadow_brightness_threshold_minimal_manual
+            else SCDefaults.SHADOW_BRIGHTNESS_THRESHOLD_MINIMAL_VALUE.value
         )
-        self._shadow_config.brightness_threshold_buffer = self._get_entity_state_value(
-            SCShadowInput.BRIGHTNESS_THRESHOLD_BUFFER_ENTITY.value, shadow_brightness_threshold_buffer_value, float
+        self._shadow_config.brightness_threshold_minimal = self._get_entity_state_value(
+            SCShadowInput.BRIGHTNESS_THRESHOLD_MINIMAL_ENTITY.value, shadow_brightness_threshold_minimal_value, float
         )
         self.logger.debug(
-            "Winter: %s, Summer: %s, Buffer: %s",
+            "Winter: %s, Summer: %s, Min: %s",
             self._shadow_config.brightness_threshold_winter,
             self._shadow_config.brightness_threshold_summer,
-            self._shadow_config.brightness_threshold_buffer,
+            self._shadow_config.brightness_threshold_minimal,
         )
 
         # Calculate adaptive or static brightness threshold
@@ -1627,7 +1627,7 @@ class ShadowControlManager:
                         sunset=sunset_local,
                         winter_lux=self._shadow_config.brightness_threshold_winter,
                         summer_lux=self._shadow_config.brightness_threshold_summer,
-                        buffer=self._shadow_config.brightness_threshold_buffer,
+                        minimal=self._shadow_config.brightness_threshold_minimal,
                         dawn_threshold=self._dawn_config.brightness_threshold,
                     )
             else:
