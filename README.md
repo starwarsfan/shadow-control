@@ -184,7 +184,7 @@ The sun reaches its highest point at the summer solstice. This occurs annually o
 
 In the next step, a sine curve is calculated between sunrise and sunset, reaching its highest point at the determined daily maximum. The configured minimum brightness threshold is used as the lowest point of the sine curve and thus as the lowest shading threshold. This value cannot be lower than the [D02 Threshold](#d02-threshold).
 
-The configuration options for this feature are [S02 Winter threshold](#s02-winter-threshold), [S03 Summer threshold](#s03-summer-threshold) and [S04 Threshold buffer summer/winter](#s04-threshold-buffer-summerwinter).
+The configuration options for this feature are [S02 Winter threshold](#s02-winter-threshold), [S03 Summer threshold](#s03-summer-threshold) and [S04 Min brightness threshold](#s04-min-brightness-threshold).
 
 
 
