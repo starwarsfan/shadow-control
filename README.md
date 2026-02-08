@@ -21,9 +21,9 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
 * [Introduction](#introduction)
   * [TL;DR – in short](#tldr--in-short)
   * [What it does - long version](#what-it-does---long-version)
-  * [Adaptive brightness control](#adaptive-brightness-control)
   * [Operating modes](#operating-modes)
   * [Entity precedence](#entity-precedence)
+  * [Adaptive brightness control](#adaptive-brightness-control)
 * [Installation](#installation)
 * [Configuration](#configuration)
   * [Initial instance configuration](#initial-instance-configuration)
@@ -73,7 +73,7 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
       * [S01 Control](#s01-control-enabled)
       * [S02 Winter threshold](#s02-winter-threshold)
       * [S03 Summer threshold](#s03-summer-threshold)
-      * [S04 Threshold buffer summer/winter](#s04-threshold-buffer-summerwinter)
+      * [S04 Min brightness threshold](#s04-min-brightness-threshold)
       * [S05 after seconds](#s05-after-seconds)
       * [S06 max height](#s06-max-height)
       * [S07 max angle](#s07-max-angle)
@@ -143,18 +143,6 @@ The determined shutter height and tilt angle depend on the current brightness, c
 
 
 
-## Adaptive brightness control
-
-_Note: The functionality of the adaptive brightness threshold is based on Edomi-LBS 19001445 by Hardy Köpf (harry7922). Thank you!_
-
-Between sunrise and sunset, a brightness threshold is calculated using a sine curve with a daily maximum value. This daily maximum value is determined using a linear formula. This serves to compensate for the variance in brightness between winter and summer.
-
-The sun reaches its highest point at the summer solstice. This occurs annually on June 21st in the Northern Hemisphere and on December 21st in the Southern Hemisphere. **Shadow Control** determines whether the Home Assistant instance is located in the Northern or Southern Hemisphere based on its geographic coordinates. Using the summer solstice date, a daily brightness threshold is calculated via a linear formula. In midsummer, clear skies and sunshine are only considered present at a higher LUX value, while in winter, significantly lower LUX levels are required. The lower and upper limits define the variance between winter and summer. This allows for user-defined brightness levels in midsummer and winter to trigger shading. The daily maximum brightness is then calculated using a linear function between these two values. The lowest point of the sine curve, and therefore the lowest shading threshold, is the configured dawn threshold plus a safety margin.
-
-The configuration options for this feature are [S02 Winter threshold](#s02-winter-threshold), [S03 Summer threshold](#s03-summer-threshold) and [S04 Threshold buffer summer/winter](#s04-threshold-buffer-summerwinter).
-
-
-
 ## Operating modes
 
 In general, there are two different operation modes: _Shadow_ and _Dawn_. Both modes will be configured independently.
@@ -181,6 +169,22 @@ The configured cover entity will only be updated if a value has changed since th
 
 ## Entity precedence
 Attention: For all options the configured entity variant takes precedence! That means if a entity is configured, the entity value will be used. Additionally the internal entity for this option will be removed. To prevent this, you need to clear the entity configuration.
+
+
+
+## Adaptive brightness control
+
+_Note: The functionality of the adaptive brightness threshold is based on Edomi-LBS 19001445 by Hardy Köpf (harry7922). Thank you!_
+
+Between sunrise and sunset, a brightness threshold is calculated using a sine curve with a daily maximum value. This daily maximum value is determined using a linear formula. This serves to compensate for the variance in brightness between winter and summer.
+
+![Schema adaptive brightness](/images/adaptive_brightness_diagram.svg)
+
+The sun reaches its highest point at the summer solstice. This occurs annually on June 21st in the Northern Hemisphere and on December 21st in the Southern Hemisphere. **Shadow Control** determines whether the Home Assistant instance is located in the Northern or Southern Hemisphere based on its geographic coordinates. Using the summer solstice date, a linear formula calculates a maximum brightness threshold for the current day, falling between the winter and summer thresholds. In midsummer, a higher LUX value is required for clear skies and sunshine, while in winter, significantly lower LUX values are necessary. These winter and summer thresholds define the difference between these two conditions. This allows users to define the maximum brightness levels needed to trigger shading in midsummer and winter.
+
+In the next step, a sine curve is calculated between sunrise and sunset, reaching its highest point at the determined daily maximum. The configured minimum brightness threshold is used as the lowest point of the sine curve and thus as the lowest shading threshold. This value cannot be lower than the [D02 Threshold](#d02-threshold).
+
+The configuration options for this feature are [S02 Winter threshold](#s02-winter-threshold), [S03 Summer threshold](#s03-summer-threshold) and [S04 Threshold buffer summer/winter](#s04-threshold-buffer-summerwinter).
 
 
 
@@ -526,21 +530,25 @@ With this option, the whole shadow handling could be de-/activated. Default: on
 #### S02 Winter threshold
 (yaml: `shadow_brightness_threshold_winter_manual: <value>` u/o `shadow_brightness_threshold_winter_entity: <entity>`)
 
+##### Constant shading control
 This is the brightness threshold in Lux. If the threshold is exceeded, the timer `shadow_after_seconds` is started. Default: 30000 
 
-Together with the parameters [S03 Summer threshold](#s03-summer-threshold) and [S04 Threshold buffer summer/winter](#s04-threshold-buffer-summerwinter) the brightness difference between summer and winter could be handled. To do so, a sine curve between the two threshold values is computed, where the top of the curve is at summer solstice. Northern and Southern Hemisphere will be handled according to the location of the Home Assistant instance. The sine value for the current day is used as the effective brightness threshold.
+##### Adaptive shading control
+Together with the parameters [S03 Summer threshold](#s03-summer-threshold) and [S04 Min brightness threshold](#s04-min-brightness-threshold) the brightness difference between summer and winter could be handled. To activate this functionality, the value of [S03 Summer threshold](#s03-summer-threshold) must be configured with a greater value than this one.
 
-This functionality will be used as soon as the value of [S03 Summer threshold](#s03-summer-threshold) is configured with a greater value than this one.
+See the description of the functionality at [Adaptive brightness control](#adaptive-brightness-control).
 
 #### S03 Summer threshold
 (yaml: `shadow_brightness_threshold_summer_manual: <value>` u/o `shadow_brightness_threshold_summer_entity: <entity>`)
 
-Second value for sine curve computation. For details see previous option [S02 Winter threshold](#s02-winter-threshold). Default: 50000
+Second value for sine curve computation. For details see section [Adaptive brightness control](#adaptive-brightness-control). Default: 50000
 
-#### S04 Threshold buffer summer/winter
-(yaml: `shadow_brightness_threshold_buffer_manual: <value>` u/o `shadow_brightness_threshold_buffer_entity: <entity>`)
+#### S04 Min brightness threshold
+(yaml: `shadow_brightness_threshold_minimal_manual: <value>` u/o `shadow_brightness_threshold_minimal_entity: <entity>`)
 
-This value is used to shift the entire sine curve from the previous two options upwards to avoid false triggers in the limiting range of shading. For details see [S02 Winter threshold](#s02-winter-threshold). Default: 1000
+This value defines the lowest point of the sine curve of the adaptive shading control, which is reached at sunrise and sunset. The value must not be lower than the twilight threshold and is therefore corrected accordingly if necessary. 
+
+For details see section [Adaptive brightness control](#adaptive-brightness-control). Default: 20000
 
 #### S05 after seconds
 (yaml: `shadow_after_seconds_manual: <value>` u/o `shadow_after_seconds_entity: <entity>`)
@@ -747,8 +755,8 @@ shadow_control:
     #shadow_brightness_threshold_winter_manual: 30000
     #shadow_brightness_threshold_summer_entity:
     #shadow_brightness_threshold_summer_manual: 50000
-    #shadow_brightness_threshold_buffer_entity:
-    #shadow_brightness_threshold_buffer_manual: 1000
+    #shadow_brightness_threshold_minimal_entity:
+    #shadow_brightness_threshold_minimal_manual: 20000
     #shadow_after_seconds_entity:
     shadow_after_seconds_manual: 15
     #shadow_shutter_max_height_entity:

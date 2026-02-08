@@ -21,9 +21,9 @@ Go to the [English version](/README.md) version of the documentation.
 * [Einführung](#einführung)
   * [TL;DR – Kurzform](#tldr--kurzform)
   * [Beschreibung – Langform](#beschreibung--langform)
-  * [Adaptiver Helligkeitsschwellwert](#adaptiver-helligkeitsschwellwert)
   * [Betriebsarten](#betriebsarten)
   * [Entitäten-Vorrang](#entitäten-vorrang)
+  * [Adaptiver Helligkeitsschwellwert](#adaptiver-helligkeitsschwellwert)
 * [Installation](#installation)
 * [Konfiguration](#konfiguration)
   * [Initiale Instanzkonfiguration](#initiale-instanzkonfiguration)
@@ -73,7 +73,7 @@ Go to the [English version](/README.md) version of the documentation.
       * [B01 Steuerung aktiv](#b01-steuerung-aktiv)
       * [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert)
       * [B03 Sommer Helligkeitsschwellwert](#b03-sommer-helligkeitsschwellwert)
-      * [B04 Schwellwertpuffer Sommer/Winter](#b04-schwellwertpuffer-sommerwinter)
+      * [B04 Minimaler Helligkeitsschwellwert](#b04-minimaler-helligkeitsschwellwert)
       * [B05 Schliessen nach x Sekunden](#b05-schliessen-nach-x-sekunden)
       * [B06 Maximale Behanghöhe](#b06-maximale-behanghöhe)
       * [B07 Maximaler Lamellenwinkel](#b07-maximaler-lamellenwinkel)
@@ -143,18 +143,6 @@ Die berechnete Behanghöhe sowie der Lamellenwinkel hängen von der momentanen H
 
 
 
-## Adaptiver Helligkeitsschwellwert
-
-_Hinweis: Die Funktionalität des adaptiven Helligkeitsschwellwertes basiert auf dem Edomi-LBS 19001445 von Hardy Köpf (harry7922). Vielen Dank!_
-
-Zwischen dem Sonnenaufgang und Sonnenuntergang wird eine Helligkeitsschwelle über eine Sinus-Kurve mit einem Tageshöchstwert berechnet. Der Tageshöchstwert wird dabei über eine lineare Formel ermittelt. Dies dient dazu, die Varianz der Helligkeit zwischen Winter und Sommer auszugleichen. 
-
-Zur Sommersonnenwende steht die Sonne am höchsten. Das ist auf der Nordhalbkugel jährlich am 21.06. bzw. auf der Südhalbkugel am 21.12. der Fall. **Shadow Control** ermittelt aus den Geo-Koordinaten der Home Assistant-Instanz, ob sich diese auf der Nord- oder der Südhalbkugel befindet. Ausgehend von der verwendeten Sommersonnenwende wird über eine lineare Formel ein tagesaktueller Helligkeits-Schwellwert ermittelt. Im Hochsommer ist erst ab einem höheren LUX-Wert der Himmel klar und Sonnenschein, im Winter ist das bei bereits deutlich weniger LUX der Fall. Die Untergrenze und Obergrenze definieren dabei die Varianz zwischen Winter und Sommer. Somit wird benutzerspezifisch definiert, welche Helligkeit im Hochsommer und welche Helligkeit im Winter benötigt wird, damit um die Beschattung auszulösen. Zwischen diesen beiden Werten wird über eine lineare Funktion der tagesaktuelle Höchstwert ermittelt. Als niedrigster Punkt der Sinuskurve und damit als niedrigster Schwellwert der Beschattung, wird der konfigurierte Dämmerungsschwellwert zuzüglich einem Sicherheitspuffer verwendet.
-
-Die Konfigurationsoptionen dazu sind [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert), [B03 Sommer Helligkeitsschwellwert](#b03-sommer-helligkeitsschwellwert) und [B04 Schwellwertpuffer Sommer/Winter](#b04-schwellwertpuffer-sommerwinter).
-
-
-
 ## Betriebsarten
 
 Grundsätzlich gibt es zwei Betriebsarten: _Beschattung_ und _Dämmerung_, welche unabhängig voneinander eingerichtet werden.
@@ -181,6 +169,22 @@ Der konfigurierte Behang wird nur dann neu positioniert, wenn sich die berechnet
 
 ## Entitäten-Vorrang
 Achtung: Bei allen Optionen hat die Entity-Verknüpfung Vorrang! Das bedeutet, dass sobald eine Entität konfiguriert wird, wird deren Wert verwendet. Ausserdem werden die internen Entitäten aus dem System entfernt. Um die internen Entitäten wiederzuverwenden, muss die Entity-Verknüpfung gelöscht werden.
+
+
+
+## Adaptiver Helligkeitsschwellwert
+
+_Hinweis: Die Funktionalität des adaptiven Helligkeitsschwellwertes basiert auf dem Edomi-LBS 19001445 von Hardy Köpf (harry7922). Vielen Dank!_
+
+Zwischen dem Sonnenaufgang und Sonnenuntergang wird eine Helligkeitsschwelle über eine Sinus-Kurve mit einem Tageshöchstwert berechnet. Der Tageshöchstwert wird dabei über eine lineare Formel ermittelt. Dies dient dazu, die Varianz der Helligkeit zwischen Winter und Sommer auszugleichen.
+
+![Schemaskizze adaptive Helligkeitssteuerung](/images/adaptive_brightness_diagram.svg)
+
+Zur Sommersonnenwende steht die Sonne am höchsten. Das ist auf der Nordhalbkugel jährlich am 21.06. bzw. auf der Südhalbkugel am 21.12. der Fall. **Shadow Control** ermittelt aus den Geo-Koordinaten der Home Assistant-Instanz, ob sich diese auf der Nord- oder der Südhalbkugel befindet. Ausgehend von der verwendeten Sommersonnenwende wird über eine lineare Formel für den heutigen Tag ein maximaler Helligkeits-Schwellwert zwischen dem Winter- und dem Sommerschwellwert ermittelt. Im Hochsommer ist erst ab einem höheren LUX-Wert der Himmel klar und Sonnenschein, im Winter ist das bei bereits deutlich weniger LUX der Fall. Die Winter- und Sommerschwellwert definieren dabei die Varianz zwischen Winter und Sommer. Somit wird benutzerspezifisch definiert, welche maximale Helligkeit im Hochsommer und welche maximale Helligkeit im Winter benötigt wird, um die Beschattung auszulösen. 
+
+Im nächsten Schritt wird zwischen Sonnenaufgang und Sonnenuntergang eine Sinus-Kurve berechnet, welche am ermittelten Tageshöchstwert ihren höchsten Punkt erreicht. Als niedrigster Punkt der Sinuskurve und damit als niedrigster Schwellwert der Beschattung, wird der konfigurierte minimale Helligkeitsschwellwert verwendet. Dieser Wert kann nicht kleiner als der [D02 Dämmerungsschwellwert](#d02-dämmerungsschwellwert) sein.
+
+Die Konfigurationsoptionen dazu sind [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert), [B03 Sommer Helligkeitsschwellwert](#b03-sommer-helligkeitsschwellwert) und [B04 Schwellwertpuffer Sommer/Winter](#b04-schwellwertpuffer-sommerwinter).
 
 
 
@@ -523,21 +527,25 @@ Mit dieser Option wird die Beschattungssteuerung ein- oder ausgeschaltet. Standa
 #### B02 Winter Helligkeitsschwellwert
 (yaml: `shadow_brightness_threshold_winter_manual: <Wert>` u/o `shadow_brightness_threshold_winter_entity: <entity>`)
 
+##### Konstante Beschattungssteuerung
 Hier wird der Helligkeitsschwellwert in Lux konfiguriert. Wird dieser Wert überschritten, startet der Timer [B05 Schliessen nach x Sekunden](#b05-schliessen-nach-x-sekunden). Standardwert: 30000 
 
-In Verbindung mit dem Parameter [B03 Sommer Helligkeitsschwellwert](#b03-sommer-helligkeitsschwellwert) and [B04 Schwellwertpuffer Sommer/Winter](#b04-schwellwertpuffer-sommerwinter) kann der Helligkeitsunterschied zwischen Sommer und Winter ausgeglichen werden. Dafür wird eine Sinuskurve zwischen diesen beiden Helligkeitswerten berechnet, deren Höhepunkt am Zeitpunkt der Sommersonnenwende ist. Nördliche und südliche Hemisphere wird dabei anhand der Geo-Koordinaten der Home Assistant Instanz berücksichtigt. Der Sinuswert des heutigen Tages wird dann als effektiver Schwellwert verwendet.
+##### Adaptive Beschattungssteuerung
+In Verbindung mit dem Parameter [B03 Sommer Helligkeitsschwellwert](#b03-sommer-helligkeitsschwellwert) and [B04 Minimaler Helligkeitsschwellwert](#b04-minimaler-helligkeitsschwellwert) kann der Helligkeitsunterschied zwischen Sommer und Winter ausgeglichen werden. Um diese Funktionalität zu aktivieren, muss der [B03 Sommer Helligkeitsschwellwert](#b03-sommer-helligkeitsschwellwert) auf einen grösseren Wert als der Winterschwellwert konfiguriert werden. 
 
-Diese Funktionalität ist aktiv, sobald unter [B03 Sommer Helligkeitsschwellwert](#b03-sommer-helligkeitsschwellwert) ein grösserer Wert als dieser hier konfiguriert wird.
+Beschreibung der Funktionalität siehe [Adaptiver Helligkeitsschwellwert](#adaptiver-helligkeitsschwellwert).
 
 #### B03 Sommer Helligkeitsschwellwert
 (yaml: `shadow_brightness_threshold_summer_manual: <Wert>` u/o `shadow_brightness_threshold_summer_entity: <entity>`)
 
-Zweiter Wert für die Berechnung der Sinuskurve. Für Details siehe vorherige Option [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert). Default: 50000
+Zweiter Wert für die Adaptive Beschattungssteuerung. Beschreibung der Funktionalität siehe [Adaptiver Helligkeitsschwellwert](#adaptiver-helligkeitsschwellwert). Default: 50000
 
-#### B04 Schwellwertpuffer Sommer/Winter
-(yaml: `shadow_brightness_threshold_buffer_manual: <Wert>` u/o `shadow_brightness_threshold_buffer_entity: <entity>`)
+#### B04 Minimaler Helligkeitsschwellwert
+(yaml: `shadow_brightness_threshold_minimal_manual: <Wert>` u/o `shadow_brightness_threshold_minimal_entity: <entity>`)
 
-Dieser Wert wird verwendet, um die Sinuskurve der vorherigen Optionen nach oben zu verschieben, um Fehlauslösungen im Grenzbereich der Beschattung zu vermeiden. Für Details siehe [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert). Default: 1000
+Dieser Wert definiert den tiefsten Punkt der Sinuskurve, der Adaptiven Beschattungssteuerung, welcher am Sonnenaufgang und Sonnenuntergang erreicht wird. Der Wert darf nicht kleiner als der Dämmerungsschwellwert sein und wird daher ggf. entsprechend korrigiert.
+
+Beschreibung der Funktionalität siehe [Adaptiver Helligkeitsschwellwert](#adaptiver-helligkeitsschwellwert). Default: 20000
 
 #### B05 Schliessen nach x Sekunden
 (yaml: `shadow_after_seconds_manual: <Wert>` u/o `shadow_after_seconds_entity: <entity>`)
@@ -744,8 +752,8 @@ shadow_control:
     #shadow_brightness_threshold_winter_manual: 30000
     #shadow_brightness_threshold_summer_entity:
     #shadow_brightness_threshold_summer_manual: 50000
-    #shadow_brightness_threshold_buffer_entity:
-    #shadow_brightness_threshold_buffer_manual: 1000
+    #shadow_brightness_threshold_minimal_entity:
+    #shadow_brightness_threshold_minimal_manual: 20000
     #shadow_after_seconds_entity:
     shadow_after_seconds_manual: 15
     #shadow_shutter_max_height_entity:
