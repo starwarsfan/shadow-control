@@ -204,11 +204,11 @@ async def test_adaptive_brightness_with_different_winter_summer(
     threshold = await get_brightness_threshold(hass)
     assert threshold is not None, "Threshold sensor should exist"
 
-    # Threshold should be somewhere between winter and summer (or buffer if outside sun hours)
+    # Threshold should be somewhere between winter and summer (or minimal if outside sun hours)
     assert (
-        threshold == 5000  # Buffer (outside sun hours)
+        threshold == 5000  # Minimal (outside sun hours)
         or (30000 <= threshold <= 70000)  # Within winter-summer range
-    ), f"Threshold {threshold} should be buffer (5000) or in range 30000-70000"
+    ), f"Threshold {threshold} should be minimal (5000) or in range 30000-70000"
 
     _LOGGER.info("Dynamic brightness threshold: %s lux", threshold)
 
@@ -257,13 +257,13 @@ async def test_adaptive_brightness_with_dawn_protection(
                     "shadow_control_enabled_manual": True,
                     "shadow_brightness_threshold_winter_manual": 30000,  # Low
                     "shadow_brightness_threshold_summer_manual": 50000,
-                    "shadow_brightness_threshold_minimal_manual": 1000,  # Very low buffer
+                    "shadow_brightness_threshold_minimal_manual": 1000,  # Very low
                     "shadow_after_seconds_manual": 10,
                     "shadow_shutter_max_height_manual": 100,
                     "shadow_shutter_max_angle_manual": 100,
-                    # Dawn configuration with HIGHER threshold than buffer
+                    # Dawn configuration with HIGHER threshold than minimal shadow threshold
                     "dawn_control_enabled_manual": True,
-                    "dawn_brightness_threshold_manual": 5000,  # Higher than buffer!
+                    "dawn_brightness_threshold_manual": 5000,  # Higher than minimal shadow threshold!
                     "dawn_after_seconds_manual": 10,
                     "dawn_shutter_max_height_manual": 100,
                     "dawn_shutter_max_angle_manual": 100,
@@ -295,16 +295,16 @@ async def test_adaptive_brightness_with_dawn_protection(
     # This test verifies that the sensor exists and has a valid value
     # The actual dawn protection is tested in unit tests
     assert threshold > 0, "Threshold should be positive"
-    assert threshold >= 1000, "Threshold should be at least buffer value"
+    assert threshold >= 1000, "Threshold should be at least minimal value"
 
 
-async def test_adaptive_brightness_no_dawn_uses_buffer(
+async def test_adaptive_brightness_no_dawn_uses_minimal_shadow_threshold(
     hass: HomeAssistant,
     setup_from_user_config,
     time_travel,
     caplog,
 ):
-    """Test that without dawn, original buffer is used."""
+    """Test that without dawn, minimal shadow threshold is used."""
     config = {
         DOMAIN: [
             {
