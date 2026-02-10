@@ -1008,7 +1008,6 @@ class ShadowControlManager:
         # Will be called after instantiation of the manager.
         self.logger.info("=== Starting manager lifecycle ===")
         self._async_register_listeners()
-        self._check_travelling_time_configuration()
         await self.async_calculate_and_apply_cover_position(None)
 
         if self._is_initial_run:
@@ -3946,95 +3945,6 @@ class ShadowControlManager:
             self.logger.debug("Positioning in progress: %.1fs elapsed of %.1fs timer", elapsed, grace_period)
 
         return is_in_progress
-
-    def _check_travelling_time_configuration(self) -> None:
-        """
-        Check if travelling_time is configured correctly for KNX covers.
-
-        Warns if travelling_time_down/up is greater than or equal to max_movement_duration,
-        which can cause false auto-lock triggers because HA interpolation continues after
-        the Shadow Control timer expires.
-
-        Correct configuration:
-        - travelling_time should be LESS than max_movement_duration
-        - Recommended: max_movement_duration = real_movement_time + 5s safety margin
-        - travelling_time should match or exceed real_movement_time for accurate interpolation
-        """
-        max_duration = self._facade_config.max_movement_duration
-
-        # Skip if max_movement_duration is not configured or invalid
-        if max_duration is None or max_duration <= 0:
-            return
-
-        for cover_entity_id in self._target_cover_entity_id:
-            cover_state = self.hass.states.get(cover_entity_id)
-
-            if not cover_state:
-                self.logger.debug("Cover entity '%s' not found, skipping travelling_time check", cover_entity_id)
-                continue
-
-            attrs = cover_state.attributes
-
-            # Get travelling_time attributes (KNX covers)
-            travelling_down = attrs.get("travelling_time_down")
-            travelling_up = attrs.get("travelling_time_up")
-
-            # Skip if no travelling_time configured (not a KNX cover or similar)
-            if travelling_down is None and travelling_up is None:
-                self.logger.debug("Cover '%s' has no travelling_time attributes, skipping check", cover_entity_id)
-                continue
-
-            # Check travelling_time_down
-            if travelling_down is not None:
-                if travelling_down > max_duration:
-                    self.logger.warning(
-                        "⚠️ CONFIGURATION WARNING: Cover '%s' has travelling_time_down (%ss) "
-                        "> %s (%ss). This WILL cause false auto-lock triggers! "
-                        "Reason: HA interpolation continues after Shadow Control timer expires. "
-                        "Fix: Set max movement duration to at least %ss (travelling_time + 3s safety margin).",
-                        cover_entity_id,
-                        travelling_down,
-                        SCFacadeConfig2.MAX_MOVEMENT_DURATION_STATIC.value,
-                        max_duration,
-                        travelling_down + 3,
-                    )
-                elif travelling_down == max_duration:
-                    self.logger.warning(
-                        "⚠️ CONFIGURATION WARNING: Cover '%s' has travelling_time_down (%ss) "
-                        "== %s (%ss). This might cause false auto-lock triggers! "
-                        "Recommended: Set max movement duration to %ss (add 3s safety margin).",
-                        cover_entity_id,
-                        travelling_down,
-                        SCFacadeConfig2.MAX_MOVEMENT_DURATION_STATIC.value,
-                        max_duration,
-                        travelling_down + 3,
-                    )
-
-            # Check travelling_time_up
-            if travelling_up is not None:
-                if travelling_up > max_duration:
-                    self.logger.warning(
-                        "⚠️ CONFIGURATION WARNING: Cover '%s' has travelling_time_up (%ss) "
-                        "> %s (%ss). This WILL cause false auto-lock triggers! "
-                        "Reason: HA interpolation continues after Shadow Control timer expires. "
-                        "Fix: Set max movement duration to at least %ss (travelling_time + 3s safety margin).",
-                        cover_entity_id,
-                        travelling_up,
-                        SCFacadeConfig2.MAX_MOVEMENT_DURATION_STATIC.value,
-                        max_duration,
-                        travelling_up + 3,
-                    )
-                elif travelling_up == max_duration:
-                    self.logger.warning(
-                        "⚠️ CONFIGURATION WARNING: Cover '%s' has travelling_time_up (%ss) "
-                        "== %s (%ss). This might cause false auto-lock triggers! "
-                        "Recommended: Set max movement duration to %ss (add 3s safety margin).",
-                        cover_entity_id,
-                        travelling_up,
-                        SCFacadeConfig2.MAX_MOVEMENT_DURATION_STATIC.value,
-                        max_duration,
-                        travelling_up + 3,
-                    )
 
     async def _check_positioning_completed(self) -> None:
         """
