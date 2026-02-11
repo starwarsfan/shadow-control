@@ -792,6 +792,7 @@ class ShadowControlManager:
         )
         self._handle_movement_restriction()
         self._dynamic_config.enforce_positioning_entity = self._config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value)
+        self._dynamic_config.unlock_integration_entity = self._config.get(SCDynamicInput.UNLOCK_INTEGRATION_ENTITY.value)
 
         # === Get general facade configuration
         self._facade_config.azimuth = self._config.get(SCFacadeConfig1.AZIMUTH_STATIC.value)
@@ -1040,7 +1041,6 @@ class ShadowControlManager:
             SCDynamicInput.SUN_ELEVATION_ENTITY,
             SCDynamicInput.SUN_AZIMUTH_ENTITY,
             SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY,
-            SCDynamicInput.ENFORCE_POSITIONING_ENTITY,
             SCShadowInput.CONTROL_ENABLED_ENTITY,
             SCShadowInput.SHUTTER_MAX_HEIGHT_ENTITY,
             SCShadowInput.SHUTTER_MAX_ANGLE_ENTITY,
@@ -1079,6 +1079,28 @@ class ShadowControlManager:
             self.logger.debug("Tracking external lock entity for sync: %s", external_lock_entity)
             self._unsub_callbacks.append(
                 async_track_state_change_event(self.hass, [external_lock_entity], self._async_external_lock_entity_state_change_listener)
+            )
+
+        # In _async_register_listeners - eigener Listener für Enforce-Positioning-Entity
+        enforce_positioning_entity = self._config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value)
+        if enforce_positioning_entity:
+            self._unsub_callbacks.append(
+                async_track_state_change_event(
+                    self.hass,
+                    [enforce_positioning_entity],
+                    self._async_handle_enforce_positioning_entity_change,
+                )
+            )
+
+        # In _async_register_listeners - eigener Listener für Unlock-Entity
+        unlock_integration_entity = self._config.get(SCDynamicInput.UNLOCK_INTEGRATION_ENTITY.value)
+        if unlock_integration_entity:
+            self._unsub_callbacks.append(
+                async_track_state_change_event(
+                    self.hass,
+                    [unlock_integration_entity],
+                    self._async_handle_unlock_entity_change,
+                )
             )
 
         self.logger.debug("Listeners registered.")
@@ -1287,6 +1309,23 @@ class ShadowControlManager:
             self.logger.info("Synced internal lock switch %s to match external entity %s: %s", internal_lock_entity, entity_id, new_state.state)
         except (HomeAssistantError, ValueError):
             self.logger.exception("Failed to sync internal lock switch to external entity state")
+
+    async def _async_handle_enforce_positioning_entity_change(self, event) -> None:
+        """Handle state change of the enforce positioning entity."""
+        new_state = event.data.get("new_state")
+        if new_state is None:
+            return
+        self.logger.info("Enforce positioning triggered via external entity: %s", new_state.entity_id)
+        await self.async_trigger_enforce_positioning()
+
+    async def _async_handle_unlock_entity_change(self, event) -> None:
+        """Handle state change of the unlock entity (e.g. input_button)."""
+        new_state = event.data.get("new_state")
+        if new_state is None:
+            return
+        # input_button triggert bei jedem Press einen State-Change
+        self.logger.info("Unlock triggered via external entity: %s", new_state.entity_id)
+        await self.async_unlock_integration()
 
     async def _activate_auto_lock(self, current_height: float, current_angle: float) -> None:
         """Activate auto-lock due to manual movement detected."""
