@@ -51,6 +51,7 @@ shadow_control:
     lock_height_entity: input_number.lock_height_sc_dummy
     lock_angle_manual: 50
     lock_angle_entity: input_number.lock_angle_sc_dummy
+    #unlock_integration_entity:
 
     # no_restriction, only_open, only_close
     movement_restriction_height_manual: no_restriction
@@ -188,6 +189,7 @@ shadow_control:
     #lock_height_entity: input_number.lock_height_sc_dummy2
     #lock_angle_manual: 0
     #lock_angle_entity: input_number.lock_angle_sc_dummy2
+    #unlock_integration_entity:
     #movement_restriction_height_manual: no_restriction
     #movement_restriction_height_entity:
     #movement_restriction_angle_manual: no_restriction
@@ -279,6 +281,7 @@ shadow_control:
     #lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
     #lock_height_manual: 0
     #lock_height_entity: input_number.lock_height_sc_dummy3
+    #unlock_integration_entity:
     #movement_restriction_height_manual: no_restriction
     #movement_restriction_height_entity:
     enforce_positioning_entity: input_boolean.d13_enforce_positioning
