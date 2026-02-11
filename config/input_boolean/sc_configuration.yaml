@@ -6,10 +6,6 @@
   d08_lock_integration_with_position:
     #[e#13 trigger   =Sperre mit Zwangsposition (0/1)         #init=0      ]
     name: "D08: Locked with position constraint"
-  d13_enforce_positioning:
-    name: "D13: Enforce positioning"
-  d14_unlock_instances:
-    name: "D14: Unlock instances"
   # Dynamic inputs end
   # =========================================================================
   # Shadow settings

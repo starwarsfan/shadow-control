@@ -20,9 +20,8 @@ logger:
 #    custom_components.shadow_control.config_flow: debug
 
 input_boolean: !include_dir_merge_named input_boolean/
-
+input_button: !include_dir_merge_named input_button/
 input_number: !include_dir_merge_named input_number/
-
 input_select: !include_dir_merge_named input_select/
 
 template: !include_dir_list template/
@@ -51,7 +50,7 @@ shadow_control:
     lock_height_entity: input_number.lock_height_sc_dummy
     lock_angle_manual: 50
     lock_angle_entity: input_number.lock_angle_sc_dummy
-    #unlock_integration_entity:
+    unlock_integration_entity: input_button.d14_unlock_instances
 
     # no_restriction, only_open, only_close
     movement_restriction_height_manual: no_restriction
@@ -59,7 +58,7 @@ shadow_control:
     #movement_restriction_height_entity:
     #movement_restriction_angle_entity:
 
-    enforce_positioning_entity: input_boolean.d13_enforce_positioning
+    enforce_positioning_entity: input_button.d13_enforce_positioning
 
     # General facade configuration
     facade_azimuth_static: 200
@@ -189,12 +188,12 @@ shadow_control:
     #lock_height_entity: input_number.lock_height_sc_dummy2
     #lock_angle_manual: 0
     #lock_angle_entity: input_number.lock_angle_sc_dummy2
-    #unlock_integration_entity:
+    unlock_integration_entity: input_button.d14_unlock_instances
     #movement_restriction_height_manual: no_restriction
     #movement_restriction_height_entity:
     #movement_restriction_angle_manual: no_restriction
     #movement_restriction_angle_entity:
-    enforce_positioning_entity: input_boolean.d13_enforce_positioning
+    enforce_positioning_entity: input_button.d13_enforce_positioning
     # General facade configuration
     facade_azimuth_static: 80
     facade_offset_sun_in_static: -45
@@ -281,10 +280,10 @@ shadow_control:
     #lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
     #lock_height_manual: 0
     #lock_height_entity: input_number.lock_height_sc_dummy3
-    #unlock_integration_entity:
+    unlock_integration_entity: input_button.d14_unlock_instances
     #movement_restriction_height_manual: no_restriction
     #movement_restriction_height_entity:
-    enforce_positioning_entity: input_boolean.d13_enforce_positioning
+    enforce_positioning_entity: input_button.d13_enforce_positioning
     # General facade configuration
     facade_azimuth_static: 320
     facade_offset_sun_in_static: -45

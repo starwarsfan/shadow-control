@@ -21,6 +21,8 @@ config/*
 !config/automations/**
 !config/input_boolean/
 !config/input_boolean/**
+!config/input_button/
+!config/input_button/**
 !config/input_number/
 !config/input_number/**
 !config/input_select/
