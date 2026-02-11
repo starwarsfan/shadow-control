@@ -40,6 +40,20 @@ async def async_setup_entry(
                 icon="mdi:ray-start-end",
             ),
         ),
+        ShadowControlButton(
+            hass,
+            config_entry,
+            key=SCInternal.UNLOCK_INTEGRATION_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            name="Trigger",
+            icon="mdi:lock-open-variant",
+            logger=instance_logger,
+            description=ButtonEntityDescription(
+                key=SCInternal.UNLOCK_INTEGRATION_MANUAL.value,
+                translation_key=SCInternal.UNLOCK_INTEGRATION_MANUAL.value,
+                icon="mdi:lock-open-variant",
+            ),
+        ),
     ]
 
     # Add all the entities to Home Assistant
@@ -90,6 +104,11 @@ class ShadowControlButton(ButtonEntity):
             # Setze das Flag für erzwungene Positionierung
             self.logger.info("Enforce positioning triggered via button")
             await manager.async_trigger_enforce_positioning()
+
+        elif self.entity_description.key == SCInternal.UNLOCK_INTEGRATION_MANUAL.value:
+            # Unlock integration (clear all locks including auto-lock)
+            self.logger.info("Unlock integration triggered via button")
+            await manager.async_unlock_integration()
 
         # 2. You can also notify Home Assistant of the event
         # self.hass.bus.async_fire("shadow_control_button_pressed", {"entity_id": self.entity_id})
