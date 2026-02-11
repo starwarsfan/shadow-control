@@ -195,7 +195,7 @@ def get_cfg_dynamic_inputs() -> vol.Schema:
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             vol.Optional(SCDynamicInput.UNLOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+                selector.EntitySelectorConfig(domain=["input_button", "binary_sensor"])
             ),
             vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
@@ -216,7 +216,7 @@ def get_cfg_dynamic_inputs() -> vol.Schema:
                 selector.EntitySelectorConfig(domain=["input_text", "input_select", "select", "sensor"])
             ),
             vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+                selector.EntitySelectorConfig(domain=["input_button", "binary_sensor"])
             ),
         }
     )
@@ -363,7 +363,7 @@ def get_cfg_dynamic_inputs_mode3() -> vol.Schema:
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             vol.Optional(SCDynamicInput.UNLOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+                selector.EntitySelectorConfig(domain=["input_button", "binary_sensor"])
             ),
             vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
@@ -378,7 +378,7 @@ def get_cfg_dynamic_inputs_mode3() -> vol.Schema:
                 selector.EntitySelectorConfig(domain=["input_text", "input_select", "select", "sensor"])
             ),
             vol.Optional(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+                selector.EntitySelectorConfig(domain=["input_button", "binary_sensor"])
             ),
         }
     )
