@@ -117,7 +117,8 @@
           "lock_angle_entity": "Zwangsposition Lamellenwinkel",
           "movement_restriction_height_entity": "Höhenveränderung einschränken",
           "movement_restriction_angle_entity": "Winkelveränderung einschränken",
-          "enforce_positioning_entity": "Zwangspositionierung auslösen"
+          "enforce_positioning_entity": "Zwangspositionierung auslösen",
+          "unlock_integration_entity": "Instanz entsperren"
         },
         "data_description": {
           "brightness_entity": "Aktuelle Helligkeit, üblicherweise von einer Wetterstation.",
@@ -134,7 +135,8 @@
           "lock_angle_entity": "Anzufahrender Lamellenwinkel bei Zwangsposition (via Entität)",
           "movement_restriction_height_entity": "Einschränkung der Höhenpositionierung via Entität, um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
           "movement_restriction_angle_entity": "Einschränkung der Winkelpositionierung via Entität, um unnötiges Verfahren des Behangs bspw. zwischen Beschattung und Dämmerung zu vermeiden.",
-          "enforce_positioning_entity": "Wird dieser Eingang mit 'on' beschrieben, wird erzwungen, den Behang immer auf die aktuell gültige Position zu fahren."
+          "enforce_positioning_entity": "Wird dieser Eingang mit 'on' beschrieben, wird erzwungen, den Behang immer auf die aktuell gültige Position zu fahren.",
+          "unlock_integration_entity": "Wird dieser Eingang mit 'on' beschrieben, wird die Instanz entsperrt."
         }
       },
       "shadow_settings": {
@@ -218,6 +220,9 @@
     "button": {
       "enforce_positioning_manual": {
         "name": "Positioniere!"
+      },
+      "unlock_integration_manual": {
+        "name": "Entsperren!"
       }
     },
     "number": {
