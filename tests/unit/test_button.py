@@ -50,10 +50,12 @@ class TestButtonEntity:
 
         await button_async_setup_entry(mock_hass, mock_config_entry, mock_add_entities)
 
-        # Verify one button was added
-        assert len(entities_added) == 1
+        # Verify two button were added
+        assert len(entities_added) == 2
         assert isinstance(entities_added[0], ShadowControlButton)
         assert entities_added[0].entity_description.key == SCInternal.ENFORCE_POSITIONING_MANUAL.value
+        assert isinstance(entities_added[1], ShadowControlButton)
+        assert entities_added[1].entity_description.key == SCInternal.UNLOCK_INTEGRATION_MANUAL.value
 
     async def test_button_press_triggers_enforce_positioning(self, mock_hass, mock_config_entry, mock_manager):
         """Test that pressing button triggers enforce positioning."""
@@ -84,6 +86,40 @@ class TestButtonEntity:
         # Verify logging
         mock_manager.logger.debug.assert_called_once()
         mock_manager.logger.info.assert_called_once_with("Enforce positioning triggered via button")
+
+    async def test_button_press_triggers_unlocking(self, mock_hass, mock_config_entry, mock_manager):
+        """Test that pressing button triggers unlocking."""
+
+        # ✅ Mock die async Methode als AsyncMock
+        mock_manager.async_unlock_integration = AsyncMock()
+
+        button = ShadowControlButton(
+            hass=mock_hass,
+            config_entry=mock_config_entry,
+            key=SCInternal.UNLOCK_INTEGRATION_MANUAL.value,
+            description=ButtonEntityDescription(
+                key=SCInternal.UNLOCK_INTEGRATION_MANUAL.value,
+                translation_key=SCInternal.UNLOCK_INTEGRATION_MANUAL.value,
+                icon="mdi:lock-open-variant",
+            ),
+            logger=mock_manager.logger,
+            instance_name="test_instance",
+            name="Unlock",
+            icon="mdi:lock-open-variant",
+        )
+
+        with patch.object(type(button), "name", new_callable=PropertyMock) as mock_name:
+            mock_name.return_value = "Unlock"
+
+            # Press the button
+            await button.async_press()
+
+        # Verify unlock was called
+        mock_manager.async_unlock_integration.assert_called_once()
+
+        # Verify logging
+        mock_manager.logger.debug.assert_called_once()
+        mock_manager.logger.info.assert_called_once_with("Unlock integration triggered via button")  # ✅ Fix message
 
     def test_button_attributes(self, mock_hass, mock_config_entry, mock_manager):
         """Test button entity attributes are set correctly."""

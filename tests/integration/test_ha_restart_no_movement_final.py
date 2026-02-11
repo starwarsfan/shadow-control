@@ -47,6 +47,7 @@ TEST_CONFIG = {
             "facade_modification_tolerance_height_static": 3,
             "facade_modification_tolerance_angle_static": 3,
             "sc_internal_values": {
+                "unlock_integration_manual": False,
                 "lock_integration_manual": False,
                 "lock_integration_with_position_manual": False,
                 "lock_height_manual": 50,
@@ -287,6 +288,7 @@ async def test_real_config_change_after_restart_does_move(
 
     config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
     config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
+    # config[DOMAIN][0]["debug_enabled"] = True
     pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config, time_travel)
 
     # === Set initial state ========================================================================
@@ -302,16 +304,6 @@ async def test_real_config_change_after_restart_does_move(
     await set_sun_position(hass, elevation=45, azimuth=180, brightness=70000)
     await hass.async_block_till_done()
     await time_travel(seconds=2)
-    await hass.async_block_till_done()
-
-    # ✅ Disable auto-lock (wird durch Cover-Positions-Änderung getriggert)
-    _LOGGER.info("Disabling auto-lock before restart simulation")
-    await hass.services.async_call(
-        "switch",
-        "turn_off",
-        {"entity_id": "switch.sc_test_instance_lock"},
-        blocking=True,
-    )
     await hass.async_block_till_done()
 
     # === Simulate restart =========================================================================
@@ -330,6 +322,16 @@ async def test_real_config_change_after_restart_does_move(
     # Wait for grace period to expire (30s + buffer)
     _LOGGER.info("Waiting for grace period to expire (35 seconds)...")
     await time_travel(seconds=35)
+    await hass.async_block_till_done()
+
+    # Unlock NACH dem Restart!
+    _LOGGER.info("Unlocking integration after restart")
+    await hass.services.async_call(
+        "button",
+        "press",
+        {"entity_id": "button.sc_test_instance_unlock"},
+        blocking=True,
+    )
     await hass.async_block_till_done()
 
     # Track call count before config change
