@@ -66,6 +66,7 @@ Go to the [English version](/README.md) version of the documentation.
       * [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition)
       * [Zwangsposition Höhe](#zwangsposition-höhe)
       * [Zwangsposition Lamellenwinkel](#zwangsposition-lamellenwinkel)
+      * [Instanz entsperren](#instanz-entsperren)
       * [Höhenveränderung einschränken](#höhenveränderung-einschränken)
       * [Winkelveränderung einschränken](#winkelveränderung-einschränken)
       * [Zwangspositionierung auslösen](#zwangspositionierung-auslösen)
@@ -446,18 +447,18 @@ Siehe Beschreibung unter [Azimut der Sonne](#sun-azimuth).
 #### Integration sperren
 (yaml: `lock_integration_manual: true|false` u/o `lock_integration_entity: <entity>`)
 
-Mit diesem Eingang kann die gesamte Integration gesperrt werden. Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration intern normal weiter, aktualisiert aber den verbundenen Behang nicht. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann.
+Mit diesem Eingang kann die Instanz gesperrt werden. Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Instanz intern normal weiter, aktualisiert aber den verbundenen Behang nicht. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann.
 
-Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, solange nicht [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) aktiv ist.
+Wird der Eingang auf 'off' gesetzt, arbeitet die Instanz normal weiter, solange nicht [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) aktiv ist.
 
 Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 
 #### Integration sperren mit Zwangsposition
 (yaml: `lock_integration_with_position_manual: true|false` u/o `lock_integration_with_position_entity: <entity>`)
 
-Mit diesem Eingang kann die gesamte Integration gesperrt und eine Zwangsposition angefahren werden. Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Integration intern normal weiter, fährt aber den Behang auf die via [Zwangsposition Höhe](#zwangsposition-höhe)/[Zwangsposition Lamellenwinkel](#zwangsposition-lamellenwinkel) konfigurierte Position. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann.
+Mit diesem Eingang kann die Instanz gesperrt und eine Zwangsposition angefahren werden. Wird der Eingang aktiviert, also auf 'on' gesetzt, arbeitet die Instanz intern normal weiter, fährt aber den Behang auf die via [Zwangsposition Höhe](#zwangsposition-höhe)/[Zwangsposition Lamellenwinkel](#zwangsposition-lamellenwinkel) konfigurierte Position. Damit wird erreicht, dass beim Entsperren direkt die nun gültige Position angefahren werden kann.
 
-Wird der Eingang auf 'off' gesetzt, arbeitet die Integration normal weiter, solange nicht [Integration sperren](#integration-sperren) aktiv ist.
+Wird der Eingang auf 'off' gesetzt, arbeitet die Instanz normal weiter, solange nicht [Integration sperren](#integration-sperren) aktiv ist.
 
 Dieser Eingang hat Vorrang vor [Integration sperren](#integration-sperren). Werden beide Sperren auf 'on' gesetzt, wird die Zwangsposition angefahren.
 
@@ -476,6 +477,11 @@ Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
 Anzufahrender Lamellenwinkel in %, wenn die Integration via [Integration sperren mit Zwangsposition](#integration-sperren-mit-zwangsposition) gesperrt wird.
 
 Achtung, siehe Hinweis unter [Entitäten-Vorrang](#entitäten-vorrang).
+
+#### Instanz entsperren
+(yaml: `unlock_integration_manual: true|false` u/o `unlock_integration_entity: <entity>`)
+
+Mit diesem Eingang kann die Instanz entsperrt werden. Wird der Eingang aktiviert, also auf 'on' gesetzt, werden sämtliche Sperrzustände deaktiviert.
 
 #### Höhenveränderung einschränken
 (yaml: `movement_restriction_height_manual: <siehe-unten>` u/o `movement_restriction_height_entity: <entity>`)

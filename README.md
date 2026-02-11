@@ -64,6 +64,7 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
       * [Sun azimuth](#sun-azimuth)
       * [Lock integration](#lock-integration)
       * [Lock integration with position](#lock-integration-with-position)
+      * [Unlock instance](#unlock-instance)
       * [Enforced position height](#enforced-position-height)
       * [Enforced position slat angle](#enforced-position-slat-angle)
       * [Movement restriction height](#movement-restriction-height)
@@ -449,22 +450,27 @@ See the description at [Sun azimuth](#sun-azimuth).
 #### Lock integration
 (yaml: `lock_integration_manual: true|false` u/o `lock_integration_entity: <entity>`)
 
-If this input is set to 'off,' the integration works as desired by updating the output (as long as the input `lock_integration_with_position` is not set to 'on'). 
+If this input is set to 'off,' the instance works as desired by updating the output (as long as the input `lock_integration_with_position` is not set to 'on'). 
 
-If the input is set to 'on,' the integration gets locked. That means the integration is internally still working, but the configured shutter will not be updated and stay at the current position. With this approach, the integration is able to immediately move the shutter to the right position, as soon as it gets unlocked again.
+If the input is set to 'on,' the instance gets locked. That means the instance is internally still working, but the configured shutter will not be updated and stay at the current position. With this approach, the instance is able to immediately move the shutter to the right position, as soon as it gets unlocked again.
 
 Attention, see note at [Entity precedence](#entity-precedence).
 
 #### Lock integration with position
 (yaml: `lock_integration_with_position_manual: true|false` u/o `lock_integration_with_position_entity: <entity>`)
 
-If this input is set to 'off,' the integration works as desired by updating the output (as long as the input `lock_integration` is not set to 'on').
+If this input is set to 'off,' the instance works as desired by updating the output (as long as the input `lock_integration` is not set to 'on').
 
-If the input is set to 'on,' the integration gets locked. That means the integration is internally still working, but the configured shutter will be moved to the position, configured with the inputs 'lock_height' and 'lock_angle.' With this approach, the integration is able to immediately move the shutter to the right position, as soon as it gets unlocked again.
+If the input is set to 'on,' the instance gets locked. That means the instance is internally still working, but the configured shutter will be moved to the position, configured with the inputs 'lock_height' and 'lock_angle.' With this approach, the instance is able to immediately move the shutter to the right position, as soon as it gets unlocked again.
 
 This input has precedence over 'lock_integration.' If both lock inputs are set 'on,' the shutter will be moved to the configured lock position.
 
 Attention, see note at [Entity precedence](#entity-precedence).
+
+#### Unlock instance
+(yaml: `unlock_integration_manual: true|false` u/o `unlock_integration_entity: <entity>`)
+
+If the input is set to 'on,' the instance gets unlocked. That means that all lock states will be reset.
 
 #### Enforced position height
 (yaml: `lock_height_manual: <value>` u/o `lock_height_entity: <entity>`)
