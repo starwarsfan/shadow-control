@@ -25,6 +25,7 @@ class SCInternal(Enum):
     LOCK_INTEGRATION_WITH_POSITION_MANUAL = "lock_integration_with_position_manual"
     LOCK_HEIGHT_MANUAL = "lock_height_manual"
     LOCK_ANGLE_MANUAL = "lock_angle_manual"
+    UNLOCK_INTEGRATION_MANUAL = "unlock_integration_manual"
     MOVEMENT_RESTRICTION_HEIGHT_MANUAL = "movement_restriction_height_manual"
     MOVEMENT_RESTRICTION_ANGLE_MANUAL = "movement_restriction_angle_manual"
     NEUTRAL_POS_HEIGHT_MANUAL = "facade_neutral_pos_height_manual"
@@ -69,7 +70,10 @@ class SCInternal(Enum):
             SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL,
         ):
             return "select"
-        if self == SCInternal.ENFORCE_POSITIONING_MANUAL:
+        if self in (
+            SCInternal.ENFORCE_POSITIONING_MANUAL,
+            SCInternal.UNLOCK_INTEGRATION_MANUAL,
+        ):
             return "button"
         if self in (
             SCInternal.LOCK_HEIGHT_MANUAL,
@@ -119,6 +123,7 @@ class SCDynamicInput(Enum):
     MOVEMENT_RESTRICTION_HEIGHT_ENTITY = "movement_restriction_height_entity"
     MOVEMENT_RESTRICTION_ANGLE_ENTITY = "movement_restriction_angle_entity"
     ENFORCE_POSITIONING_ENTITY = "enforce_positioning_entity"
+    UNLOCK_INTEGRATION_ENTITY = "unlock_integration_entity"
 
 
 class SCFacadeConfig1(Enum):

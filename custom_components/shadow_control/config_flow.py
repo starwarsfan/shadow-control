@@ -194,6 +194,9 @@ def get_cfg_dynamic_inputs() -> vol.Schema:
             vol.Optional(SCDynamicInput.SUNSET_ENTITY.value, default="sensor.sun_next_setting"): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
+            vol.Optional(SCDynamicInput.UNLOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
+            ),
             vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
             ),
@@ -358,6 +361,9 @@ def get_cfg_dynamic_inputs_mode3() -> vol.Schema:
             ),
             vol.Optional(SCDynamicInput.SUNSET_ENTITY.value, default="sensor.sun_next_setting"): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            ),
+            vol.Optional(SCDynamicInput.UNLOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
             ),
             vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["input_boolean", "binary_sensor"])
@@ -543,6 +549,8 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCDynamicInput.SUN_AZIMUTH_ENTITY.value, default="sun.sun"): cv.entity_id,
         vol.Optional(SCDynamicInput.SUNRISE_ENTITY.value, default="sensor.sun_next_rising"): cv.entity_id,
         vol.Optional(SCDynamicInput.SUNSET_ENTITY.value, default="sensor.sun_next_setting"): cv.entity_id,
+        vol.Optional(SCInternal.UNLOCK_INTEGRATION_MANUAL.value): cv.boolean,
+        vol.Optional(SCDynamicInput.UNLOCK_INTEGRATION_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.LOCK_INTEGRATION_MANUAL.value): cv.boolean,
         vol.Optional(SCDynamicInput.LOCK_INTEGRATION_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL.value): cv.boolean,
