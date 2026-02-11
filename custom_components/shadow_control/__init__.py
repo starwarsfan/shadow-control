@@ -1305,20 +1305,53 @@ class ShadowControlManager:
         self._height_during_lock_state = current_height
         self._angle_during_lock_state = current_angle
 
-        # WICHTIG: Aktualisiere Lock-State sofort!
+        # Set lock state to AUTO_LOCK
         self.current_lock_state = LockState.LOCKED_BY_EXTERNAL_MODIFICATION
 
-        # Set lock via the internal lock switch entity
-        lock_entity_id = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_MANUAL)
+        # Do NOT turn on manual lock switch!
+        # This was causing auto-lock to switch to manual-lock
 
-        try:
-            await self.hass.services.async_call("switch", "turn_on", {"entity_id": lock_entity_id}, blocking=False)
-            self.logger.info("Auto-lock activated successfully via entity %s", lock_entity_id)
-        except (HomeAssistantError, ValueError):
-            self.logger.exception("Failed to activate auto-lock")
-
-        # WICHTIG: Trigger Sensor-Updates
+        # Trigger sensor updates
         async_dispatcher_send(self.hass, f"{DOMAIN}_update_{self.name.lower().replace(' ', '_')}")
+
+        self.logger.info("Auto-lock activated (state: LOCKED_BY_EXTERNAL_MODIFICATION)")
+
+    async def async_unlock_integration(self) -> None:
+        """Unlock integration - clear all locks including auto-lock."""
+        self.logger.info("Unlocking integration - clearing all locks")
+
+        # Clear auto-lock flag
+        if self._locked_by_auto_lock:
+            self.logger.info("Clearing auto-lock flag")
+            self._locked_by_auto_lock = False
+            self._height_during_lock_state = None
+            self._angle_during_lock_state = None
+
+        # Turn off both lock switches
+        lock_entity = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_MANUAL)
+        if lock_entity:
+            try:
+                await self.hass.services.async_call("switch", "turn_off", {"entity_id": lock_entity}, blocking=False)
+                self.logger.debug("Turned off lock switch: %s", lock_entity)
+            except (HomeAssistantError, ValueError):
+                self.logger.exception("Failed to turn off lock switch")
+
+        lock_with_pos_entity = self.get_internal_entity_id(SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL)
+        if lock_with_pos_entity:
+            try:
+                await self.hass.services.async_call("switch", "turn_off", {"entity_id": lock_with_pos_entity}, blocking=False)
+                self.logger.debug("Turned off lock-with-position switch: %s", lock_with_pos_entity)
+            except (HomeAssistantError, ValueError):
+                self.logger.exception("Failed to turn off lock-with-position switch")
+
+        # Set unlock time for grace period
+        self._last_unlock_time = dt_util.utcnow()
+        self.logger.debug("Set unlock grace period")
+
+        # Trigger immediate positioning
+        # await self.async_calculate_and_apply_cover_position(None)
+
+        self.logger.info("Integration unlocked successfully")
 
     def unregister_listeners(self) -> None:
         """Unregister all listeners for this manager."""
@@ -4363,6 +4396,10 @@ class ShadowControlManager:
             if self._locked_by_auto_lock:
                 return LockState.LOCKED_BY_EXTERNAL_MODIFICATION
             return LockState.LOCKED_MANUALLY
+
+        # Auto-Lock ist aktiv (unabhängig vom manuellen Lock-Switch)
+        if self._locked_by_auto_lock:
+            return LockState.LOCKED_BY_EXTERNAL_MODIFICATION
 
         # Not locked
         return LockState.UNLOCKED
