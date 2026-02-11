@@ -69,7 +69,7 @@ TEST_CONFIG = {
                 "movement_restriction_angle_manual": "no_restriction",
                 # "movement_restriction_height_entity":
                 # "movement_restriction_angle_entity":
-                # "enforce_positioning_entity": input_boolean.d13_enforce_positioning
+                # "enforce_positioning_entity": input_button.d13_enforce_positioning
                 #
                 "facade_neutral_pos_height_manual": 0,
                 # "facade_neutral_pos_height_entity": input_number.g15_neutral_pos_height
