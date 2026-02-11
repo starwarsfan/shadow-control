@@ -725,7 +725,7 @@ shadow_control:
     #movement_restriction_angle_entity:
     #
     # Entity to enforce the shutter positioning
-    #enforce_positioning_entity: input_boolean.d13_enforce_positioning
+    #enforce_positioning_entity: input_button.d13_enforce_positioning
     #
     # =======================================================================
     # General facade configuration
