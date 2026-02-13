@@ -33,6 +33,7 @@
 * Fix shutter repositioning after release of lock with position
 * Fix initialization after Home Assistant restart
 * Fix ignored lock in case lock is active and shutter are modified manually
+* Fix calculation of shutter angle (missing projection of slat width to relative azimuth)
 * Error handling in case the used yaml configuration contains deprecated configuration keys from previous **Shadow Control** versions.
 
 ## 0.10.0

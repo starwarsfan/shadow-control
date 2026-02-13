@@ -2770,7 +2770,7 @@ class ShadowControlManager:
 
         # Prevent sunlight within the room, return angle in percent (0-100).
         elevation = self._dynamic_config.sun_elevation
-        azimuth = self._dynamic_config.sun_azimuth  # For logging
+        azimuth = self._dynamic_config.sun_azimuth
         given_shutter_slat_width = self._facade_config.slat_width
         shutter_slat_distance = self._facade_config.slat_distance
         shutter_angle_offset = self._facade_config.slat_angle_offset
@@ -2778,6 +2778,7 @@ class ShadowControlManager:
         max_shutter_angle_percent = self._shadow_config.shutter_max_angle
         shutter_type = self._facade_config.shutter_type
         effective_elevation = self._effective_elevation
+        facade_azimuth = self._facade_config.azimuth
 
         if shutter_type == ShutterType.MODE3:
             return 0.0  # Nothing to calculate at mode3 as there is no angle which could be modified
@@ -2792,6 +2793,7 @@ class ShadowControlManager:
             or max_shutter_angle_percent is None
             or shutter_type is None
             or effective_elevation is None
+            or facade_azimuth is None
         ):
             self.logger.warning(
                 "Not all required values for angle calculation available. elevation=%s, azimuth=%s, slat_width=%s, slat_distance=%s, "
@@ -2811,13 +2813,40 @@ class ShadowControlManager:
         # ==============================
         # Math based on oblique triangle
 
+        # The sun hits the facade at a relative azimuth angle. This reduces the
+        # effective slat width as seen from the sun's perspective, requiring a
+        # steeper slat angle to block direct sunlight.
+        # effective_slat_width = slat_width * cos(relative_azimuth)
+        relative_azimuth_deg = abs(azimuth - facade_azimuth)
+        # Normalize to 0-90° range (facade is in sun, so max offset is 90°)
+        if relative_azimuth_deg > 90:
+            relative_azimuth_deg = 90.0
+        effective_slat_width = given_shutter_slat_width * math.cos(math.radians(relative_azimuth_deg))
+
+        self.logger.debug(
+            "Relative azimuth: %s°, effective slat width: %s mm (given: %s mm)",
+            relative_azimuth_deg,
+            round(effective_slat_width, 1),
+            given_shutter_slat_width,
+        )
+
+        # Fallback: if effective_slat_width is near zero (sun nearly parallel to facade),
+        # use given_shutter_slat_width to avoid division by zero / extreme values
+        if effective_slat_width < 1e-6:
+            self.logger.warning(
+                "Effective slat width near zero (%s mm), falling back to given slat width (%s mm)",
+                effective_slat_width,
+                given_shutter_slat_width,
+            )
+            effective_slat_width = given_shutter_slat_width
+
         # $alpha is the opposite angle of shutter slat width, so this is the difference
-        # effectiveElevation and vertical
+        # between effectiveElevation and vertical
         alpha_deg = 90 - effective_elevation
         alpha_rad = math.radians(alpha_deg)
 
-        # $beta is the opposit angle of shutter slat distance
-        asin_arg = (math.sin(alpha_rad) * shutter_slat_distance) / given_shutter_slat_width
+        # $beta is the opposite angle of shutter slat distance
+        asin_arg = (math.sin(alpha_rad) * shutter_slat_distance) / effective_slat_width
 
         if not (-1 <= asin_arg <= 1):
             self.logger.warning(
