@@ -853,7 +853,12 @@ Parallel to `current_state`, the entity `current_state_text` contains a textual 
 
 ### Lock state
 `lock_state`
-This entity is `True`, if the integration is locked. Otherwise `False`.
+This sensor holds the current lock state of the integration. The following values will be available here for further usage within other automations:
+
+* 0: no lock
+* 1: manually locked
+* 2: locked with position
+* 3: locked by external modification
 
 ### Next shutter modification
 `next_shutter_modification`
