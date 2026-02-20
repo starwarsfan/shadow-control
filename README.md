@@ -107,6 +107,7 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
     * [Lock state](#lock-state)
     * [Next shutter modification](#next-shutter-modification)
     * [Is in the Sun](#is-in-the-sun)
+    * [Active Brightness Threshold](#active-brightness-threshold)
   * [Direct options](#direct-options)
 * [Configuration export](#configuration-export)
   * [Preparation](#preparation)
@@ -867,6 +868,11 @@ On this entity the integration publishes the next point in time, where a running
 ### Is in the Sun
 `is_in_sun`
 This entity is either `True`, if the sun within the min-max-offset and the min-max-height range. Otherwise `False`.
+
+### Active Brightness Threshold
+`brightness_threshold_active`
+
+Holds the current active brightness threshold. This is the value which is currently used to evaluate the brightness for the shadow control. This can either be the constant winter threshold or the adaptive threshold, depending on how the configuration is set up.
 
 
 
