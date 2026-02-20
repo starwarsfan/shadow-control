@@ -850,7 +850,12 @@ Parallel zu `current_state` wird in der Entität `current_state_text` die Textfo
 
 ### Sperr-Status
 `lock_state`
-Der Wert ist `True`, wenn die Integration gesperrt ist. Anderenfalls `False`.
+Dieser Sensor bildet numerisch den aktuellen Sperrstatus der Instanz ab. Dabei gelten die folgenden Werte:
+
+* 0: entsperrt
+* 1: manuell gesperrt
+* 2: manuell gesperrt mit Zwangsposition
+* 3: gesperrt durch externe Modifikation
 
 ### Nächste Behangmodifikation
 `next_shutter_modification`
