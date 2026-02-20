@@ -107,6 +107,7 @@ Go to the [English version](/README.md) version of the documentation.
     * [Sperr-Status](#sperr-status)
     * [Nächste Behangmodifikation](#nächste-behangmodifikation)
     * [In der Sonne](#in-der-sonne)
+    * [Aktiver Helligkeitsschwellwert](#aktiver-helligkeitsschwellwert)
   * [Direkte Optionen](#direkte-optionen)
 * [Konfiguration-Export](#konfiguration-export)
   * [Vorarbeiten](#vorarbeiten)
@@ -864,6 +865,11 @@ Auf dieser Entität steht der Zeitpunkt der nächsten Behang-Positionierung zur 
 ### In der Sonne
 `is_in_sun`
 Der Wert ist `True`, wenn sich die Sonne im min-max-Offsetbereich und min-max-Höhenbereich befindet. Anderenfalls `False`.
+
+### Aktiver Helligkeitsschwellwert
+`brightness_threshold_active`
+
+Gibt den aktiven Helligkeitsschwellwert an, welcher für die Beschattungssteuerung verwendet wird. Das kann entweder der konstante Winterschwellwert oder der adaptive Schwellwert sein, je nachdem wie die Konfiguration eingestellt ist.
 
 
 
