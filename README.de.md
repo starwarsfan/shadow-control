@@ -24,6 +24,7 @@ Go to the [English version](/README.md) version of the documentation.
   * [Betriebsarten](#betriebsarten)
   * [Entitäten-Vorrang](#entitäten-vorrang)
   * [Adaptiver Helligkeitsschwellwert](#adaptiver-helligkeitsschwellwert)
+  * [Automatische Sperre](#automatische-sperre)
 * [Installation](#installation)
 * [Konfiguration](#konfiguration)
   * [Initiale Instanzkonfiguration](#initiale-instanzkonfiguration)
@@ -187,6 +188,14 @@ Zur Sommersonnenwende steht die Sonne am höchsten. Das ist auf der Nordhalbkuge
 Im nächsten Schritt wird zwischen Sonnenaufgang und Sonnenuntergang eine Sinus-Kurve berechnet, welche am ermittelten Tageshöchstwert ihren höchsten Punkt erreicht. Als niedrigster Punkt der Sinuskurve und damit als niedrigster Schwellwert der Beschattung, wird der konfigurierte minimale Helligkeitsschwellwert verwendet. Dieser Wert kann nicht kleiner als der [D02 Dämmerungsschwellwert](#d02-dämmerungsschwellwert) sein.
 
 Die Konfigurationsoptionen dazu sind [B02 Winter Helligkeitsschwellwert](#b02-winter-helligkeitsschwellwert), [B03 Sommer Helligkeitsschwellwert](#b03-sommer-helligkeitsschwellwert) und [B04 Schwellwertpuffer Sommer/Winter](#b04-schwellwertpuffer-sommerwinter).
+
+
+
+## Automatische Sperre
+
+Wird der Behang manuell verfahren, sperrt sich die jeweilige **Shadow Control** Instanz automatisch. Damit wird verhindert, dass ein manuelles Positionieren durch die Integration überschrieben wird. Damit das sauber funktioniert ist es wichtig, dass die Verfahrzeit der Behang-Entitäten korrekt konfiguriert ist. Siehe dazu den Abschnitt [Maximale Verfahrdauer](#maximale-verfahrdauer).
+
+Der Sperrstatus wird im Sensor `sensor.<instanzname>_lock_status` angezeigt, Details siehe [Sensor Sperr-Status](#sperr-status).
 
 
 
@@ -385,7 +394,7 @@ Um den Lichtstreifen aus [Lichtstreifenbreite](#lichtstreifenbreite) zu berechne
 
 Gibt die Dauer der Bewegung von vollständig geschlossen (unten) bis vollständig offen (oben) in Sekunden an. Dieser Wert wird benötigt, um die automatische Instanzsperre korrekt durchzuführen, wenn der Behang manuell bewegt wird.
 
-Bei der Konfiguration der verwendeten Cover-Instanzen ist zu beachten, dass die `travelling_time_up`- und `travelling_time_down`-Werte korrekt angegeben werden müssen! Diese Werte werden von Home Assistant zum Animieren der Slider auf dem UI verwendet und somit wird beim Bewegen des Behangs über die konfigurierte Zeit hinweg stetig hoch bzw. runter gezählt. Das kann unter `Entwicklerwerkzeuge > Zustände` auf der jeweiligen Cover-Entität beobachtet werden. Damit ist das aber auch der Positionswert, welcher als Rückmeldung bei der **Shadow Control** Instanz ankommt. Diese Werte dürfen auf keinen Fall grösser als `facade_max_movement_duration_static` sein! Es empfiehlt sich, die beiden Travelling-Time-Werte auf die gemessene Verfahrzeit des Behangs und `facade_max_movement_duration_static` jeweils zwei bis drei Sekunden länger zu konfigurieren.
+Bei der Konfiguration der verwendeten KNX-Cover-Instanzen ist zu beachten, dass die `travelling_time_up`- und `travelling_time_down`-Werte korrekt angegeben werden müssen! Diese Werte werden von Home Assistant zum Animieren der Slider auf dem UI verwendet und somit wird beim Bewegen des Behangs über die konfigurierte Zeit hinweg stetig hoch bzw. runter gezählt. Das kann unter `Entwicklerwerkzeuge > Zustände` auf der jeweiligen Cover-Entität beobachtet werden. Damit ist das aber auch der Positionswert, welcher als Rückmeldung bei der **Shadow Control** Instanz ankommt. Diese Werte dürfen auf keinen Fall grösser als `facade_max_movement_duration_static` sein! Es empfiehlt sich, die beiden Travelling-Time-Werte auf die gemessene Verfahrzeit des Behangs und `facade_max_movement_duration_static` jeweils zwei bis drei Sekunden länger zu konfigurieren.
 
 Beispiel aus der **Shadow Control** Instanz-Konfiguration:
 ```yaml
@@ -875,11 +884,11 @@ Gibt den aktiven Helligkeitsschwellwert an, welcher für die Beschattungssteueru
 
 ## Direkte Optionen
 
-Direkt auf der Geräteseite einer Instanz können diverse Optionen direkt geschaltet werden:
+Sämtliche Optionen, welche im ConfigFlow mit einer eigenen Entität konfiguriert werden können, sind auch direkt auf der Geräteseite der jeweiligen Instanz schaltbar. Das bedeutet, dass die Konfiguration nicht zwingend über den ConfigFlow erfolgen muss, sondern auch direkt über die Geräteseite angepasst werden kann. Alle Optionen sind als eigene, interne Entitäten verfügbar und können somit in eigenen Automationen verwendet werden. Sie sind direkt unter den Steuerelementen schaltbar. Das ermöglicht eine sehr flexible und schnelle Anpassung der Konfiguration im laufenden Betrieb.
+
+Sobald jedoch eine Option explizit mit einer eigenen Entität konfiguriert wurde, ist diese Option nicht mehr unter den Steuerelementen zu finden, sondern als Sensor mit dem Wert der verknüpften Entität. 
 
 ![Steuerelemente](/images/controls.png)
-
-Das Ändern dieser Optionen entspricht dem Ändern der Konfiguration im ConfigFlow. Die Änderungen werden sofort übernommen und die Behangpositionierung wird entsprechend angepasst.
 
 
 

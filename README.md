@@ -24,6 +24,7 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
   * [Operating modes](#operating-modes)
   * [Entity precedence](#entity-precedence)
   * [Adaptive brightness control](#adaptive-brightness-control)
+  * [Automatic instance lock](#automatic-instance-lock)
 * [Installation](#installation)
 * [Configuration](#configuration)
   * [Initial instance configuration](#initial-instance-configuration)
@@ -187,6 +188,14 @@ The sun reaches its highest point at the summer solstice. This occurs annually o
 In the next step, a sine curve is calculated between sunrise and sunset, reaching its highest point at the determined daily maximum. The configured minimum brightness threshold is used as the lowest point of the sine curve and thus as the lowest shading threshold. This value cannot be lower than the [D02 Threshold](#d02-threshold).
 
 The configuration options for this feature are [S02 Winter threshold](#s02-winter-threshold), [S03 Summer threshold](#s03-summer-threshold) and [S04 Min brightness threshold](#s04-min-brightness-threshold).
+
+
+
+## Automatic instance lock
+
+If the shutter position is modified manually, the integration will automatically lock itself to prevent that the manual modification will be overwritten by the integration. This is a very important feature, as it allows to modify the shutter position manually without worrying about the integration overwriting that immediately. To make this work properly it is important to configure the correct movement duration of the shutter, which is described in the section [Max movement duration](#max-movement-duration).
+
+The current lock state of the instance is displayed in the log as well as in the sensor `sensor.<instance-name>_lock_status`. For details see section [Lock state](#lock-state).
 
 
 
@@ -385,7 +394,7 @@ To compute the light strip given with the previous configuration option, the int
 
 Define the movement duration from fully closed (down) to fully open (up) in seconds. This is required to handle automatic instance lock properly in case the shutter position is modified manually.
 
-Within the configuration of the cover instances, it is important to ensure that the `travelling_time_up` and `travelling_time_down` values are specified correctly! These values are used by Home Assistant to animate the sliders on the UI, and thus the countdown is continuously incremented or decremented as the blind moves over the configured time. This can be observed under `Developer Tools > States` on the respective cover entity. This is also the position value that is received as feedback by the **Shadow Control** instance and these values must never be greater than `facade_max_movement_duration_static`! It is recommended to configure the two Travelling Time values to match the measured travel time of the blind and to add two to three seconds to the value at `facade_max_movement_duration_static`.
+Within the configuration of the KNX cover instances, it is important to ensure that the `travelling_time_up` and `travelling_time_down` values are specified correctly! These values are used by Home Assistant to animate the sliders on the UI, and thus the countdown is continuously incremented or decremented as the blind moves over the configured time. This can be observed under `Developer Tools > States` on the respective cover entity. This is also the position value that is received as feedback by the **Shadow Control** instance and these values must never be greater than `facade_max_movement_duration_static`! It is recommended to configure the two Travelling Time values to match the measured travel time of the blind and to add two to three seconds to the value at `facade_max_movement_duration_static`.
 
 Example within **Shadow Control** instance configuration:
 ```yaml
@@ -878,11 +887,11 @@ Holds the current active brightness threshold. This is the value which is curren
 
 ## Direct options
 
-Right on each device page some options could be switched on/off directly:
+All options within the ConfigFlow, which can be configured with a separate entity, are also directly switchable on the device page of the respective instance. This means that the configuration does not necessarily have to be done via the ConfigFlow, but can also be adjusted directly via the device page. All options are available as separate, internal entities and can thus be used in their own automations. They are directly switchable under the controls. This allows for very flexible and quick adjustments of the configuration during operation.
+
+As soon as an option is explicitly configured with its own entity, this option is no longer found under the controls but as a sensor with the value of the linked entity.
 
 ![Controls](/images/controls.png)
-
-Modifying these options is the same as modifying them within the configuration flow.
 
 
 
