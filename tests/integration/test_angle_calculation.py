@@ -176,8 +176,19 @@ async def test_minimal_shadow_entry(hass: HomeAssistant, setup_from_user_config,
     _LOGGER.info("Azimuth: %s", hass.states.get("input_number.d04_sun_azimuth").state)
 
     height, angle = get_cover_position(pos_calls, tilt_calls)
-    _LOGGER.info("Position: height=%s, angle=%s", height, angle)
+    _LOGGER.info("Position: height=%s, angle=%s, shutter_type=%s", height, angle, shutter_type)
 
     # Erwartung: shadow_full_closed, height=0
     assert state.state == "shadow_full_closed", f"Expected shadow_full_closed, got {state.state}"
     assert_equal(height, "0", "Height should be 0 in shadow")
+
+    # Winkel-Erwartungen (nur bei mode1/mode2)
+    if check_angle:
+        # Bei slat_width=60, slat_distance=50, elevation=30°, azimuth=180° (rel_azimuth=0°)
+        # SC berechnet intern: Mode1 ~20%, Mode2 ~60%
+        # Aber sendet zu HA invertiert: position = 100 - internal_value
+        # Also: Mode1 → 100-20=80%, Mode2 → 100-60=40%
+        if shutter_type == "mode1":
+            assert 75 <= float(angle) <= 85, f"Mode1 angle at elevation=30° expected ~80% (HA inverted), got {angle}%"
+        elif shutter_type == "mode2":
+            assert 35 <= float(angle) <= 45, f"Mode2 angle at elevation=30° expected ~40% (HA inverted), got {angle}%"
