@@ -885,20 +885,14 @@ logger:
   default: info
 ```
 
-Am einfachsten kommt man an die Log-Ausgabe über das Terminal oder die Home Assistant Konsole. Dort kann der folgende Befehl ausgeführt werden, um das Home Assistant Log kontinuierlich auszugeben:
-
-```bash
-tail -F ~/config/home-assistant.log
-```
-
-Sobald die Log-Ausgabe läuft, den Dump-Service ausführen und die Ausgabe im Terminal beobachten. Die Ausgabe des Log kann mit im Anschluss mit `Ctrl+C` beendet werden.
+Am einfachsten kommt man an die Log-Ausgabe via `Einstellungen -> System -> Protokolle`, dort dann oben rechts das 3-Punkt-Menü und Klick auf `unveränderte Protokolle anzeigen`. 
 
 ## Anwendung des Service
 
-Der Service ist via `Entwicklerwerkzeuge -> Aktionen` und dort mit der Suche nach `dump_sc_config` zu finden. Wird der Service ohne weitere Konfiguration ausgeführt, wird die Konfiguration der ersten **Shadow Control** Instanz im Log ausgegeben. Das sieht (gekürzt) in etwa wie folgt aus:
+In einem zweiten Browser-Tab zu `Einstellungen -> Entwicklerwerkzeuge -> Aktionen` navigieren und dort mit der Suche nach `dump_sc_config` den Dump-Service aufrufen. Wird der Service ohne weitere Konfiguration ausgeführt, wird die Konfiguration der ersten **Shadow Control** Instanz im Log ausgegeben. Das sieht (gekürzt) in etwa wie folgt aus:
 
 ```
-2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] === DUMPING INSTANCE CONFIGURATION ===
+2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] === DUMPING INSTANCE CONFIGURATION - START ===
 2025-07-06 21:12:57.136 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Full configuration:
 --- YAML dump start ---
 brightness_entity: input_number.d01_brightness
@@ -916,18 +910,8 @@ target_cover_entity:
 2025-07-06 21:12:57.137 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] Associated Entities:
 2025-07-06 21:12:57.137 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - sensor.sc_dummy_hohe: State='80.0', A...
 2025-07-06 21:12:57.137 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - sensor.sc_dummy_lamellenwinkel: State...
-2025-07-06 21:12:57.138 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - sensor.sc_dummy_lamellenwinkel_grad: ...
-2025-07-06 21:12:57.138 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - sensor.sc_dummy_status_numerisch: Sta...
-2025-07-06 21:12:57.138 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - sensor.sc_dummy_sperrstatus: State='0...
-2025-07-06 21:12:57.138 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - sensor.sc_dummy_nachste_positionierun...
-2025-07-06 21:12:57.138 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - sensor.sc_dummy_in_der_sonne: State='...
-2025-07-06 21:12:57.138 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - sensor.sc_dummy_status: State='shadow...
-2025-07-06 21:12:57.138 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - switch.sc_dummy_debug_modus: State='o...
-2025-07-06 21:12:57.138 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - switch.sc_dummy_beschattungssteuerung...
-2025-07-06 21:12:57.138 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - switch.sc_dummy_dammerungssteuerung: ...
-2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - switch.sc_dummy_sperren: State='off',...
-2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] - switch.sc_dummy_sperren_mit_zwangspos...
-2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] === END INSTANCE CONFIGURATION DUMP ===
+...
+2025-07-06 21:12:57.139 INFO (MainThread) [custom_components.shadow_control] [SC Dummy] === DUMPING INSTANCE CONFIGURATION - END ===
 ```
 
 Zwischen den beiden Marker-Zeilen `--- YAML dump start ---` und `--- YAML dump end ---` befindet sich die gesamte Konfiguration der Instanz im YAML-Format. Diese kann kopiert und gesichert oder auch als Basis für weitere Instanzen verwendet werden.
@@ -948,13 +932,6 @@ data:
   name: SC Dummy 3
 ```
 
-Ausgabe dazu:
-
-```
-2025-07-06 23:05:48.246 INFO (MainThread) [custom_components.shadow_control] [SC Dummy 3] --- DUMPING INSTANCE CONFIGURATION - START ---
-2025-07-06 23:05:48.246 INFO (MainThread) [custom_components.shadow_control] [SC Dummy 3] Config Entry Data: {'name': 'SC Dummy 3'}
-...
-```
 
 [hacs]: https://hacs.xyz
 [hacsbadge]: https://img.shields.io/badge/HACS-Default-blue?style=for-the-badge&logo=homeassistantcommunitystore&logoColor=ccc
