@@ -19,6 +19,8 @@ def manager(mock_manager):
     manager._get_current_dawn_brightness = MagicMock(return_value=50)
     manager._start_timer = AsyncMock()
     manager._position_shutter = AsyncMock()
+    manager._check_dawn_close_time_constraint = MagicMock(return_value=False)  # Default: no time-based close
+    manager._check_dawn_open_time_constraint = MagicMock(return_value=True)  # Default: opening allowed
 
     # Config mocks
     manager._dawn_config = MagicMock()
@@ -87,3 +89,23 @@ class TestHandleStateDawnHorizontalNeutral:
 
         assert result == ShutterState.DAWN_NEUTRAL_TIMER_RUNNING
         manager._start_timer.assert_called_once()
+
+    async def test_close_time_constraint_triggers_reclose(self, manager):
+        """Test that close_not_later_than triggers re-close even if brightness is fine."""
+        manager._get_current_dawn_brightness.return_value = 50  # Brightness OK
+        manager._check_dawn_close_time_constraint.return_value = True  # But time says close
+
+        result = await manager._handle_state_dawn_horizontal_neutral()
+
+        assert result == ShutterState.DAWN_FULL_CLOSED
+        manager._position_shutter.assert_called_once_with(100.0, 90.0, stop_timer=False)
+
+    async def test_open_not_before_blocks_timer_start(self, manager):
+        """Test that open_not_before prevents starting the opening timer."""
+        manager._get_current_dawn_brightness.return_value = 50  # Brightness OK
+        manager._check_dawn_open_time_constraint.return_value = False  # Too early to open
+
+        result = await manager._handle_state_dawn_horizontal_neutral()
+
+        assert result == ShutterState.DAWN_HORIZONTAL_NEUTRAL
+        manager._start_timer.assert_not_called()
