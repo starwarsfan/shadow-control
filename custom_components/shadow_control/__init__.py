@@ -4289,6 +4289,122 @@ class ShadowControlManager:
                 )
             return default_enum_member
 
+    def _get_time_value(
+        self,
+        entity_key: str,
+        manual_key: str,
+        default: datetime_time | None,
+    ) -> datetime_time | None:
+        """
+        Get time value from entity or manual config.
+
+        Args:
+            entity_key: Config key for entity reference
+            manual_key: Config key for manual time value
+            default: Default value if neither entity nor manual is set
+
+        Returns:
+            datetime.time object or None
+
+        """
+        # Try entity first
+        entity_id = self._config.get(entity_key)
+        if entity_id:
+            state = self.hass.states.get(entity_id)
+            if state and state.state not in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+                try:
+                    # Parse time from entity state
+                    # Format can be: "HH:MM:SS" or "HH:MM" or datetime object
+                    time_str = state.state
+                    if isinstance(time_str, str):
+                        # Try parsing "HH:MM:SS" or "HH:MM"
+                        time_parts = time_str.split(":")
+                        if len(time_parts) >= 2:
+                            hour = int(time_parts[0])
+                            minute = int(time_parts[1])
+                            second = int(time_parts[2]) if len(time_parts) > 2 else 0
+                            return datetime_time(hour, minute, second)
+                except (ValueError, AttributeError) as err:
+                    self.logger.warning(
+                        "Failed to parse time from entity %s (state: %s): %s",
+                        entity_id,
+                        state.state,
+                        err,
+                    )
+
+        # Fallback to manual config
+        manual_value = self._config.get(manual_key)
+        if manual_value:
+            if isinstance(manual_value, datetime_time):
+                return manual_value
+            if isinstance(manual_value, str):
+                try:
+                    # Parse "HH:MM:SS" or "HH:MM"
+                    time_parts = manual_value.split(":")
+                    if len(time_parts) >= 2:
+                        hour = int(time_parts[0])
+                        minute = int(time_parts[1])
+                        second = int(time_parts[2]) if len(time_parts) > 2 else 0
+                        return datetime_time(hour, minute, second)
+                except ValueError as err:
+                    self.logger.warning(
+                        "Failed to parse manual time value '%s': %s",
+                        manual_value,
+                        err,
+                    )
+
+        return default
+
+    def _check_dawn_open_time_constraint(self) -> bool:
+        """
+        Check if current time allows opening (dawn mode).
+
+        Returns:
+            True if time constraint allows opening (or no constraint set)
+            False if too early to open
+
+        """
+        if self._dawn_config.open_not_before is None:
+            # No time constraint configured
+            return True
+
+        current_time = dt_util.now().time()
+        allowed = current_time >= self._dawn_config.open_not_before
+
+        if not allowed:
+            self.logger.debug(
+                "Dawn opening blocked by time constraint: current=%s, open_not_before=%s",
+                current_time.strftime("%H:%M:%S"),
+                self._dawn_config.open_not_before.strftime("%H:%M:%S"),
+            )
+
+        return allowed
+
+    def _check_dawn_close_time_constraint(self) -> bool:
+        """
+        Check if current time requires closing (dawn mode).
+
+        Returns:
+            True if time has reached close_not_later_than
+            False if before configured close time (or no constraint set)
+
+        """
+        if self._dawn_config.close_not_later_than is None:
+            # No time constraint configured
+            return False
+
+        current_time = dt_util.now().time()
+        should_close = current_time >= self._dawn_config.close_not_later_than
+
+        if should_close:
+            self.logger.debug(
+                "Dawn closing triggered by time constraint: current=%s, close_not_later_than=%s",
+                current_time.strftime("%H:%M:%S"),
+                self._dawn_config.close_not_later_than.strftime("%H:%M:%S"),
+            )
+
+        return should_close
+
     async def _get_current_cover_position(self) -> tuple[float, float]:
         """Get current position of the cover from Home Assistant state."""
         """
