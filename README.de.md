@@ -94,6 +94,8 @@ Go to the [English version](/README.md) version of the documentation.
       * [D08 Öffnen nach x Sekunden](#d08-öffnen-nach-x-sekunden)
       * [D09 Höhe nach Dämmerung](#d09-höhe-nach-dämmerung)
       * [D10 Winkel nach Dämmerung](#d10-winkel-nach-dämmerung)
+      * [D11 Frühestens öffnen um (Uhrzeit)](#d11-frühestens-öffnen-um-uhrzeit)
+      * [D12 Spätestens schließen um (Uhrzeit)](#d12-spätestens-schließen-um-uhrzeit)
   * [Konfiguration via yaml](#konfiguration-via-yaml)
     * [yaml Beispielkonfiguration](#yaml-beispielkonfiguration)
 * [Status, Rückgabewerte und direkte Optionen](#status-rückgabewerte-und-direkte-optionen)
@@ -655,7 +657,67 @@ Wenn keine Dämmerungssituation mehr vorliegt, wird der Behang auf die hier in %
 
 Wenn keine Dämmerungssituation mehr vorliegt, wird der Behang auf den hier in % konfigurierten Lamellenwinkel gefahren. Standardwert: 0
 
+#### D11 Frühestens öffnen um (Uhrzeit)
+(yaml: `dawn_open_not_before_entity: <entity>` u/o `dawn_open_not_before_manual: "HH:MM"`)
 
+Diese optionale Zeitbeschränkung verhindert, dass der Behang vor der angegebenen Uhrzeit am Morgen öffnet, selbst wenn der Helligkeitsschwellwert überschritten wird. Dies ist nützlich, um zu frühes Öffnen im Sommer zu verhindern, wenn es sehr früh hell wird.
+
+**Logik:** Der Behang öffnet nur, wenn **beide** Bedingungen erfüllt sind:
+1. Helligkeit ≥ [D02 Dämmerungsschwellwert](#d02-dämmerungsschwellwert)
+2. Aktuelle Uhrzeit ≥ Frühestens-öffnen-Zeit
+
+**Anwendungsbeispiele:**
+- **Wochentage:** Auf `06:00` setzen, um Öffnen vor 6 Uhr morgens an Arbeitstagen zu verhindern
+- **Wochenende:** Eine Entität (`input_datetime`) verwenden, die via Automation automatisch angepasst wird (z.B. `06:00` Mo-Fr, `08:00` Sa-So)
+- **Sommer-Szenario:** Im Sommer wird der Helligkeitsschwellwert bereits um 5 Uhr erreicht, aber der Behang soll erst um 6 Uhr öffnen
+
+**Konfiguration:**
+- **Entitäts-Variante:** Referenziert eine `input_datetime`-Entität, die die Uhrzeit liefert. Dies ermöglicht dynamische Anpassung (z.B. via Automationen für Wochentag/Wochenende-Unterschiede)
+- **Manuelle Variante:** Feste Uhrzeit im Format `HH:MM` eingeben (z.B. `06:00` für 6 Uhr morgens)
+- **Standardwert:** None (Feature deaktiviert - nur Helligkeitsschwellwert gilt)
+
+**Format:** `HH:MM` (24-Stunden-Format, z.B. `06:00`, `08:30`, `23:45`)
+
+#### D12 Spätestens schließen um (Uhrzeit)
+(yaml: `dawn_close_not_later_than_entity: <entity>` u/o `dawn_close_not_later_than_manual: "HH:MM"`)
+
+Diese optionale Zeitbeschränkung stellt sicher, dass der Behang zur angegebenen Uhrzeit am Abend schließt, unabhängig von der Helligkeit. Dies garantiert Privatsphäre oder Sicherheit auch wenn es draußen noch hell ist (z.B. im Sommer).
+
+**Logik:** Der Behang schließt, wenn **eine** der Bedingungen erfüllt ist:
+1. Helligkeit < [D02 Dämmerungsschwellwert](#d02-dämmerungsschwellwert) **ODER**
+2. Aktuelle Uhrzeit ≥ Spätestens-schließen-Zeit
+
+**Anwendungsbeispiele:**
+- **Privatsphäre:** Behang um 20 Uhr schließen, auch an hellen Sommerabenden
+- **Sicherheit:** Sicherstellen, dass Behänge zu einer bestimmten Zeit geschlossen sind, z.B. im Urlaub
+- **Winter-Szenario:** Im Winter wird es gegen 17 Uhr dunkel, der Behang schließt früh aufgrund der Helligkeit. Die Zeitbeschränkung hat keine Wirkung.
+- **Sommer-Szenario:** Im Sommer ist es um 20 Uhr noch hell, aber die Zeitbeschränkung löst trotzdem das Schließen aus.
+
+**Konfiguration:**
+- **Entitäts-Variante:** Referenziert eine `input_datetime`-Entität, die die Uhrzeit liefert. Dies ermöglicht dynamische Anpassung (z.B. unterschiedliche Zeiten für verschiedene Jahreszeiten)
+- **Manuelle Variante:** Feste Uhrzeit im Format `HH:MM` eingeben (z.B. `20:00` für 20 Uhr)
+- **Standardwert:** None (Feature deaktiviert - nur Helligkeitsschwellwert gilt)
+
+**Format:** `HH:MM` (24-Stunden-Format, z.B. `20:00`, `21:30`, `22:00`)
+
+**Kombiniertes Beispiel:**
+* Winter (hell um 8 Uhr, dunkel um 17 Uhr):
+* Morgens: Helligkeitsschwellwert um 8 Uhr erreicht → Öffnet um 8 Uhr (Helligkeitsbedingung aktiv)
+* Abends: Helligkeitsschwellwert um 17 Uhr unterschritten → Schließt um 17 Uhr (Helligkeitsbedingung aktiv)
+
+```yaml
+dawn_open_not_before_manual: "06:00"
+dawn_close_not_later_than_manual: "20:00"
+```
+
+* Sommer (hell um 5 Uhr, dunkel um 22 Uhr):
+* Morgens: Helligkeitsschwellwert um 5 Uhr erreicht → Öffnet um 6 Uhr (Zeitbedingung aktiv)
+* Abends: Helligkeitsschwellwert um 22 Uhr unterschritten → Schließt um 20 Uhr (Zeitbedingung aktiv)
+
+```yaml
+dawn_open_not_before_manual: "06:00"
+dawn_close_not_later_than_manual: "20:00"
+```
 
 
 
@@ -799,6 +861,10 @@ shadow_control:
     dawn_height_after_dawn_manual: 0
     #dawn_angle_after_dawn_entity:
     dawn_angle_after_dawn_manual: 0
+    #dawn_open_not_before_entity: 
+    #dawn_open_not_before_manual: "06:00"
+    #dawn_close_not_later_than_entity:
+    #dawn_close_not_later_than_manual: "20:00"
 ```
 # Status, Rückgabewerte und direkte Optionen
 

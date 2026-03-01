@@ -94,6 +94,8 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
       * [D08 Open after seconds](#d08-open-after-seconds)
       * [D09 Height after seconds](#d09-height-after-seconds)
       * [D10 Angle after seconds](#d10-angle-after-seconds)
+      * [D11 Open not before (time)](#d11-open-not-before-time)
+      * [D12 Close not later than (time)](#d12-close-not-later-than-time)
   * [Configuration by yaml](#configuration-by-yaml)
     * [Example YAML configuration](#example-yaml-configuration)
 * [State, return values and direct options](#state-return-values-and-direct-options)
@@ -658,7 +660,66 @@ This is the shutter height in %, which should be set after the dawn position. De
 
 This is the shutter angle in %, which should be set after the dawn position. Default: 0
 
+#### D11 Open not before (time)
+(yaml: `dawn_open_not_before_entity: <entity>` u/o `dawn_open_not_before_manual: "HH:MM"`)
 
+This optional time constraint prevents the shutter from opening before the specified time in the morning, even if the brightness threshold is exceeded. This is useful to prevent early opening in summer when it gets bright very early.
+
+**Logic:** The shutter will only open when **both** conditions are met:
+1. Brightness ≥ [D02 Threshold](#d02-threshold)
+2. Current time ≥ Open not before time
+
+**Example use cases:**
+- **Weekdays:** Set to `06:00` to prevent opening before 6 AM on work days
+- **Weekends:** Use an entity (`input_datetime`) that is automatically adjusted via automation (e.g., `06:00` Mon-Fri, `08:00` Sat-Sun)
+- **Summer scenario:** In summer, the brightness threshold might be reached at 5 AM, but you don't want the shutter to open before 6 AM
+
+**Configuration:**
+- **Entity variant:** Reference an `input_datetime` entity that provides the time. This allows dynamic adjustment (e.g., via automations for weekday/weekend differences)
+- **Manual variant:** Enter a fixed time in `HH:MM` format (e.g., `06:00` for 6 AM)
+- **Default:** None (feature disabled - only brightness threshold applies)
+
+**Format:** `HH:MM` (24-hour format, e.g., `06:00`, `08:30`, `23:45`)
+
+#### D12 Close not later than (time)
+(yaml: `dawn_close_not_later_than_entity: <entity>` u/o `dawn_close_not_later_than_manual: "HH:MM"`)
+
+This optional time constraint ensures the shutter closes at the specified time in the evening, regardless of brightness. This guarantees privacy or security even if it's still bright outside (e.g., in summer).
+
+**Logic:** The shutter will close when **either** condition is met:
+1. Brightness < [D02 Threshold](#d02-threshold) **OR**
+2. Current time ≥ Close not later than time
+
+**Example use cases:**
+- **Privacy:** Close shutters at 8 PM (20:00) for privacy, even in bright summer evenings
+- **Security:** Ensure shutters are closed by a certain time when leaving for vacation
+- **Winter scenario:** In winter, it gets dark around 5 PM, so the shutter closes early due to brightness. The time constraint has no effect.
+- **Summer scenario:** In summer, it's still bright at 8 PM, but the time constraint triggers closing regardless.
+
+**Configuration:**
+- **Entity variant:** Reference an `input_datetime` entity that provides the time. This allows dynamic adjustment (e.g., different times for different seasons)
+- **Manual variant:** Enter a fixed time in `HH:MM` format (e.g., `20:00` for 8 PM)
+- **Default:** None (feature disabled - only brightness threshold applies)
+
+**Format:** `HH:MM` (24-hour format, e.g., `20:00`, `21:30`, `22:00`)
+
+**Combined Example:**
+* Winter (dark at 5 PM, bright at 8 AM):
+* Morning: Brightness threshold reached at 8 AM → Opens at 8 AM (brightness constraint active)
+* Evening: Brightness threshold undercut at 5 PM → Closes at 5 PM (brightness constraint active)
+
+```yaml
+dawn_open_not_before_manual: "06:00"
+dawn_close_not_later_than_manual: "20:00"
+```
+
+* Summer (bright at 5 AM, dark at 10 PM):
+* Morning: Brightness threshold reached at 5 AM → Opens at 6 AM (time constraint active)
+* Evening: Brightness threshold undercut at 10 PM → Closes at 8 PM (time constraint active)
+```yaml
+dawn_open_not_before_manual: "06:00"
+dawn_close_not_later_than_manual: "20:00"
+```
 
 
 
@@ -802,6 +863,10 @@ shadow_control:
     dawn_height_after_dawn_manual: 0
     #dawn_angle_after_dawn_entity:
     dawn_angle_after_dawn_manual: 0
+    #dawn_open_not_before_entity: 
+    #dawn_open_not_before_manual: "06:00"
+    #dawn_close_not_later_than_entity:
+    #dawn_close_not_later_than_manual: "20:00"
 ```
 # State, return values and direct options
 
