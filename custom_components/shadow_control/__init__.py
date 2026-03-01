@@ -2846,7 +2846,22 @@ class ShadowControlManager:
         alpha_rad = math.radians(alpha_deg)
 
         # $beta is the opposite angle of shutter slat distance
+        # First try with azimuth-corrected effective_slat_width
         asin_arg = (math.sin(alpha_rad) * shutter_slat_distance) / effective_slat_width
+
+        # Check if azimuth correction leads to impossible geometry (asin_arg > 1.0)
+        # This happens when effective_slat_width < slat_distance due to oblique sun angle
+        if asin_arg > 1.0:
+            self.logger.warning(
+                "Azimuth correction leads to impossible geometry (asin_arg=%.3f, "
+                "effective_slat_width=%smm < slat_distance=%smm). "
+                "Falling back to original slat width without azimuth correction.",
+                asin_arg,
+                round(effective_slat_width, 1),
+                shutter_slat_distance,
+            )
+            # Retry with original slat width (no azimuth correction)
+            asin_arg = (math.sin(alpha_rad) * shutter_slat_distance) / given_shutter_slat_width
 
         if not (-1 <= asin_arg <= 1):
             self.logger.warning(
