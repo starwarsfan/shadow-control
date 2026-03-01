@@ -304,6 +304,12 @@ def get_cfg_dawn_settings() -> vol.Schema:
             vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
+            vol.Optional(SCDawnInput.OPEN_NOT_BEFORE_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["input_datetime", "sensor"], multiple=False)
+            ),
+            vol.Optional(SCDawnInput.CLOSE_NOT_LATER_THAN_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["input_datetime", "sensor"], multiple=False)
+            ),
         }
     )
 
@@ -447,6 +453,12 @@ def get_cfg_dawn_settings_mode3() -> vol.Schema:
             ),
             vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            ),
+            vol.Optional(SCDawnInput.OPEN_NOT_BEFORE_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["input_datetime", "sensor"], multiple=False)
+            ),
+            vol.Optional(SCDawnInput.CLOSE_NOT_LATER_THAN_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["input_datetime", "sensor"], multiple=False)
             ),
         }
     )
@@ -620,6 +632,10 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.DAWN_ANGLE_AFTER_DAWN_MANUAL.value): vol.Coerce(float),
         vol.Optional(SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value): cv.entity_id,
+        vol.Optional(SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL.value): cv.entity_id,
+        vol.Optional(SCDawnInput.OPEN_NOT_BEFORE_ENTITY.value): vol.Coerce(float),
+        vol.Optional(SCInternal.DAWN_CLOSE_NOT_LATER_THAN_MANUAL.value): cv.entity_id,
+        vol.Optional(SCDawnInput.CLOSE_NOT_LATER_THAN_ENTITY.value): vol.Coerce(float),
         #
         # ====================================================================
         # DEPRECATED OPTIONS (backward compatibility - will trigger warnings)
