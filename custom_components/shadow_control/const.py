@@ -55,6 +55,11 @@ class SCInternal(Enum):
     DAWN_HEIGHT_AFTER_DAWN_MANUAL = "dawn_height_after_dawn_manual"
     DAWN_ANGLE_AFTER_DAWN_MANUAL = "dawn_angle_after_dawn_manual"
 
+    # Time constraint for opening (morning)
+    DAWN_OPEN_NOT_BEFORE_MANUAL = "dawn_open_not_before_manual"
+    # Time constraint for closing (evening)
+    DAWN_CLOSE_NOT_LATER_THAN_MANUAL = "dawn_close_not_later_than_manual"
+
     @property
     def domain(self) -> str:
         """Handle domain for internal entities."""
@@ -185,6 +190,11 @@ class SCDawnInput(Enum):
     SHUTTER_LOOK_THROUGH_ANGLE_ENTITY = "dawn_shutter_look_through_angle_entity"
     HEIGHT_AFTER_DAWN_ENTITY = "dawn_height_after_dawn_entity"
     ANGLE_AFTER_DAWN_ENTITY = "dawn_angle_after_dawn_entity"
+
+    # Time constraint for opening (morning)
+    OPEN_NOT_BEFORE_ENTITY = "dawn_open_not_before_entity"
+    # Time constraint for closing (evening)
+    CLOSE_NOT_LATER_THAN_ENTITY = "dawn_close_not_later_than_entity"
 
 
 # State constants for shutter control
@@ -341,6 +351,8 @@ INTERNAL_TO_DEFAULTS_MAP = {
     SCInternal.DAWN_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL: SCDefaults.DAWN_SHUTTER_LOOK_THROUGH_ANGLE_VALUE.value,
     SCInternal.DAWN_HEIGHT_AFTER_DAWN_MANUAL: SCDefaults.DAWN_HEIGHT_AFTER_DAWN_VALUE.value,
     SCInternal.DAWN_ANGLE_AFTER_DAWN_MANUAL: SCDefaults.DAWN_ANGLE_AFTER_DAWN_VALUE.value,
+    SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL: None,
+    SCInternal.DAWN_CLOSE_NOT_LATER_THAN_MANUAL: None,
 }
 
 NUMBER_INTERNAL_TO_EXTERNAL_MAP = {
@@ -368,6 +380,12 @@ NUMBER_INTERNAL_TO_EXTERNAL_MAP = {
     SCInternal.DAWN_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL.value: SCDawnInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value,
     SCInternal.DAWN_HEIGHT_AFTER_DAWN_MANUAL.value: SCDawnInput.HEIGHT_AFTER_DAWN_ENTITY.value,
     SCInternal.DAWN_ANGLE_AFTER_DAWN_MANUAL.value: SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value,
+}
+
+# Mapping of internal time text entity keys to their external entity config keys
+TIME_INTERNAL_TO_EXTERNAL_MAP = {
+    SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL.value: SCDawnInput.OPEN_NOT_BEFORE_ENTITY.value,
+    SCInternal.DAWN_CLOSE_NOT_LATER_THAN_MANUAL.value: SCDawnInput.CLOSE_NOT_LATER_THAN_ENTITY.value,
 }
 
 SWITCH_INTERNAL_TO_EXTERNAL_MAP = {
