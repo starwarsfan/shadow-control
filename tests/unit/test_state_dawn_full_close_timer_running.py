@@ -20,6 +20,7 @@ def manager(mock_manager):
     manager._is_timer_finished = MagicMock(return_value=False)
     manager._position_shutter = AsyncMock()
     manager._cancel_timer = MagicMock()
+    manager._check_dawn_close_time_constraint = MagicMock(return_value=False)  # Default: no time-based close
 
     # Config mocks
     manager._dawn_config = MagicMock()
@@ -86,3 +87,25 @@ class TestHandleStateDawnFullCloseTimerRunning:
 
         assert result == ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
         assert manager.logger.warning.called
+
+    async def test_close_time_constraint_keeps_timer_running(self, manager):
+        """Test that close_not_later_than keeps timer running even if brightness recovers."""
+        manager._get_current_dawn_brightness.return_value = 50  # Brightness recovered
+        manager._check_dawn_close_time_constraint.return_value = True  # But time constraint active
+
+        result = await manager._handle_state_dawn_full_close_timer_running()
+
+        # Timer should keep running, NOT cancelled
+        assert result == ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
+        manager._cancel_timer.assert_not_called()
+
+    async def test_close_time_constraint_completes_close(self, manager):
+        """Test that timer completion with active time constraint closes shutter."""
+        manager._get_current_dawn_brightness.return_value = 50  # Brightness recovered
+        manager._check_dawn_close_time_constraint.return_value = True  # But time constraint active
+        manager._is_timer_finished.return_value = True
+
+        result = await manager._handle_state_dawn_full_close_timer_running()
+
+        assert result == ShutterState.DAWN_FULL_CLOSED
+        manager._position_shutter.assert_called_once_with(100.0, 0.0, stop_timer=True)
