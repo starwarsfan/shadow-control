@@ -184,7 +184,9 @@
           "dawn_shutter_open_seconds_entity": "D07 Open after seconds",
           "dawn_shutter_look_through_angle_entity": "D08 Look through angle",
           "dawn_height_after_dawn_entity": "D09 Height after seconds",
-          "dawn_angle_after_dawn_entity": "D10 Angle after seconds"
+          "dawn_angle_after_dawn_entity": "D10 Angle after seconds",
+          "dawn_open_not_before_entity": "D11 Open not before",
+          "dawn_close_not_later_than_entity": "D12 Close not later than"
         },
         "data_description": {
           "dawn_control_enabled_entity": "De-/Activate dawn handling (by entity).",
@@ -196,7 +198,9 @@
           "dawn_shutter_open_seconds_entity": "Time to open the shutter after look through position (by entity).",
           "dawn_shutter_look_through_angle_entity": "Look through slat angle (by entity).",
           "dawn_height_after_dawn_entity": "Height after dawn (by entity).",
-          "dawn_angle_after_dawn_entity": "Slat angle after dawn (by entity)."
+          "dawn_angle_after_dawn_entity": "Slat angle after dawn (by entity).",
+          "dawn_open_not_before_entity": "Entity (input_datetime) that defines the earliest time to open the shutter in the morning. If set, the shutter will not open before this time, even if brightness threshold is exceeded.",
+          "dawn_close_not_later_than_entity": "Entity (input_datetime) that defines the latest time to close the shutter in the evening. If set, the shutter will close at this time regardless of brightness."
         }
       },
       "options": {
@@ -479,6 +483,14 @@
       "lock_integration_with_position_manual": {
         "name": "Lock with position"
       }
+    },
+    "text": {
+      "dawn_open_not_before_manual": {
+        "name": "D11 Open not before"
+      },
+      "dawn_close_not_later_than_manual": {
+        "name": "D12 Close not later than"
+      }
     }
   },
   "selector": {
@@ -487,6 +499,22 @@
         "mode1": "Venetian blind single direction (vertical = closed / horizontal = open)",
         "mode2": "Venetian blind bi-directional (vertical inside = closed / horizontal = open / vertical outside = closed)",
         "mode3": "Rolling shutter / blind"
+      }
+    }
+  },
+  "services": {
+    "set_time_constraint": {
+      "name": "Set time constraint",
+      "description": "Set a time constraint for dawn control opening or closing.",
+      "fields": {
+        "constraint_type": {
+          "name": "Constraint type",
+          "description": "Type of time constraint (open_not_before or close_not_later_than)"
+        },
+        "time": {
+          "name": "Time",
+          "description": "Time in HH:MM format (e.g., 06:00)"
+        }
       }
     }
   }

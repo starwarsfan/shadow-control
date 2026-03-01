@@ -184,7 +184,9 @@
           "dawn_shutter_look_through_angle_entity": "D07 Durchsichtwinkel",
           "dawn_shutter_open_seconds_entity": "D08 Öffnen nach x Sekunden",
           "dawn_height_after_dawn_entity": "D09 Höhe nach Dämmerung",
-          "dawn_angle_after_dawn_entity": "D10 Winkel nach Dämmerung"
+          "dawn_angle_after_dawn_entity": "D10 Winkel nach Dämmerung",
+          "dawn_open_not_before_entity": "D11 Frühestens öffnen um",
+          "dawn_close_not_later_than_entity": "D12 Spätestens schließen um"
         },
         "data_description": {
           "dawn_control_enabled_entity": "De-/Aktivieren der Dämmerungssteuerung (via Entität).",
@@ -196,7 +198,9 @@
           "dawn_shutter_look_through_angle_entity": "Lamellenwinkel für Durchsichtstellung (via Entität).",
           "dawn_shutter_open_seconds_entity": "Zeit in Sekunden nach Durchsichtstellung, nach welcher der Behang geöffnet wird (via Entität).",
           "dawn_height_after_dawn_entity": "Nach Dämmerung anzufahrende Behanghöhe (via Entität).",
-          "dawn_angle_after_dawn_entity": "Nach Dämmerung anzufahrender Lamellenwinkel (via Entität)."
+          "dawn_angle_after_dawn_entity": "Nach Dämmerung anzufahrender Lamellenwinkel (via Entität).",
+          "dawn_open_not_before_entity": "Entität (input_datetime), die die früheste Uhrzeit zum Öffnen des Behangs am Morgen definiert. Der Behang öffnet nicht vor dieser Zeit, selbst wenn die Helligkeitsschwelle überschritten wird.",
+          "dawn_close_not_later_than_entity": "Entität (input_datetime), die die späteste Uhrzeit zum Schließen des Behangs am Abend definiert. Der Behang schließt zu dieser Zeit unabhängig von der Helligkeit."
         }
       },
       "options": {
@@ -479,6 +483,14 @@
       "lock_integration_with_position_manual": {
         "name": "Sperren mit Zwangsposition"
       }
+    },
+    "text": {
+      "dawn_open_not_before_manual": {
+        "name": "D11 Frühestens öffnen um"
+      },
+      "dawn_close_not_later_than_manual": {
+        "name": "D12 Spätestens schließen um"
+      }
     }
   },
   "selector": {
@@ -487,6 +499,22 @@
         "mode1": "Raffstoren Einzelrichtung (senkrecht = geschlossen / waagerecht = offen)",
         "mode2": "Raffstoren Bidirektional (senkrecht innen = geschlossen / waagerecht = offen / senkrecht aussen = geschlossen)",
         "mode3": "Jalousie / Rollo"
+      }
+    }
+  },
+  "services": {
+    "set_time_constraint": {
+      "name": "Zeitbeschränkung setzen",
+      "description": "Setzt eine Zeitbeschränkung für das Öffnen oder Schließen bei Dämmerung.",
+      "fields": {
+        "constraint_type": {
+          "name": "Beschränkungstyp",
+          "description": "Art der Zeitbeschränkung (open_not_before oder close_not_later_than)"
+        },
+        "time": {
+          "name": "Uhrzeit",
+          "description": "Uhrzeit im Format HH:MM (z.B. 06:00)"
+        }
       }
     }
   }
