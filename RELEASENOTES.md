@@ -1,6 +1,6 @@
 # Changes
 
-## 0.12.0
+## 0.11.1
 * Fix shutter slat angle calculation near the offset borders of shadow range
 
 ## 0.11.0
