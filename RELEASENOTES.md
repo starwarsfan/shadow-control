@@ -1,6 +1,12 @@
 # Changes
 
+
+## 0.12.0
+### New features:
+* Add new options `dawn_open_not_before_*` and `dawn_close_not_later_than_*`, both as external as well as internal (manual) entity
+
 ## 0.11.1
+### Fixes:
 * Fix shutter slat angle calculation near the offset borders of shadow range
 
 ## 0.11.0
