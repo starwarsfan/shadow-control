@@ -2,9 +2,11 @@
 
 # Used for json dumping, see handle_dump_config_service
 # import json
+import datetime
 import logging
 import math
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, timedelta
+from datetime import time as datetime_time
 from enum import Enum
 from functools import partial
 from typing import TYPE_CHECKING, Any
@@ -69,6 +71,7 @@ PLATFORMS: list[Platform] = [
     Platform.SELECT,
     Platform.SENSOR,
     Platform.SWITCH,
+    Platform.TIME,
 ]
 
 SERVICE_DUMP_CONFIG = "dump_sc_configuration"
@@ -736,6 +739,8 @@ class SCDawnControlConfig:
         self.shutter_look_through_angle: float = SCDefaults.DAWN_SHUTTER_LOOK_THROUGH_ANGLE_VALUE.value
         self.height_after_dawn: float = SCDefaults.DAWN_HEIGHT_AFTER_DAWN_VALUE.value
         self.angle_after_dawn: float = SCDefaults.DAWN_ANGLE_AFTER_DAWN_VALUE.value
+        self.open_not_before: datetime_time | None = None
+        self.close_not_later_than: datetime_time | None = None
 
 
 class ShadowControlManager:
@@ -902,7 +907,7 @@ class ShadowControlManager:
             event: The HA started event
 
         """
-        self._ha_start_time = datetime.now(tz=UTC)
+        self._ha_start_time = datetime.datetime.now(tz=UTC)
         self.logger.info(
             "Home Assistant started. Grace period of %ds active to prevent shutter movement during state restore.",
             self._ha_restart_grace_period_seconds,
@@ -927,7 +932,7 @@ class ShadowControlManager:
             # This handles the brief window before EVENT_HOMEASSISTANT_STARTED fires
             return True
 
-        time_since_start = (datetime.now(tz=UTC) - self._ha_start_time).total_seconds()
+        time_since_start = (datetime.datetime.now(tz=UTC) - self._ha_start_time).total_seconds()
         return time_since_start < self._ha_restart_grace_period_seconds
 
     def _handle_movement_restriction(self) -> None:
@@ -1914,6 +1919,18 @@ class ShadowControlManager:
         )
         self._dawn_config.angle_after_dawn = self._get_entity_state_value(
             SCDawnInput.ANGLE_AFTER_DAWN_ENTITY.value, dawn_angle_after_dawn_value, float
+        )
+
+        # Dawn time constraints
+        self._dawn_config.open_not_before = self._get_time_value(
+            entity_key=SCDawnInput.OPEN_NOT_BEFORE_ENTITY.value,
+            manual_key=SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL.value,
+            default=None,
+        )
+        self._dawn_config.close_not_later_than = self._get_time_value(
+            entity_key=SCDawnInput.CLOSE_NOT_LATER_THAN_ENTITY.value,
+            manual_key=SCInternal.DAWN_CLOSE_NOT_LATER_THAN_MANUAL.value,
+            default=None,
         )
 
         facade = _format_config_object_for_logging(self._facade_config, " -> Facade config: ")
