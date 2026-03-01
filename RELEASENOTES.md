@@ -1,5 +1,8 @@
 # Changes
 
+## 0.12.0
+* Fix shutter slat angle calculation near the offset borders of shadow range
+
 ## 0.11.0
 ### Breaking changes:
 * **Important: If you're using yaml configuration, you must rename the following options within your yaml files before updating to version 0.11.0 or higher!**
