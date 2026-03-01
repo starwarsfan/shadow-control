@@ -3554,14 +3554,11 @@ class ShadowControlManager:
         neutral_angle = self._facade_config.neutral_pos_angle
 
         if dawn_handling_active:
-            if (
-                dawn_brightness is not None
-                and dawn_threshold_close is not None
-                and dawn_brightness < dawn_threshold_close
-                and dawn_close_delay is not None
-            ):
+            brightness_below_threshold = dawn_brightness is not None and dawn_threshold_close is not None and dawn_brightness < dawn_threshold_close
+            if (brightness_below_threshold or self._check_dawn_close_time_constraint()) and dawn_close_delay is not None:
                 self.logger.debug(
-                    "State %s (%s): Dawn mode active and brightness (%s) below dawn threshold (%s), starting timer for %s (%ss)",
+                    "State %s (%s): Dawn mode active and brightness (%s) below dawn threshold (%s) or close time reached,"
+                    " starting timer for %s (%ss)",
                     ShutterState.DAWN_NEUTRAL,
                     ShutterState.DAWN_NEUTRAL.name,
                     dawn_brightness,
@@ -3740,20 +3737,23 @@ class ShadowControlManager:
             dawn_open_slat_angle = self._dawn_config.shutter_look_through_angle
             dawn_open_shutter_delay = self._dawn_config.shutter_look_through_seconds
 
-            if (
+            brightness_below_threshold = (
                 dawn_brightness is not None
                 and dawn_threshold_close is not None
                 and dawn_brightness < dawn_threshold_close
                 and dawn_height is not None
                 and dawn_open_slat_angle is not None
-            ):
-                await self._position_shutter(
-                    float(dawn_height),
-                    float(dawn_open_slat_angle),
-                    stop_timer=False,
-                )
+            )
+            if brightness_below_threshold or self._check_dawn_close_time_constraint():
+                if dawn_height is not None and dawn_open_slat_angle is not None:
+                    await self._position_shutter(
+                        float(dawn_height),
+                        float(dawn_open_slat_angle),
+                        stop_timer=False,
+                    )
                 self.logger.debug(
-                    "State %s (%s): Dawn brightness (%s) below threshold (%s), moving to dawn height (%s%%) with open slats (%s°) and state %s",
+                    "State %s (%s): Dawn brightness (%s) below threshold (%s) or close time reached,"
+                    " moving to dawn height (%s%%) with open slats (%s°) and state %s",
                     ShutterState.DAWN_HORIZONTAL_NEUTRAL,
                     ShutterState.DAWN_HORIZONTAL_NEUTRAL.name,
                     dawn_brightness,
@@ -3764,6 +3764,14 @@ class ShadowControlManager:
                 )
                 return ShutterState.DAWN_FULL_CLOSED
             if dawn_open_shutter_delay is not None:
+                if not self._check_dawn_open_time_constraint():
+                    self.logger.debug(
+                        "State %s (%s): Dawn brightness not below threshold but open_not_before not yet reached, staying at %s",
+                        ShutterState.DAWN_HORIZONTAL_NEUTRAL,
+                        ShutterState.DAWN_HORIZONTAL_NEUTRAL.name,
+                        ShutterState.DAWN_HORIZONTAL_NEUTRAL,
+                    )
+                    return ShutterState.DAWN_HORIZONTAL_NEUTRAL
                 self.logger.debug(
                     "State %s (%s): Dawn brightness not below threshold, starting timer for %s (%ss)",
                     ShutterState.DAWN_HORIZONTAL_NEUTRAL,
@@ -3895,6 +3903,16 @@ class ShadowControlManager:
                 and dawn_brightness > dawn_threshold_close
                 and dawn_open_slat_delay is not None
             ):
+                if not self._check_dawn_open_time_constraint():
+                    self.logger.debug(
+                        "State %s (%s): Dawn brightness (%s) above threshold (%s) but open_not_before not yet reached, staying at %s",
+                        ShutterState.DAWN_FULL_CLOSED,
+                        ShutterState.DAWN_FULL_CLOSED.name,
+                        dawn_brightness,
+                        dawn_threshold_close,
+                        ShutterState.DAWN_FULL_CLOSED,
+                    )
+                    return ShutterState.DAWN_FULL_CLOSED
                 self.logger.debug(
                     "State %s (%s): Dawn brightness (%s) above threshold (%s), starting timer for %s (%ss)",
                     ShutterState.DAWN_FULL_CLOSED,
@@ -3961,7 +3979,8 @@ class ShadowControlManager:
             dawn_threshold_close = self._dawn_config.brightness_threshold
             dawn_height = self._dawn_config.shutter_max_height
             dawn_angle = self._dawn_config.shutter_max_angle
-            if dawn_brightness is not None and dawn_threshold_close is not None and dawn_brightness < dawn_threshold_close:
+            brightness_below_threshold = dawn_brightness is not None and dawn_threshold_close is not None and dawn_brightness < dawn_threshold_close
+            if brightness_below_threshold or self._check_dawn_close_time_constraint():
                 if self._is_timer_finished():
                     if dawn_height is not None and dawn_angle is not None:
                         await self._position_shutter(
@@ -3986,13 +4005,13 @@ class ShadowControlManager:
                     )
                     return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
                 self.logger.debug(
-                    "State %s (%s): Waiting for timer (brightness low enough)",
+                    "State %s (%s): Waiting for timer (brightness below threshold or close time reached)",
                     ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING,
                     ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name,
                 )
                 return ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING
             self.logger.debug(
-                "State %s (%s): Brightness (%s) not below threshold (%s), moving to %s and stopping timer",
+                "State %s (%s): Brightness (%s) not below threshold (%s) and close time not reached, moving to %s and stopping timer",
                 ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING,
                 ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING.name,
                 dawn_brightness,
