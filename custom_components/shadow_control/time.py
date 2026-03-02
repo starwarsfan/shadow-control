@@ -1,5 +1,6 @@
 """Shadow Control time text implementation."""
 
+import datetime
 import logging
 import re
 from typing import TYPE_CHECKING
@@ -162,18 +163,24 @@ class ShadowControlTimeText(TextEntity, RestoreEntity):
 
     async def async_set_value(self, value: str) -> None:
         """Set the time value with validation."""
-        # Validate format
-        if not TIME_PATTERN.match(value):
+        # Handle cases where value might be a datetime.time object
+        if isinstance(value, datetime.time):
+            value = value.strftime("%H:%M")
+
+        # Validation check
+        if not isinstance(value, str) or not TIME_PATTERN.match(value):
             self.logger.error(
-                "Invalid time format '%s' for entity %s. Expected format: HH:MM (e.g., 06:00)",
+                "Invalid time format '%s' for entity %s. Expected HH:MM",
                 value,
                 self.entity_id,
             )
-            error_msg = f"Invalid time format. Expected HH:MM (e.g., 06:00), got: {value}"
-            raise ValueError(error_msg)
+
+            msg = f"Invalid time format. Expected HH:MM, got: {value}"
+            raise ValueError(msg)
 
         self._state = value
         self.async_write_ha_state()
+
         # Notify integration of change
         await self._notify_integration()
 
