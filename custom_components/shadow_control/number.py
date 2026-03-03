@@ -14,7 +14,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 if TYPE_CHECKING:
     from . import ShadowControlManager
 
-from .const import DOMAIN, DOMAIN_DATA_MANAGERS, INTERNAL_TO_DEFAULTS_MAP, NUMBER_INTERNAL_TO_EXTERNAL_MAP, SCInternal
+from .const import DOMAIN, DOMAIN_DATA_MANAGERS, INTERNAL_TO_DEFAULTS_MAP, NUMBER_INTERNAL_TO_EXTERNAL_MAP, NUMBER_KEYS_MODE3_EXCLUDED, SCInternal
 
 
 async def async_setup_entry(
@@ -396,11 +396,21 @@ async def async_setup_entry(
     required_internal_unique_ids = set()
     registry = er.async_get(hass)  # Access the Home Assistant Entity Registry
 
+    # Determine shutter type for mode-dependent entity filtering
+    shutter_type = config_entry.data.get("facade_shutter_type_static")
+    is_mode3 = shutter_type == "mode3"
+
     # ----------------------------------------------------------------------
     # PART 1: Conditional Addition and Tracking
     # ----------------------------------------------------------------------
     for entity in entities:
         internal_key = entity.entity_description.key
+
+        # Skip angle-related entities for mode3 (roller blinds have no angle)
+        if is_mode3 and internal_key in NUMBER_KEYS_MODE3_EXCLUDED:
+            instance_logger.debug("Skipping angle entity '%s' for mode3 instance", internal_key)
+            continue
+
         external_config_key = NUMBER_INTERNAL_TO_EXTERNAL_MAP.get(internal_key)
 
         is_external_entity_configured = False

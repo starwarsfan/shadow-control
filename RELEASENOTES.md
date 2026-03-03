@@ -1,9 +1,11 @@
 # Changes
 
-
 ## 0.12.0
 ### New features:
 * Add new options `dawn_open_not_before_*` and `dawn_close_not_later_than_*`, both as external as well as internal (manual) entity
+
+### Fixes:
+* Fix useless creation of angle entities for mode3 covers
 
 ## 0.11.1
 ### Fixes:

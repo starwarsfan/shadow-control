@@ -14,7 +14,15 @@ from homeassistant.helpers.restore_state import RestoreEntity
 if TYPE_CHECKING:
     from . import ShadowControlManager
 
-from .const import DOMAIN, DOMAIN_DATA_MANAGERS, SELECT_INTERNAL_TO_EXTERNAL_MAP, MovementRestricted, SCInternal
+from .const import (
+    DOMAIN,
+    DOMAIN_DATA_MANAGERS,
+    SELECT_INTERNAL_TO_EXTERNAL_MAP,
+    SELECT_KEYS_MODE3_EXCLUDED,
+    MovementRestricted,
+    SCInternal,
+    ShutterType,
+)
 
 
 async def async_setup_entry(
@@ -60,11 +68,21 @@ async def async_setup_entry(
     required_internal_unique_ids = set()
     registry = er.async_get(hass)  # Access the Home Assistant Entity Registry
 
+    # Determine shutter type for mode-dependent entity filtering
+    shutter_type = config_entry.data.get("facade_shutter_type_static")
+    is_mode3 = shutter_type == ShutterType.MODE3.value
+
     # ----------------------------------------------------------------------
     # PART 1: Conditional Addition and Tracking
     # ----------------------------------------------------------------------
     for entity in entities:
         internal_key = entity.entity_description.key
+
+        # Skip angle-related entities for mode3 (roller blinds have no angle)
+        if is_mode3 and internal_key in SELECT_KEYS_MODE3_EXCLUDED:
+            instance_logger.debug("Skipping angle select entity '%s' for mode3 instance", internal_key)
+            continue
+
         external_config_key = SELECT_INTERNAL_TO_EXTERNAL_MAP.get(internal_key)
 
         is_external_entity_configured = False
@@ -194,7 +212,7 @@ class ShadowControlSelect(SelectEntity, RestoreEntity):
 
         last_state = await self.async_get_last_state()
         if last_state:
-            self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
+            self.logger.debug("Restoring last state for %s: %s", self.entity_id, last_state.state)
             # Restore the selection state in hass.data
             self.hass.data[DOMAIN].setdefault("select_states", {})[self.unique_id] = last_state.state
             self.async_write_ha_state()

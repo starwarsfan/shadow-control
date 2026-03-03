@@ -410,6 +410,23 @@ SELECT_INTERNAL_TO_EXTERNAL_MAP = {
     SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL.value: SCDynamicInput.MOVEMENT_RESTRICTION_ANGLE_ENTITY.value,
 }
 
+# Select entity keys that are angle-related and must NOT be created for mode3 (roller blinds)
+SELECT_KEYS_MODE3_EXCLUDED = {
+    SCInternal.MOVEMENT_RESTRICTION_ANGLE_MANUAL,
+}
+
+# Number entity keys that are angle-related and must NOT be created for mode3 (roller blinds)
+NUMBER_KEYS_MODE3_EXCLUDED = {
+    SCInternal.LOCK_ANGLE_MANUAL.value,
+    SCInternal.NEUTRAL_POS_ANGLE_MANUAL.value,
+    SCInternal.SHADOW_SHUTTER_MAX_ANGLE_MANUAL.value,
+    SCInternal.SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL.value,
+    SCInternal.SHADOW_ANGLE_AFTER_SUN_MANUAL.value,
+    SCInternal.DAWN_SHUTTER_MAX_ANGLE_MANUAL.value,
+    SCInternal.DAWN_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL.value,
+    SCInternal.DAWN_ANGLE_AFTER_DAWN_MANUAL.value,
+}
+
 EXTERNAL_SENSOR_DEFINITIONS = [
     # Lock control and position values
     {
