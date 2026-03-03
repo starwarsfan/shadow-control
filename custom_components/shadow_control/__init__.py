@@ -1923,14 +1923,14 @@ class ShadowControlManager:
 
         # Dawn time constraints
         open_not_before_manual = self.get_internal_entity_id(SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL)
-        open_not_before_value = self._get_time_from_state(open_not_before_manual) if open_not_before_manual else None
+        open_not_before_value = self._get_time_from_internal_entity(open_not_before_manual) if open_not_before_manual else None
         self._dawn_config.open_not_before = self._get_time_value(
             entity_key=SCDawnInput.OPEN_NOT_BEFORE_ENTITY.value,
             manual_value=open_not_before_value,
             default=None,
         )
         close_not_later_than_manual = self.get_internal_entity_id(SCInternal.DAWN_CLOSE_NOT_LATER_THAN_MANUAL)
-        close_not_later_than_value = self._get_time_from_state(close_not_later_than_manual) if close_not_later_than_manual else None
+        close_not_later_than_value = self._get_time_from_internal_entity(close_not_later_than_manual) if close_not_later_than_manual else None
         self._dawn_config.close_not_later_than = self._get_time_value(
             entity_key=SCDawnInput.CLOSE_NOT_LATER_THAN_ENTITY.value,
             manual_value=close_not_later_than_value,
@@ -3917,6 +3917,16 @@ class ShadowControlManager:
                         ShutterState.DAWN_FULL_CLOSED,
                     )
                     return ShutterState.DAWN_FULL_CLOSED
+                if self._check_dawn_close_time_constraint():
+                    self.logger.debug(
+                        "State %s (%s): Dawn brightness (%s) above threshold (%s) but close_not_later_than already reached, staying at %s",
+                        ShutterState.DAWN_FULL_CLOSED,
+                        ShutterState.DAWN_FULL_CLOSED.name,
+                        dawn_brightness,
+                        dawn_threshold_close,
+                        ShutterState.DAWN_FULL_CLOSED,
+                    )
+                    return ShutterState.DAWN_FULL_CLOSED
                 self.logger.debug(
                     "State %s (%s): Dawn brightness (%s) above threshold (%s), starting timer for %s (%ss)",
                     ShutterState.DAWN_FULL_CLOSED,
@@ -4312,8 +4322,8 @@ class ShadowControlManager:
                 )
             return default_enum_member
 
-    def _get_time_from_state(self, entity_id: str) -> datetime_time | None:
-        """Read a datetime.time value from the HA state of a time entity."""
+    def _get_time_from_internal_entity(self, entity_id: str) -> datetime_time | None:
+        """Read a datetime.time value from the HA state of an internal time entity."""
         state = self.hass.states.get(entity_id)
         if not state or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
             return None
@@ -4325,7 +4335,12 @@ class ShadowControlManager:
                 second = int(time_parts[2]) if len(time_parts) > 2 else 0
                 return datetime_time(hour, minute, second)
         except (ValueError, AttributeError) as err:
-            self.logger.warning("Failed to parse time from entity %s (state: %s): %s", entity_id, state.state, err)
+            self.logger.warning(
+                "Failed to parse time from internal entity %s (state: %s): %s",
+                entity_id,
+                state.state,
+                err,
+            )
         return None
 
     def _get_time_value(
@@ -4335,12 +4350,12 @@ class ShadowControlManager:
         default: datetime_time | None,
     ) -> datetime_time | None:
         """
-        Get time value from external entity or internal entity value.
+        Get time value from external entity or internal time entity.
 
         Args:
             entity_key: Config key for external entity reference
-            manual_value: Value already read from the internal time entity
-            default: Default value if neither source is available
+            manual_value: Value already read from the internal TimeEntity state
+            default: Default value if neither source has a value
 
         Returns:
             datetime.time object or None
@@ -4349,9 +4364,22 @@ class ShadowControlManager:
         # Try external entity first
         entity_id = self._config.get(entity_key)
         if entity_id:
-            result = self._get_time_from_state(entity_id)
-            if result is not None:
-                return result
+            state = self.hass.states.get(entity_id)
+            if state and state.state not in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+                try:
+                    time_parts = state.state.split(":")
+                    if len(time_parts) >= 2:
+                        hour = int(time_parts[0])
+                        minute = int(time_parts[1])
+                        second = int(time_parts[2]) if len(time_parts) > 2 else 0
+                        return datetime_time(hour, minute, second)
+                except (ValueError, AttributeError) as err:
+                    self.logger.warning(
+                        "Failed to parse time from entity %s (state: %s): %s",
+                        entity_id,
+                        state.state,
+                        err,
+                    )
 
         # Fallback to internal entity value
         if manual_value is not None:
