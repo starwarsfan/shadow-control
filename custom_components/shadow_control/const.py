@@ -107,6 +107,11 @@ class SCInternal(Enum):
             SCInternal.DAWN_ANGLE_AFTER_DAWN_MANUAL,
         ):
             return "number"
+        if self in (
+            SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL,
+            SCInternal.DAWN_CLOSE_NOT_LATER_THAN_MANUAL,
+        ):
+            return "time"
         return "select"  # default/fallback
 
 
