@@ -1922,14 +1922,18 @@ class ShadowControlManager:
         )
 
         # Dawn time constraints
+        open_not_before_manual = self.get_internal_entity_id(SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL)
+        open_not_before_value = self._get_time_from_state(open_not_before_manual) if open_not_before_manual else None
         self._dawn_config.open_not_before = self._get_time_value(
             entity_key=SCDawnInput.OPEN_NOT_BEFORE_ENTITY.value,
-            manual_key=SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL.value,
+            manual_value=open_not_before_value,
             default=None,
         )
+        close_not_later_than_manual = self.get_internal_entity_id(SCInternal.DAWN_CLOSE_NOT_LATER_THAN_MANUAL)
+        close_not_later_than_value = self._get_time_from_state(close_not_later_than_manual) if close_not_later_than_manual else None
         self._dawn_config.close_not_later_than = self._get_time_value(
             entity_key=SCDawnInput.CLOSE_NOT_LATER_THAN_ENTITY.value,
-            manual_key=SCInternal.DAWN_CLOSE_NOT_LATER_THAN_MANUAL.value,
+            manual_value=close_not_later_than_value,
             default=None,
         )
 
