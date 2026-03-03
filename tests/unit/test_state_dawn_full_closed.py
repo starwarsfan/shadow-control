@@ -20,6 +20,7 @@ def manager(mock_manager):
     manager._start_timer = AsyncMock()
     manager._position_shutter = AsyncMock()
     manager._check_dawn_open_time_constraint = MagicMock(return_value=True)  # Default: opening allowed
+    manager._check_dawn_close_time_constraint = MagicMock(return_value=False)  # Default: no close constraint
 
     # Config mocks
     manager._dawn_config = MagicMock()
@@ -30,6 +31,7 @@ def manager(mock_manager):
     manager._dawn_config.shutter_look_through_seconds = 120
     manager._dawn_config.shutter_max_height = 100.0
     manager._dawn_config.shutter_max_angle = 0.0
+    manager._dawn_config.close_not_later_than = None  # No close constraint by default
 
     # Facade defaults
     manager._facade_config.neutral_pos_height = 0.0
@@ -59,6 +61,18 @@ class TestHandleStateDawnFullClosed:
         """Test that open_not_before prevents starting the opening timer."""
         manager._get_current_dawn_brightness.return_value = 50  # Brightness OK
         manager._check_dawn_open_time_constraint.return_value = False  # Too early to open
+
+        result = await manager._handle_state_dawn_full_closed()
+
+        assert result == ShutterState.DAWN_FULL_CLOSED
+        manager._start_timer.assert_not_called()
+        manager._position_shutter.assert_not_called()
+
+    async def test_close_not_later_than_blocks_re_opening(self, manager):
+        """Test that active close_not_later_than prevents re-opening from DAWN_FULL_CLOSED."""
+        manager._get_current_dawn_brightness.return_value = 50  # Brightness above threshold
+        manager._check_dawn_open_time_constraint.return_value = True  # open_not_before OK
+        manager._check_dawn_close_time_constraint.return_value = True  # close time reached → block
 
         result = await manager._handle_state_dawn_full_closed()
 
