@@ -1,10 +1,11 @@
-"""Unit tests for Shadow Control time text entities."""
+"""Unit tests for Shadow Control time entities."""
 
+import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.components.text import DOMAIN as TEXT_DOMAIN
-from homeassistant.components.text import TextEntityDescription
+from homeassistant.components.time import DOMAIN as TIME_DOMAIN
+from homeassistant.components.time import TimeEntityDescription
 from homeassistant.const import STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
@@ -16,8 +17,7 @@ from custom_components.shadow_control.const import (
     SCInternal,
 )
 from custom_components.shadow_control.time import (
-    TIME_PATTERN,
-    ShadowControlTimeText,
+    ShadowControlTimeEntity,
     async_setup_entry,
 )
 
@@ -62,41 +62,24 @@ async def hass_with_manager(hass: HomeAssistant, mock_config_entry, mock_manager
     return hass
 
 
-class TestTimePattern:
-    """Test the time regex pattern validation."""
+class TestTimeEntityValues:
+    """Test TimeEntity value handling (datetime.time objects)."""
 
-    def test_valid_times(self):
-        """Test valid time formats."""
+    def test_valid_time_objects(self):
+        """Test that valid datetime.time objects work correctly."""
         valid_times = [
-            "00:00",
-            "06:00",
-            "12:30",
-            "23:59",
-            "08:15",
-            "20:00",
+            datetime.time(0, 0),
+            datetime.time(6, 0),
+            datetime.time(12, 30),
+            datetime.time(23, 59),
         ]
-        for time_str in valid_times:
-            assert TIME_PATTERN.match(time_str), f"{time_str} should be valid"
+        for t in valid_times:
+            assert isinstance(t, datetime.time)
 
-    def test_invalid_times(self):
-        """Test invalid time formats."""
-        invalid_times = [
-            "24:00",  # Hour too high
-            "25:00",  # Hour too high
-            "23:60",  # Minute too high
-            "6:00",  # Missing leading zero
-            "06:0",  # Missing minute digit
-            "6:0",  # Missing both leading zeros
-            "abc",  # Not a time
-            "12:345",  # Too many minute digits
-            "123:45",  # Too many hour digits
-            "",  # Empty string
-            "12",  # Missing minutes
-            "12:",  # Missing minute value
-            ":30",  # Missing hour value
-        ]
-        for time_str in invalid_times:
-            assert not TIME_PATTERN.match(time_str), f"{time_str} should be invalid"
+    def test_time_state_string_format(self):
+        """Test that HA formats time as HH:MM:SS string."""
+        t = datetime.time(6, 30)
+        assert t.strftime("%H:%M:%S") == "06:30:00"
 
 
 class TestAsyncSetupEntry:
@@ -112,7 +95,7 @@ class TestAsyncSetupEntry:
         assert mock_add_entities.called
         entities = mock_add_entities.call_args[0][0]
         assert len(entities) == 2
-        assert all(isinstance(e, ShadowControlTimeText) for e in entities)
+        assert all(isinstance(e, ShadowControlTimeEntity) for e in entities)
 
     async def test_setup_with_external_entity_configured(self, hass_with_manager, mock_config_entry):
         """Test setup when external entity is configured - internal entity should be skipped."""
@@ -131,7 +114,7 @@ class TestAsyncSetupEntry:
         # Setup registry with an old entity
         registry = er.async_get(hass_with_manager)
         old_entity = registry.async_get_or_create(
-            TEXT_DOMAIN,
+            TIME_DOMAIN,
             DOMAIN,
             f"{mock_config_entry.entry_id}_{SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL.value}",
         )
@@ -146,19 +129,19 @@ class TestAsyncSetupEntry:
         assert registry.async_get(old_entity.entity_id) is None
 
 
-class TestShadowControlTimeText:
-    """Test the ShadowControlTimeText entity."""
+class TestShadowControlTimeEntity:
+    """Test the ShadowControlTimeEntity entity."""
 
     @pytest.fixture
     def time_entity(self, hass_with_manager, mock_config_entry):
-        """Create a time text entity."""
-        entity = ShadowControlTimeText(
+        """Create a time entity."""
+        entity = ShadowControlTimeEntity(
             hass_with_manager,
             mock_config_entry,
             key=SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL.value,
             instance_name="Test Instance",
             logger=MagicMock(),
-            description=TextEntityDescription(
+            description=TimeEntityDescription(
                 key=SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL.value,
                 name="Dawn open not before",
             ),
@@ -172,64 +155,57 @@ class TestShadowControlTimeText:
     def test_entity_properties(self, time_entity):
         """Test basic entity properties."""
         assert time_entity.unique_id == "test_entry_123_dawn_open_not_before_manual"
-        assert time_entity._attr_pattern == TIME_PATTERN.pattern
-        assert time_entity._attr_mode == "text"
-        assert time_entity._attr_native_max == 5
-        assert time_entity._attr_native_min == 5
         assert time_entity._attr_icon == "mdi:clock-start"
 
     async def test_set_valid_time(self, time_entity):
         """Test setting a valid time value."""
-        time_entity.entity_id = "text.test_instance_dawn_open_not_before"
+        time_entity.entity_id = "time.test_instance_dawn_open_not_before"
         time_entity.async_write_ha_state = MagicMock()
 
-        await time_entity.async_set_value("06:00")
+        t = datetime.time(6, 0)
+        await time_entity.async_set_value(t)
 
-        assert time_entity.native_value == "06:00"
-        assert time_entity._state == "06:00"
+        assert time_entity.native_value == t
+        assert time_entity._state == t
 
-    async def test_set_invalid_time_raises_error(self, time_entity):
-        """Test that setting invalid time raises ValueError."""
-        time_entity.entity_id = "text.test_instance_dawn_open_not_before"
+    async def test_set_time_triggers_state_write(self, time_entity):
+        """Test that setting a time value writes HA state."""
+        time_entity.entity_id = "time.test_instance_dawn_open_not_before"
         time_entity.async_write_ha_state = MagicMock()
 
-        with pytest.raises(ValueError, match="Invalid time format"):
-            await time_entity.async_set_value("25:00")
+        t = datetime.time(7, 30)
+        await time_entity.async_set_value(t)
 
-        with pytest.raises(ValueError, match="Invalid time format"):
-            await time_entity.async_set_value("6:00")
-
-        with pytest.raises(ValueError, match="Invalid time format"):
-            await time_entity.async_set_value("abc")
+        time_entity.async_write_ha_state.assert_called_once()
+        assert time_entity._state == t
 
     async def test_notify_integration_called(self, time_entity, mock_manager):
         """Test that changing value notifies the integration."""
-        time_entity.entity_id = "text.test_instance_dawn_open_not_before"
+        time_entity.entity_id = "time.test_instance_dawn_open_not_before"
         time_entity.async_write_ha_state = MagicMock()
 
-        await time_entity.async_set_value("08:30")
+        await time_entity.async_set_value(datetime.time(8, 30))
 
         # Should trigger recalculation
         assert mock_manager.async_calculate_and_apply_cover_position.called
 
     async def test_restore_valid_state(self, hass_with_manager, time_entity):
         """Test restoring a valid state after HA restart."""
-        # Set entity_id for the test
-        time_entity.entity_id = "text.test_instance_dawn_open_not_before"
+        time_entity.entity_id = "time.test_instance_dawn_open_not_before"
 
-        # Mock restored state
+        # HA stores TimeEntity state as "HH:MM:SS"
         mock_state = MagicMock()
-        mock_state.state = "07:15"
+        mock_state.state = "07:15:00"
 
         with patch.object(time_entity, "async_get_last_state", return_value=mock_state):
             await time_entity.async_added_to_hass()
 
-        assert time_entity._state == "07:15"
+        assert time_entity._state == datetime.time(7, 15)
 
     async def test_restore_invalid_state_uses_default(self, hass_with_manager, time_entity):
         """Test that invalid restored state falls back to default."""
         # Set entity_id for the test
-        time_entity.entity_id = "text.test_instance_dawn_open_not_before"
+        time_entity.entity_id = "time.test_instance_dawn_open_not_before"
 
         # Mock restored state with invalid format
         mock_state = MagicMock()
@@ -247,7 +223,7 @@ class TestShadowControlTimeText:
     async def test_restore_unknown_state_uses_default(self, hass_with_manager, time_entity):
         """Test that unknown/unavailable state uses default."""
         # Set entity_id for the test
-        time_entity.entity_id = "text.test_instance_dawn_open_not_before"
+        time_entity.entity_id = "time.test_instance_dawn_open_not_before"
 
         # Mock restored state as unknown
         mock_state = MagicMock()
@@ -264,7 +240,7 @@ class TestShadowControlTimeText:
     async def test_no_restored_state_uses_default(self, hass_with_manager, time_entity):
         """Test that no restored state uses default value."""
         # Set entity_id for the test
-        time_entity.entity_id = "text.test_instance_dawn_open_not_before"
+        time_entity.entity_id = "time.test_instance_dawn_open_not_before"
 
         with (
             patch.object(time_entity, "async_get_last_state", return_value=None),
@@ -276,10 +252,9 @@ class TestShadowControlTimeText:
 
     def test_get_default_value_from_map(self, time_entity):
         """Test getting default value from INTERNAL_TO_DEFAULTS_MAP."""
-        # Mock the defaults map
         with patch.dict(INTERNAL_TO_DEFAULTS_MAP, {SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL: "06:00"}):
             default = time_entity._get_default_value()
-            assert default == "06:00"
+            assert default == datetime.time(6, 0)
 
     def test_get_default_value_invalid_format_returns_none(self, time_entity):
         """Test that invalid default format returns None."""
@@ -298,7 +273,7 @@ class TestShadowControlTimeText:
     async def test_unique_id_map_registration(self, hass_with_manager, time_entity):
         """Test that entity registers in unique_id_map."""
         # Set entity_id for the test
-        time_entity.entity_id = "text.test_instance_dawn_open_not_before"
+        time_entity.entity_id = "time.test_instance_dawn_open_not_before"
 
         await time_entity.async_added_to_hass()
 
@@ -324,13 +299,13 @@ class TestTimeEntityIntegration:
 
     async def test_entity_value_change_triggers_recalculation(self, hass_with_manager, mock_config_entry, mock_manager):
         """Test that changing entity value triggers integration recalculation."""
-        entity = ShadowControlTimeText(
+        entity = ShadowControlTimeEntity(
             hass_with_manager,
             mock_config_entry,
             key=SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL.value,
             instance_name="Test",
             logger=MagicMock(),
-            description=TextEntityDescription(
+            description=TimeEntityDescription(
                 key=SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL.value,
                 name="Test",
             ),
@@ -338,39 +313,33 @@ class TestTimeEntityIntegration:
         # Mock the platform
         entity.platform = MagicMock()
         entity.platform.platform_name = DOMAIN
-        entity.entity_id = "text.test_dawn_open_not_before"
+        entity.entity_id = "time.test_dawn_open_not_before"
         entity.async_write_ha_state = MagicMock()
 
-        await entity.async_set_value("07:00")
+        await entity.async_set_value(datetime.time(7, 0))
 
         # Verify manager was notified
         mock_manager.async_calculate_and_apply_cover_position.assert_called_once()
 
-    async def test_validation_prevents_invalid_values(self, hass_with_manager, mock_config_entry):
-        """Test that validation prevents storing invalid time values."""
-        entity = ShadowControlTimeText(
+    async def test_multiple_value_changes(self, hass_with_manager, mock_config_entry, mock_manager):
+        """Test that multiple value changes are each reflected correctly."""
+        entity = ShadowControlTimeEntity(
             hass_with_manager,
             mock_config_entry,
             key=SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL.value,
             instance_name="Test",
             logger=MagicMock(),
-            description=TextEntityDescription(
+            description=TimeEntityDescription(
                 key=SCInternal.DAWN_OPEN_NOT_BEFORE_MANUAL.value,
                 name="Test",
             ),
         )
-        # Mock the platform
         entity.platform = MagicMock()
         entity.platform.platform_name = DOMAIN
-        entity.entity_id = "text.test_dawn_open_not_before"
+        entity.entity_id = "time.test_dawn_open_not_before"
         entity.async_write_ha_state = MagicMock()
 
-        # Try to set invalid values
-        invalid_values = ["24:00", "6:00", "abc", "12:345", ""]
-
-        for invalid in invalid_values:
-            with pytest.raises(ValueError, match="Invalid time format"):
-                await entity.async_set_value(invalid)
-
-            # State should remain None (not set)
-            assert entity._state is None
+        for t in [datetime.time(6, 0), datetime.time(7, 30), datetime.time(23, 59)]:
+            await entity.async_set_value(t)
+            assert entity._state == t
+            assert entity.native_value == t
