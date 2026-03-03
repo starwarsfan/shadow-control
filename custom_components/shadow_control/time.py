@@ -198,7 +198,7 @@ class ShadowControlTimeText(TextEntity, RestoreEntity):
         # Restore last state after Home Assistant restart
         last_state = await self.async_get_last_state()
         if last_state and last_state.state not in ("unknown", "unavailable"):
-            self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
+            self.logger.debug("Restoring last state for %s: %s", self.entity_id, last_state.state)
             # Validate restored state
             if TIME_PATTERN.match(last_state.state):
                 self._state = last_state.state
