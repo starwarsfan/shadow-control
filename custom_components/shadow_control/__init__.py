@@ -4312,69 +4312,50 @@ class ShadowControlManager:
                 )
             return default_enum_member
 
+    def _get_time_from_state(self, entity_id: str) -> datetime_time | None:
+        """Read a datetime.time value from the HA state of a time entity."""
+        state = self.hass.states.get(entity_id)
+        if not state or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+            return None
+        try:
+            time_parts = state.state.split(":")
+            if len(time_parts) >= 2:
+                hour = int(time_parts[0])
+                minute = int(time_parts[1])
+                second = int(time_parts[2]) if len(time_parts) > 2 else 0
+                return datetime_time(hour, minute, second)
+        except (ValueError, AttributeError) as err:
+            self.logger.warning("Failed to parse time from entity %s (state: %s): %s", entity_id, state.state, err)
+        return None
+
     def _get_time_value(
         self,
         entity_key: str,
-        manual_key: str,
+        manual_value: datetime_time | None,
         default: datetime_time | None,
     ) -> datetime_time | None:
         """
-        Get time value from entity or manual config.
+        Get time value from external entity or internal entity value.
 
         Args:
-            entity_key: Config key for entity reference
-            manual_key: Config key for manual time value
-            default: Default value if neither entity nor manual is set
+            entity_key: Config key for external entity reference
+            manual_value: Value already read from the internal time entity
+            default: Default value if neither source is available
 
         Returns:
             datetime.time object or None
 
         """
-        # Try entity first
+        # Try external entity first
         entity_id = self._config.get(entity_key)
         if entity_id:
-            state = self.hass.states.get(entity_id)
-            if state and state.state not in (STATE_UNKNOWN, STATE_UNAVAILABLE):
-                try:
-                    # Parse time from entity state
-                    # Format can be: "HH:MM:SS" or "HH:MM" or datetime object
-                    time_str = state.state
-                    if isinstance(time_str, str):
-                        # Try parsing "HH:MM:SS" or "HH:MM"
-                        time_parts = time_str.split(":")
-                        if len(time_parts) >= 2:
-                            hour = int(time_parts[0])
-                            minute = int(time_parts[1])
-                            second = int(time_parts[2]) if len(time_parts) > 2 else 0
-                            return datetime_time(hour, minute, second)
-                except (ValueError, AttributeError) as err:
-                    self.logger.warning(
-                        "Failed to parse time from entity %s (state: %s): %s",
-                        entity_id,
-                        state.state,
-                        err,
-                    )
+            result = self._get_time_from_state(entity_id)
+            if result is not None:
+                return result
 
-        # Fallback to manual config
-        manual_value = self._config.get(manual_key)
-        if manual_value:
-            if isinstance(manual_value, datetime_time):
-                return manual_value
-            if isinstance(manual_value, str):
-                try:
-                    # Parse "HH:MM:SS" or "HH:MM"
-                    time_parts = manual_value.split(":")
-                    if len(time_parts) >= 2:
-                        hour = int(time_parts[0])
-                        minute = int(time_parts[1])
-                        second = int(time_parts[2]) if len(time_parts) > 2 else 0
-                        return datetime_time(hour, minute, second)
-                except ValueError as err:
-                    self.logger.warning(
-                        "Failed to parse manual time value '%s': %s",
-                        manual_value,
-                        err,
-                    )
+        # Fallback to internal entity value
+        if manual_value is not None:
+            return manual_value
 
         return default
 
