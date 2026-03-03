@@ -200,9 +200,10 @@ class ShadowControlTimeEntity(TimeEntity, RestoreEntity):
                     parts = default.split(":")
                     result = datetime.time(int(parts[0]), int(parts[1]))
                     self.logger.debug("Entity %s initialized with default: %s", self.entity_id, result)
-                    return result
                 except (ValueError, IndexError):
                     pass
+                else:
+                    return result
 
         self.logger.debug("No valid default found for entity %s", self.entity_id)
         return None
