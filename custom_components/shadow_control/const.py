@@ -23,6 +23,7 @@ class SCInternal(Enum):
     ENFORCE_POSITIONING_MANUAL = "enforce_positioning_manual"
     LOCK_INTEGRATION_MANUAL = "lock_integration_manual"
     LOCK_INTEGRATION_WITH_POSITION_MANUAL = "lock_integration_with_position_manual"
+    AUTO_LOCK_ACTIVE = "auto_lock_active"
     LOCK_HEIGHT_MANUAL = "lock_height_manual"
     LOCK_ANGLE_MANUAL = "lock_angle_manual"
     UNLOCK_INTEGRATION_MANUAL = "unlock_integration_manual"
@@ -61,6 +62,7 @@ class SCInternal(Enum):
         if self in (
             SCInternal.LOCK_INTEGRATION_MANUAL,
             SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL,
+            SCInternal.AUTO_LOCK_ACTIVE,
             SCInternal.SHADOW_CONTROL_ENABLED_MANUAL,
             SCInternal.DAWN_CONTROL_ENABLED_MANUAL,
         ):
@@ -380,6 +382,7 @@ SWITCH_INTERNAL_TO_EXTERNAL_MAP = {
 # Switches that should always be created, regardless of external entity configuration
 ALWAYS_REQUIRED_SWITCHES = {
     SCInternal.LOCK_INTEGRATION_MANUAL.value,
+    SCInternal.AUTO_LOCK_ACTIVE.value,
 }
 
 SELECT_INTERNAL_TO_EXTERNAL_MAP = {
