@@ -380,10 +380,10 @@ SWITCH_INTERNAL_TO_EXTERNAL_MAP = {
 }
 
 # Switches that should always be created, regardless of external entity configuration
-ALWAYS_REQUIRED_SWITCHES = {
-    SCInternal.LOCK_INTEGRATION_MANUAL.value,
-    SCInternal.AUTO_LOCK_ACTIVE.value,
-}
+# ALWAYS_REQUIRED_SWITCHES = {
+#     SCInternal.LOCK_INTEGRATION_MANUAL.value,
+#     SCInternal.AUTO_LOCK_ACTIVE.value,
+# }
 
 SELECT_INTERNAL_TO_EXTERNAL_MAP = {
     SCInternal.MOVEMENT_RESTRICTION_HEIGHT_MANUAL.value: SCDynamicInput.MOVEMENT_RESTRICTION_HEIGHT_ENTITY.value,
