@@ -56,25 +56,18 @@ class TestBinarySensorEntities:
 
     async def test_initial_state_is_false(self, mock_hass, mock_config_entry, mock_manager):
         """Test that the sensor initialises to False."""
-        sensor = ShadowControlAutoLockBinarySensor(
-            mock_hass, mock_config_entry, instance_name="Test", logger=mock_manager.logger
-        )
+        sensor = ShadowControlAutoLockBinarySensor(mock_hass, mock_config_entry, instance_name="Test", logger=mock_manager.logger)
         assert sensor.is_on is False
 
     async def test_unique_id(self, mock_hass, mock_config_entry, mock_manager):
         """Test that unique_id is built from entry_id and enum value."""
-        sensor = ShadowControlAutoLockBinarySensor(
-            mock_hass, mock_config_entry, instance_name="Test", logger=mock_manager.logger
-        )
+        sensor = ShadowControlAutoLockBinarySensor(mock_hass, mock_config_entry, instance_name="Test", logger=mock_manager.logger)
         assert sensor._attr_unique_id == f"test_entry_id_{SCInternal.AUTO_LOCK_ACTIVE.value}"
 
     async def test_async_added_to_hass_no_prior_state(self, mock_hass, mock_config_entry, mock_manager):
         """When there is no prior HA state the sensor stays False and restores the manager."""
-        sensor = ShadowControlAutoLockBinarySensor(
-            mock_hass, mock_config_entry, instance_name="Test", logger=mock_manager.logger
-        )
-        with patch.object(sensor, "async_get_last_state", AsyncMock(return_value=None)), \
-             patch.object(sensor, "async_write_ha_state"):
+        sensor = ShadowControlAutoLockBinarySensor(mock_hass, mock_config_entry, instance_name="Test", logger=mock_manager.logger)
+        with patch.object(sensor, "async_get_last_state", AsyncMock(return_value=None)), patch.object(sensor, "async_write_ha_state"):
             await sensor.async_added_to_hass()
 
         assert sensor.is_on is False
@@ -82,13 +75,10 @@ class TestBinarySensorEntities:
 
     async def test_async_added_to_hass_restores_true(self, mock_hass, mock_config_entry, mock_manager):
         """When last HA state was 'on' the sensor restores True into the manager."""
-        sensor = ShadowControlAutoLockBinarySensor(
-            mock_hass, mock_config_entry, instance_name="Test", logger=mock_manager.logger
-        )
+        sensor = ShadowControlAutoLockBinarySensor(mock_hass, mock_config_entry, instance_name="Test", logger=mock_manager.logger)
         last_state = MagicMock()
         last_state.state = "on"
-        with patch.object(sensor, "async_get_last_state", AsyncMock(return_value=last_state)), \
-             patch.object(sensor, "async_write_ha_state"):
+        with patch.object(sensor, "async_get_last_state", AsyncMock(return_value=last_state)), patch.object(sensor, "async_write_ha_state"):
             await sensor.async_added_to_hass()
 
         assert sensor.is_on is True
@@ -96,13 +86,10 @@ class TestBinarySensorEntities:
 
     async def test_async_added_to_hass_restores_false(self, mock_hass, mock_config_entry, mock_manager):
         """When last HA state was 'off' the sensor restores False into the manager."""
-        sensor = ShadowControlAutoLockBinarySensor(
-            mock_hass, mock_config_entry, instance_name="Test", logger=mock_manager.logger
-        )
+        sensor = ShadowControlAutoLockBinarySensor(mock_hass, mock_config_entry, instance_name="Test", logger=mock_manager.logger)
         last_state = MagicMock()
         last_state.state = "off"
-        with patch.object(sensor, "async_get_last_state", AsyncMock(return_value=last_state)), \
-             patch.object(sensor, "async_write_ha_state"):
+        with patch.object(sensor, "async_get_last_state", AsyncMock(return_value=last_state)), patch.object(sensor, "async_write_ha_state"):
             await sensor.async_added_to_hass()
 
         assert sensor.is_on is False
@@ -110,9 +97,7 @@ class TestBinarySensorEntities:
 
     async def test_handle_manager_update_changes_state(self, mock_hass, mock_config_entry, mock_manager):
         """When manager.auto_lock_active flips, the sensor state updates and writes HA state."""
-        sensor = ShadowControlAutoLockBinarySensor(
-            mock_hass, mock_config_entry, instance_name="Test", logger=mock_manager.logger
-        )
+        sensor = ShadowControlAutoLockBinarySensor(mock_hass, mock_config_entry, instance_name="Test", logger=mock_manager.logger)
         sensor._state = False
         mock_manager.auto_lock_active = True
 
@@ -124,9 +109,7 @@ class TestBinarySensorEntities:
 
     async def test_handle_manager_update_no_change(self, mock_hass, mock_config_entry, mock_manager):
         """When manager.auto_lock_active is unchanged, async_write_ha_state is not called."""
-        sensor = ShadowControlAutoLockBinarySensor(
-            mock_hass, mock_config_entry, instance_name="Test", logger=mock_manager.logger
-        )
+        sensor = ShadowControlAutoLockBinarySensor(mock_hass, mock_config_entry, instance_name="Test", logger=mock_manager.logger)
         sensor._state = False
         mock_manager.auto_lock_active = False
 
