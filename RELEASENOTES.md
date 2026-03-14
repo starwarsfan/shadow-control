@@ -4,6 +4,9 @@
 ### New features:
 * Persist current lock state and restore it after Home Assistant restart
 
+### Fixes:
+* Fix #65, a recursion issue if at least one of the timers was configured to a value of 0. Min value for each timer is 1s now.
+
 ## 0.11.1
 ### Fixes:
 * Fix shutter slat angle calculation near the offset borders of shadow range
