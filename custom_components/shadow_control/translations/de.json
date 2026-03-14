@@ -463,6 +463,11 @@
         }
       }
     },
+    "binary_sensor": {
+      "auto_lock_active": {
+        "name": "Auto-Sperre aktiv"
+      }
+    },
     "switch": {
       "debug_enabled": {
         "name": "Debug-Modus"

@@ -59,10 +59,11 @@ class SCInternal(Enum):
     @property
     def domain(self) -> str:
         """Handle domain for internal entities."""
+        if self is SCInternal.AUTO_LOCK_ACTIVE:
+            return "binary_sensor"
         if self in (
             SCInternal.LOCK_INTEGRATION_MANUAL,
             SCInternal.LOCK_INTEGRATION_WITH_POSITION_MANUAL,
-            SCInternal.AUTO_LOCK_ACTIVE,
             SCInternal.SHADOW_CONTROL_ENABLED_MANUAL,
             SCInternal.DAWN_CONTROL_ENABLED_MANUAL,
         ):
