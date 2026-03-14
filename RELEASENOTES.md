@@ -1,5 +1,9 @@
 # Changes
 
+## 0.12.0
+### New features:
+* Persist current lock state and restore it after Home Assistant restart
+
 ## 0.11.1
 ### Fixes:
 * Fix shutter slat angle calculation near the offset borders of shadow range
