@@ -416,9 +416,7 @@ class ShadowControlAutoLockSwitch(SwitchEntity, RestoreEntity):
             manager.restore_auto_lock(self._state)
             self.logger.debug("Restored manager auto_lock_active=%s from last HA state", self._state)
             signal = f"{DOMAIN}_update_{manager.name.lower().replace(' ', '_')}"
-            self.async_on_remove(
-                async_dispatcher_connect(self.hass, signal, self._handle_manager_update)
-            )
+            self.async_on_remove(async_dispatcher_connect(self.hass, signal, self._handle_manager_update))
 
         self.async_write_ha_state()
 
