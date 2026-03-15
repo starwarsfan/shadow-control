@@ -168,165 +168,165 @@ shadow_control:
     #foobar: 23
 
   # =========================================================================
-  - name: "SC Dummy 2"
-    debug_enabled: false
-    target_cover_entity:
-      - cover.sc_dummy2
-    facade_shutter_type_static: mode1
-    # Dynamic configuration inputs
-    brightness_entity: input_number.d01_brightness
-    #brightness_dawn_entity:
-    sun_elevation_entity: input_number.d03_sun_elevation
-    sun_azimuth_entity: input_number.d04_sun_azimuth
-    #sunrise_entity:
-    #sunset_entity:
-    #lock_integration_manual: false
-    #lock_integration_entity: input_boolean.d07_lock_integration
-    #lock_integration_with_position_manual: false
-    #lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
-    #lock_height_manual: 0
-    #lock_height_entity: input_number.lock_height_sc_dummy2
-    #lock_angle_manual: 0
-    #lock_angle_entity: input_number.lock_angle_sc_dummy2
-    unlock_integration_entity: input_button.d14_unlock_instances
-    #movement_restriction_height_manual: no_restriction
-    #movement_restriction_height_entity:
-    #movement_restriction_angle_manual: no_restriction
-    #movement_restriction_angle_entity:
-    enforce_positioning_entity: input_button.d13_enforce_positioning
-    # General facade configuration
-    facade_azimuth_static: 80
-    facade_offset_sun_in_static: -45
-    facade_offset_sun_out_static: 45
-    facade_elevation_sun_min_static: 23
-    facade_elevation_sun_max_static: 80
-    facade_slat_width_static: 60
-    facade_slat_distance_static: 50
-    facade_slat_angle_offset_static: 0
-    facade_slat_min_angle_static: 0
-    facade_shutter_stepping_height_static: 5
-    facade_shutter_stepping_angle_static: 5
-    facade_light_strip_width_static: 0
-    facade_shutter_height_static: 1000
-    facade_neutral_pos_height_manual: 20
-    #facade_neutral_pos_height_entity:
-    facade_neutral_pos_angle_manual: 20
-    #facade_neutral_pos_angle_entity:
-    facade_modification_tolerance_height_static: 3
-    facade_modification_tolerance_angle_static: 3
-    # Shadow configuration
-    #shadow_control_enabled_entity:
-    shadow_control_enabled_manual: true
-    #shadow_brightness_threshold_winter_entity:
-    #shadow_brightness_threshold_winter_manual: 30000
-    #shadow_brightness_threshold_summer_entity:
-    #shadow_brightness_threshold_summer_manual: 50000
-    #shadow_brightness_threshold_minimal_entity:
-    #shadow_brightness_threshold_minimal_manual: 1000
-    #shadow_after_seconds_entity:
-    shadow_after_seconds_manual: 10
-    #shadow_shutter_max_height_entity:
-    shadow_shutter_max_height_manual: 90
-    #shadow_shutter_max_angle_entity:
-    shadow_shutter_max_angle_manual: 90
-    #shadow_shutter_look_through_seconds_entity:
-    shadow_shutter_look_through_seconds_manual: 10
-    #shadow_shutter_open_seconds_entity:
-    shadow_shutter_open_seconds_manual: 10
-    #shadow_shutter_look_through_angle_entity:
-    shadow_shutter_look_through_angle_manual: 50
-    #shadow_height_after_sun_entity:
-    shadow_height_after_sun_manual: 10
-    #shadow_angle_after_sun_entity:
-    shadow_angle_after_sun_manual: 10
-    # Dawn configuration
-    #dawn_control_enabled_entity:
-    dawn_control_enabled_manual: true
-    #dawn_brightness_threshold_entity:
-    dawn_brightness_threshold_manual: 5000
-    #dawn_after_seconds_entity:
-    dawn_after_seconds_manual: 10
-    #dawn_shutter_max_height_entity:
-    dawn_shutter_max_height_manual: 50
-    #dawn_shutter_max_angle_entity:
-    dawn_shutter_max_angle_manual: 50
-    #dawn_shutter_look_through_seconds_entity:
-    dawn_shutter_look_through_seconds_manual: 10
-    #dawn_shutter_open_seconds_entity:
-    dawn_shutter_open_seconds_manual: 10
-    #dawn_shutter_look_through_angle_entity:
-    dawn_shutter_look_through_angle_manual: 45
-    #dawn_height_after_dawn_entity:
-    dawn_height_after_dawn_manual: 80
-    #dawn_angle_after_dawn_entity:
-    dawn_angle_after_dawn_manual: 80
+#  - name: "SC Dummy 2"
+#    debug_enabled: false
+#    target_cover_entity:
+#      - cover.sc_dummy2
+#    facade_shutter_type_static: mode1
+#    # Dynamic configuration inputs
+#    brightness_entity: input_number.d01_brightness
+#    #brightness_dawn_entity:
+#    sun_elevation_entity: input_number.d03_sun_elevation
+#    sun_azimuth_entity: input_number.d04_sun_azimuth
+#    #sunrise_entity:
+#    #sunset_entity:
+#    #lock_integration_manual: false
+#    #lock_integration_entity: input_boolean.d07_lock_integration
+#    #lock_integration_with_position_manual: false
+#    #lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
+#    #lock_height_manual: 0
+#    #lock_height_entity: input_number.lock_height_sc_dummy2
+#    #lock_angle_manual: 0
+#    #lock_angle_entity: input_number.lock_angle_sc_dummy2
+#    unlock_integration_entity: input_button.d14_unlock_instances
+#    #movement_restriction_height_manual: no_restriction
+#    #movement_restriction_height_entity:
+#    #movement_restriction_angle_manual: no_restriction
+#    #movement_restriction_angle_entity:
+#    enforce_positioning_entity: input_button.d13_enforce_positioning
+#    # General facade configuration
+#    facade_azimuth_static: 80
+#    facade_offset_sun_in_static: -45
+#    facade_offset_sun_out_static: 45
+#    facade_elevation_sun_min_static: 23
+#    facade_elevation_sun_max_static: 80
+#    facade_slat_width_static: 60
+#    facade_slat_distance_static: 50
+#    facade_slat_angle_offset_static: 0
+#    facade_slat_min_angle_static: 0
+#    facade_shutter_stepping_height_static: 5
+#    facade_shutter_stepping_angle_static: 5
+#    facade_light_strip_width_static: 0
+#    facade_shutter_height_static: 1000
+#    facade_neutral_pos_height_manual: 20
+#    #facade_neutral_pos_height_entity:
+#    facade_neutral_pos_angle_manual: 20
+#    #facade_neutral_pos_angle_entity:
+#    facade_modification_tolerance_height_static: 3
+#    facade_modification_tolerance_angle_static: 3
+#    # Shadow configuration
+#    #shadow_control_enabled_entity:
+#    shadow_control_enabled_manual: true
+#    #shadow_brightness_threshold_winter_entity:
+#    #shadow_brightness_threshold_winter_manual: 30000
+#    #shadow_brightness_threshold_summer_entity:
+#    #shadow_brightness_threshold_summer_manual: 50000
+#    #shadow_brightness_threshold_minimal_entity:
+#    #shadow_brightness_threshold_minimal_manual: 1000
+#    #shadow_after_seconds_entity:
+#    shadow_after_seconds_manual: 10
+#    #shadow_shutter_max_height_entity:
+#    shadow_shutter_max_height_manual: 90
+#    #shadow_shutter_max_angle_entity:
+#    shadow_shutter_max_angle_manual: 90
+#    #shadow_shutter_look_through_seconds_entity:
+#    shadow_shutter_look_through_seconds_manual: 10
+#    #shadow_shutter_open_seconds_entity:
+#    shadow_shutter_open_seconds_manual: 10
+#    #shadow_shutter_look_through_angle_entity:
+#    shadow_shutter_look_through_angle_manual: 50
+#    #shadow_height_after_sun_entity:
+#    shadow_height_after_sun_manual: 10
+#    #shadow_angle_after_sun_entity:
+#    shadow_angle_after_sun_manual: 10
+#    # Dawn configuration
+#    #dawn_control_enabled_entity:
+#    dawn_control_enabled_manual: true
+#    #dawn_brightness_threshold_entity:
+#    dawn_brightness_threshold_manual: 5000
+#    #dawn_after_seconds_entity:
+#    dawn_after_seconds_manual: 10
+#    #dawn_shutter_max_height_entity:
+#    dawn_shutter_max_height_manual: 50
+#    #dawn_shutter_max_angle_entity:
+#    dawn_shutter_max_angle_manual: 50
+#    #dawn_shutter_look_through_seconds_entity:
+#    dawn_shutter_look_through_seconds_manual: 10
+#    #dawn_shutter_open_seconds_entity:
+#    dawn_shutter_open_seconds_manual: 10
+#    #dawn_shutter_look_through_angle_entity:
+#    dawn_shutter_look_through_angle_manual: 45
+#    #dawn_height_after_dawn_entity:
+#    dawn_height_after_dawn_manual: 80
+#    #dawn_angle_after_dawn_entity:
+#    dawn_angle_after_dawn_manual: 80
 
   # =========================================================================
-  - name: "SC Dummy 3"
-    debug_enabled: false
-    target_cover_entity:
-      - cover.sc_dummy3
-    facade_shutter_type_static: mode3
-    # Dynamic configuration inputs
-    brightness_entity: input_number.d01_brightness
-    #brightness_dawn_entity:
-    sun_elevation_entity: input_number.d03_sun_elevation
-    sun_azimuth_entity: input_number.d04_sun_azimuth
-    #sunrise_entity:
-    #sunset_entity:
-    #lock_integration_manual: false
-    #lock_integration_entity: input_boolean.d07_lock_integration
-    #lock_integration_with_position_manual: false
-    #lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
-    #lock_height_manual: 0
-    #lock_height_entity: input_number.lock_height_sc_dummy3
-    unlock_integration_entity: input_button.d14_unlock_instances
-    #movement_restriction_height_manual: no_restriction
-    #movement_restriction_height_entity:
-    enforce_positioning_entity: input_button.d13_enforce_positioning
-    # General facade configuration
-    facade_azimuth_static: 320
-    facade_offset_sun_in_static: -45
-    facade_offset_sun_out_static: 45
-    facade_elevation_sun_min_static: 23
-    facade_elevation_sun_max_static: 80
-    facade_shutter_stepping_height_static: 5
-    facade_light_strip_width_static: 0
-    facade_shutter_height_static: 1000
-    facade_neutral_pos_height_manual: 20
-    #facade_neutral_pos_height_entity:
-    facade_modification_tolerance_height_static: 3
-    # Shadow configuration
-    #shadow_control_enabled_entity:
-    shadow_control_enabled_manual: true
-    #shadow_brightness_threshold_winter_entity:
-    #shadow_brightness_threshold_winter_manual: 30000
-    #shadow_brightness_threshold_summer_entity:
-    #shadow_brightness_threshold_summer_manual: 50000
-    #shadow_brightness_threshold_minimal_entity:
-    #shadow_brightness_threshold_minimal_manual: 1000
-    #shadow_after_seconds_entity:
-    shadow_after_seconds_manual: 10
-    #shadow_shutter_max_height_entity:
-    shadow_shutter_max_height_manual: 90
-    #shadow_shutter_look_through_seconds_entity:
-    shadow_shutter_look_through_seconds_manual: 10
-    #shadow_shutter_open_seconds_entity:
-    shadow_shutter_open_seconds_manual: 10
-    #shadow_height_after_sun_entity:
-    shadow_height_after_sun_manual: 10
-    # Dawn configuration
-    #dawn_control_enabled_entity:
-    dawn_control_enabled_manual: true
-    #dawn_brightness_threshold_entity:
-    dawn_brightness_threshold_manual: 5000
-    #dawn_after_seconds_entity:
-    dawn_after_seconds_manual: 10
-    #dawn_shutter_max_height_entity:
-    dawn_shutter_max_height_manual: 50
-    #dawn_shutter_look_through_seconds_entity:
-    dawn_shutter_look_through_seconds_manual: 10
-    #dawn_shutter_open_seconds_entity:
-    dawn_shutter_open_seconds_manual: 10
-    #dawn_height_after_dawn_entity:
-    dawn_height_after_dawn_manual: 80
+#  - name: "SC Dummy 3"
+#    debug_enabled: false
+#    target_cover_entity:
+#      - cover.sc_dummy3
+#    facade_shutter_type_static: mode3
+#    # Dynamic configuration inputs
+#    brightness_entity: input_number.d01_brightness
+#    #brightness_dawn_entity:
+#    sun_elevation_entity: input_number.d03_sun_elevation
+#    sun_azimuth_entity: input_number.d04_sun_azimuth
+#    #sunrise_entity:
+#    #sunset_entity:
+#    #lock_integration_manual: false
+#    #lock_integration_entity: input_boolean.d07_lock_integration
+#    #lock_integration_with_position_manual: false
+#    #lock_integration_with_position_entity: input_boolean.d08_lock_integration_with_position
+#    #lock_height_manual: 0
+#    #lock_height_entity: input_number.lock_height_sc_dummy3
+#    unlock_integration_entity: input_button.d14_unlock_instances
+#    #movement_restriction_height_manual: no_restriction
+#    #movement_restriction_height_entity:
+#    enforce_positioning_entity: input_button.d13_enforce_positioning
+#    # General facade configuration
+#    facade_azimuth_static: 320
+#    facade_offset_sun_in_static: -45
+#    facade_offset_sun_out_static: 45
+#    facade_elevation_sun_min_static: 23
+#    facade_elevation_sun_max_static: 80
+#    facade_shutter_stepping_height_static: 5
+#    facade_light_strip_width_static: 0
+#    facade_shutter_height_static: 1000
+#    facade_neutral_pos_height_manual: 20
+#    #facade_neutral_pos_height_entity:
+#    facade_modification_tolerance_height_static: 3
+#    # Shadow configuration
+#    #shadow_control_enabled_entity:
+#    shadow_control_enabled_manual: true
+#    #shadow_brightness_threshold_winter_entity:
+#    #shadow_brightness_threshold_winter_manual: 30000
+#    #shadow_brightness_threshold_summer_entity:
+#    #shadow_brightness_threshold_summer_manual: 50000
+#    #shadow_brightness_threshold_minimal_entity:
+#    #shadow_brightness_threshold_minimal_manual: 1000
+#    #shadow_after_seconds_entity:
+#    shadow_after_seconds_manual: 10
+#    #shadow_shutter_max_height_entity:
+#    shadow_shutter_max_height_manual: 90
+#    #shadow_shutter_look_through_seconds_entity:
+#    shadow_shutter_look_through_seconds_manual: 10
+#    #shadow_shutter_open_seconds_entity:
+#    shadow_shutter_open_seconds_manual: 10
+#    #shadow_height_after_sun_entity:
+#    shadow_height_after_sun_manual: 10
+#    # Dawn configuration
+#    #dawn_control_enabled_entity:
+#    dawn_control_enabled_manual: true
+#    #dawn_brightness_threshold_entity:
+#    dawn_brightness_threshold_manual: 5000
+#    #dawn_after_seconds_entity:
+#    dawn_after_seconds_manual: 10
+#    #dawn_shutter_max_height_entity:
+#    dawn_shutter_max_height_manual: 50
+#    #dawn_shutter_look_through_seconds_entity:
+#    dawn_shutter_look_through_seconds_manual: 10
+#    #dawn_shutter_open_seconds_entity:
+#    dawn_shutter_open_seconds_manual: 10
+#    #dawn_height_after_dawn_entity:
+#    dawn_height_after_dawn_manual: 80
