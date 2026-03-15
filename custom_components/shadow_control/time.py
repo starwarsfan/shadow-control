@@ -173,7 +173,7 @@ class ShadowControlTimeEntity(TimeEntity, RestoreEntity):
         # Restore last state after Home Assistant restart
         last_state = await self.async_get_last_state()
         if last_state and last_state.state not in ("unknown", "unavailable"):
-            self.logger.debug("Restoring last state for %s: %s", self.name, last_state.state)
+            self.logger.debug("Restoring last state for %s: %s", self.entity_id, last_state.state)
             try:
                 time_parts = last_state.state.split(":")
                 self._state = datetime.time(int(time_parts[0]), int(time_parts[1]))
