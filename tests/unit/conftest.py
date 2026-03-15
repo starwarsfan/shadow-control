@@ -194,6 +194,12 @@ def mock_manager_fixture(hass: HomeAssistant) -> MagicMock:
     # We populate it with mocks that by default return the current state (no change)
     manager._state_handlers = {state: AsyncMock(return_value=state) for state in ShutterState}
 
+    # Default dawn config — disabled so the pre-dispatch time-constraint override does not fire
+    # unless a test explicitly enables it.
+    manager._dawn_config = MagicMock()
+    manager._dawn_config.enabled = False
+    manager._check_dawn_close_time_constraint = MagicMock(return_value=False)
+
     # Bind the real orchestrator logic to the mock instance
     manager._process_shutter_state = ShadowControlManager._process_shutter_state.__get__(manager)
 
