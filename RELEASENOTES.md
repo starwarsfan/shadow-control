@@ -2,10 +2,12 @@
 
 ## 0.12.0
 ### New features:
+* Persist current lock state and restore it after Home Assistant restart
 * Add new options `dawn_open_not_before_*` and `dawn_close_not_later_than_*`, both as external as well as internal (manual) entity
 
 ### Fixes:
 * Fix useless creation of angle entities for mode3 covers
+* Fix #65, a recursion issue if at least one of the timers was configured to a value of 0. Min value for each timer is 1s now.
 
 ## 0.11.1
 ### Fixes:

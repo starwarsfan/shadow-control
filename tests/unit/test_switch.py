@@ -72,7 +72,6 @@ class TestSwitchEntities:
         """Test that switches are filtered/added correctly."""
         entities_added = []
         await switch_async_setup_entry(mock_hass, mock_config_entry, entities_added.extend)
-        # 5 switches total in your async_setup_entry
         assert len(entities_added) == 5
 
     async def test_config_switch_toggles_options(self, mock_hass, mock_config_entry, mock_manager):

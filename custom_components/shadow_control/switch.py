@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from . import ShadowControlManager
 
 from .const import (
-    ALWAYS_REQUIRED_SWITCHES,
+    # ALWAYS_REQUIRED_SWITCHES,
     DEBUG_ENABLED,
     DOMAIN,
     DOMAIN_DATA_MANAGERS,
@@ -112,9 +112,10 @@ async def async_setup_entry(
         external_config_key = SWITCH_INTERNAL_TO_EXTERNAL_MAP.get(internal_key)
 
         is_external_entity_configured = False
-        is_always_required = internal_key in ALWAYS_REQUIRED_SWITCHES
+        # is_always_required = internal_key in ALWAYS_REQUIRED_SWITCHES
 
-        if external_config_key and not is_always_required:
+        # if external_config_key and not is_always_required:
+        if external_config_key:
             external_entity_id = config_entry.options.get(external_config_key)
 
             # Check if the external config key is present and is not "none" or empty
@@ -140,9 +141,9 @@ async def async_setup_entry(
     # Check all internal keys that have an associated external control mapping
     for internal_key in SWITCH_INTERNAL_TO_EXTERNAL_MAP:
         # Never remove always-required switches
-        if internal_key in ALWAYS_REQUIRED_SWITCHES:
-            instance_logger.debug("Skipping cleanup for always-required switch: %s", internal_key)
-            continue
+        # if internal_key in ALWAYS_REQUIRED_SWITCHES:
+        #     instance_logger.debug("Skipping cleanup for always-required switch: %s", internal_key)
+        #     continue
 
         # Construct the unique ID as it appears in the entity's __init__ method (e.g., sc_entryid_key)
         unique_id = f"{config_entry_id}_{internal_key}"

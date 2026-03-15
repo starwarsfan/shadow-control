@@ -66,6 +66,7 @@ _GLOBAL_DOMAIN_LOGGER = logging.getLogger(DOMAIN)
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [
+    Platform.BINARY_SENSOR,
     Platform.BUTTON,
     Platform.NUMBER,
     Platform.SELECT,
@@ -886,6 +887,11 @@ class ShadowControlManager:
         self._ha_start_time: datetime | None = None
         self._ha_restart_grace_period_seconds = 30  # 30 Sekunden nach HA-Start
 
+        # Set to True only after _async_home_assistant_started completes its startup calc.
+        # Used to guard against lock-off events from platform-setup state writes resetting
+        # _locked_by_auto_lock before auto-lock is properly restored.
+        self._startup_restore_complete: bool = False
+
         # Listen to HA started event
         self.hass.bus.async_listen_once(
             EVENT_HOMEASSISTANT_STARTED,
@@ -1413,6 +1419,10 @@ class ShadowControlManager:
         if self._is_initial_run:
             self.logger.info("Initial calculation completed (via HA started event), switching to normal operation mode")
             self._is_initial_run = False
+
+        # Mark startup restore as complete — from this point on, lock-off events from
+        # real user interactions are allowed to reset _locked_by_auto_lock.
+        self._startup_restore_complete = True
 
     async def async_stop(self) -> None:
         """Stop ShadowControlManager."""
@@ -2082,8 +2092,9 @@ class ShadowControlManager:
                         self._previous_shutter_height = self._height_during_lock_state
                         self._previous_shutter_angle = self._angle_during_lock_state
 
-                        # Reset Auto-Lock Flag
-                        self._locked_by_auto_lock = False
+                        # Reset Auto-Lock Flag — skip during startup state restore
+                        if self._startup_restore_complete:
+                            self._locked_by_auto_lock = False
 
                     elif new_state.state == "off" and self._dynamic_config.lock_integration_with_position:
                         self.logger.info("Simple lock was disabled but lock with position is already enabled -> no position update")
@@ -2142,8 +2153,9 @@ class ShadowControlManager:
                             self._previous_shutter_height = forced_height
                             self._previous_shutter_angle = forced_angle
 
-                        # Reset auto-lock flag if both locks are disabled
-                        self._locked_by_auto_lock = False
+                        # Reset auto-lock flag if both locks are disabled — skip during startup state restore
+                        if self._startup_restore_complete:
+                            self._locked_by_auto_lock = False
 
                     elif new_state.state == "off" and self._dynamic_config.lock_integration:
                         self.logger.info("Lock with position was disabled but simple lock already enabled -> no position update")
@@ -2556,6 +2568,7 @@ class ShadowControlManager:
                         self.logger.exception("Failed to set tilt position:")
 
             self._update_extra_state_attributes()
+            async_dispatcher_send(self.hass, f"{DOMAIN}_update_{self.name.lower().replace(' ', '_')}")
             return  # Exit here, nothing else to do
 
         # --- Phase 4: Apply stepping and output restriction logic (only if not initial run AND not locked) ---
@@ -4651,6 +4664,15 @@ class ShadowControlManager:
 
         # Not locked
         return LockState.UNLOCKED
+
+    @property
+    def auto_lock_active(self) -> bool:
+        """Return whether auto-lock is currently active."""
+        return self._locked_by_auto_lock
+
+    def restore_auto_lock(self, value: bool) -> None:
+        """Restore auto-lock state from the persisted switch entity on HA startup."""
+        self._locked_by_auto_lock = value
 
     def get_internal_entity_id(self, internal_enum: SCInternal) -> str:
         """Get the internal entity_id for this instance."""

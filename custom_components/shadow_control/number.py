@@ -144,7 +144,7 @@ async def async_setup_entry(
             description=NumberEntityDescription(
                 key=SCInternal.SHADOW_AFTER_SECONDS_MANUAL.value,
                 name="Close after x seconds",  # default (English) fallback if no translation found
-                native_min_value=0.0,
+                native_min_value=1.0,
                 native_max_value=60.0 * 60.0 * 24.0,
                 native_step=1.0,
                 native_unit_of_measurement="s",
@@ -189,7 +189,7 @@ async def async_setup_entry(
             description=NumberEntityDescription(
                 key=SCInternal.SHADOW_SHUTTER_LOOK_THROUGH_SECONDS_MANUAL.value,
                 name="Look through after x seconds",  # default (English) fallback if no translation found
-                native_min_value=0.0,
+                native_min_value=1.0,
                 native_max_value=60.0 * 60.0 * 24.0,
                 native_step=1.0,
                 native_unit_of_measurement="s",
@@ -204,7 +204,7 @@ async def async_setup_entry(
             description=NumberEntityDescription(
                 key=SCInternal.SHADOW_SHUTTER_OPEN_SECONDS_MANUAL.value,
                 name="Open after x seconds",  # default (English) fallback if no translation found
-                native_min_value=0.0,
+                native_min_value=1.0,
                 native_max_value=60.0 * 60.0 * 24.0,
                 native_step=1.0,
                 native_unit_of_measurement="s",
@@ -279,7 +279,7 @@ async def async_setup_entry(
             description=NumberEntityDescription(
                 key=SCInternal.DAWN_AFTER_SECONDS_MANUAL.value,
                 name="Close after x seconds",  # default (English) fallback if no translation found
-                native_min_value=0.0,
+                native_min_value=1.0,
                 native_max_value=60.0 * 60.0 * 24.0,
                 native_step=1.0,
                 native_unit_of_measurement="s",
@@ -324,7 +324,7 @@ async def async_setup_entry(
             description=NumberEntityDescription(
                 key=SCInternal.DAWN_SHUTTER_LOOK_THROUGH_SECONDS_MANUAL.value,
                 name="Look through after x seconds",  # default (English) fallback if no translation found
-                native_min_value=0.0,
+                native_min_value=1.0,
                 native_max_value=60.0 * 60.0 * 24.0,
                 native_step=1.0,
                 native_unit_of_measurement="s",
@@ -339,7 +339,7 @@ async def async_setup_entry(
             description=NumberEntityDescription(
                 key=SCInternal.DAWN_SHUTTER_OPEN_SECONDS_MANUAL.value,
                 name="Open after x seconds",  # default (English) fallback if no translation found
-                native_min_value=0.0,
+                native_min_value=1.0,
                 native_max_value=60.0 * 60.0 * 24.0,
                 native_step=1.0,
                 native_unit_of_measurement="s",

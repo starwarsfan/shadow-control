@@ -57,6 +57,7 @@ class TestAsyncCalculateAndApplyCoverPosition:
         # Grace period attributes
         instance._ha_start_time = datetime.now(tz=UTC) - timedelta(seconds=35)  # Beyond grace period by default
         instance._ha_restart_grace_period_seconds = 30
+        instance._startup_restore_complete = True
 
         # Bind the actual method to the mock instance
         instance.async_calculate_and_apply_cover_position = ShadowControlManager.async_calculate_and_apply_cover_position.__get__(instance)
