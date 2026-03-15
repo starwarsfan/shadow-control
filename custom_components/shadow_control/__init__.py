@@ -774,6 +774,7 @@ class ShadowControlManager:
             raise ValueError(message)
 
         self._unsub_callbacks: list[Callable[[], None]] = []
+        self._unsub_time_constraint_callbacks: list[Callable[[], None]] = []
 
         # Initialize configuration with default values
         self._dynamic_config = SCDynamicInputConfiguration()
@@ -1437,6 +1438,11 @@ class ShadowControlManager:
         for unsub_callback in self._unsub_callbacks:
             unsub_callback()
         self._unsub_callbacks.clear()
+
+        for unsub_callback in self._unsub_time_constraint_callbacks:
+            unsub_callback()
+        self._unsub_time_constraint_callbacks.clear()
+
         self.logger.debug("Listeners unregistered.")
 
         self.logger.debug("Manager lifecycle stopped.")
@@ -1947,6 +1953,8 @@ class ShadowControlManager:
             default=None,
         )
 
+        self._schedule_dawn_time_constraint_triggers()
+
         facade = _format_config_object_for_logging(self._facade_config, " -> Facade config: ")
         dynamic = _format_config_object_for_logging(self._dynamic_config, " -> Dynamic config: ")
         shadow = _format_config_object_for_logging(self._shadow_config, " -> Shadow config: ")
@@ -2451,6 +2459,30 @@ class ShadowControlManager:
     async def _process_shutter_state(self) -> None:
         """Process current shutter state and call corresponding handler functions."""
         self.logger.debug("Current shutter state (before processing): %s (%s)", self.current_shutter_state.name, self.current_shutter_state.value)
+
+        # If close_not_later_than is configured and reached, force any non-dawn state into
+        # DAWN_FULL_CLOSED so the dawn state machine takes over and keeps the cover closed
+        # until the normal dawn cycle (brightness-based) handles the morning opening.
+        # When the option is not configured, _check_dawn_close_time_constraint() returns False
+        # and existing behaviour is fully preserved.
+        _dawn_states = {
+            ShutterState.DAWN_NEUTRAL,
+            ShutterState.DAWN_NEUTRAL_TIMER_RUNNING,
+            ShutterState.DAWN_HORIZONTAL_NEUTRAL,
+            ShutterState.DAWN_HORIZONTAL_NEUTRAL_TIMER_RUNNING,
+            ShutterState.DAWN_FULL_CLOSED,
+            ShutterState.DAWN_FULL_CLOSE_TIMER_RUNNING,
+        }
+        if self._dawn_config.enabled and self._check_dawn_close_time_constraint() and self.current_shutter_state not in _dawn_states:
+            self.logger.info(
+                "Dawn close_not_later_than reached: overriding state %s → %s",
+                self.current_shutter_state.name,
+                ShutterState.DAWN_FULL_CLOSED.name,
+            )
+            self.current_shutter_state = ShutterState.DAWN_FULL_CLOSED
+            self._update_extra_state_attributes()
+            await self._process_shutter_state()
+            return
 
         handler_func = self._state_handlers.get(self.current_shutter_state)
         new_shutter_state: ShutterState
@@ -3931,8 +3963,11 @@ class ShadowControlManager:
                     )
                     return ShutterState.DAWN_FULL_CLOSED
                 if self._check_dawn_close_time_constraint():
+                    if dawn_height is not None and dawn_angle is not None:
+                        await self._position_shutter(float(dawn_height), float(dawn_angle), stop_timer=True)
                     self.logger.debug(
-                        "State %s (%s): Dawn brightness (%s) above threshold (%s) but close_not_later_than already reached, staying at %s",
+                        "State %s (%s): Dawn brightness (%s) above threshold (%s) but close_not_later_than already reached,"
+                        " moving to dawn position and staying at %s",
                         ShutterState.DAWN_FULL_CLOSED,
                         ShutterState.DAWN_FULL_CLOSED.name,
                         dawn_brightness,
@@ -4335,26 +4370,77 @@ class ShadowControlManager:
                 )
             return default_enum_member
 
+    def _schedule_dawn_time_constraint_triggers(self) -> None:
+        """Schedule point-in-time callbacks for dawn open_not_before and close_not_later_than."""
+        # Cancel any previously scheduled time-constraint triggers
+        for unsub in self._unsub_time_constraint_callbacks:
+            unsub()
+        self._unsub_time_constraint_callbacks.clear()
+
+        now = dt_util.now()
+        today = now.date()
+
+        for constraint_time, label in (
+            (self._dawn_config.open_not_before, "open_not_before"),
+            (self._dawn_config.close_not_later_than, "close_not_later_than"),
+        ):
+            if constraint_time is None:
+                continue
+
+            trigger_dt = datetime.datetime.combine(today, constraint_time, tzinfo=now.tzinfo)
+            if trigger_dt <= now:
+                self.logger.debug(
+                    "Dawn time constraint '%s' (%s) is in the past for today — no trigger scheduled.",
+                    label,
+                    constraint_time.strftime("%H:%M:%S"),
+                )
+                continue
+
+            trigger_utc = dt_util.as_utc(trigger_dt)
+
+            async def _time_constraint_callback(_now: datetime.datetime, _label: str = label) -> None:
+                self.logger.debug("Dawn time constraint '%s' reached — triggering recalculation.", _label)
+                await self.async_calculate_and_apply_cover_position(None)
+
+            unsub = async_track_point_in_utc_time(self.hass, _time_constraint_callback, trigger_utc)
+            self._unsub_time_constraint_callbacks.append(unsub)
+            self.logger.debug(
+                "Scheduled recalculation trigger for dawn time constraint '%s' at %s.",
+                label,
+                trigger_dt.strftime("%H:%M:%S"),
+            )
+
+    @staticmethod
+    def _parse_time_string(raw: str) -> datetime_time | None:
+        """
+        Parse a HH:MM or HH:MM:SS string into a datetime.time, returning None for midnight (00:00:00).
+
+        Midnight is used as the sentinel "not set" value because HA's time picker
+        submits 00:00:00 when the user clears the field.  Returning None lets callers
+        treat the constraint as unconfigured.
+        """
+        try:
+            parts = raw.split(":")
+            if len(parts) >= 2:
+                t = datetime_time(int(parts[0]), int(parts[1]), int(parts[2]) if len(parts) > 2 else 0)
+                return None if t == datetime_time(0, 0, 0) else t
+        except (ValueError, AttributeError):
+            pass
+        return None
+
     def _get_time_from_internal_entity(self, entity_id: str) -> datetime_time | None:
         """Read a datetime.time value from the HA state of an internal time entity."""
         state = self.hass.states.get(entity_id)
         if not state or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
             return None
-        try:
-            time_parts = state.state.split(":")
-            if len(time_parts) >= 2:
-                hour = int(time_parts[0])
-                minute = int(time_parts[1])
-                second = int(time_parts[2]) if len(time_parts) > 2 else 0
-                return datetime_time(hour, minute, second)
-        except (ValueError, AttributeError) as err:
+        result = self._parse_time_string(state.state)
+        if result is None and state.state not in ("00:00:00", "00:00"):
             self.logger.warning(
-                "Failed to parse time from internal entity %s (state: %s): %s",
+                "Failed to parse time from internal entity %s (state: %s)",
                 entity_id,
                 state.state,
-                err,
             )
-        return None
+        return result
 
     def _get_time_value(
         self,
@@ -4379,20 +4465,15 @@ class ShadowControlManager:
         if entity_id:
             state = self.hass.states.get(entity_id)
             if state and state.state not in (STATE_UNKNOWN, STATE_UNAVAILABLE):
-                try:
-                    time_parts = state.state.split(":")
-                    if len(time_parts) >= 2:
-                        hour = int(time_parts[0])
-                        minute = int(time_parts[1])
-                        second = int(time_parts[2]) if len(time_parts) > 2 else 0
-                        return datetime_time(hour, minute, second)
-                except (ValueError, AttributeError) as err:
+                result = self._parse_time_string(state.state)
+                if result is None and state.state not in ("00:00:00", "00:00"):
                     self.logger.warning(
-                        "Failed to parse time from entity %s (state: %s): %s",
+                        "Failed to parse time from entity %s (state: %s)",
                         entity_id,
                         state.state,
-                        err,
                     )
+                else:
+                    return result
 
         # Fallback to internal entity value
         if manual_value is not None:
