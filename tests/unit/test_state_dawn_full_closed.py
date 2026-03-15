@@ -78,7 +78,7 @@ class TestHandleStateDawnFullClosed:
 
         assert result == ShutterState.DAWN_FULL_CLOSED
         manager._start_timer.assert_not_called()
-        manager._position_shutter.assert_not_called()
+        manager._position_shutter.assert_called_once_with(100.0, 0.0, stop_timer=True)
 
     async def test_open_not_before_respected_then_timer_starts(self, manager):
         """Test that timer starts once open_not_before is reached."""
