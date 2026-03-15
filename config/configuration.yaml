@@ -132,36 +132,36 @@ shadow_control:
     # ========================================================================
     # Deprecated options
     # Since config version 5
-#    shadow_brightness_threshold_manual: 30000
-#    shadow_brightness_threshold_entity: input_number.deprecated_key
-#    lock_integration_static: true
-#    lock_integration_with_position_static: true
-#    lock_height_static: 42
-#    lock_angle_static: 42
-#    movement_restriction_height_static: only_open
-#    movement_restriction_angle_static: only_close
-#    facade_neutral_pos_height_static: 42
-#    facade_neutral_pos_angle_static: 42
-#    shadow_control_enabled_static: 42
-#    shadow_brightness_threshold_static: 42
-#    shadow_after_seconds_static: 42
-#    shadow_shutter_max_height_static: 42
-#    shadow_shutter_max_angle_static: 42
-#    shadow_shutter_look_through_seconds_static: 42
-#    shadow_shutter_open_seconds_static: 42
-#    shadow_shutter_look_through_angle_static: 42
-#    shadow_height_after_sun_static: 42
-#    shadow_angle_after_sun_static: 42
-#    dawn_control_enabled_static: 42
-#    dawn_brightness_threshold_static: 42
-#    dawn_after_seconds_static: 42
-#    dawn_shutter_max_height_static: 42
-#    dawn_shutter_max_angle_static: 42
-#    dawn_shutter_look_through_seconds_static: 42
-#    dawn_shutter_open_seconds_static: 42
-#    dawn_shutter_look_through_angle_static: 42
-#    dawn_height_after_dawn_static: 42
-#    dawn_angle_after_dawn_static: 42
+    #shadow_brightness_threshold_manual: 30000
+    #shadow_brightness_threshold_entity: input_number.deprecated_key
+    #lock_integration_static: true
+    #lock_integration_with_position_static: true
+    #lock_height_static: 42
+    #lock_angle_static: 42
+    #movement_restriction_height_static: only_open
+    #movement_restriction_angle_static: only_close
+    #facade_neutral_pos_height_static: 42
+    #facade_neutral_pos_angle_static: 42
+    #shadow_control_enabled_static: 42
+    #shadow_brightness_threshold_static: 42
+    #shadow_after_seconds_static: 42
+    #shadow_shutter_max_height_static: 42
+    #shadow_shutter_max_angle_static: 42
+    #shadow_shutter_look_through_seconds_static: 42
+    #shadow_shutter_open_seconds_static: 42
+    #shadow_shutter_look_through_angle_static: 42
+    #shadow_height_after_sun_static: 42
+    #shadow_angle_after_sun_static: 42
+    #dawn_control_enabled_static: 42
+    #dawn_brightness_threshold_static: 42
+    #dawn_after_seconds_static: 42
+    #dawn_shutter_max_height_static: 42
+    #dawn_shutter_max_angle_static: 42
+    #dawn_shutter_look_through_seconds_static: 42
+    #dawn_shutter_open_seconds_static: 42
+    #dawn_shutter_look_through_angle_static: 42
+    #dawn_height_after_dawn_static: 42
+    #dawn_angle_after_dawn_static: 42
     #
     # ========================================================================
     # Unknown options to check error handling
