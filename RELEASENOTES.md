@@ -3,7 +3,7 @@
 ## 0.12.0
 ### New features:
 * Persist current lock state and restore it after Home Assistant restart
-* Add new options `dawn_open_not_before_*` and `dawn_close_not_later_than_*`, both as external as well as internal (manual) entity
+* Implement #8: Add new options `dawn_open_not_before_*` and `dawn_close_not_later_than_*`, both as external as well as internal (manual) entity. See [here within README.md](README.md#d11-open-not-before-time) for details.
 
 ### Fixes:
 * Fix useless creation of angle entities for mode3 covers

@@ -195,9 +195,11 @@ Die Konfigurationsoptionen dazu sind [B02 Winter Helligkeitsschwellwert](#b02-wi
 
 ## Automatische Sperre
 
-Wird der Behang manuell verfahren, sperrt sich die jeweilige **Shadow Control** Instanz automatisch. Damit wird verhindert, dass ein manuelles Positionieren durch die Integration überschrieben wird. Damit das sauber funktioniert ist es wichtig, dass die Verfahrzeit der Behang-Entitäten korrekt konfiguriert ist. Siehe dazu den Abschnitt [Maximale Verfahrdauer](#maximale-verfahrdauer).
+Wird der Behang manuell verfahren, sperrt sich die jeweilige **Shadow Control** Instanz automatisch. Dies verhindert, dass ein manuelles Positionieren durch die Integration überschrieben wird. Damit das sauber funktioniert ist es wichtig, dass die Verfahrzeit der Behang-Entitäten korrekt konfiguriert ist. Siehe dazu den Abschnitt [Maximale Verfahrdauer](#maximale-verfahrdauer).
 
 Der Sperrstatus wird im Sensor `sensor.<instanzname>_lock_status` angezeigt, Details siehe [Sensor Sperr-Status](#sperr-status).
+
+Der Status der automatischen Sperre wird nach einem Home Assistant Neustart wiederhergestellt.
 
 
 
@@ -685,6 +687,7 @@ Diese optionale Zeitbeschränkung verhindert, dass der Behang vor der angegebene
 - **Entitäts-Variante:** Referenziert eine `input_datetime`-Entität, die die Uhrzeit liefert. Dies ermöglicht dynamische Anpassung (z.B. via Automationen für Wochentag/Wochenende-Unterschiede)
 - **Manuelle Variante:** Feste Uhrzeit im Format `HH:MM` eingeben (z.B. `06:00` für 6 Uhr morgens)
 - **Standardwert:** None (Feature deaktiviert - nur Helligkeitsschwellwert gilt)
+- Deaktivieren der Funktionalität durch Löschen der konfigurierten Uhrzeit bzw. durch Setzen auf den Wert `00:00`.
 
 **Format:** `HH:MM` (24-Stunden-Format, z.B. `06:00`, `08:30`, `23:45`)
 
@@ -707,6 +710,7 @@ Diese optionale Zeitbeschränkung stellt sicher, dass der Behang zur angegebenen
 - **Entitäts-Variante:** Referenziert eine `input_datetime`-Entität, die die Uhrzeit liefert. Dies ermöglicht dynamische Anpassung (z.B. unterschiedliche Zeiten für verschiedene Jahreszeiten)
 - **Manuelle Variante:** Feste Uhrzeit im Format `HH:MM` eingeben (z.B. `20:00` für 20 Uhr)
 - **Standardwert:** None (Feature deaktiviert - nur Helligkeitsschwellwert gilt)
+- Deaktivieren der Funktionalität durch Löschen der konfigurierten Uhrzeit bzw. durch Setzen auf den Wert `00:00`.
 
 **Format:** `HH:MM` (24-Stunden-Format, z.B. `20:00`, `21:30`, `22:00`)
 

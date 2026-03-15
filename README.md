@@ -199,6 +199,8 @@ If the shutter position is modified manually, the integration will automatically
 
 The current lock state of the instance is displayed in the log as well as in the sensor `sensor.<instance-name>_lock_status`. For details see section [Lock state](#lock-state).
 
+The state of the automatic lock will be restored after a Home Assistant restart.
+
 
 
 # Installation
@@ -688,6 +690,7 @@ This optional time constraint prevents the shutter from opening before the speci
 - **Entity variant:** Reference an `input_datetime` entity that provides the time. This allows dynamic adjustment (e.g., via automations for weekday/weekend differences)
 - **Manual variant:** Enter a fixed time in `HH:MM` format (e.g., `06:00` for 6 AM)
 - **Default:** None (feature disabled - only brightness threshold applies)
+- Deactivate functionality by clearing the configured value or set it to `00:00`
 
 **Format:** `HH:MM` (24-hour format, e.g., `06:00`, `08:30`, `23:45`)
 
@@ -710,6 +713,7 @@ This optional time constraint ensures the shutter closes at the specified time i
 - **Entity variant:** Reference an `input_datetime` entity that provides the time. This allows dynamic adjustment (e.g., different times for different seasons)
 - **Manual variant:** Enter a fixed time in `HH:MM` format (e.g., `20:00` for 8 PM)
 - **Default:** None (feature disabled - only brightness threshold applies)
+- Deactivate functionality by clearing the configured value or set it to `00:00`
 
 **Format:** `HH:MM` (24-hour format, e.g., `20:00`, `21:30`, `22:00`)
 
