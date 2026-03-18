@@ -30,6 +30,7 @@ class TestPositionShutter:
 
         # Default state
         instance._is_initial_run = False
+        instance._startup_restore_complete = True
         instance.current_lock_state = LockState.UNLOCKED
         instance._target_cover_entity_id = ["cover.test"]
         instance._enforce_position_update = False
@@ -75,6 +76,7 @@ class TestPositionShutter:
                 }
             )
         )
+        instance.hass.is_running = True
         instance.hass.services.has_service = MagicMock(return_value=True)
 
         # Better async_call mock
@@ -132,6 +134,48 @@ class TestPositionShutter:
 
         # Should update attributes
         manager._update_extra_state_attributes.assert_called_once()
+
+    # ========================================================================
+    # PHASE 2.5: STARTUP PROTECTION
+    # ========================================================================
+
+    async def test_skips_physical_output_before_startup_restore_complete(self, manager):
+        """Test that physical output is skipped when startup restore is not complete and HA not running."""
+        manager._startup_restore_complete = False
+        manager.hass.is_running = False
+
+        await manager._position_shutter(80.0, 45.0, stop_timer=False)
+
+        # Should NOT call positioning services
+        manager.hass.services.async_call.assert_not_called()
+        # Should still update attributes
+        manager._update_extra_state_attributes.assert_called_once()
+
+    async def test_allows_physical_output_when_ha_running_even_if_restore_incomplete(self, manager):
+        """Test that physical output is allowed during reload (HA already running) even if restore incomplete."""
+        manager._startup_restore_complete = False
+        manager.hass.is_running = True
+        manager.current_lock_state = LockState.UNLOCKED
+        manager._previous_shutter_height = 0.0
+        manager._previous_shutter_angle = 0.0
+
+        await manager._position_shutter(80.0, 45.0, stop_timer=False)
+
+        # Should call positioning services (HA is running = reload scenario)
+        manager.hass.services.async_call.assert_called()
+
+    async def test_allows_physical_output_after_startup_restore_complete(self, manager):
+        """Test that physical output is allowed once startup restore is complete."""
+        manager._startup_restore_complete = True
+        manager.hass.is_running = False
+        manager.current_lock_state = LockState.UNLOCKED
+        manager._previous_shutter_height = 0.0
+        manager._previous_shutter_angle = 0.0
+
+        await manager._position_shutter(80.0, 45.0, stop_timer=False)
+
+        # Should call positioning services
+        manager.hass.services.async_call.assert_called()
 
     # ========================================================================
     # PHASE 3: LOCK STATE HANDLING

@@ -1414,16 +1414,18 @@ class ShadowControlManager:
     async def _async_home_assistant_started(self, event: Event) -> None:
         """Calculate positions after start of Home Assistant."""
         self.logger.debug("Home Assistant started event received. Performing initial calculation.")
+
+        # Mark startup restore as complete BEFORE the calculation so that _position_shutter
+        # is allowed to send physical output. By the time this event fires, all platforms
+        # (including binary_sensor which restores auto_lock) have been set up.
+        self._startup_restore_complete = True
+
         await self.async_calculate_and_apply_cover_position(None)
 
         # Setze _is_initial_run auf False nach der initialen Berechnung
         if self._is_initial_run:
             self.logger.info("Initial calculation completed (via HA started event), switching to normal operation mode")
             self._is_initial_run = False
-
-        # Mark startup restore as complete — from this point on, lock-off events from
-        # real user interactions are allowed to reset _locked_by_auto_lock.
-        self._startup_restore_complete = True
 
     async def async_stop(self) -> None:
         """Stop ShadowControlManager."""
@@ -2561,6 +2563,24 @@ class ShadowControlManager:
 
             self._update_extra_state_attributes()
             return  # Exit here, as no physical output should happen on the initial run
+
+        # --- Phase 2.5: Block physical output during HA startup (before homeassistant_started fires) ---
+        # Between manager start and EVENT_HOMEASSISTANT_STARTED, platforms are still being set up.
+        # Critically, the binary_sensor platform restores auto_lock state only during its own setup,
+        # which happens after the manager starts listening to entity changes. Entity state-restore
+        # events (old_state=None → actual value) can trigger _position_shutter before auto_lock is
+        # restored, causing the cover to move as if unlocked even when it should be locked.
+        # _startup_restore_complete is set to True just before the homeassistant_started calculation,
+        # guaranteeing all platforms (incl. binary_sensor) have been set up by then.
+        # For reloads (hass.is_running=True), movements are never blocked here.
+        if not self._startup_restore_complete and not self.hass.is_running:
+            self.logger.debug(
+                "Skipping physical output: HA startup not yet complete "
+                "(startup_restore_complete=False, hass.is_running=False). "
+                "Waiting for homeassistant_started event before allowing movement."
+            )
+            self._update_extra_state_attributes()
+            return
 
         # --- Phase 3: Check for Lock State BEFORE applying stepping/should_output_be_updated and sending commands ---
         # This ensures that calculations still happen, but outputs are skipped.
