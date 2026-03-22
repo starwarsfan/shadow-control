@@ -1,5 +1,9 @@
 # Changes
 
+## 0.12.1
+### Fixes:
+* Fix accidental exchange of allowed config options for DAWN_OPEN_NOT_BEFORE and DAWN_CLOSE_NOT_LATER_THAN
+
 ## 0.12.0
 ### New features:
 * Persist current lock state and restore it after Home Assistant restart
