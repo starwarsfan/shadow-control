@@ -64,7 +64,7 @@
           "facade_elevation_sun_min_static": "Min elevation of the sun, from which the facade will be illuminated. Valid range: 0° to 90°",
           "facade_elevation_sun_max_static": "Max elevation of the sun, up to which the facade will be illuminated. Valid range: 0° to 90°",
           "debug_enabled": "Activate debug logs for this instance",
-          "own_logfile_enabled": "Write all log output for this instance to a dedicated logfile in the HA config directory (shadow_control_<name>.log, max 5 MB × 3 backups)"
+          "own_logfile_enabled": "Write all log output for this instance to a dedicated logfile in the HA config directory (shadow_control_NAME.log, max 5 MB × 3 backups)"
         }
       },
       "facade_settings": {
