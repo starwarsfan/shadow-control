@@ -20,6 +20,7 @@ from .const import (
     DOMAIN,
     DOMAIN_DATA_MANAGERS,
     INTERNAL_TO_DEFAULTS_MAP,
+    OWN_LOGFILE_ENABLED,
     SWITCH_INTERNAL_TO_EXTERNAL_MAP,
     SCInternal,
 )
@@ -48,6 +49,18 @@ async def async_setup_entry(
             description=SwitchEntityDescription(
                 key=DEBUG_ENABLED,
                 name="Debug mode",  # default (English) fallback if no translation found
+            ),
+        ),
+        ShadowControlConfigSwitch(
+            hass,
+            config_entry,
+            key=OWN_LOGFILE_ENABLED,
+            instance_name=sanitized_instance_name,
+            icon="mdi:file-document-outline",
+            logger=instance_logger,
+            description=SwitchEntityDescription(
+                key=OWN_LOGFILE_ENABLED,
+                name="Write own logfile",  # default (English) fallback if no translation found
             ),
         ),
         ShadowControlSwitch(
