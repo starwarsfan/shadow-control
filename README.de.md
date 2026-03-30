@@ -44,6 +44,7 @@ Go to the [English version](/README.md) version of the documentation.
       * [Minimale Sonnenhöhe](#minimale-sonnenhöhe)
       * [Maximale Sonnenhöhe](#maximale-sonnenhöhe)
       * [Debugmodus](#debugmodus)
+      * [Eigene Logdatei schreiben](#eigene-logdatei-schreiben)
     * [Fassadenkonfiguration - Teil 2](#fassadenkonfiguration---teil-2)
       * [Neutralhöhe](#neutralhöhe)
       * [Neutralwinkel](#neutralwinkel)
@@ -333,6 +334,12 @@ Maximale Höhe der Sonne in Grad. Ist die effektive Höhe grösser als dieser We
 
 Mit diesem Schalter kann der Debugmodus aktiviert werden. Damit werden erheblich mehr Informationen zum Verhalten und der Berechnung für diese Fassade ins Log geschrieben.
 
+#### Eigene Logdatei schreiben
+(yaml: `own_logfile_enabled`)
+
+Mit diesem Schalter schreibt Shadow Control alle Log-Ausgaben dieser Instanz zusätzlich in eine eigene Logdatei im Home Assistant Konfigurationsverzeichnis. Die Datei wird nach dem Schema `shadow_control_<bereinigter-instanzname>.log` benannt und automatisch rotiert (max. 5 MB pro Datei, 3 Backups). Dies ist besonders nützlich, wenn Logs einer bestimmten Instanz über einen längeren Zeitraum gesammelt werden sollen, ohne das Haupt-Log von Home Assistant durchsuchen zu müssen.
+
+Beispielpfad: `<config_dir>/shadow_control_esszimmer_tuer.log`
 
 
 ### Fassadenkonfiguration - Teil 2
@@ -757,6 +764,10 @@ shadow_control:
     #
     # Enable debug mode for way more log output
     debug_enabled: false
+    #
+    # Alle Log-Ausgaben dieser Instanz zusätzlich in eine eigene Logdatei im
+    # HA-Konfigurationsverzeichnis schreiben (shadow_control_<name>.log, max 5 MB x 3 Backups)
+    own_logfile_enabled: false
     #
     # =======================================================================
     # Dynamic configuration inputs
