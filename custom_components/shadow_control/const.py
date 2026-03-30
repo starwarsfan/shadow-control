@@ -14,6 +14,7 @@ VERSION = 5
 
 SC_CONF_NAME = "name"
 DEBUG_ENABLED = "debug_enabled"
+OWN_LOGFILE_ENABLED = "own_logfile_enabled"
 TARGET_COVER_ENTITY = "target_cover_entity"
 
 
