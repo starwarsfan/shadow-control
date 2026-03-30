@@ -52,7 +52,8 @@
           "facade_offset_sun_out_static": "Sun end offset",
           "facade_elevation_sun_min_static": "Min sun elevation",
           "facade_elevation_sun_max_static": "Max sun elevation",
-          "debug_enabled": "Debug mode"
+          "debug_enabled": "Debug mode",
+          "own_logfile_enabled": "Own logfile"
         },
         "data_description": {
           "name": "A descriptive and unique name for this Shadow Control (SC) instance",
@@ -62,7 +63,8 @@
           "facade_offset_sun_out_static": "Angle up to which the facade in comparison to the given azimuth, will be illuminated. Valid range: 0° to 90°",
           "facade_elevation_sun_min_static": "Min elevation of the sun, from which the facade will be illuminated. Valid range: 0° to 90°",
           "facade_elevation_sun_max_static": "Max elevation of the sun, up to which the facade will be illuminated. Valid range: 0° to 90°",
-          "debug_enabled": "Activate debug logs for this instance"
+          "debug_enabled": "Activate debug logs for this instance",
+          "own_logfile_enabled": "Write all log output for this instance to a dedicated logfile in the HA config directory (shadow_control_<name>.log, max 5 MB × 3 backups)"
         }
       },
       "facade_settings": {
@@ -475,6 +477,9 @@
     "switch": {
       "debug_enabled": {
         "name": "Debug Mode"
+      },
+      "own_logfile_enabled": {
+        "name": "Write own logfile"
       },
       "shadow_control_enabled_manual": {
         "name": "S: Control active"
