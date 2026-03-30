@@ -4,6 +4,7 @@
 # import json
 import datetime
 import logging
+import logging.handlers
 import math
 from datetime import UTC, timedelta
 from datetime import time as datetime_time
@@ -43,6 +44,7 @@ from .const import (
     DOMAIN,
     DOMAIN_DATA_MANAGERS,
     INTERNAL_TO_DEFAULTS_MAP,
+    OWN_LOGFILE_ENABLED,
     SC_CONF_NAME,
     TARGET_COVER_ENTITY,
     VERSION,
@@ -184,6 +186,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:  #
     else:
         instance_specific_logger.setLevel(logging.INFO)
         instance_specific_logger.info("Debug log for instance '%s' disabled.", instance_name)
+
+    # Own logfile setup
+    own_logfile_value = entry.options.get(OWN_LOGFILE_ENABLED, False)
+    own_logfile_enabled = own_logfile_value.lower() in ("true", "1", "yes", "on") if isinstance(own_logfile_value, str) else bool(own_logfile_value)
+
+    if own_logfile_enabled:
+        log_file_path = hass.config.path(f"shadow_control_{sanitized_instance_name}.log")
+        file_handler = logging.handlers.RotatingFileHandler(
+            log_file_path,
+            maxBytes=5 * 1024 * 1024,  # 5 MB
+            backupCount=3,
+            encoding="utf-8",
+        )
+        file_handler.setFormatter(logging.Formatter("%(asctime)s  %(levelname)-8s  %(name)s — %(message)s"))
+        file_handler.setLevel(instance_specific_logger.level)
+        instance_specific_logger.addHandler(file_handler)
+        instance_specific_logger.info("Own logfile for instance '%s' enabled: %s", instance_name, log_file_path)
+    else:
+        instance_specific_logger.info("Own logfile for instance '%s' disabled.", instance_name)
 
     # The manager can't work without a configuration.
     if not config_data:
@@ -1446,6 +1467,13 @@ class ShadowControlManager:
         self._unsub_time_constraint_callbacks.clear()
 
         self.logger.debug("Listeners unregistered.")
+
+        # Close and remove any file handlers to avoid leaks on reload
+        for handler in list(self.logger.handlers):
+            if isinstance(handler, logging.handlers.RotatingFileHandler):
+                self.logger.debug("Closing logfile handler: %s", handler.baseFilename)
+                handler.close()
+                self.logger.removeHandler(handler)
 
         self.logger.debug("Manager lifecycle stopped.")
 
