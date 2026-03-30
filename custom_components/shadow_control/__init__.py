@@ -193,14 +193,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:  #
 
     if own_logfile_enabled:
         log_file_path = hass.config.path(f"shadow_control_{sanitized_instance_name}.log")
-        file_handler = logging.handlers.RotatingFileHandler(
-            log_file_path,
-            maxBytes=5 * 1024 * 1024,  # 5 MB
-            backupCount=3,
-            encoding="utf-8",
-        )
-        file_handler.setFormatter(logging.Formatter("%(asctime)s  %(levelname)-8s  %(name)s — %(message)s"))
-        file_handler.setLevel(instance_specific_logger.level)
+        log_level = instance_specific_logger.level
+
+        def _create_file_handler() -> logging.handlers.RotatingFileHandler:
+            handler = logging.handlers.RotatingFileHandler(
+                log_file_path,
+                maxBytes=5 * 1024 * 1024,  # 5 MB
+                backupCount=3,
+                encoding="utf-8",
+            )
+            handler.setFormatter(logging.Formatter("%(asctime)s  %(levelname)-8s  %(name)s — %(message)s"))
+            handler.setLevel(log_level)
+            return handler
+
+        file_handler = await hass.async_add_executor_job(_create_file_handler)
         instance_specific_logger.addHandler(file_handler)
         instance_specific_logger.info("Own logfile for instance '%s' enabled: %s", instance_name, log_file_path)
     else:
