@@ -1,7 +1,7 @@
 -r requirements.txt
 
 # Testing
-pytest>=8.0.0
+pytest>=9.0.3
 pytest-homeassistant-custom-component
 pytest-cov>=4.0.0
 
