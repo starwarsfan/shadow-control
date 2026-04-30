@@ -6,6 +6,7 @@
 
 ### Fixes:
 * Fix #85: B04 ist not allowed to be higher than 5000
+* Fix #88: Recursion error with mode3 covers
 
 ## 0.12.1
 ### Fixes:

@@ -4707,9 +4707,8 @@ class ShadowControlManager:
         self._cancel_timer()
 
         if delay_seconds <= 0:
-            self.logger.debug("Timer delay is <= 0 (%ss). Trigger immediate recalculation", delay_seconds)
-            await self.async_calculate_and_apply_cover_position(None)
-            # At immediate recalculation, there is no new timer
+            self.logger.debug("Timer delay is <= 0 (%ss). Scheduling immediate recalculation", delay_seconds)
+            self.hass.async_create_task(self.async_calculate_and_apply_cover_position(None))
             self.next_modification_timestamp = None
             return
 
