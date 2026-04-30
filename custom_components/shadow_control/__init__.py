@@ -1868,7 +1868,7 @@ class ShadowControlManager:
         # Dawn Control Inputs
         dawn_control_enabled_manual = self.get_internal_entity_id(SCInternal.DAWN_CONTROL_ENABLED_MANUAL)
         dawn_control_enabled_value = (
-            self._get_internal_entity_state_value(dawn_control_enabled_manual, True, bool) if dawn_control_enabled_manual else True
+            self._get_internal_entity_state_value(dawn_control_enabled_manual, False, bool) if dawn_control_enabled_manual else False
         )
         self._dawn_config.enabled = self._get_entity_state_value(SCDawnInput.CONTROL_ENABLED_ENTITY.value, dawn_control_enabled_value, bool)
 
