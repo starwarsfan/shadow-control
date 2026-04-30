@@ -72,7 +72,7 @@ class TestSwitchEntities:
         """Test that switches are filtered/added correctly."""
         entities_added = []
         await switch_async_setup_entry(mock_hass, mock_config_entry, entities_added.extend)
-        assert len(entities_added) == 5
+        assert len(entities_added) == 6
 
     async def test_config_switch_toggles_options(self, mock_hass, mock_config_entry, mock_manager):
         """Test ShadowControlConfigSwitch updates the ConfigEntry options."""

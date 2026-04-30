@@ -44,6 +44,7 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
       * [Min sun elevation](#min-sun-elevation)
       * [Max sun elevation](#max-sun-elevation)
       * [Debug mode](#debug-mode)
+      * [Write own logfile](#write-own-logfile)
     * [Facade configuration - part 2](#facade-configuration---part-2)
       * [Neutral position height](#neutral-position-height)
       * [Neutral position angle](#neutral-position-angle)
@@ -333,6 +334,12 @@ Maximal elevation (height) of the sun in degrees. If the effective (!) elevation
 
 With this switch, the debug mode for this instance could be activated. If activated, there will be much more detailed output within the Home Assistant main log file.
 
+#### Write own logfile
+(yaml: `own_logfile_enabled`)
+
+With this switch, Shadow Control will additionally write all log output for this instance to a dedicated log file in the Home Assistant configuration directory. The file is named `shadow_control_<sanitized-instance-name>.log` and is rotated automatically (max 5 MB per file, 3 backups kept). This is useful when you want to collect logs for a specific instance over a longer period without having to filter the main Home Assistant log.
+
+Example path: `<config_dir>/shadow_control_dining_room_door.log`
 
 
 ### Facade configuration - part 2
@@ -759,6 +766,10 @@ shadow_control:
     #
     # Enable debug mode for way more log output
     debug_enabled: false
+    #
+    # Write all log output for this instance to a dedicated logfile in the HA
+    # config directory (shadow_control_<name>.log, max 5 MB x 3 backups)
+    own_logfile_enabled: false
     #
     # =======================================================================
     # Dynamic configuration inputs

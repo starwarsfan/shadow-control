@@ -52,7 +52,8 @@
           "facade_offset_sun_out_static": "Beschattungsende",
           "facade_elevation_sun_min_static": "Minimale Sonnenhöhe",
           "facade_elevation_sun_max_static": "Maximale Sonnenhöhe",
-          "debug_enabled": "Debugmodus"
+          "debug_enabled": "Debugmodus",
+          "own_logfile_enabled": "Eigene Logdatei"
         },
         "data_description": {
           "name": "Eindeutiger Name dieser Shadow Control (SC) Instanz",
@@ -62,7 +63,8 @@
           "facade_offset_sun_out_static": "Bis zu welchem Winkel ausgehend vom Azimut der Fassade scheint die Sonne auf die Fassade. Gültiger Bereich: 0° bis 90°",
           "facade_elevation_sun_min_static": "Minimale Höhe der Sonne in Grad (°), ab welcher die Sonne auf die Fassade scheint. Gültiger Bereich: 0° bis 90°",
           "facade_elevation_sun_max_static": "Maximale Höhe der Sonne in Grad (°), bis zu welcher die Sonne auf die Fassade scheint. Gültiger Bereich: 0° bis 90°",
-          "debug_enabled": "Debug-Logs für diese Instanz aktivieren"
+          "debug_enabled": "Debug-Logs für diese Instanz aktivieren",
+          "own_logfile_enabled": "Alle Log-Ausgaben dieser Instanz zusätzlich in eine eigene Logdatei im HA-Konfigurationsverzeichnis schreiben (shadow_control_NAME.log, max. 5 MB × 3 Backups)"
         }
       },
       "facade_settings": {
@@ -475,6 +477,9 @@
     "switch": {
       "debug_enabled": {
         "name": "Debug-Modus"
+      },
+      "own_logfile_enabled": {
+        "name": "Eigene Logdatei schreiben"
       },
       "shadow_control_enabled_manual": {
         "name": "B01 Steuerung aktiv"

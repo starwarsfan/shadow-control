@@ -17,6 +17,7 @@ from .const import (
     DEBUG_ENABLED,
     DEPRECATED_CONFIG_KEYS,
     DOMAIN,
+    OWN_LOGFILE_ENABLED,
     SC_CONF_NAME,
     TARGET_COVER_ENTITY,
     VERSION,
@@ -116,6 +117,7 @@ def get_cfg_facade_settings_part1() -> vol.Schema:
                 selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(DEBUG_ENABLED, default=False): selector.BooleanSelector(),
+            vol.Optional(OWN_LOGFILE_ENABLED, default=False): selector.BooleanSelector(),
         }
     )
 
@@ -536,6 +538,7 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCFacadeConfig1.ELEVATION_SUN_MIN_STATIC.value, default=0): vol.Coerce(float),
         vol.Optional(SCFacadeConfig1.ELEVATION_SUN_MAX_STATIC.value, default=90): vol.Coerce(float),
         vol.Optional(DEBUG_ENABLED, default=False): cv.boolean,
+        vol.Optional(OWN_LOGFILE_ENABLED, default=False): cv.boolean,
         vol.Optional(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL.value, default=SCDefaults.NEUTRAL_POS_HEIGHT_VALUE.value): vol.Coerce(float),
         vol.Optional(SCFacadeConfig2.NEUTRAL_POS_HEIGHT_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.NEUTRAL_POS_ANGLE_MANUAL.value, default=SCDefaults.NEUTRAL_POS_ANGLE_VALUE.value): vol.Coerce(float),
