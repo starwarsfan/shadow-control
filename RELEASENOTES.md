@@ -4,6 +4,9 @@
 ### New features:
 * New option `own_logfile_enabled` to write all log output for a Shadow Control instance to a dedicated log file in the Home Assistant configuration directory (`shadow_control_<name>.log`). The file is rotated automatically (max 5 MB, 3 backups). Useful for collecting instance-specific logs over time without filtering the main HA log.
 
+### Fixes:
+* Fix #85: B04 ist not allowed to be higher than 5000
+
 ## 0.12.1
 ### Fixes:
 * Fix accidental exchange of allowed config options for DAWN_OPEN_NOT_BEFORE and DAWN_CLOSE_NOT_LATER_THAN
