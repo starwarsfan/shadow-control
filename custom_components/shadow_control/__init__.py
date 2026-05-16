@@ -1214,9 +1214,13 @@ class ShadowControlManager:
         # ✅ NEU: Check if positioning completed (timer expired)
         await self._check_positioning_completed()
 
-        # Already locked? Skip manual movement check
-        if self._dynamic_config.lock_integration or self._dynamic_config.lock_integration_with_position:
-            self.logger.debug("Cover state change detected, but already locked. Skipping manual movement check.")
+        # Plain manual lock (Status 1): always skip manual movement check
+        if self._dynamic_config.lock_integration:
+            self.logger.debug("Cover state change detected, but already locked (manual lock). Skipping manual movement check.")
+            return
+        # Forced-position lock (Status 2) with auto-lock already active: skip (already transitioned to Status 3)
+        if self._dynamic_config.lock_integration_with_position and self._locked_by_auto_lock:
+            self.logger.debug("Cover state change detected, auto-lock already active during forced-position lock. Skipping.")
             return
 
         # Unlock grace period active? Skip manual movement check
@@ -2652,6 +2656,13 @@ class ShadowControlManager:
                         )
                     except Exception:
                         self.logger.exception("Failed to set tilt position:")
+
+                # Update positioning reference so that cover movement toward forced position
+                # is correctly recognised as integration-triggered and not as manual movement.
+                self._last_calculated_height = self._dynamic_config.lock_height
+                self._last_calculated_angle = self._dynamic_config.lock_angle
+                if self._last_positioning_time is None or not self._is_positioning_in_progress():
+                    self._last_positioning_time = dt_util.utcnow()
 
             self._update_extra_state_attributes()
             async_dispatcher_send(self.hass, f"{DOMAIN}_update_{self.name.lower().replace(' ', '_')}")
@@ -4781,8 +4792,9 @@ class ShadowControlManager:
             self._locked_by_auto_lock,
         )
 
-        # Lock with forced position takes precedence
-        if self._dynamic_config.lock_integration_with_position:
+        # Lock with forced position takes precedence unless a manual movement was detected
+        # while it was active (auto-lock overrides to allow transition to Status 3).
+        if self._dynamic_config.lock_integration_with_position and not self._locked_by_auto_lock:
             return LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
 
         # Check if locked

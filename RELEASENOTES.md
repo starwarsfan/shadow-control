@@ -8,6 +8,7 @@
 * Fix #85: B04 ist not allowed to be higher than 5000
 * Fix #88: Recursion error with mode3 covers
 * Fix #87: Dawn is activated when D01 is deactivated
+* Fix #96: Wrong behavior within lock state 2
 
 ## 0.12.1
 ### Fixes:

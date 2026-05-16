@@ -996,22 +996,24 @@ class TestTimerIntegration:
     # TEST 28: Lock with Position überschreibt Auto-Lock
     # ========================================================================
 
-    async def test_lock_with_position_overrides_auto_lock(self, manager):
-        """Test lock with position takes precedence over auto-lock."""
+    async def test_auto_lock_overrides_lock_with_position(self, manager):
+        """Test auto-lock (manual movement) overrides forced-position lock to allow Status 2 -> Status 3 transition."""
         # ✅ FIX
         manager._calculate_lock_state = ShadowControlManager._calculate_lock_state.__get__(manager)
 
-        # Auto-lock was active
-        manager._locked_by_auto_lock = True
-        manager._dynamic_config.lock_integration = True
-
-        # But lock with position is also enabled
+        # Forced-position lock (Status 2) active, no auto-lock yet
+        manager._locked_by_auto_lock = False
+        manager._dynamic_config.lock_integration = False
         manager._dynamic_config.lock_integration_with_position = True
 
-        # Lock with position takes precedence
+        assert manager._calculate_lock_state() == LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
+
+        # User manually moves cover -> auto-lock activates (Status 2 -> Status 3 transition)
+        manager._locked_by_auto_lock = True
+
         lock_state = manager._calculate_lock_state()
-        assert lock_state == LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
-        assert lock_state.value == 2
+        assert lock_state == LockState.LOCKED_BY_EXTERNAL_MODIFICATION
+        assert lock_state.value == 3
 
     # ========================================================================
     # TEST 29: Unlock resettet Auto-Lock Flag
