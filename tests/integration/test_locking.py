@@ -476,7 +476,7 @@ async def test_lock_with_position_manual_move_transitions_to_auto_lock(
     assert_equal(actual_height, 10, "Cover at manual position immediately after move")
 
     # Let the positioning timer expire (timer = 3 s in test config).
-    # No cover state-change event fires after this point – the cover is stationary.
+    # No cover state-change event fires after this point - the cover is stationary.
     await time_travel(seconds=5)
     await hass.async_block_till_done()
 
