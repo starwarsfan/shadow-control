@@ -1,5 +1,9 @@
 # Changes
 
+## 0.13.1
+### Fixes:
+* Fix #99: Wrong behavior within lock state 2 (again...)
+
 ## 0.13.0
 ### New features:
 * New option `own_logfile_enabled` to write all log output for a Shadow Control instance to a dedicated log file in the Home Assistant configuration directory (`shadow_control_<name>.log`). The file is rotated automatically (max 5 MB, 3 backups). Useful for collecting instance-specific logs over time without filtering the main HA log.
@@ -9,7 +13,6 @@
 * Fix #88: Recursion error with mode3 covers
 * Fix #87: Dawn is activated when D01 is deactivated
 * Fix #96: Wrong behavior within lock state 2
-* Fix #99: Wrong behavior within lock state 2 (again...)
 
 ## 0.12.1
 ### Fixes:
