@@ -1,5 +1,9 @@
 # Changes
 
+## 0.14.0
+### Fixes:
+* Update minimal versions for **Shadow Control** to Python 3.13 and HA 2025.5.0 (https://github.com/starwarsfan/shadow-control/issues/136)
+
 ## 0.13.1
 ### Fixes:
 * Fix #99: Wrong behavior within lock state 2 (again...)
