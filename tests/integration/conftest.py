@@ -7,10 +7,8 @@ from typing import Any
 
 import pytest
 from colorlog import ColoredFormatter
-from homeassistant.components.cover import (
-    DOMAIN as COVER_DOMAIN,
-)
 from homeassistant.components.input_number import DOMAIN as INPUT_NUMBER_DOMAIN
+from homeassistant.components.template import DOMAIN as TEMPLATE_DOMAIN
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
@@ -195,15 +193,18 @@ async def mock_minimal_entities(hass: HomeAssistant):
     await hass.async_block_till_done()
 
     # Setup Cover mit Template Platform
-    cover_config = {
-        COVER_DOMAIN: [
+    # Hinweis: Ab einer bestimmten HA-Version wird die Konfiguration der Template-Integration
+    # unter dem jeweiligen Plattform-Schlüssel (hier: "cover") nicht mehr unterstützt. Die
+    # Konfiguration muss unter dem eigenen "template"-Schlüssel erfolgen (siehe #136).
+    template_config = {
+        TEMPLATE_DOMAIN: [
             {
-                "platform": "template",
-                "covers": {
-                    "sc_dummy": {
-                        "friendly_name": "SC Dummy",
+                "cover": [
+                    {
+                        "name": "SC Dummy",
+                        "unique_id": "sc_dummy",
                         "device_class": "shutter",
-                        "position_template": "{{ states('input_number.cover_position') | int(50) }}",
+                        "position": "{{ states('input_number.cover_position') | int(50) }}",
                         "open_cover": {
                             "service": "input_number.set_value",
                             "target": {"entity_id": "input_number.cover_position"},
@@ -225,13 +226,13 @@ async def mock_minimal_entities(hass: HomeAssistant):
                             "data": {"value": "{{ tilt_position }}"},
                         },
                     }
-                },
+                ]
             }
         ]
     }
 
     # Setup Cover Template
-    assert await async_setup_component(hass, COVER_DOMAIN, cover_config)
+    assert await async_setup_component(hass, TEMPLATE_DOMAIN, template_config)
     await hass.async_block_till_done()
 
     return {
