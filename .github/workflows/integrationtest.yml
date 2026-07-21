@@ -17,12 +17,12 @@ jobs:
       matrix:
         # Explicit (python, ha) pairs instead of a full cross-product: recent Home Assistant
         # releases require newer Python versions (e.g. 2026.4.0+ needs Python >=3.14.2), so not
-        # every python-version/ha-version combination is installable (see #136).
+        # every python-version/ha-version combination is installable. Python 3.12 is no longer
+        # tested: HA 2025.5.0 (our oldest tested/supported version, matching hacs.json) already
+        # requires Python >=3.13.2 (see #136).
         include:
-          - python-version: "3.12"
-            ha-version: "2024.12.0"
           - python-version: "3.13"
-            ha-version: "2025.1.0"
+            ha-version: "2025.5.0"
           - python-version: "3.13"
             ha-version: "2026.1.0"
           - python-version: "3.14"
