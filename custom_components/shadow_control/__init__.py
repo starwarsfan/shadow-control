@@ -2015,6 +2015,14 @@ class ShadowControlManager:
 
         await self._update_input_values()
 
+        # Also check here (not only in the cover state-change listener) so that a manual
+        # movement stored during the positioning timer window (FALL A) is detected even
+        # when the cover stops and no further state-change event fires after the timer
+        # expires.  Without this call, the next external trigger (sun/brightness update)
+        # would re-apply the forced position before _check_positioning_completed ever ran,
+        # preventing State 2 → State 3 transition.
+        await self._check_positioning_completed()
+
         shadow_handling_was_disabled = False
         dawn_handling_was_disabled = False
         force_immediate_positioning = False
