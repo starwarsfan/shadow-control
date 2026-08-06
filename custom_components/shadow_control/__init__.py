@@ -2701,12 +2701,32 @@ class ShadowControlManager:
             self.logger.debug("Integration is locked (%s). Calculations are running, but physical outputs are skipped.", self.current_lock_state.name)
 
             if self.current_lock_state == LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION:
-                await self._send_forced_position_commands()
+                forced_height = self._dynamic_config.lock_height
+                forced_angle = self._dynamic_config.lock_angle
+
+                # Skip resending the forced-position command while a movement toward
+                # this exact target is still in progress (see #126). Every recalculation
+                # trigger (e.g. a routine sun-position sensor update) reaches this branch
+                # and would otherwise unconditionally resend the position/tilt commands,
+                # even mid-movement - overriding a manual stop before
+                # _check_positioning_completed() ever gets a chance to detect it (that
+                # check only runs once max_movement_duration has actually elapsed).
+                already_targeting_same_position = (
+                    abs(forced_height - self._last_calculated_height) < 0.001 and abs(forced_angle - self._last_calculated_angle) < 0.001
+                )
+                if already_targeting_same_position and self._is_positioning_in_progress():
+                    self.logger.debug(
+                        "Forced-position movement to %.1f%%/%.1f%% already in progress - skipping duplicate command.",
+                        forced_height,
+                        forced_angle,
+                    )
+                else:
+                    await self._send_forced_position_commands()
 
                 # Update positioning reference so that cover movement toward forced position
                 # is correctly recognised as integration-triggered and not as manual movement.
-                self._last_calculated_height = self._dynamic_config.lock_height
-                self._last_calculated_angle = self._dynamic_config.lock_angle
+                self._last_calculated_height = forced_height
+                self._last_calculated_angle = forced_angle
                 if self._last_positioning_time is None or not self._is_positioning_in_progress():
                     self._last_positioning_time = dt_util.utcnow()
 
