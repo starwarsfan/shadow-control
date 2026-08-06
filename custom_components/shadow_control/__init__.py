@@ -750,6 +750,8 @@ class SCShadowControlConfig:
         self.shutter_look_through_angle: float = SCDefaults.SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_VALUE.value
         self.height_after_sun: float = SCDefaults.SHADOW_HEIGHT_AFTER_SUN_VALUE.value
         self.angle_after_sun: float = SCDefaults.SHADOW_ANGLE_AFTER_SUN_VALUE.value
+        self.low_sun_elevation_threshold: float = SCDefaults.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_VALUE.value
+        self.low_sun_brightness_threshold: float = SCDefaults.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_VALUE.value
 
 
 class SCDawnControlConfig:
@@ -1657,6 +1659,36 @@ class ShadowControlManager:
             self._shadow_config.brightness_threshold_minimal,
         )
 
+        # Shadow Low Sun Elevation Threshold (S13) / Low Sun Brightness Threshold (S14, see #79)
+        shadow_low_sun_elevation_threshold_manual = self.get_internal_entity_id(SCInternal.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_MANUAL)
+        shadow_low_sun_elevation_threshold_value = (
+            self._get_internal_entity_state_value(
+                shadow_low_sun_elevation_threshold_manual, SCDefaults.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_VALUE.value, float
+            )
+            if shadow_low_sun_elevation_threshold_manual
+            else SCDefaults.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_VALUE.value
+        )
+        self._shadow_config.low_sun_elevation_threshold = self._get_entity_state_value(
+            SCShadowInput.LOW_SUN_ELEVATION_THRESHOLD_ENTITY.value, shadow_low_sun_elevation_threshold_value, float
+        )
+
+        shadow_low_sun_brightness_threshold_manual = self.get_internal_entity_id(SCInternal.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_MANUAL)
+        shadow_low_sun_brightness_threshold_value = (
+            self._get_internal_entity_state_value(
+                shadow_low_sun_brightness_threshold_manual, SCDefaults.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_VALUE.value, float
+            )
+            if shadow_low_sun_brightness_threshold_manual
+            else SCDefaults.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_VALUE.value
+        )
+        self._shadow_config.low_sun_brightness_threshold = self._get_entity_state_value(
+            SCShadowInput.LOW_SUN_BRIGHTNESS_THRESHOLD_ENTITY.value, shadow_low_sun_brightness_threshold_value, float
+        )
+        self.logger.debug(
+            "Low sun elevation threshold: %s°, low sun brightness threshold: %s",
+            self._shadow_config.low_sun_elevation_threshold,
+            self._shadow_config.low_sun_brightness_threshold,
+        )
+
         # Calculate adaptive or static brightness threshold
         if self._shadow_config.brightness_threshold_summer > self._shadow_config.brightness_threshold_winter:
             # Adaptive brightness is enabled
@@ -2345,6 +2377,24 @@ class ShadowControlManager:
         if self._dynamic_config.brightness_dawn is not None and self._dynamic_config.brightness_dawn >= 0:
             return self._dynamic_config.brightness_dawn
         return self._dynamic_config.brightness
+
+    def _get_effective_shadow_brightness_threshold(self) -> float | None:
+        """
+        Return the brightness threshold to use for the shadow-close decision.
+
+        Below the configured low-sun elevation threshold (S13), the sun sits so low
+        that it blinds the room with direct light even though measured brightness may
+        have already dropped below the normal S02/S03/S04 threshold (e.g. a west-facing
+        window in the evening). In that case, the lower S14 threshold is used instead so
+        the shutter stays closed. See #79.
+        """
+        if (
+            self._effective_elevation is not None
+            and self._shadow_config.low_sun_elevation_threshold is not None
+            and self._effective_elevation < self._shadow_config.low_sun_elevation_threshold
+        ):
+            return self._shadow_config.low_sun_brightness_threshold
+        return self.brightness_threshold
 
     async def _calculate_effective_elevation(self) -> float | None:
         """Calculate effective elevation in relation to the facade."""
@@ -3188,7 +3238,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_FULL_CLOSE_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._dynamic_config.brightness
-            shadow_threshold_close = self.brightness_threshold
+            shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
             if current_brightness is not None and shadow_threshold_close is not None and current_brightness > shadow_threshold_close:
                 if self._is_timer_finished():
                     target_height = self._calculate_shutter_height()
@@ -3262,7 +3312,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_FULL_CLOSED")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self.brightness_threshold
+            shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
             shadow_open_slat_delay = self._shadow_config.shutter_look_through_seconds
             if (
                 current_brightness is not None
@@ -3326,7 +3376,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self.brightness_threshold
+            shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
             shadow_open_slat_angle = self._shadow_config.shutter_look_through_angle
             if (
                 current_brightness is not None
@@ -3405,7 +3455,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_HORIZONTAL_NEUTRAL")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self.brightness_threshold
+            shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
             shadow_open_shutter_delay = self._shadow_config.shutter_open_seconds
             if (
                 current_brightness is not None
@@ -3487,7 +3537,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_NEUTRAL_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self.brightness_threshold
+            shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
             height_after_shadow = self._shadow_config.height_after_sun
             angle_after_shadow = self._shadow_config.angle_after_sun
             if current_brightness is not None and shadow_threshold_close is not None and current_brightness > shadow_threshold_close:
@@ -3561,7 +3611,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_NEUTRAL")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self.brightness_threshold
+            shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
             dawn_handling_active = self._dawn_config.enabled
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_config.brightness_threshold
@@ -3681,7 +3731,7 @@ class ShadowControlManager:
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             self.logger.debug("self._check_if_facade_is_in_sun and self._is_shadow_handling_activated")
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self.brightness_threshold
+            shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
             shadow_close_delay = self._shadow_config.after_seconds
             if (
                 current_brightness is not None
@@ -3747,7 +3797,7 @@ class ShadowControlManager:
         current_brightness = self._get_current_brightness()
 
         shadow_handling_active = await self._is_shadow_control_enabled()
-        shadow_threshold_close = self.brightness_threshold
+        shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
         shadow_close_delay = self._shadow_config.after_seconds
 
         dawn_handling_active = await self._is_dawn_control_enabled()

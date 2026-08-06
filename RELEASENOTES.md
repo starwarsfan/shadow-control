@@ -1,6 +1,9 @@
 # Changes
 
 ## 0.14.0
+### New features:
+* New shadow options `S13 Low sun elevation threshold` and `S14 Low sun brightness threshold` (https://github.com/starwarsfan/shadow-control/issues/79): below a configurable sun elevation, a separate (lower) brightness threshold is used to decide whether to close for shadow. This addresses low, blinding sun (e.g. an evening west-facing facade) that still shines directly into the room even though measured brightness has already dropped below the normal S02/S03/S04 threshold. Disabled by default (S13 = 0°).
+
 ### Fixes:
 * Update minimal versions for **Shadow Control** to Python 3.13 and HA 2025.5.0 (https://github.com/starwarsfan/shadow-control/issues/136)
 * Fix #130: `ServiceNotSupported` error for `cover.set_cover_tilt_position` when a cover without tilt support (e.g. mode3 roller shutters) is locked with a forced position

@@ -85,6 +85,8 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
       * [S10 Open after](#s10-open-after)
       * [S11 Height after](#s11-height-after)
       * [S12 Angle after](#s12-angle-after)
+      * [S13 Low sun elevation threshold](#s13-low-sun-elevation-threshold)
+      * [S14 Low sun brightness threshold](#s14-low-sun-brightness-threshold)
     * [Dawn settings](#dawn-settings)
       * [D01 Control enabled](#d01-control-enabled)
       * [D02 Threshold](#d02-threshold)
@@ -619,6 +621,16 @@ This is the shutter height in %, which should be set after the shadow position. 
 
 This is the shutter angle in %, which should be set after the shadow position. Default: 0
 
+#### S13 Low sun elevation threshold
+(yaml: `shadow_low_sun_elevation_threshold_manual: <value>` u/o `shadow_low_sun_elevation_threshold_entity: <entity>`)
+
+Below this sun elevation (in °, relative to the facade), the shutter uses [S14 Low sun brightness threshold](#s14-low-sun-brightness-threshold) instead of the normal [S02](#s02-winter-threshold)/[S03](#s03-summer-threshold)/[S04](#s04-min-brightness-threshold) threshold to decide whether to close for shadow. This addresses the case where a low, blinding sun (e.g. in the evening on a west-facing facade) still shines directly into the room even though measured brightness has already dropped below the normal threshold. Default: 0 (disabled - the facade is normally only considered "in sun" for elevations above 0°, so this practically never triggers unless explicitly configured)
+
+#### S14 Low sun brightness threshold
+(yaml: `shadow_low_sun_brightness_threshold_manual: <value>` u/o `shadow_low_sun_brightness_threshold_entity: <entity>`)
+
+Brightness threshold used once the sun elevation drops below [S13 Low sun elevation threshold](#s13-low-sun-elevation-threshold). Set this lower than your normal threshold(s), since a low sun typically produces less overall brightness while still blinding directly. Default: 3500
+
 
 
 
@@ -867,6 +879,10 @@ shadow_control:
     shadow_height_after_sun_manual: 0
     #shadow_angle_after_sun_entity:
     shadow_angle_after_sun_manual: 0
+    #shadow_low_sun_elevation_threshold_entity:
+    shadow_low_sun_elevation_threshold_manual: 0
+    #shadow_low_sun_brightness_threshold_entity:
+    shadow_low_sun_brightness_threshold_manual: 3500
     #
     # =======================================================================
     # Dawn configuration
