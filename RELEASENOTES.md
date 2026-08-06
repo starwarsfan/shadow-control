@@ -5,6 +5,7 @@
 * Update minimal versions for **Shadow Control** to Python 3.13 and HA 2025.5.0 (https://github.com/starwarsfan/shadow-control/issues/136)
 * Fix #130: `ServiceNotSupported` error for `cover.set_cover_tilt_position` when a cover without tilt support (e.g. mode3 roller shutters) is locked with a forced position
 * Fix #129: Log the azimuth-correction geometry fallback at DEBUG instead of WARNING level. For slat geometries with a narrow width-to-distance margin, this fallback is expected and can trigger very frequently, flooding the log; it is not an error. See the "Shutter slat width" section in the docs for details.
+* Fix #124: When the azimuth-correction geometry is unsolvable (full blocking is physically impossible at the current sun angle), close the slats to the maximum achievable angle instead of falling back to a calculation that ignored the oblique sun position - which could compute a much shallower angle than necessary, down to the slats being fully open.
 
 ## 0.13.1
 ### Fixes:
