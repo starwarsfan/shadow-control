@@ -3000,7 +3000,9 @@ class ShadowControlManager:
         # Fallback: if effective_slat_width is near zero (sun nearly parallel to facade),
         # use given_shutter_slat_width to avoid division by zero / extreme values
         if effective_slat_width < 1e-6:
-            self.logger.warning(
+            # DEBUG, not WARNING: expected/frequent for slat geometries with a narrow
+            # width-to-distance margin, see #129. Not an error condition.
+            self.logger.debug(
                 "Effective slat width near zero (%s mm), falling back to given slat width (%s mm)",
                 effective_slat_width,
                 given_shutter_slat_width,
@@ -3017,9 +3019,12 @@ class ShadowControlManager:
         asin_arg = (math.sin(alpha_rad) * shutter_slat_distance) / effective_slat_width
 
         # Check if azimuth correction leads to impossible geometry (asin_arg > 1.0)
-        # This happens when effective_slat_width < slat_distance due to oblique sun angle
+        # This happens when effective_slat_width < slat_distance due to oblique sun angle.
+        # For slat geometries with a narrow width-to-distance margin, this is expected and
+        # can happen for the majority of the configured sun window (see #129), so this is
+        # logged at DEBUG rather than WARNING.
         if asin_arg > 1.0:
-            self.logger.warning(
+            self.logger.debug(
                 "Azimuth correction leads to impossible geometry (asin_arg=%.3f, "
                 "effective_slat_width=%smm < slat_distance=%smm). "
                 "Falling back to original slat width without azimuth correction.",

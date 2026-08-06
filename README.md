@@ -365,6 +365,8 @@ Shutter angle position in state _NEUTRAL_. Everything else is described in the p
 
 The Width of the shutter slats in mm. Width and distance are required to compute the angle, which is used to close the shutter only that much, to prevent direct sun rays within the room. The slat width must be larger than the slat distance, otherwise it's impossible to set up the correct shadow position. Default: 95
 
+Note: The calculation applies an azimuth correction which reduces the effective slat width as the sun moves away from the facade's normal direction. With a narrow margin between slat width and slat distance (e.g. 60mm/55mm), this correction is only mathematically solvable within a fairly small angle around the facade normal; outside of that range, the integration automatically falls back to the uncorrected slat width. This is expected behavior and not an error - it's simply a consequence of the physical slat geometry, not a misconfiguration.
+
 #### Shutter slat distance
 (yaml: `facade_slat_distance_static`)
 
