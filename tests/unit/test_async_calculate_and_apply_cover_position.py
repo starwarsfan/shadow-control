@@ -213,6 +213,47 @@ class TestAsyncCalculateAndApplyCoverPosition:
         assert manager._height_during_lock_state == 60.0
         assert manager._angle_during_lock_state == 50.0
 
+    async def test_lock_with_position_enabled_forces_immediate_positioning(self, manager):
+        """
+        Regression test for #131: enabling "lock with forced position" must force
+        immediate positioning, regardless of which shutter state is currently active.
+
+        Several state handlers (e.g. SHADOW_NEUTRAL_TIMER_RUNNING while waiting for
+        its timer, or DAWN_FULL_CLOSED while waiting for the D11 "open_not_before"
+        time constraint) return early without ever calling _position_shutter() when
+        nothing needs to change under normal operation. Since the forced-position
+        logic lives inside _position_shutter(), routing through the normal
+        _process_shutter_state() dispatch in those states means the forced position
+        is silently never applied - exactly as reported in #131 (mornings, between
+        dawn end and D11) and in the issue comment (during the shadow neutral timer).
+
+        Enabling lock-with-position must therefore behave like a config-entity change
+        without an active lock (see test_config_entity_change_without_lock) and route
+        through _force_immediate_positioning(), which unconditionally calls
+        _position_shutter() for the current state - bypassing the state handlers'
+        "nothing to do" early returns entirely.
+        """
+        lock_entity = "switch.lock_with_position"
+
+        manager._config.get = MagicMock(
+            side_effect=lambda key: lock_entity if key == SCDynamicInput.LOCK_INTEGRATION_WITH_POSITION_ENTITY.value else None
+        )
+
+        event = Event(
+            "state_changed",
+            {
+                "entity_id": lock_entity,
+                "old_state": MagicMock(state=STATE_OFF),
+                "new_state": MagicMock(state=STATE_ON),
+            },
+        )
+
+        await manager.async_calculate_and_apply_cover_position(event=event)
+
+        assert manager._enforce_position_update is True
+        manager._force_immediate_positioning.assert_called_once()
+        manager._process_shutter_state.assert_not_called()
+
     async def test_lock_with_position_disabled_position_differs(self, manager):
         """Test lock with position disabled and position differs (Branch 8A1 + 9A)."""
         manager._dynamic_config.lock_integration = False
