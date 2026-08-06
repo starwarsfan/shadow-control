@@ -156,7 +156,9 @@
           "shadow_shutter_look_through_angle_entity": "S09 Look through angle",
           "shadow_shutter_open_seconds_entity": "S10 Open after",
           "shadow_height_after_sun_entity": "S11 Height after",
-          "shadow_angle_after_sun_entity": "S12 Angle after"
+          "shadow_angle_after_sun_entity": "S12 Angle after",
+          "shadow_low_sun_elevation_threshold_entity": "S13 Low sun elevation threshold",
+          "shadow_low_sun_brightness_threshold_entity": "S14 Low sun brightness threshold"
         },
         "data_description": {
           "shadow_control_enabled_entity": "De-/Activate shadow handling entity.",
@@ -170,7 +172,9 @@
           "shadow_shutter_look_through_angle_entity": "Look through slat angle (by entity).",
           "shadow_shutter_open_seconds_entity": "Time to open the shutter after look through position (by entity).",
           "shadow_height_after_sun_entity": "Height after shadow (by entity).",
-          "shadow_angle_after_sun_entity": "Slat angle after shadow (by entity)."
+          "shadow_angle_after_sun_entity": "Slat angle after shadow (by entity).",
+          "shadow_low_sun_elevation_threshold_entity": "Below this sun elevation, the low sun brightness threshold (S14) is used instead of S02/S03/S04. 0 disables this feature (by entity).",
+          "shadow_low_sun_brightness_threshold_entity": "Brightness threshold used once the sun elevation drops below the low sun elevation threshold (S13) (by entity)."
         }
       },
       "dawn_settings": {
@@ -276,6 +280,12 @@
       },
       "shadow_angle_after_sun_manual": {
         "name": "S12 Angle after shadow"
+      },
+      "shadow_low_sun_elevation_threshold_manual": {
+        "name": "S13 Low sun elevation threshold"
+      },
+      "shadow_low_sun_brightness_threshold_manual": {
+        "name": "S14 Low sun brightness threshold"
       },
       "dawn_brightness_threshold_manual": {
         "name": "D02 Brightness threshold"
@@ -410,6 +420,12 @@
       },
       "shadow_angle_after_sun_entity": {
         "name": "S12 Angle after"
+      },
+      "shadow_low_sun_elevation_threshold_entity": {
+        "name": "S13 Low sun elevation threshold"
+      },
+      "shadow_low_sun_brightness_threshold_entity": {
+        "name": "S14 Low sun brightness threshold"
       },
       "dawn_control_enabled_entity": {
         "name": "D01 Control enabled"
