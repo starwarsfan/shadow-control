@@ -3018,22 +3018,45 @@ class ShadowControlManager:
         # First try with azimuth-corrected effective_slat_width
         asin_arg = (math.sin(alpha_rad) * shutter_slat_distance) / effective_slat_width
 
-        # Check if azimuth correction leads to impossible geometry (asin_arg > 1.0)
-        # This happens when effective_slat_width < slat_distance due to oblique sun angle.
-        # For slat geometries with a narrow width-to-distance margin, this is expected and
-        # can happen for the majority of the configured sun window (see #129), so this is
-        # logged at DEBUG rather than WARNING.
+        # Check if azimuth correction leads to impossible geometry (asin_arg > 1.0).
+        # This happens when effective_slat_width < slat_distance due to an oblique sun
+        # angle. For slat geometries with a narrow width-to-distance margin, this is
+        # expected and can happen for a large part of the configured sun window (see #129).
         if asin_arg > 1.0:
-            self.logger.debug(
-                "Azimuth correction leads to impossible geometry (asin_arg=%.3f, "
-                "effective_slat_width=%smm < slat_distance=%smm). "
-                "Falling back to original slat width without azimuth correction.",
-                asin_arg,
-                round(effective_slat_width, 1),
-                shutter_slat_distance,
-            )
-            # Retry with original slat width (no azimuth correction)
-            asin_arg = (math.sin(alpha_rad) * shutter_slat_distance) / given_shutter_slat_width
+            if shutter_slat_distance >= given_shutter_slat_width:
+                # Genuine misconfiguration (slat distance not smaller than slat width even
+                # head-on) - the geometry is unsolvable regardless of azimuth. Retry with
+                # the uncorrected slat width; this will still fail the range check below
+                # and fall through to returning 0.0 with a warning about the bad config.
+                self.logger.warning(
+                    "Azimuth correction leads to impossible geometry (asin_arg=%.3f, "
+                    "effective_slat_width=%smm < slat_distance=%smm), and slat_distance "
+                    "is not smaller than the configured slat_width (%smm) either. "
+                    "Check your slat width/distance configuration.",
+                    asin_arg,
+                    round(effective_slat_width, 1),
+                    shutter_slat_distance,
+                    given_shutter_slat_width,
+                )
+                asin_arg = (math.sin(alpha_rad) * shutter_slat_distance) / given_shutter_slat_width
+            else:
+                # Valid slat geometry (slat_width > slat_distance), but at this relative
+                # azimuth full blocking is geometrically impossible - there will always be
+                # a gap, no matter the angle. Falling back to the uncorrected slat width
+                # here would ignore how oblique the sun actually is and can compute a much
+                # *shallower* angle than necessary (see #124), up to being clamped to 0%
+                # (slats fully open) - the opposite of what should happen. Instead, close
+                # the slats as far as physically possible (steepest achievable angle,
+                # beta=90°) to minimize the unavoidable gap.
+                self.logger.debug(
+                    "Azimuth correction leads to impossible geometry (asin_arg=%.3f, "
+                    "effective_slat_width=%smm < slat_distance=%smm). Full blocking is "
+                    "not achievable at this sun angle; closing slats to the max achievable angle.",
+                    asin_arg,
+                    round(effective_slat_width, 1),
+                    shutter_slat_distance,
+                )
+                asin_arg = 1.0
 
         if not (-1 <= asin_arg <= 1):
             self.logger.warning(
