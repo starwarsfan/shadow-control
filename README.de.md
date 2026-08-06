@@ -365,6 +365,8 @@ Lamellenwinkel in % in Neutralposition. Alles andere identisch zu [Neutralhöhe]
 
 Die Breite der Lamellen in mm. Breite und Abstand werden benötigt, um den Lamellenwinkel zu berechnen, der benötigt wird, die Lamellen gerade so schräg zu stellen, dass kein direktes Sonnenlicht in den Raum fällt. Die Lamellenbreite muss zwingend grösser als der Lamellenabstand sein, anderenfalls ist es nicht möglich, eine korrekte Beschattungsposition anzufahren. Standardwert: 95
 
+Hinweis: Bei der Berechnung wird eine Azimut-Korrektur angewendet, welche die effektive Lamellenbreite reduziert, je weiter sich die Sonne von der Fassadennormalen entfernt. Bei einer geringen Marge zwischen Lamellenbreite und Lamellenabstand (z. B. 60mm/55mm) ist diese Korrektur nur innerhalb eines vergleichsweise kleinen Winkelbereichs um die Fassadennormale mathematisch lösbar; ausserhalb dieses Bereichs fällt die Integration automatisch auf die unkorrigierte Lamellenbreite zurück. Das ist erwartetes Verhalten und kein Fehler, sondern eine Folge der physikalischen Lamellengeometrie, keine Fehlkonfiguration.
+
 #### Lamellenabstand
 (yaml: `facade_slat_distance_static`)
 
