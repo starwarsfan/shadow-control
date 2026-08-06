@@ -2226,6 +2226,16 @@ class ShadowControlManager:
                         # If lock-with-position, it's no longer auto-lock
                         self._locked_by_auto_lock = False
 
+                        # Route through _force_immediate_positioning() instead of the normal
+                        # _process_shutter_state() dispatch (see #131). Several state handlers
+                        # (e.g. SHADOW_NEUTRAL_TIMER_RUNNING while waiting for its timer, or
+                        # DAWN_FULL_CLOSED while waiting for the D11 "open_not_before" time
+                        # constraint) return early without calling _position_shutter() at all
+                        # when nothing needs to change under normal operation. Since the forced-
+                        # position logic lives inside _position_shutter(), those early returns
+                        # would silently prevent the forced position from ever being applied.
+                        force_immediate_positioning = True
+
                 elif entity == self._config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value):
                     # External enforce entity changed
                     if new_state.state == "on":
