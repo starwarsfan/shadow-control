@@ -2550,6 +2550,62 @@ class ShadowControlManager:
 
         self.logger.debug("New shutter state after processing: %s (%s)", self.current_shutter_state.name, self.current_shutter_state.value)
 
+    async def _send_forced_position_commands(self) -> None:
+        """Send the configured lock height/angle to all target covers, honoring tilt support (see issue #130)."""
+        has_pos_service = self.hass.services.has_service("cover", "set_cover_position")
+        has_tilt_service = self.hass.services.has_service("cover", "set_cover_tilt_position")
+
+        for entity in self._target_cover_entity_id:
+            current_cover_state: State | None = self.hass.states.get(entity)
+
+            if not current_cover_state:
+                self.logger.warning("Target cover entity '%s' not found. Cannot send commands.", entity)
+                continue
+
+            supported_features = current_cover_state.attributes.get(ATTR_SUPPORTED_FEATURES, 0)
+
+            shutter_height_percent = self._dynamic_config.lock_height
+            shutter_angle_percent = self._dynamic_config.lock_angle
+            self.used_shutter_height = shutter_height_percent
+            self.used_shutter_angle = shutter_angle_percent
+            self.used_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(shutter_angle_percent)
+            self.logger.debug(
+                "Integration set to locked with forced position, setting position to %.1f%%/%.1f%%",
+                shutter_height_percent,
+                shutter_angle_percent,
+            )
+            if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
+                try:
+                    await self.hass.services.async_call(
+                        "cover", "set_cover_position", {"entity_id": entity, "position": 100 - shutter_height_percent}, blocking=False
+                    )
+                except Exception:
+                    self.logger.exception("Failed to set position:")
+            else:
+                self.logger.debug(
+                    "Skipping forced position set. Supported: %s, Service Found: %s.",
+                    supported_features & CoverEntityFeature.SET_POSITION,
+                    has_pos_service,
+                )
+
+            if self._facade_config.shutter_type is not ShutterType.MODE3:
+                if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
+                    try:
+                        await self.hass.services.async_call(
+                            "cover",
+                            "set_cover_tilt_position",
+                            {"entity_id": entity, "tilt_position": 100 - shutter_angle_percent},
+                            blocking=False,
+                        )
+                    except Exception:
+                        self.logger.exception("Failed to set tilt position:")
+                else:
+                    self.logger.debug(
+                        "Skipping forced tilt set. Supported: %s, Service Found: %s.",
+                        supported_features & CoverEntityFeature.SET_TILT_POSITION,
+                        has_tilt_service,
+                    )
+
     async def _position_shutter(self, shutter_height_percent: float, shutter_angle_percent: float, stop_timer: bool) -> None:
         """Evaluate and perform final shutter positioning commands."""
         self.logger.debug(
@@ -2635,35 +2691,7 @@ class ShadowControlManager:
             self.logger.debug("Integration is locked (%s). Calculations are running, but physical outputs are skipped.", self.current_lock_state.name)
 
             if self.current_lock_state == LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION:
-                for entity in self._target_cover_entity_id:
-                    current_cover_state: State | None = self.hass.states.get(entity)
-
-                    if not current_cover_state:
-                        self.logger.warning("Target cover entity '%s' not found. Cannot send commands.", entity)
-                        continue
-
-                    shutter_height_percent = self._dynamic_config.lock_height
-                    shutter_angle_percent = self._dynamic_config.lock_angle
-                    self.used_shutter_height = shutter_height_percent
-                    self.used_shutter_angle = shutter_angle_percent
-                    self.used_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(shutter_angle_percent)
-                    self.logger.debug(
-                        "Integration set to locked with forced position, setting position to %.1f%%/%.1f%%",
-                        shutter_height_percent,
-                        shutter_angle_percent,
-                    )
-                    try:
-                        await self.hass.services.async_call(
-                            "cover", "set_cover_position", {"entity_id": entity, "position": 100 - shutter_height_percent}, blocking=False
-                        )
-                    except Exception:
-                        self.logger.exception("Failed to set position:")
-                    try:
-                        await self.hass.services.async_call(
-                            "cover", "set_cover_tilt_position", {"entity_id": entity, "tilt_position": 100 - shutter_angle_percent}, blocking=False
-                        )
-                    except Exception:
-                        self.logger.exception("Failed to set tilt position:")
+                await self._send_forced_position_commands()
 
                 # Update positioning reference so that cover movement toward forced position
                 # is correctly recognised as integration-triggered and not as manual movement.

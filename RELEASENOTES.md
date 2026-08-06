@@ -3,6 +3,7 @@
 ## 0.14.0
 ### Fixes:
 * Update minimal versions for **Shadow Control** to Python 3.13 and HA 2025.5.0 (https://github.com/starwarsfan/shadow-control/issues/136)
+* Fix #130: `ServiceNotSupported` error for `cover.set_cover_tilt_position` when a cover without tilt support (e.g. mode3 roller shutters) is locked with a forced position
 
 ## 0.13.1
 ### Fixes:
