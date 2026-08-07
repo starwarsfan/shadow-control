@@ -218,3 +218,39 @@ class TestCalculateShutterAngle:
         assert isinstance(result, float)
         assert result >= 0.0
         assert not math.isnan(result)
+
+    async def test_azimuth_correction_impossible_geometry_closes_to_max_instead_of_opening(self, manager):
+        """
+        Regression test for #124: with a valid slat geometry (width > distance)
+        but an oblique relative azimuth, the azimuth-corrected effective slat
+        width can drop below the slat distance, making the exact correction
+        geometrically unsolvable (asin_arg > 1.0).
+
+        The previous behaviour retried the calculation with the *uncorrected*
+        slat width, which - because it ignores the fact that the sun hits the
+        facade very obliquely - can compute a much *shallower* angle than
+        necessary, up to the point of being clamped to 0% (slats fully open).
+        That's the opposite of what should happen: if full blocking is
+        geometrically impossible, the slats should close as much as physically
+        possible (steepest achievable angle), not open up.
+
+        Reproduces the real-world facade config from #124: azimuth=60°,
+        slat_width=95mm, slat_distance=67mm, with the sun at a relative
+        azimuth of ~59° - matching the reported "asin_arg=1.007,
+        effective_slat_width=48.8mm < slat_distance=67.0mm" log line.
+        """
+        manager._facade_config.azimuth = 60.0
+        manager._facade_config.slat_width = 95.0
+        manager._facade_config.slat_distance = 67.0
+        manager._dynamic_config.sun_azimuth = 119.0  # 59° relative azimuth
+        manager._effective_elevation = 42.8  # matches the reported log line
+
+        result = manager._calculate_shutter_angle()
+
+        # Old (buggy) behaviour produced ~-12° -> clamped to 0% (fully open).
+        # Correct behaviour: close as far as geometrically possible, ~47° -> ~52%.
+        assert result > 40.0, f"Expected the slats to close towards the max achievable angle, got {result}%"
+
+        # This is expected/physically-driven fallback behaviour, not a
+        # misconfiguration - must not be logged at WARNING level (see #129).
+        manager.logger.warning.assert_not_called()
