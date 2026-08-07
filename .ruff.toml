@@ -31,8 +31,10 @@ ignore = [
     "FBT003", # Boolean positional value in function call
     "ANN001", # Missing type annotation for function argument
     "PLR0913", # Too many arguments in function definition
+    "PLR0917", # Too many positional arguments in function definition
     "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
     "TC006", # Add quotes to type expression in `typing.cast()`
+    "CPY001", # Missing copyright notice at top of file (project has no copyright header convention)
 ]
 
 # Relaxed rules for tests
