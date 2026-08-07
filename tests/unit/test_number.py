@@ -85,10 +85,10 @@ class TestNumberEntity:
     """Test Number entity functionality."""
 
     async def test_async_setup_entry_all_added(self, mock_hass, mock_config_entry):
-        """Test all 22 entities are added when no external entities are configured."""
+        """Test all entities are added when no external entities are configured."""
         entities_added = []
         await number_async_setup_entry(mock_hass, mock_config_entry, entities_added.extend)
-        assert len(entities_added) == 24
+        assert len(entities_added) == 26
 
     async def test_async_setup_entry_skips_external(self, mock_hass, mock_config_entry):
         """Test that internal entities are skipped if an external entity is mapped."""
@@ -98,7 +98,7 @@ class TestNumberEntity:
 
         entities_added = []
         await number_async_setup_entry(mock_hass, mock_config_entry, entities_added.extend)
-        assert len(entities_added) == 23
+        assert len(entities_added) == 25
 
     async def test_registry_cleanup(self, mock_hass, mock_config_entry):
         """Test removal of deprecated entities from the registry."""

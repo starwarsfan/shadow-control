@@ -85,6 +85,8 @@ Gehe zur [deutschen Version](/README.de.md) der Dokumentation.
       * [S10 Open after](#s10-open-after)
       * [S11 Height after](#s11-height-after)
       * [S12 Angle after](#s12-angle-after)
+      * [S13 Low sun elevation threshold](#s13-low-sun-elevation-threshold)
+      * [S14 Low sun brightness threshold](#s14-low-sun-brightness-threshold)
     * [Dawn settings](#dawn-settings)
       * [D01 Control enabled](#d01-control-enabled)
       * [D02 Threshold](#d02-threshold)
@@ -365,6 +367,8 @@ Shutter angle position in state _NEUTRAL_. Everything else is described in the p
 
 The Width of the shutter slats in mm. Width and distance are required to compute the angle, which is used to close the shutter only that much, to prevent direct sun rays within the room. The slat width must be larger than the slat distance, otherwise it's impossible to set up the correct shadow position. Default: 95
 
+Note: The calculation applies an azimuth correction which reduces the effective slat width as the sun moves away from the facade's normal direction. With a narrow margin between slat width and slat distance (e.g. 60mm/55mm, or even the 95mm/67mm default combined with a wide sun window), this correction is only mathematically solvable within a fairly small angle around the facade normal. Outside of that range, full blocking of direct sunlight is physically impossible with the configured slat geometry, no matter the angle - the integration then closes the slats as far as geometrically possible to minimize the unavoidable gap, instead of computing an angle that ignores the oblique sun position. This is expected behavior and not an error - it's simply a consequence of the physical slat geometry, not a misconfiguration. It's logged at debug level; if you see it a lot, it means direct sunlight can't be fully blocked at those sun positions with your current slat geometry.
+
 #### Shutter slat distance
 (yaml: `facade_slat_distance_static`)
 
@@ -617,6 +621,16 @@ This is the shutter height in %, which should be set after the shadow position. 
 
 This is the shutter angle in %, which should be set after the shadow position. Default: 0
 
+#### S13 Low sun elevation threshold
+(yaml: `shadow_low_sun_elevation_threshold_manual: <value>` u/o `shadow_low_sun_elevation_threshold_entity: <entity>`)
+
+Below this sun elevation (in °, relative to the facade), the shutter uses [S14 Low sun brightness threshold](#s14-low-sun-brightness-threshold) instead of the normal [S02](#s02-winter-threshold)/[S03](#s03-summer-threshold)/[S04](#s04-min-brightness-threshold) threshold to decide whether to close for shadow. This addresses the case where a low, blinding sun (e.g. in the evening on a west-facing facade) still shines directly into the room even though measured brightness has already dropped below the normal threshold. Default: 0 (disabled - the facade is normally only considered "in sun" for elevations above 0°, so this practically never triggers unless explicitly configured)
+
+#### S14 Low sun brightness threshold
+(yaml: `shadow_low_sun_brightness_threshold_manual: <value>` u/o `shadow_low_sun_brightness_threshold_entity: <entity>`)
+
+Brightness threshold used once the sun elevation drops below [S13 Low sun elevation threshold](#s13-low-sun-elevation-threshold). Set this lower than your normal threshold(s), since a low sun typically produces less overall brightness while still blinding directly. Default: 3500
+
 
 
 
@@ -865,6 +879,10 @@ shadow_control:
     shadow_height_after_sun_manual: 0
     #shadow_angle_after_sun_entity:
     shadow_angle_after_sun_manual: 0
+    #shadow_low_sun_elevation_threshold_entity:
+    shadow_low_sun_elevation_threshold_manual: 0
+    #shadow_low_sun_brightness_threshold_entity:
+    shadow_low_sun_brightness_threshold_manual: 3500
     #
     # =======================================================================
     # Dawn configuration

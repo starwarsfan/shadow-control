@@ -750,6 +750,8 @@ class SCShadowControlConfig:
         self.shutter_look_through_angle: float = SCDefaults.SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_VALUE.value
         self.height_after_sun: float = SCDefaults.SHADOW_HEIGHT_AFTER_SUN_VALUE.value
         self.angle_after_sun: float = SCDefaults.SHADOW_ANGLE_AFTER_SUN_VALUE.value
+        self.low_sun_elevation_threshold: float = SCDefaults.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_VALUE.value
+        self.low_sun_brightness_threshold: float = SCDefaults.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_VALUE.value
 
 
 class SCDawnControlConfig:
@@ -1657,6 +1659,36 @@ class ShadowControlManager:
             self._shadow_config.brightness_threshold_minimal,
         )
 
+        # Shadow Low Sun Elevation Threshold (S13) / Low Sun Brightness Threshold (S14, see #79)
+        shadow_low_sun_elevation_threshold_manual = self.get_internal_entity_id(SCInternal.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_MANUAL)
+        shadow_low_sun_elevation_threshold_value = (
+            self._get_internal_entity_state_value(
+                shadow_low_sun_elevation_threshold_manual, SCDefaults.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_VALUE.value, float
+            )
+            if shadow_low_sun_elevation_threshold_manual
+            else SCDefaults.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_VALUE.value
+        )
+        self._shadow_config.low_sun_elevation_threshold = self._get_entity_state_value(
+            SCShadowInput.LOW_SUN_ELEVATION_THRESHOLD_ENTITY.value, shadow_low_sun_elevation_threshold_value, float
+        )
+
+        shadow_low_sun_brightness_threshold_manual = self.get_internal_entity_id(SCInternal.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_MANUAL)
+        shadow_low_sun_brightness_threshold_value = (
+            self._get_internal_entity_state_value(
+                shadow_low_sun_brightness_threshold_manual, SCDefaults.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_VALUE.value, float
+            )
+            if shadow_low_sun_brightness_threshold_manual
+            else SCDefaults.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_VALUE.value
+        )
+        self._shadow_config.low_sun_brightness_threshold = self._get_entity_state_value(
+            SCShadowInput.LOW_SUN_BRIGHTNESS_THRESHOLD_ENTITY.value, shadow_low_sun_brightness_threshold_value, float
+        )
+        self.logger.debug(
+            "Low sun elevation threshold: %s°, low sun brightness threshold: %s",
+            self._shadow_config.low_sun_elevation_threshold,
+            self._shadow_config.low_sun_brightness_threshold,
+        )
+
         # Calculate adaptive or static brightness threshold
         if self._shadow_config.brightness_threshold_summer > self._shadow_config.brightness_threshold_winter:
             # Adaptive brightness is enabled
@@ -2226,6 +2258,16 @@ class ShadowControlManager:
                         # If lock-with-position, it's no longer auto-lock
                         self._locked_by_auto_lock = False
 
+                        # Route through _force_immediate_positioning() instead of the normal
+                        # _process_shutter_state() dispatch (see #131). Several state handlers
+                        # (e.g. SHADOW_NEUTRAL_TIMER_RUNNING while waiting for its timer, or
+                        # DAWN_FULL_CLOSED while waiting for the D11 "open_not_before" time
+                        # constraint) return early without calling _position_shutter() at all
+                        # when nothing needs to change under normal operation. Since the forced-
+                        # position logic lives inside _position_shutter(), those early returns
+                        # would silently prevent the forced position from ever being applied.
+                        force_immediate_positioning = True
+
                 elif entity == self._config.get(SCDynamicInput.ENFORCE_POSITIONING_ENTITY.value):
                     # External enforce entity changed
                     if new_state.state == "on":
@@ -2335,6 +2377,24 @@ class ShadowControlManager:
         if self._dynamic_config.brightness_dawn is not None and self._dynamic_config.brightness_dawn >= 0:
             return self._dynamic_config.brightness_dawn
         return self._dynamic_config.brightness
+
+    def _get_effective_shadow_brightness_threshold(self) -> float | None:
+        """
+        Return the brightness threshold to use for the shadow-close decision.
+
+        Below the configured low-sun elevation threshold (S13), the sun sits so low
+        that it blinds the room with direct light even though measured brightness may
+        have already dropped below the normal S02/S03/S04 threshold (e.g. a west-facing
+        window in the evening). In that case, the lower S14 threshold is used instead so
+        the shutter stays closed. See #79.
+        """
+        if (
+            self._effective_elevation is not None
+            and self._shadow_config.low_sun_elevation_threshold is not None
+            and self._effective_elevation < self._shadow_config.low_sun_elevation_threshold
+        ):
+            return self._shadow_config.low_sun_brightness_threshold
+        return self.brightness_threshold
 
     async def _calculate_effective_elevation(self) -> float | None:
         """Calculate effective elevation in relation to the facade."""
@@ -2550,6 +2610,62 @@ class ShadowControlManager:
 
         self.logger.debug("New shutter state after processing: %s (%s)", self.current_shutter_state.name, self.current_shutter_state.value)
 
+    async def _send_forced_position_commands(self) -> None:
+        """Send the configured lock height/angle to all target covers, honoring tilt support (see issue #130)."""
+        has_pos_service = self.hass.services.has_service("cover", "set_cover_position")
+        has_tilt_service = self.hass.services.has_service("cover", "set_cover_tilt_position")
+
+        for entity in self._target_cover_entity_id:
+            current_cover_state: State | None = self.hass.states.get(entity)
+
+            if not current_cover_state:
+                self.logger.warning("Target cover entity '%s' not found. Cannot send commands.", entity)
+                continue
+
+            supported_features = current_cover_state.attributes.get(ATTR_SUPPORTED_FEATURES, 0)
+
+            shutter_height_percent = self._dynamic_config.lock_height
+            shutter_angle_percent = self._dynamic_config.lock_angle
+            self.used_shutter_height = shutter_height_percent
+            self.used_shutter_angle = shutter_angle_percent
+            self.used_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(shutter_angle_percent)
+            self.logger.debug(
+                "Integration set to locked with forced position, setting position to %.1f%%/%.1f%%",
+                shutter_height_percent,
+                shutter_angle_percent,
+            )
+            if (supported_features & CoverEntityFeature.SET_POSITION) and has_pos_service:
+                try:
+                    await self.hass.services.async_call(
+                        "cover", "set_cover_position", {"entity_id": entity, "position": 100 - shutter_height_percent}, blocking=False
+                    )
+                except Exception:
+                    self.logger.exception("Failed to set position:")
+            else:
+                self.logger.debug(
+                    "Skipping forced position set. Supported: %s, Service Found: %s.",
+                    supported_features & CoverEntityFeature.SET_POSITION,
+                    has_pos_service,
+                )
+
+            if self._facade_config.shutter_type is not ShutterType.MODE3:
+                if (supported_features & CoverEntityFeature.SET_TILT_POSITION) and has_tilt_service:
+                    try:
+                        await self.hass.services.async_call(
+                            "cover",
+                            "set_cover_tilt_position",
+                            {"entity_id": entity, "tilt_position": 100 - shutter_angle_percent},
+                            blocking=False,
+                        )
+                    except Exception:
+                        self.logger.exception("Failed to set tilt position:")
+                else:
+                    self.logger.debug(
+                        "Skipping forced tilt set. Supported: %s, Service Found: %s.",
+                        supported_features & CoverEntityFeature.SET_TILT_POSITION,
+                        has_tilt_service,
+                    )
+
     async def _position_shutter(self, shutter_height_percent: float, shutter_angle_percent: float, stop_timer: bool) -> None:
         """Evaluate and perform final shutter positioning commands."""
         self.logger.debug(
@@ -2635,40 +2751,32 @@ class ShadowControlManager:
             self.logger.debug("Integration is locked (%s). Calculations are running, but physical outputs are skipped.", self.current_lock_state.name)
 
             if self.current_lock_state == LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION:
-                for entity in self._target_cover_entity_id:
-                    current_cover_state: State | None = self.hass.states.get(entity)
+                forced_height = self._dynamic_config.lock_height
+                forced_angle = self._dynamic_config.lock_angle
 
-                    if not current_cover_state:
-                        self.logger.warning("Target cover entity '%s' not found. Cannot send commands.", entity)
-                        continue
-
-                    shutter_height_percent = self._dynamic_config.lock_height
-                    shutter_angle_percent = self._dynamic_config.lock_angle
-                    self.used_shutter_height = shutter_height_percent
-                    self.used_shutter_angle = shutter_angle_percent
-                    self.used_shutter_angle_degrees = self._convert_shutter_angle_percent_to_degrees(shutter_angle_percent)
+                # Skip resending the forced-position command while a movement toward
+                # this exact target is still in progress (see #126). Every recalculation
+                # trigger (e.g. a routine sun-position sensor update) reaches this branch
+                # and would otherwise unconditionally resend the position/tilt commands,
+                # even mid-movement - overriding a manual stop before
+                # _check_positioning_completed() ever gets a chance to detect it (that
+                # check only runs once max_movement_duration has actually elapsed).
+                already_targeting_same_position = (
+                    abs(forced_height - self._last_calculated_height) < 0.001 and abs(forced_angle - self._last_calculated_angle) < 0.001
+                )
+                if already_targeting_same_position and self._is_positioning_in_progress():
                     self.logger.debug(
-                        "Integration set to locked with forced position, setting position to %.1f%%/%.1f%%",
-                        shutter_height_percent,
-                        shutter_angle_percent,
+                        "Forced-position movement to %.1f%%/%.1f%% already in progress - skipping duplicate command.",
+                        forced_height,
+                        forced_angle,
                     )
-                    try:
-                        await self.hass.services.async_call(
-                            "cover", "set_cover_position", {"entity_id": entity, "position": 100 - shutter_height_percent}, blocking=False
-                        )
-                    except Exception:
-                        self.logger.exception("Failed to set position:")
-                    try:
-                        await self.hass.services.async_call(
-                            "cover", "set_cover_tilt_position", {"entity_id": entity, "tilt_position": 100 - shutter_angle_percent}, blocking=False
-                        )
-                    except Exception:
-                        self.logger.exception("Failed to set tilt position:")
+                else:
+                    await self._send_forced_position_commands()
 
                 # Update positioning reference so that cover movement toward forced position
                 # is correctly recognised as integration-triggered and not as manual movement.
-                self._last_calculated_height = self._dynamic_config.lock_height
-                self._last_calculated_angle = self._dynamic_config.lock_angle
+                self._last_calculated_height = forced_height
+                self._last_calculated_angle = forced_angle
                 if self._last_positioning_time is None or not self._is_positioning_in_progress():
                     self._last_positioning_time = dt_util.utcnow()
 
@@ -2972,7 +3080,9 @@ class ShadowControlManager:
         # Fallback: if effective_slat_width is near zero (sun nearly parallel to facade),
         # use given_shutter_slat_width to avoid division by zero / extreme values
         if effective_slat_width < 1e-6:
-            self.logger.warning(
+            # DEBUG, not WARNING: expected/frequent for slat geometries with a narrow
+            # width-to-distance margin, see #129. Not an error condition.
+            self.logger.debug(
                 "Effective slat width near zero (%s mm), falling back to given slat width (%s mm)",
                 effective_slat_width,
                 given_shutter_slat_width,
@@ -2988,19 +3098,45 @@ class ShadowControlManager:
         # First try with azimuth-corrected effective_slat_width
         asin_arg = (math.sin(alpha_rad) * shutter_slat_distance) / effective_slat_width
 
-        # Check if azimuth correction leads to impossible geometry (asin_arg > 1.0)
-        # This happens when effective_slat_width < slat_distance due to oblique sun angle
+        # Check if azimuth correction leads to impossible geometry (asin_arg > 1.0).
+        # This happens when effective_slat_width < slat_distance due to an oblique sun
+        # angle. For slat geometries with a narrow width-to-distance margin, this is
+        # expected and can happen for a large part of the configured sun window (see #129).
         if asin_arg > 1.0:
-            self.logger.warning(
-                "Azimuth correction leads to impossible geometry (asin_arg=%.3f, "
-                "effective_slat_width=%smm < slat_distance=%smm). "
-                "Falling back to original slat width without azimuth correction.",
-                asin_arg,
-                round(effective_slat_width, 1),
-                shutter_slat_distance,
-            )
-            # Retry with original slat width (no azimuth correction)
-            asin_arg = (math.sin(alpha_rad) * shutter_slat_distance) / given_shutter_slat_width
+            if shutter_slat_distance >= given_shutter_slat_width:
+                # Genuine misconfiguration (slat distance not smaller than slat width even
+                # head-on) - the geometry is unsolvable regardless of azimuth. Retry with
+                # the uncorrected slat width; this will still fail the range check below
+                # and fall through to returning 0.0 with a warning about the bad config.
+                self.logger.warning(
+                    "Azimuth correction leads to impossible geometry (asin_arg=%.3f, "
+                    "effective_slat_width=%smm < slat_distance=%smm), and slat_distance "
+                    "is not smaller than the configured slat_width (%smm) either. "
+                    "Check your slat width/distance configuration.",
+                    asin_arg,
+                    round(effective_slat_width, 1),
+                    shutter_slat_distance,
+                    given_shutter_slat_width,
+                )
+                asin_arg = (math.sin(alpha_rad) * shutter_slat_distance) / given_shutter_slat_width
+            else:
+                # Valid slat geometry (slat_width > slat_distance), but at this relative
+                # azimuth full blocking is geometrically impossible - there will always be
+                # a gap, no matter the angle. Falling back to the uncorrected slat width
+                # here would ignore how oblique the sun actually is and can compute a much
+                # *shallower* angle than necessary (see #124), up to being clamped to 0%
+                # (slats fully open) - the opposite of what should happen. Instead, close
+                # the slats as far as physically possible (steepest achievable angle,
+                # beta=90°) to minimize the unavoidable gap.
+                self.logger.debug(
+                    "Azimuth correction leads to impossible geometry (asin_arg=%.3f, "
+                    "effective_slat_width=%smm < slat_distance=%smm). Full blocking is "
+                    "not achievable at this sun angle; closing slats to the max achievable angle.",
+                    asin_arg,
+                    round(effective_slat_width, 1),
+                    shutter_slat_distance,
+                )
+                asin_arg = 1.0
 
         if not (-1 <= asin_arg <= 1):
             self.logger.warning(
@@ -3102,7 +3238,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_FULL_CLOSE_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._dynamic_config.brightness
-            shadow_threshold_close = self.brightness_threshold
+            shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
             if current_brightness is not None and shadow_threshold_close is not None and current_brightness > shadow_threshold_close:
                 if self._is_timer_finished():
                     target_height = self._calculate_shutter_height()
@@ -3176,7 +3312,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_FULL_CLOSED")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self.brightness_threshold
+            shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
             shadow_open_slat_delay = self._shadow_config.shutter_look_through_seconds
             if (
                 current_brightness is not None
@@ -3240,7 +3376,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_HORIZONTAL_NEUTRAL_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self.brightness_threshold
+            shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
             shadow_open_slat_angle = self._shadow_config.shutter_look_through_angle
             if (
                 current_brightness is not None
@@ -3319,7 +3455,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_HORIZONTAL_NEUTRAL")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self.brightness_threshold
+            shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
             shadow_open_shutter_delay = self._shadow_config.shutter_open_seconds
             if (
                 current_brightness is not None
@@ -3401,7 +3537,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_NEUTRAL_TIMER_RUNNING")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self.brightness_threshold
+            shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
             height_after_shadow = self._shadow_config.height_after_sun
             angle_after_shadow = self._shadow_config.angle_after_sun
             if current_brightness is not None and shadow_threshold_close is not None and current_brightness > shadow_threshold_close:
@@ -3475,7 +3611,7 @@ class ShadowControlManager:
         self.logger.debug("Handle SHADOW_NEUTRAL")
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self.brightness_threshold
+            shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
             dawn_handling_active = self._dawn_config.enabled
             dawn_brightness = self._get_current_dawn_brightness()
             dawn_threshold_close = self._dawn_config.brightness_threshold
@@ -3595,7 +3731,7 @@ class ShadowControlManager:
         if await self._check_if_facade_is_in_sun() and await self._is_shadow_control_enabled():
             self.logger.debug("self._check_if_facade_is_in_sun and self._is_shadow_handling_activated")
             current_brightness = self._get_current_brightness()
-            shadow_threshold_close = self.brightness_threshold
+            shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
             shadow_close_delay = self._shadow_config.after_seconds
             if (
                 current_brightness is not None
@@ -3661,7 +3797,7 @@ class ShadowControlManager:
         current_brightness = self._get_current_brightness()
 
         shadow_handling_active = await self._is_shadow_control_enabled()
-        shadow_threshold_close = self.brightness_threshold
+        shadow_threshold_close = self._get_effective_shadow_brightness_threshold()
         shadow_close_delay = self._shadow_config.after_seconds
 
         dawn_handling_active = await self._is_dawn_control_enabled()

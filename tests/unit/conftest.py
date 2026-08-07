@@ -203,4 +203,10 @@ def mock_manager_fixture(hass: HomeAssistant) -> MagicMock:
     # Bind the real orchestrator logic to the mock instance
     manager._process_shutter_state = ShadowControlManager._process_shutter_state.__get__(manager)
 
+    # Default: no low-sun-elevation override configured, so the effective shadow
+    # brightness threshold is simply the plain brightness_threshold (see #79). Tests
+    # exercising the low-sun-elevation feature itself override this explicitly.
+    manager._effective_elevation = None
+    manager._get_effective_shadow_brightness_threshold = MagicMock(side_effect=lambda: manager.brightness_threshold)
+
     return manager
