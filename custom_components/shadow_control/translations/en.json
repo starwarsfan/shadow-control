@@ -52,7 +52,8 @@
           "facade_offset_sun_out_static": "Sun end offset",
           "facade_elevation_sun_min_static": "Min sun elevation",
           "facade_elevation_sun_max_static": "Max sun elevation",
-          "debug_enabled": "Debug mode"
+          "debug_enabled": "Debug mode",
+          "own_logfile_enabled": "Own logfile"
         },
         "data_description": {
           "name": "A descriptive and unique name for this Shadow Control (SC) instance",
@@ -62,7 +63,8 @@
           "facade_offset_sun_out_static": "Angle up to which the facade in comparison to the given azimuth, will be illuminated. Valid range: 0° to 90°",
           "facade_elevation_sun_min_static": "Min elevation of the sun, from which the facade will be illuminated. Valid range: 0° to 90°",
           "facade_elevation_sun_max_static": "Max elevation of the sun, up to which the facade will be illuminated. Valid range: 0° to 90°",
-          "debug_enabled": "Activate debug logs for this instance"
+          "debug_enabled": "Activate debug logs for this instance",
+          "own_logfile_enabled": "Write all log output for this instance to a dedicated logfile in the HA config directory (shadow_control_NAME.log, max 5 MB × 3 backups)"
         }
       },
       "facade_settings": {
@@ -154,7 +156,9 @@
           "shadow_shutter_look_through_angle_entity": "S09 Look through angle",
           "shadow_shutter_open_seconds_entity": "S10 Open after",
           "shadow_height_after_sun_entity": "S11 Height after",
-          "shadow_angle_after_sun_entity": "S12 Angle after"
+          "shadow_angle_after_sun_entity": "S12 Angle after",
+          "shadow_low_sun_elevation_threshold_entity": "S13 Low sun elevation threshold",
+          "shadow_low_sun_brightness_threshold_entity": "S14 Low sun brightness threshold"
         },
         "data_description": {
           "shadow_control_enabled_entity": "De-/Activate shadow handling entity.",
@@ -168,7 +172,9 @@
           "shadow_shutter_look_through_angle_entity": "Look through slat angle (by entity).",
           "shadow_shutter_open_seconds_entity": "Time to open the shutter after look through position (by entity).",
           "shadow_height_after_sun_entity": "Height after shadow (by entity).",
-          "shadow_angle_after_sun_entity": "Slat angle after shadow (by entity)."
+          "shadow_angle_after_sun_entity": "Slat angle after shadow (by entity).",
+          "shadow_low_sun_elevation_threshold_entity": "Below this sun elevation, the low sun brightness threshold (S14) is used instead of S02/S03/S04. 0 disables this feature (by entity).",
+          "shadow_low_sun_brightness_threshold_entity": "Brightness threshold used once the sun elevation drops below the low sun elevation threshold (S13) (by entity)."
         }
       },
       "dawn_settings": {
@@ -274,6 +280,12 @@
       },
       "shadow_angle_after_sun_manual": {
         "name": "S12 Angle after shadow"
+      },
+      "shadow_low_sun_elevation_threshold_manual": {
+        "name": "S13 Low sun elevation threshold"
+      },
+      "shadow_low_sun_brightness_threshold_manual": {
+        "name": "S14 Low sun brightness threshold"
       },
       "dawn_brightness_threshold_manual": {
         "name": "D02 Brightness threshold"
@@ -409,6 +421,12 @@
       "shadow_angle_after_sun_entity": {
         "name": "S12 Angle after"
       },
+      "shadow_low_sun_elevation_threshold_entity": {
+        "name": "S13 Low sun elevation threshold"
+      },
+      "shadow_low_sun_brightness_threshold_entity": {
+        "name": "S14 Low sun brightness threshold"
+      },
       "dawn_control_enabled_entity": {
         "name": "D01 Control enabled"
       },
@@ -475,6 +493,9 @@
     "switch": {
       "debug_enabled": {
         "name": "Debug Mode"
+      },
+      "own_logfile_enabled": {
+        "name": "Write own logfile"
       },
       "shadow_control_enabled_manual": {
         "name": "S: Control active"

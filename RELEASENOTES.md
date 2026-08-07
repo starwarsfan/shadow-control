@@ -1,5 +1,31 @@
 # Changes
 
+## 0.14.0
+### New features:
+* New shadow options `S13 Low sun elevation threshold` and `S14 Low sun brightness threshold` (https://github.com/starwarsfan/shadow-control/issues/79): below a configurable sun elevation, a separate (lower) brightness threshold is used to decide whether to close for shadow. This addresses low, blinding sun (e.g. an evening west-facing facade) that still shines directly into the room even though measured brightness has already dropped below the normal S02/S03/S04 threshold. Disabled by default (S13 = 0°).
+
+### Fixes:
+* Update minimal versions for **Shadow Control** to Python 3.13 and HA 2025.5.0 (https://github.com/starwarsfan/shadow-control/issues/136)
+* Fix #130: `ServiceNotSupported` error for `cover.set_cover_tilt_position` when a cover without tilt support (e.g. mode3 roller shutters) is locked with a forced position
+* Fix #129: Log the azimuth-correction geometry fallback at DEBUG instead of WARNING level. For slat geometries with a narrow width-to-distance margin, this fallback is expected and can trigger very frequently, flooding the log; it is not an error. See the "Shutter slat width" section in the docs for details.
+* Fix #124: When the azimuth-correction geometry is unsolvable (full blocking is physically impossible at the current sun angle), close the slats to the maximum achievable angle instead of falling back to a calculation that ignored the oblique sun position - which could compute a much shallower angle than necessary, down to the slats being fully open.
+* Fix #131: Enabling "lock with forced position" had no effect while the shutter was in certain waiting states (e.g. the shadow neutral timer, or waiting for the D11 "open not before" time constraint in the morning). Those states return early without repositioning when nothing needs to change under normal operation, which silently skipped the forced-position handling too. Enabling the lock now always forces immediate positioning, regardless of the current state.
+* Fix #126: While "lock with forced position" is active, every recalculation trigger (e.g. a routine sun-position sensor update) unconditionally resent the position/tilt commands, even while a movement toward that same target was still in progress. This could override a manual stop within the movement window, before the auto-lock manual-intervention detection got a chance to run. Resending the forced-position command is now skipped while a movement to the same target is already underway.
+
+## 0.13.1
+### Fixes:
+* Fix #99: Wrong behavior within lock state 2 (again...)
+
+## 0.13.0
+### New features:
+* New option `own_logfile_enabled` to write all log output for a Shadow Control instance to a dedicated log file in the Home Assistant configuration directory (`shadow_control_<name>.log`). The file is rotated automatically (max 5 MB, 3 backups). Useful for collecting instance-specific logs over time without filtering the main HA log.
+
+### Fixes:
+* Fix #85: B04 ist not allowed to be higher than 5000
+* Fix #88: Recursion error with mode3 covers
+* Fix #87: Dawn is activated when D01 is deactivated
+* Fix #96: Wrong behavior within lock state 2
+
 ## 0.12.1
 ### Fixes:
 * Fix accidental exchange of allowed config options for DAWN_OPEN_NOT_BEFORE and DAWN_CLOSE_NOT_LATER_THAN

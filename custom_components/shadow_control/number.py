@@ -130,7 +130,7 @@ async def async_setup_entry(
                 key=SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MINIMAL_MANUAL.value,
                 name="Min brightness threshold",  # default (English) fallback if no translation found
                 native_min_value=0.0,
-                native_max_value=5000.0,
+                native_max_value=100000.0,
                 native_step=10.0,
                 native_unit_of_measurement="Lx",
             ),
@@ -253,6 +253,36 @@ async def async_setup_entry(
                 native_max_value=100.0,
                 native_step=1.0,
                 native_unit_of_measurement="%",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_MANUAL.value,
+                name="Low sun elevation threshold",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=90.0,
+                native_step=1.0,
+                native_unit_of_measurement="°",
+            ),
+        ),
+        ShadowControlNumber(
+            hass,
+            config_entry,
+            key=SCInternal.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_MANUAL.value,
+            instance_name=sanitized_instance_name,
+            logger=instance_logger,
+            description=NumberEntityDescription(
+                key=SCInternal.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_MANUAL.value,
+                name="Low sun brightness threshold",  # default (English) fallback if no translation found
+                native_min_value=0.0,
+                native_max_value=100000.0,
+                native_step=10.0,
+                native_unit_of_measurement="Lx",
             ),
         ),
         ShadowControlNumber(

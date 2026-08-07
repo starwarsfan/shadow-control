@@ -86,8 +86,10 @@ class TestPositionShutter:
 
         instance.hass.services.async_call = AsyncMock(side_effect=mock_async_call)
 
-        # Bind real method
+        # Bind real methods
+        instance._send_forced_position_commands = ShadowControlManager._send_forced_position_commands.__get__(instance)
         instance._position_shutter = ShadowControlManager._position_shutter.__get__(instance)
+        instance._is_positioning_in_progress = ShadowControlManager._is_positioning_in_progress.__get__(instance)
 
         return instance
 
@@ -210,6 +212,118 @@ class TestPositionShutter:
         # Check tilt call (inverted: 100 - 20 = 80)
         tilt_call = next(c for c in calls if c[0][1] == "set_cover_tilt_position")
         assert tilt_call[0][2]["tilt_position"] == 80  # [0][2] statt [1]
+
+    async def test_locked_with_forced_position_mode3_skips_tilt(self, manager):
+        """Test that lock with forced position does not call the tilt service for Mode3 shutters (issue #130)."""
+        manager._is_initial_run = False
+        manager.current_lock_state = LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
+        manager._facade_config.shutter_type = ShutterType.MODE3
+        manager._dynamic_config.lock_height = 30.0
+        manager._dynamic_config.lock_angle = 20.0
+
+        await manager._position_shutter(80.0, 45.0, stop_timer=False)
+
+        calls = manager.hass.services.async_call.call_args_list
+
+        # Only the position command must be sent, never the tilt command
+        assert all(c[0][1] != "set_cover_tilt_position" for c in calls)
+        position_call = next(c for c in calls if c[0][1] == "set_cover_position")
+        assert position_call[0][2]["position"] == 70  # 100 - 30
+
+    async def test_locked_with_forced_position_skips_tilt_when_not_supported(self, manager):
+        """Test that lock with forced position does not call the tilt service when the entity lacks tilt support (issue #130)."""
+        manager._is_initial_run = False
+        manager.current_lock_state = LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
+        manager._dynamic_config.lock_height = 30.0
+        manager._dynamic_config.lock_angle = 20.0
+
+        # Entity only supports SET_POSITION, not SET_TILT_POSITION
+        manager.hass.states.get = MagicMock(return_value=MagicMock(attributes={"supported_features": CoverEntityFeature.SET_POSITION}))
+
+        await manager._position_shutter(80.0, 45.0, stop_timer=False)
+
+        calls = manager.hass.services.async_call.call_args_list
+
+        assert all(c[0][1] != "set_cover_tilt_position" for c in calls)
+        position_call = next(c for c in calls if c[0][1] == "set_cover_position")
+        assert position_call[0][2]["position"] == 70  # 100 - 30
+
+    async def test_locked_with_forced_position_skips_tilt_when_service_missing(self, manager):
+        """Test that lock with forced position does not call the tilt service when it is not registered (issue #130)."""
+        manager._is_initial_run = False
+        manager.current_lock_state = LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
+        manager._dynamic_config.lock_height = 30.0
+        manager._dynamic_config.lock_angle = 20.0
+
+        def mock_has_service(domain, service):
+            return service != "set_cover_tilt_position"
+
+        manager.hass.services.has_service = MagicMock(side_effect=mock_has_service)
+
+        await manager._position_shutter(80.0, 45.0, stop_timer=False)
+
+        calls = manager.hass.services.async_call.call_args_list
+
+        assert all(c[0][1] != "set_cover_tilt_position" for c in calls)
+        position_call = next(c for c in calls if c[0][1] == "set_cover_position")
+        assert position_call[0][2]["position"] == 70  # 100 - 30
+
+    async def test_locked_with_forced_position_skips_duplicate_resend_during_movement(self, manager):
+        """
+        Regression test for #126: while a forced-position movement toward the
+        current lock target is still in progress (within max_movement_duration),
+        a new recalculation trigger must NOT resend the forced-position command.
+
+        Real-world scenario from #126: the user enables "lock with forced
+        position", the cover starts moving, and manually stops it partway
+        through. A routine trigger (e.g. a sun-position sensor update) arrives
+        before the movement timer elapses and re-triggers _position_shutter()
+        with the state handler's calculated target (e.g. the dawn target
+        100/100 - NOT the lock target). Since the forced-position branch always
+        resent the lock height/angle unconditionally, this made the cover
+        resume moving toward the forced position, silently undoing the user's
+        manual stop - before _check_positioning_completed() (which only runs
+        once the movement timer has actually elapsed) ever got a chance to
+        detect the manual intervention and activate auto-lock.
+        """
+        manager.current_lock_state = LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
+        manager._dynamic_config.lock_height = 0.0
+        manager._dynamic_config.lock_angle = 0.0
+        manager._facade_config.max_movement_duration = 35.0
+
+        # A forced-position movement toward the same target was already
+        # dispatched a few seconds ago and hasn't reached max_movement_duration.
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=5)
+        manager._last_calculated_height = 0.0
+        manager._last_calculated_angle = 0.0
+
+        # Subsequent recalculation requests the state handler's calculated
+        # target (e.g. dawn target 100/100), not the lock target - matching
+        # the real trigger from #130's _handle_state_dawn_full_closed().
+        await manager._position_shutter(100.0, 100.0, stop_timer=False)
+
+        manager.hass.services.async_call.assert_not_called()
+
+    async def test_locked_with_forced_position_resends_after_movement_completes(self, manager):
+        """
+        Once the movement timer has elapsed (positioning no longer in progress),
+        a forced-position resend must still go through as before - e.g. to
+        recover after a HA restart, or to correct drift. Only resends *during*
+        an in-progress movement toward the same target are suppressed.
+        """
+        manager.current_lock_state = LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION
+        manager._dynamic_config.lock_height = 0.0
+        manager._dynamic_config.lock_angle = 0.0
+        manager._facade_config.max_movement_duration = 35.0
+
+        # Movement timer already elapsed.
+        manager._last_positioning_time = dt_util.utcnow() - timedelta(seconds=40)
+        manager._last_calculated_height = 0.0
+        manager._last_calculated_angle = 0.0
+
+        await manager._position_shutter(100.0, 100.0, stop_timer=False)
+
+        manager.hass.services.async_call.assert_called()
 
     # ========================================================================
     # PHASE 4: NORMAL POSITIONING

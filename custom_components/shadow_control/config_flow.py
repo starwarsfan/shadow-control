@@ -17,6 +17,7 @@ from .const import (
     DEBUG_ENABLED,
     DEPRECATED_CONFIG_KEYS,
     DOMAIN,
+    OWN_LOGFILE_ENABLED,
     SC_CONF_NAME,
     TARGET_COVER_ENTITY,
     VERSION,
@@ -116,6 +117,7 @@ def get_cfg_facade_settings_part1() -> vol.Schema:
                 selector.NumberSelectorConfig(min=0, max=90, step=1, mode=selector.NumberSelectorMode.BOX)
             ),
             vol.Optional(DEBUG_ENABLED, default=False): selector.BooleanSelector(),
+            vol.Optional(OWN_LOGFILE_ENABLED, default=False): selector.BooleanSelector(),
         }
     )
 
@@ -262,6 +264,12 @@ def get_cfg_shadow_settings() -> vol.Schema:
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            ),
+            vol.Optional(SCShadowInput.LOW_SUN_ELEVATION_THRESHOLD_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            ),
+            vol.Optional(SCShadowInput.LOW_SUN_BRIGHTNESS_THRESHOLD_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
         }
@@ -423,6 +431,12 @@ def get_cfg_shadow_settings_mode3() -> vol.Schema:
             vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
+            vol.Optional(SCShadowInput.LOW_SUN_ELEVATION_THRESHOLD_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            ),
+            vol.Optional(SCShadowInput.LOW_SUN_BRIGHTNESS_THRESHOLD_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            ),
         }
     )
 
@@ -536,6 +550,7 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCFacadeConfig1.ELEVATION_SUN_MIN_STATIC.value, default=0): vol.Coerce(float),
         vol.Optional(SCFacadeConfig1.ELEVATION_SUN_MAX_STATIC.value, default=90): vol.Coerce(float),
         vol.Optional(DEBUG_ENABLED, default=False): cv.boolean,
+        vol.Optional(OWN_LOGFILE_ENABLED, default=False): cv.boolean,
         vol.Optional(SCInternal.NEUTRAL_POS_HEIGHT_MANUAL.value, default=SCDefaults.NEUTRAL_POS_HEIGHT_VALUE.value): vol.Coerce(float),
         vol.Optional(SCFacadeConfig2.NEUTRAL_POS_HEIGHT_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.NEUTRAL_POS_ANGLE_MANUAL.value, default=SCDefaults.NEUTRAL_POS_ANGLE_VALUE.value): vol.Coerce(float),
@@ -596,6 +611,10 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MINIMAL_MANUAL.value): vol.Coerce(float),
         vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_MINIMAL_ENTITY.value): cv.entity_id,
+        vol.Optional(SCInternal.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_MANUAL.value): vol.Coerce(float),
+        vol.Optional(SCShadowInput.LOW_SUN_ELEVATION_THRESHOLD_ENTITY.value): cv.entity_id,
+        vol.Optional(SCInternal.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_MANUAL.value): vol.Coerce(float),
+        vol.Optional(SCShadowInput.LOW_SUN_BRIGHTNESS_THRESHOLD_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.SHADOW_AFTER_SECONDS_MANUAL.value): vol.All(vol.Coerce(float), vol.Range(min=1)),
         vol.Optional(SCShadowInput.AFTER_SECONDS_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.SHADOW_SHUTTER_MAX_HEIGHT_MANUAL.value): vol.Coerce(float),

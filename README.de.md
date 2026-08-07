@@ -44,6 +44,7 @@ Go to the [English version](/README.md) version of the documentation.
       * [Minimale Sonnenhöhe](#minimale-sonnenhöhe)
       * [Maximale Sonnenhöhe](#maximale-sonnenhöhe)
       * [Debugmodus](#debugmodus)
+      * [Eigene Logdatei schreiben](#eigene-logdatei-schreiben)
     * [Fassadenkonfiguration - Teil 2](#fassadenkonfiguration---teil-2)
       * [Neutralhöhe](#neutralhöhe)
       * [Neutralwinkel](#neutralwinkel)
@@ -84,6 +85,8 @@ Go to the [English version](/README.md) version of the documentation.
       * [B10 Öffnen nach x Sekunden](#b10-öffnen-nach-x-sekunden)
       * [B11 Höhe nach Beschattung](#b11-höhe-nach-beschattung)
       * [B12 Winkel nach Beschattung](#b12-winkel-nach-beschattung)
+      * [B13 Schwellwert Sonnentiefstand](#b13-schwellwert-sonnentiefstand)
+      * [B14 Helligkeitsschwellwert bei Sonnentiefstand](#b14-helligkeitsschwellwert-bei-sonnentiefstand)
     * [Dämmerungseinstellungen](#dämmerungseinstellungen)
       * [D01 Steuerung aktiv](#d01-steuerung-aktiv)
       * [D02 Dämmerungsschwellwert](#d02-dämmerungsschwellwert)
@@ -333,6 +336,12 @@ Maximale Höhe der Sonne in Grad. Ist die effektive Höhe grösser als dieser We
 
 Mit diesem Schalter kann der Debugmodus aktiviert werden. Damit werden erheblich mehr Informationen zum Verhalten und der Berechnung für diese Fassade ins Log geschrieben.
 
+#### Eigene Logdatei schreiben
+(yaml: `own_logfile_enabled`)
+
+Mit diesem Schalter schreibt Shadow Control alle Log-Ausgaben dieser Instanz zusätzlich in eine eigene Logdatei im Home Assistant Konfigurationsverzeichnis. Die Datei wird nach dem Schema `shadow_control_<bereinigter-instanzname>.log` benannt und automatisch rotiert (max. 5 MB pro Datei, 3 Backups). Dies ist besonders nützlich, wenn Logs einer bestimmten Instanz über einen längeren Zeitraum gesammelt werden sollen, ohne das Haupt-Log von Home Assistant durchsuchen zu müssen.
+
+Beispielpfad: `<config_dir>/shadow_control_esszimmer_tuer.log`
 
 
 ### Fassadenkonfiguration - Teil 2
@@ -357,6 +366,8 @@ Lamellenwinkel in % in Neutralposition. Alles andere identisch zu [Neutralhöhe]
 (yaml: `facade_slat_width_static`)
 
 Die Breite der Lamellen in mm. Breite und Abstand werden benötigt, um den Lamellenwinkel zu berechnen, der benötigt wird, die Lamellen gerade so schräg zu stellen, dass kein direktes Sonnenlicht in den Raum fällt. Die Lamellenbreite muss zwingend grösser als der Lamellenabstand sein, anderenfalls ist es nicht möglich, eine korrekte Beschattungsposition anzufahren. Standardwert: 95
+
+Hinweis: Bei der Berechnung wird eine Azimut-Korrektur angewendet, welche die effektive Lamellenbreite reduziert, je weiter sich die Sonne von der Fassadennormalen entfernt. Bei einer geringen Marge zwischen Lamellenbreite und Lamellenabstand (z. B. 60mm/55mm, oder auch dem Standardwert 95mm/67mm in Kombination mit einem breiten Sonnenfenster) ist diese Korrektur nur innerhalb eines vergleichsweise kleinen Winkelbereichs um die Fassadennormale mathematisch lösbar. Ausserhalb dieses Bereichs ist eine vollständige Verschattung mit der konfigurierten Lamellengeometrie physikalisch unmöglich, unabhängig vom gewählten Winkel - die Integration schliesst die Lamellen dann so weit wie geometrisch möglich, um den unvermeidbaren Lichtspalt zu minimieren, anstatt einen Winkel zu berechnen, der die schräge Sonnenposition ignoriert. Das ist erwartetes Verhalten und kein Fehler, sondern eine Folge der physikalischen Lamellengeometrie, keine Fehlkonfiguration. Es wird auf Debug-Level protokolliert; tritt es häufig auf, bedeutet das schlicht, dass direktes Sonnenlicht bei diesen Sonnenpositionen mit der aktuellen Lamellengeometrie nicht vollständig blockiert werden kann.
 
 #### Lamellenabstand
 (yaml: `facade_slat_distance_static`)
@@ -607,6 +618,16 @@ Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf die hier in 
 
 Wenn keine Beschattungssituation mehr vorliegt, wird der Behang auf den hier in % konfigurierten Lamellenwinkel gefahren. Standardwert: 0
 
+#### B13 Schwellwert Sonnentiefstand
+(yaml: `shadow_low_sun_elevation_threshold_manual: <Wert>` u/o `shadow_low_sun_elevation_threshold_entity: <entity>`)
+
+Unterhalb dieses Sonnenstands (in °, relativ zur Fassade) verwendet die Beschattung statt des normalen Schwellwerts aus [B02](#b02-winter-helligkeitsschwellwert)/[B03](#b03-sommer-helligkeitsschwellwert)/[B04](#b04-minimaler-helligkeitsschwellwert) den [B14 Helligkeitsschwellwert bei Sonnentiefstand](#b14-helligkeitsschwellwert-bei-sonnentiefstand). Damit lässt sich der Fall abdecken, dass eine tiefstehende, blendende Sonne (z. B. abends an einer Westfassade) weiterhin direkt in den Raum scheint, obwohl die gemessene Helligkeit bereits unter den normalen Schwellwert gefallen ist. Standardwert: 0 (deaktiviert - die Fassade gilt normalerweise nur oberhalb von 0° Sonnenstand als "in der Sonne", daher greift diese Option ohne explizite Konfiguration praktisch nie)
+
+#### B14 Helligkeitsschwellwert bei Sonnentiefstand
+(yaml: `shadow_low_sun_brightness_threshold_manual: <Wert>` u/o `shadow_low_sun_brightness_threshold_entity: <entity>`)
+
+Helligkeitsschwellwert, welcher verwendet wird, sobald der Sonnenstand unter [B13 Schwellwert Sonnentiefstand](#b13-schwellwert-sonnentiefstand) fällt. Dieser Wert sollte niedriger als die normalen Schwellwerte gewählt werden, da eine tiefstehende Sonne meist insgesamt weniger Helligkeit erzeugt, obwohl sie weiterhin direkt blendet. Standardwert: 3500
+
 
 
 
@@ -758,6 +779,10 @@ shadow_control:
     # Enable debug mode for way more log output
     debug_enabled: false
     #
+    # Alle Log-Ausgaben dieser Instanz zusätzlich in eine eigene Logdatei im
+    # HA-Konfigurationsverzeichnis schreiben (shadow_control_<name>.log, max 5 MB x 3 Backups)
+    own_logfile_enabled: false
+    #
     # =======================================================================
     # Dynamic configuration inputs
     #
@@ -852,6 +877,10 @@ shadow_control:
     shadow_height_after_sun_manual: 0
     #shadow_angle_after_sun_entity:
     shadow_angle_after_sun_manual: 0
+    #shadow_low_sun_elevation_threshold_entity:
+    shadow_low_sun_elevation_threshold_manual: 0
+    #shadow_low_sun_brightness_threshold_entity:
+    shadow_low_sun_brightness_threshold_manual: 3500
     #
     # =======================================================================
     # Dawn configuration

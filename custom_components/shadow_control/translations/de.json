@@ -52,7 +52,8 @@
           "facade_offset_sun_out_static": "Beschattungsende",
           "facade_elevation_sun_min_static": "Minimale Sonnenhöhe",
           "facade_elevation_sun_max_static": "Maximale Sonnenhöhe",
-          "debug_enabled": "Debugmodus"
+          "debug_enabled": "Debugmodus",
+          "own_logfile_enabled": "Eigene Logdatei"
         },
         "data_description": {
           "name": "Eindeutiger Name dieser Shadow Control (SC) Instanz",
@@ -62,7 +63,8 @@
           "facade_offset_sun_out_static": "Bis zu welchem Winkel ausgehend vom Azimut der Fassade scheint die Sonne auf die Fassade. Gültiger Bereich: 0° bis 90°",
           "facade_elevation_sun_min_static": "Minimale Höhe der Sonne in Grad (°), ab welcher die Sonne auf die Fassade scheint. Gültiger Bereich: 0° bis 90°",
           "facade_elevation_sun_max_static": "Maximale Höhe der Sonne in Grad (°), bis zu welcher die Sonne auf die Fassade scheint. Gültiger Bereich: 0° bis 90°",
-          "debug_enabled": "Debug-Logs für diese Instanz aktivieren"
+          "debug_enabled": "Debug-Logs für diese Instanz aktivieren",
+          "own_logfile_enabled": "Alle Log-Ausgaben dieser Instanz zusätzlich in eine eigene Logdatei im HA-Konfigurationsverzeichnis schreiben (shadow_control_NAME.log, max. 5 MB × 3 Backups)"
         }
       },
       "facade_settings": {
@@ -154,7 +156,9 @@
           "shadow_shutter_look_through_angle_entity": "B09 Durchsichtwinkel",
           "shadow_shutter_open_seconds_entity": "B10 Öffnen nach x Sekunden",
           "shadow_height_after_sun_entity": "B11 Höhe nach Beschattung",
-          "shadow_angle_after_sun_entity": "B12 Winkel nach Beschattung"
+          "shadow_angle_after_sun_entity": "B12 Winkel nach Beschattung",
+          "shadow_low_sun_elevation_threshold_entity": "B13 Schwellwert Sonnentiefstand",
+          "shadow_low_sun_brightness_threshold_entity": "B14 Helligkeitsschwellwert bei Sonnentiefstand"
         },
         "data_description": {
           "shadow_control_enabled_entity": "De-/Aktivieren der Beschattungssteuerung (via Entität).",
@@ -168,7 +172,9 @@
           "shadow_shutter_look_through_angle_entity": "Lamellenwinkel für Durchsichtstellung (via Entität).",
           "shadow_shutter_open_seconds_entity": "Zeit in Sekunden nach Durchsichtstellung, nach welcher der Behang geöffnet wird (via Entität).",
           "shadow_height_after_sun_entity": "Nach Beschattung anzufahrende Behanghöhe (via Entität).",
-          "shadow_angle_after_sun_entity": "Nach Beschattung anzufahrender Lamellenwinkel (via Entität)."
+          "shadow_angle_after_sun_entity": "Nach Beschattung anzufahrender Lamellenwinkel (via Entität).",
+          "shadow_low_sun_elevation_threshold_entity": "Unterhalb dieses Sonnenstands wird statt B02/B03/B04 der Helligkeitsschwellwert bei Sonnentiefstand (B14) verwendet. 0 deaktiviert diese Funktion (via Entität).",
+          "shadow_low_sun_brightness_threshold_entity": "Helligkeitsschwellwert, welcher verwendet wird, sobald der Sonnenstand unter den Schwellwert Sonnentiefstand (B13) fällt (via Entität)."
         }
       },
       "dawn_settings": {
@@ -274,6 +280,12 @@
       },
       "shadow_angle_after_sun_manual": {
         "name": "B12 Winkel danach"
+      },
+      "shadow_low_sun_elevation_threshold_manual": {
+        "name": "B13 Schwellwert Sonnentiefstand"
+      },
+      "shadow_low_sun_brightness_threshold_manual": {
+        "name": "B14 Helligkeitsschwellwert bei Sonnentiefstand"
       },
       "dawn_brightness_threshold_manual": {
         "name": "D02 Dämmerungsschwellwert"
@@ -409,6 +421,12 @@
       "shadow_angle_after_sun_entity": {
         "name": "B12 Winkel danach"
       },
+      "shadow_low_sun_elevation_threshold_entity": {
+        "name": "B13 Schwellwert Sonnentiefstand"
+      },
+      "shadow_low_sun_brightness_threshold_entity": {
+        "name": "B14 Helligkeitsschwellwert bei Sonnentiefstand"
+      },
       "dawn_control_enabled_entity": {
         "name": "D01 Steuerung"
       },
@@ -475,6 +493,9 @@
     "switch": {
       "debug_enabled": {
         "name": "Debug-Modus"
+      },
+      "own_logfile_enabled": {
+        "name": "Eigene Logdatei schreiben"
       },
       "shadow_control_enabled_manual": {
         "name": "B01 Steuerung aktiv"

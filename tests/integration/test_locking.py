@@ -424,3 +424,80 @@ async def test_auto_lock_on_manual_change(hass: HomeAssistant, setup_from_user_c
     assert_equal(actual_height, 50, "Actual cover should stay at manual position (locked)")
     if check_angle:
         assert_equal(actual_angle, 60, "Actual cover should stay at manual position (locked)")
+
+
+@pytest.mark.parametrize(
+    ("shutter_type", "check_angle"),
+    [
+        ("mode1", True),
+        ("mode2", True),
+        ("mode3", False),
+    ],
+)
+async def test_lock_with_position_manual_move_transitions_to_auto_lock(
+    hass: HomeAssistant, setup_from_user_config, time_travel, caplog, shutter_type, check_angle
+):
+    """Regression test for issue #99.
+
+    Manual movement during lock_with_position (State 2) must transition to
+    LOCKED_BY_EXTERNAL_MODIFICATION (State 3) instead of re-closing the shutter.
+
+    The bug: when the user moves the cover while the positioning timer is running,
+    the movement is stored but not checked.  If the cover then stops and no more
+    state-change events fire, the timer expires silently.  The next external trigger
+    (sun/brightness update) re-applied the forced position without first calling
+    _check_positioning_completed, so the transition to State 3 never happened.
+    """
+    config = {DOMAIN: [TEST_CONFIG[DOMAIN][0].copy()]}
+    config[DOMAIN][0]["facade_shutter_type_static"] = shutter_type
+    pos_calls, tilt_calls = await setup_instance(caplog, hass, setup_from_user_config, config, time_travel)
+
+    # Initial stabilisation
+    await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_state", seconds=2, executions=2, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
+
+    state1 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_lock_state")
+    assert_equal(state1.state, LockState.UNLOCKED, "Initial lock state")
+
+    # Activate State 2 (Zwangssperre mit Position).
+    # Test config: lock_height_manual=50, timer=3 s.
+    await set_lock_state(hass, "sc_test_instance", lock_with_position=True)
+
+    state2 = await get_entity_and_show_state(hass, "sensor.sc_test_instance_lock_state")
+    assert_equal(state2.state, LockState.LOCKED_MANUALLY_WITH_FORCED_POSITION, "State 2 active")
+
+    # USER manually moves the cover WHILE the positioning timer is still running.
+    # The cover listener stores the new position (FALL A) but does not yet check
+    # for manual movement because the timer has not expired.
+    await simulate_manual_cover_change(hass, "cover.sc_dummy", position=10, tilt_position=10)
+
+    actual_height, _ = get_actual_cover_position(hass, "cover.sc_dummy")
+    assert_equal(actual_height, 10, "Cover at manual position immediately after move")
+
+    # Let the positioning timer expire (timer = 3 s in test config).
+    # No cover state-change event fires after this point - the cover is stationary.
+    await time_travel(seconds=5)
+    await hass.async_block_till_done()
+
+    # Trigger a recalculation via an external entity (same as a sun / brightness
+    # sensor update in production).
+    # WITHOUT the fix: _position_shutter re-applies the forced position, State stays 2.
+    # WITH the fix: _check_positioning_completed is called first, detects the stored
+    # manual movement, activates auto-lock → State 3.
+    current_brightness = hass.states.get("input_number.d01_brightness")
+    if current_brightness:
+        await set_sun_position(hass, brightness=float(current_brightness.state) + 1.0)
+
+    lock_state = await time_travel_and_check(
+        time_travel, hass, "sensor.sc_test_instance_lock_state", seconds=2, executions=8, pos_calls=pos_calls, tilt_calls=tilt_calls
+    )
+    assert_equal(
+        lock_state.state,
+        LockState.LOCKED_BY_EXTERNAL_MODIFICATION,
+        "State 2 + manual move during timer + timer expiry → State 3",
+    )
+
+    # The cover must NOT have been commanded back to the forced position.
+    actual_height, _ = get_actual_cover_position(hass, "cover.sc_dummy")
+    assert_equal(actual_height, 10, "Cover must stay at manual position after transition to State 3")
