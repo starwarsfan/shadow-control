@@ -45,6 +45,8 @@ class SCInternal(Enum):
     SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL = "shadow_shutter_look_through_angle_manual"
     SHADOW_HEIGHT_AFTER_SUN_MANUAL = "shadow_height_after_sun_manual"
     SHADOW_ANGLE_AFTER_SUN_MANUAL = "shadow_angle_after_sun_manual"
+    SHADOW_LOW_SUN_ELEVATION_THRESHOLD_MANUAL = "shadow_low_sun_elevation_threshold_manual"
+    SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_MANUAL = "shadow_low_sun_brightness_threshold_manual"
 
     DAWN_CONTROL_ENABLED_MANUAL = "dawn_control_enabled_manual"
     DAWN_BRIGHTNESS_THRESHOLD_MANUAL = "dawn_brightness_threshold_manual"
@@ -100,6 +102,8 @@ class SCInternal(Enum):
             SCInternal.SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL,
             SCInternal.SHADOW_HEIGHT_AFTER_SUN_MANUAL,
             SCInternal.SHADOW_ANGLE_AFTER_SUN_MANUAL,
+            SCInternal.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_MANUAL,
+            SCInternal.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_MANUAL,
             SCInternal.DAWN_BRIGHTNESS_THRESHOLD_MANUAL,
             SCInternal.DAWN_AFTER_SECONDS_MANUAL,
             SCInternal.DAWN_SHUTTER_MAX_HEIGHT_MANUAL,
@@ -184,6 +188,8 @@ class SCShadowInput(Enum):
     SHUTTER_LOOK_THROUGH_ANGLE_ENTITY = "shadow_shutter_look_through_angle_entity"
     HEIGHT_AFTER_SUN_ENTITY = "shadow_height_after_sun_entity"
     ANGLE_AFTER_SUN_ENTITY = "shadow_angle_after_sun_entity"
+    LOW_SUN_ELEVATION_THRESHOLD_ENTITY = "shadow_low_sun_elevation_threshold_entity"
+    LOW_SUN_BRIGHTNESS_THRESHOLD_ENTITY = "shadow_low_sun_brightness_threshold_entity"
 
 
 class SCDawnInput(Enum):
@@ -324,6 +330,10 @@ class SCDefaults(Enum):
     SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_VALUE = 50
     SHADOW_HEIGHT_AFTER_SUN_VALUE = 0  # noqa: PIE796
     SHADOW_ANGLE_AFTER_SUN_VALUE = 0  # noqa: PIE796
+    # 0 = disabled: the facade is only ever considered "in sun" for effective_elevation > elevation_sun_min
+    # (default 0), so an effective_elevation < 0 threshold practically never triggers unless configured.
+    SHADOW_LOW_SUN_ELEVATION_THRESHOLD_VALUE = 0  # noqa: PIE796
+    SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_VALUE = 3500
     DAWN_BRIGHTNESS_THRESHOLD_VALUE = 500
     DAWN_AFTER_SECONDS_VALUE = 15  # noqa: PIE796
     DAWN_SHUTTER_MAX_HEIGHT_VALUE = 100  # noqa: PIE796
@@ -351,6 +361,8 @@ INTERNAL_TO_DEFAULTS_MAP = {
     SCInternal.SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL: SCDefaults.SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_VALUE.value,
     SCInternal.SHADOW_HEIGHT_AFTER_SUN_MANUAL: SCDefaults.SHADOW_HEIGHT_AFTER_SUN_VALUE.value,
     SCInternal.SHADOW_ANGLE_AFTER_SUN_MANUAL: SCDefaults.SHADOW_ANGLE_AFTER_SUN_VALUE.value,
+    SCInternal.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_MANUAL: SCDefaults.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_VALUE.value,
+    SCInternal.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_MANUAL: SCDefaults.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_VALUE.value,
     SCInternal.DAWN_BRIGHTNESS_THRESHOLD_MANUAL: SCDefaults.DAWN_BRIGHTNESS_THRESHOLD_VALUE.value,
     SCInternal.DAWN_AFTER_SECONDS_MANUAL: SCDefaults.DAWN_AFTER_SECONDS_VALUE.value,
     SCInternal.DAWN_SHUTTER_MAX_HEIGHT_MANUAL: SCDefaults.DAWN_SHUTTER_MAX_HEIGHT_VALUE.value,
@@ -380,6 +392,8 @@ NUMBER_INTERNAL_TO_EXTERNAL_MAP = {
     SCInternal.SHADOW_SHUTTER_LOOK_THROUGH_ANGLE_MANUAL.value: SCShadowInput.SHUTTER_LOOK_THROUGH_ANGLE_ENTITY.value,
     SCInternal.SHADOW_HEIGHT_AFTER_SUN_MANUAL.value: SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value,
     SCInternal.SHADOW_ANGLE_AFTER_SUN_MANUAL.value: SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value,
+    SCInternal.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_MANUAL.value: SCShadowInput.LOW_SUN_ELEVATION_THRESHOLD_ENTITY.value,
+    SCInternal.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_MANUAL.value: SCShadowInput.LOW_SUN_BRIGHTNESS_THRESHOLD_ENTITY.value,
     SCInternal.DAWN_BRIGHTNESS_THRESHOLD_MANUAL.value: SCDawnInput.BRIGHTNESS_THRESHOLD_ENTITY.value,
     SCInternal.DAWN_AFTER_SECONDS_MANUAL.value: SCDawnInput.AFTER_SECONDS_ENTITY.value,
     SCInternal.DAWN_SHUTTER_MAX_HEIGHT_MANUAL.value: SCDawnInput.SHUTTER_MAX_HEIGHT_ENTITY.value,

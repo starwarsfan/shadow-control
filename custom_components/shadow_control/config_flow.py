@@ -266,6 +266,12 @@ def get_cfg_shadow_settings() -> vol.Schema:
             vol.Optional(SCShadowInput.ANGLE_AFTER_SUN_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
+            vol.Optional(SCShadowInput.LOW_SUN_ELEVATION_THRESHOLD_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            ),
+            vol.Optional(SCShadowInput.LOW_SUN_BRIGHTNESS_THRESHOLD_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            ),
         }
     )
 
@@ -423,6 +429,12 @@ def get_cfg_shadow_settings_mode3() -> vol.Schema:
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
             vol.Optional(SCShadowInput.HEIGHT_AFTER_SUN_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            ),
+            vol.Optional(SCShadowInput.LOW_SUN_ELEVATION_THRESHOLD_ENTITY.value): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+            ),
+            vol.Optional(SCShadowInput.LOW_SUN_BRIGHTNESS_THRESHOLD_ENTITY.value): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=["sensor", "input_number"])
             ),
         }
@@ -599,6 +611,10 @@ YAML_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_SUMMER_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.SHADOW_BRIGHTNESS_THRESHOLD_MINIMAL_MANUAL.value): vol.Coerce(float),
         vol.Optional(SCShadowInput.BRIGHTNESS_THRESHOLD_MINIMAL_ENTITY.value): cv.entity_id,
+        vol.Optional(SCInternal.SHADOW_LOW_SUN_ELEVATION_THRESHOLD_MANUAL.value): vol.Coerce(float),
+        vol.Optional(SCShadowInput.LOW_SUN_ELEVATION_THRESHOLD_ENTITY.value): cv.entity_id,
+        vol.Optional(SCInternal.SHADOW_LOW_SUN_BRIGHTNESS_THRESHOLD_MANUAL.value): vol.Coerce(float),
+        vol.Optional(SCShadowInput.LOW_SUN_BRIGHTNESS_THRESHOLD_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.SHADOW_AFTER_SECONDS_MANUAL.value): vol.All(vol.Coerce(float), vol.Range(min=1)),
         vol.Optional(SCShadowInput.AFTER_SECONDS_ENTITY.value): cv.entity_id,
         vol.Optional(SCInternal.SHADOW_SHUTTER_MAX_HEIGHT_MANUAL.value): vol.Coerce(float),
