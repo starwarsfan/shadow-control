@@ -30,7 +30,8 @@ def manager(mock_manager):
     manager._dawn_config.brightness_threshold = 10
     manager._dawn_config.shutter_max_height = 100.0
     manager._dawn_config.shutter_look_through_angle = 90.0
-    manager._dawn_config.shutter_look_through_seconds = 600
+    manager._dawn_config.shutter_look_through_seconds = 1
+    manager._dawn_config.shutter_open_seconds = 600
 
     return manager
 
@@ -49,7 +50,11 @@ class TestHandleStateDawnHorizontalNeutral:
         manager._position_shutter.assert_called_once_with(100.0, 90.0, stop_timer=False)
 
     async def test_brightness_ok_starts_opening_timer(self, manager):
-        """Test starting the timer to open further when brightness is stable."""
+        """Test starting the timer to open further when brightness is stable.
+
+        The timer to DAWN_NEUTRAL must use the 'open after' delay (D08), not the
+        'look-through after' delay (D06), see issue #160.
+        """
         manager._get_current_dawn_brightness.return_value = 50  # Above 10
 
         result = await manager._handle_state_dawn_horizontal_neutral()
@@ -58,9 +63,9 @@ class TestHandleStateDawnHorizontalNeutral:
         manager._start_timer.assert_called_once_with(600)
 
     async def test_missing_timer_config_stays_in_state(self, manager):
-        """Test warning and staying in state if look_through_seconds is missing."""
+        """Test warning and staying in state if open_seconds is missing."""
         manager._get_current_dawn_brightness.return_value = 50
-        manager._dawn_config.shutter_look_through_seconds = None
+        manager._dawn_config.shutter_open_seconds = None
 
         result = await manager._handle_state_dawn_horizontal_neutral()
 

@@ -3993,7 +3993,7 @@ class ShadowControlManager:
             dawn_threshold_close = self._dawn_config.brightness_threshold
             dawn_height = self._dawn_config.shutter_max_height
             dawn_open_slat_angle = self._dawn_config.shutter_look_through_angle
-            dawn_open_shutter_delay = self._dawn_config.shutter_look_through_seconds
+            dawn_open_shutter_delay = self._dawn_config.shutter_open_seconds
 
             brightness_below_threshold = (
                 dawn_brightness is not None
