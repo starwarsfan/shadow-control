@@ -1,5 +1,6 @@
 """Integration Test: Dawn Time Constraints (open_not_before / close_not_later_than)."""
 
+import copy
 import logging
 from datetime import timedelta
 from itertools import count
@@ -676,3 +677,73 @@ async def test_open_not_before_past_allows_full_open_to_dawn_neutral(
     assert state.state == ShutterState.DAWN_NEUTRAL.name.lower(), (
         f"Past open_not_before should allow full open path to DAWN_NEUTRAL, got: {state.state}"
     )
+
+
+async def test_dawn_open_delay_uses_open_seconds_not_look_through_seconds(
+    hass: HomeAssistant,
+    setup_from_user_config,
+    time_travel,
+    caplog,
+):
+    """Regression test for #160: DAWN_NEUTRAL_TIMER_RUNNING must use the 'open after' delay (D08).
+
+    With look-through = 5s and open = 60s, the shutter must remain in
+    DAWN_NEUTRAL_TIMER_RUNNING well beyond the look-through delay and only
+    reach DAWN_NEUTRAL after the open delay has elapsed.
+    """
+    config = copy.deepcopy(BASE_CONFIG)
+    config[DOMAIN][0]["sc_internal_values"]["dawn_shutter_look_through_seconds_manual"] = 5
+    config[DOMAIN][0]["sc_internal_values"]["dawn_shutter_open_seconds_manual"] = 60
+    pos_calls, tilt_calls = await setup_instance(
+        caplog,
+        hass,
+        setup_from_user_config,
+        config,
+        time_travel,
+    )
+
+    # Skip 30s HA restart grace period so timer callbacks are not suppressed
+    await _skip_grace_period(hass, time_travel, pos_calls, tilt_calls)
+
+    await _drive_to_dawn_full_closed(hass, time_travel, pos_calls, tilt_calls)
+    state = hass.states.get(STATE_ENTITY)
+    assert state.state == ShutterState.DAWN_FULL_CLOSED.name.lower(), f"Setup: expected DAWN_FULL_CLOSED, got: {state.state}"
+
+    # Brightness above threshold: look-through timer (5s) fires, open timer (60s) starts
+    await set_sun_position(hass, brightness=BRIGHTNESS_ABOVE_DAWN, **SUN_IN_FACADE)
+    state = await time_travel_and_check(
+        time_travel,
+        hass,
+        STATE_ENTITY,
+        seconds=2,
+        executions=10,
+        pos_calls=pos_calls,
+        tilt_calls=tilt_calls,
+    )
+    assert state.state == ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name.lower(), (
+        f"Expected DAWN_NEUTRAL_TIMER_RUNNING ~20s after brightness rise, got: {state.state}"
+    )
+
+    # Another 30s: still well within the 60s open delay
+    state = await time_travel_and_check(
+        time_travel,
+        hass,
+        STATE_ENTITY,
+        seconds=2,
+        executions=15,
+        pos_calls=pos_calls,
+        tilt_calls=tilt_calls,
+    )
+    assert state.state == ShutterState.DAWN_NEUTRAL_TIMER_RUNNING.name.lower(), f"Open delay (60s) must not have elapsed yet, got: {state.state}"
+
+    # Past the open delay -> DAWN_NEUTRAL
+    state = await time_travel_and_check(
+        time_travel,
+        hass,
+        STATE_ENTITY,
+        seconds=2,
+        executions=15,
+        pos_calls=pos_calls,
+        tilt_calls=tilt_calls,
+    )
+    assert state.state == ShutterState.DAWN_NEUTRAL.name.lower(), f"Expected DAWN_NEUTRAL after open delay, got: {state.state}"
